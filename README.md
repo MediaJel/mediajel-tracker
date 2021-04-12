@@ -16,6 +16,12 @@ Import this script tag to the header/footer of a site. Append the `{APP_ID_HERE}
 
 ## Road Map
 
+### Functions
+
+- [ ] Implement collectorURL as a query string argument
+
+### Platforms
+
 - [x] Jane platform
   - [x] Add to Cart
   - [x] Remove From Cart
