@@ -2,7 +2,9 @@
 
 ## Description
 
-A plug and play tracker that collects Page view & Ecommerce data (... and possibly more?) In terms of options & configurations it only takes in 1 argument after the URL string which is `appId` Please see <b>Usage</b> below. We are hoping to add `collector URLs` as a parameter in the query string as well.
+A plug and play tracker that collects Page view & Ecommerce data ... and possibly more? In terms of options & configurations it only takes in 1 argument after the URL string which is `appId`. Please see <b>Usage</b> below, We are hoping to add `collector URLs` as a parameter in the query string as well.
+
+<b>NOTE:</b> For Mediajel, the collector the script tag points to is currently the test collector as its default collector. We're going to enable an option in the query string to indicate the collector URL.
 
 ## Usage
 
