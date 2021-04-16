@@ -20,6 +20,15 @@ NOTE: CI/CD pipeline not yet in place for deployment.
 <script src="https://cdn.jsdelivr.net/gh/MediaJel/mediajel-tracker/mediajelTracker.js?mediajelAppId={APP_ID_HERE}"></script>
 ```
 
+## Pre-requisites
+
+First, you should have node, and ensure that the node version is 10.13 or above.
+
+```javascript
+$ node -v
+v10.13.0
+```
+
 ## Development
 
 ```javascript
