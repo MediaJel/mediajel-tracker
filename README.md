@@ -1,4 +1,5 @@
 <h1 align="center"><strong>Mediajel universal tracker</strong></h1>
+[![dumi](https://img.shields.io/badge/docs%20by-dumi-blue)](https://github.com/umijs/dumi)
 <div align="center"><img src="public/logo.png "width="200" height="200" /></div>
 
 ## Features :rocket:
