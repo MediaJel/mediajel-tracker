@@ -23,19 +23,35 @@ NOTE: CI/CD pipeline not yet in place for deployment.
 ## Development
 
 ```javascript
-npm install //install dev dependencies
-npm run dev //deploys dev server (handled by Parcel.js)
+npm install
+npm run dev
+```
+
+## Documentation
+
+You may access any and all documentation regarding configuration of the tracker locally. This will instantiate a Dumi instance and deploy a server in your local environment that contains the UI for documentation.
+
+```javascript
+npm install docs
+npm run docs
 ```
 
 ## Dependencies/Architecture
 
 <table>
 <tr>
- <td width="160" align="center">
+ <td width="160" height="160" align="center">
       <a target="_blank" href="https://parceljs.org/">
         <img src="https://parceljs.org/assets/parcel-front.webp" />
         <br />
         <strong>Parcel JS</strong>
+      </a>
+    </td>
+     <td width="160" height="160"  align="center">
+      <a target="_blank" href="https://d.umijs.org/">
+        <img src="https://avatars.githubusercontent.com/u/33895495?s=200&v=4" />
+        <br />
+        <strong>UmiJS/Dumi</strong>
       </a>
     </td>
     </tr>
