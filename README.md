@@ -14,6 +14,7 @@ The collector the script tag points to is currently the test collector as its de
 ## Usage
 
 Import this script tag to the header/footer of a site. Append the `{APP_ID_HERE}` argument to contain the app id you would use for your site/app.
+NOTE: CI/CD pipeline not yet in place for deployment.
 
 ```javascript
 <script src="https://cdn.jsdelivr.net/gh/MediaJel/mediajel-tracker/mediajelTracker.js?mediajelAppId={APP_ID_HERE}"></script>
