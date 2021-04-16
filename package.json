@@ -23,6 +23,7 @@
     "parcel-bundler": "^1.12.5"
   },
   "dependencies": {
+    "docs": "*",
     "password-generator": "^2.3.2"
   }
 }
