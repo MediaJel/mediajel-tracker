@@ -1,0 +1,26 @@
+{
+  "name": "mediajel-tracker",
+  "version": "1.0.0",
+  "description": "Mediajel Tracker",
+  "main": "index.js",
+  "scripts": {
+    "dev": "parcel public/index.html",
+    "build": "parcel build public/index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MediaJel/mediajel-tracker.git"
+  },
+  "author": "Pacholo Amit",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MediaJel/mediajel-tracker/issues"
+  },
+  "homepage": "https://github.com/MediaJel/mediajel-tracker#readme",
+  "devDependencies": {
+    "parcel-bundler": "^1.12.5"
+  },
+  "dependencies": {
+    "password-generator": "^2.3.2"
+  }
+}

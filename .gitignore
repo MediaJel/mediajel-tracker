@@ -1,2 +1,4 @@
-Client.html
-trackerConfig.js
+
+node_modules
+.cache
+dist
