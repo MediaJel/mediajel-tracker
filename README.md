@@ -66,6 +66,13 @@ npm run docs
         <strong>UmiJS/Dumi</strong>
       </a>
     </td>
+      <td width="160" height="160"  align="center">
+      <a target="_blank" href="https://getbootstrap.com/">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Bootstrap_logo.svg/1024px-Bootstrap_logo.svg.png" />
+        <br />
+        <strong>Bootstrap</strong>
+      </a>
+    </td>
     </tr>
 </table>
 
