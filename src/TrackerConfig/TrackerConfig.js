@@ -1,4 +1,4 @@
-import { JaneTracker } from '../JaneTracker';
+import { JaneTracker } from './JaneTracker/JaneTracker';
 
 export function setTrackerConfig(aid, env, prod) {
   const col = prod
