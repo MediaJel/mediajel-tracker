@@ -1,10 +1,5 @@
 import { setTrackerConfig } from './TrackerConfig/TrackerConfig';
 
-//Set Environment Path (Comment out later)
-import { setEnvironment } from './Environments/Environments';
-let environmentPath = window.location.pathname.substring(1).toLowerCase();
-window.onload = setEnvironment(environmentPath);
-
 //Identifiers &  variables
 let scripts = document.getElementsByTagName('script');
 let mediajelAppId = null;
