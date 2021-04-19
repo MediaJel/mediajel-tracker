@@ -1,8 +1,6 @@
 //To Add config here
 
 export function JaneTracker(aid, col) {
-  //Executes page tracking if argument is not null
-
   let mediajelAppId = aid;
   //Pageview SDK
   (function(e, n, o, a, t, c, i) {
@@ -36,7 +34,6 @@ export function JaneTracker(aid, col) {
   //Ecommerce tracking
   window.addEventListener('message', receiveMessage, false);
   function receiveMessage(event) {
-    //Jane
     var payload = event.data && event.data.payload;
     if (!payload || event.data.messageType !== 'analyticsEvent') return;
     if (payload.name === 'checkout') {
