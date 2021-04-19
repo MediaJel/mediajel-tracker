@@ -1,20 +1,14 @@
-//Changes I made
-//Infrastructure work = Parcel.js
-//Next steps
-//CollectorURL
-//Multiple dev environments
-//Multiple args
-//Routes
-
-//Dependencies???
-//Code Tour
-//Gitpod
+import { setEnvironment } from './Environments/Environments';
 
 //Identifiers &  variables
+let environmentPath = window.location.pathname.substring(1);
+window.onload = setEnvironment(environmentPath);
+
 let scripts = document.getElementsByTagName('script');
 let executeTracking = false;
 let mediajelAppId = null;
 
+console.log(scripts);
 //Loops over all scripts & collects scripts with arguments.
 for (let i = 0, len = scripts.length; i < len; i++) {
   let src = scripts[i].getAttribute('src').split('?');
@@ -27,7 +21,9 @@ for (let i = 0, len = scripts.length; i < len; i++) {
     if (argName === 'mediajelAppId') {
       executeTracking = true;
       mediajelAppId = pair[1];
+      console.log(mediajelAppId);
     }
+    continue;
   }
 
   if (!args) {
@@ -36,13 +32,13 @@ for (let i = 0, len = scripts.length; i < len; i++) {
 }
 
 //Executes page tracking if argument is not null
-if (mediajelAppId !== null) {
+if (executeTracking) {
   //Pageview SDK
-  (function (e, n, o, a, t, c, i) {
+  (function(e, n, o, a, t, c, i) {
     if (!e[t]) {
       e.GlobalSnowplowNamespace = e.GlobalSnowplowNamespace || [];
       e.GlobalSnowplowNamespace.push(t);
-      e[t] = function () {
+      e[t] = function() {
         (e[t].q = e[t].q || []).push(arguments);
       };
       e[t].q = e[t].q || [];
