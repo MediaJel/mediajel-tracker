@@ -33,13 +33,13 @@ Input the App Id for the collector on this argument.
 
 Input the cart environment for the collector on this argument.
 
-<b>Options:<b/>
+<b>Options:</b>
 
 `jane`
 
 ### `@OPTIONAL | &test`
 
-Append `&test` at then end of the URL if you want to switch to the test environment.
+Append `&test` at then end of the URL if you want to switch to the test collector.
 
 ## Pre-requisites
 
