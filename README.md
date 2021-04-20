@@ -82,8 +82,9 @@ npm run dev
 
 ### Functions
 
-- [ ] Implement collectorURL as a query string argument
-- [ ] Integrate multiple integration developer environments, all accessible in one place.
+- [x] Implement collectorURL as a query string argument
+- [x] Integrate multiple integration developer environments, all accessible in one place.
+- [ ] Integration of multiple environments.
 
 ### Platforms
 
