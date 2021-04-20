@@ -5,9 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "parcel public/index.html",
-    "build": "parcel build public/index.html",
-    "installDocs": "cd docs && npm install",
-    "docs": "cd docs && npm start"
+    "build": "parcel build public/index.html"
   },
   "repository": {
     "type": "git",

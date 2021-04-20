@@ -20,8 +20,26 @@ Import this script tag to the header/footer of a site. Append the `{APP_ID_HERE}
 NOTE: CI/CD pipeline not yet in place for deployment.
 
 ```javascript
-<script src="https://cdn.jsdelivr.net/gh/MediaJel/mediajel-tracker/mediajelTracker.js?mediajelAppId={APP_ID_HERE}"></script>
+<script src="https://cdn.jsdelivr.net/gh/MediaJel/mediajel-tracker/mediajelTracker.js?mediajelAppId={APP_ID_HERE}&environment={CART_PROVIDER_HERE}&test"></script>
 ```
+
+### Arguments
+
+### `@REQUIRED | mediajelAppId={STRING}`
+
+Input the App Id for the collector on this argument.
+
+### `@REQUIRED | environment={ENUM}`
+
+Input the cart environment for the collector on this argument.
+
+<b>Options:<b/>
+
+`jane`
+
+### `@OPTIONAL | &test`
+
+Append `&test` at then end of the URL if you want to switch to the test environment.
 
 ## Pre-requisites
 
@@ -39,15 +57,6 @@ npm install
 npm run dev
 ```
 
-## Documentation
-
-You may access any and all documentation regarding configuration of the tracker locally. This will instantiate a Dumi instance and deploy a server in your local environment that contains the UI for documentation.
-
-```javascript
-npm install docs
-npm run docs
-```
-
 ## Dependencies/Architecture
 
 <table>
@@ -57,13 +66,6 @@ npm run docs
         <img src="https://parceljs.org/assets/parcel-front.webp" />
         <br />
         <strong>Parcel JS</strong>
-      </a>
-    </td>
-     <td width="160" height="160"  align="center">
-      <a target="_blank" href="https://d.umijs.org/">
-        <img src="https://avatars.githubusercontent.com/u/33895495?s=200&v=4" />
-        <br />
-        <strong>UmiJS/Dumi</strong>
       </a>
     </td>
       <td width="160" height="160"  align="center">
