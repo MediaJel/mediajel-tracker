@@ -1,3 +1,6 @@
+//Func. Config
+import { Pageview } from './Config/Pageview';
+//Env config
 import { JaneTracker } from './JaneTracker/JaneTracker';
 
 export function setTrackerConfig(aid, env, prod) {
@@ -5,5 +8,10 @@ export function setTrackerConfig(aid, env, prod) {
     ? '//collector.dmp.cnna.io'
     : '//collector.dmp.mediajel.ninja';
 
-  env === 'jane' && JaneTracker(aid, col);
+  //Func. Config - General config on functions here
+  //Pageview - Pre-requisite for any form of tracking
+  aid && Pageview(aid, col);
+
+  //Env Config - All Config on specific environments here
+  env === 'jane' && JaneTracker(aid);
 }

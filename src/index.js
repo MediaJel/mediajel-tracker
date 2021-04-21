@@ -38,8 +38,8 @@ for (let i = 0, len = scripts.length; i < len; i++) {
   }
 }
 
-if (mediajelAppId && environment) {
+if (mediajelAppId) {
   setTrackerConfig(mediajelAppId, environment, production);
 } else {
-  console.error('Please provide an app ID and/or environment argument');
+  console.error('Please provide an app ID');
 }
