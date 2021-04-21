@@ -27,11 +27,11 @@ NOTE: CI/CD pipeline not yet in place for deployment.
 
 ### `@REQUIRED | mediajelAppId={STRING}`
 
-Input the App Id for the collector on this argument.
+Input the App Id for the collector on this argument. This will trigger a pageview event.
 
-### `@REQUIRED | environment={ENUM}`
+### `@OPTIONAL | environment={ENUM}`
 
-Input the cart environment for the collector on this argument.
+Input the cart environment for the collector on this argument. This will trigger ecommerce tracking for the specific environment.
 
 <b>Options:</b>
 
