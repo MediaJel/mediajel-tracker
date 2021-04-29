@@ -1,5 +1,6 @@
 //Func. Config
 import { Pageview } from './Config/Pageview';
+
 //Env config
 import { JaneTracker } from './JaneTracker/JaneTracker';
 

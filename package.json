@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "parcel public/index.html",
-    "build": "parcel build src/index.js"
+    "build": "parcel build src/index.js",
+    "deploy": "aws s3 cp dist s3://mediajel-tracker-staging --recursive "
   },
   "repository": {
     "type": "git",
