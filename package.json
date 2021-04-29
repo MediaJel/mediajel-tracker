@@ -4,9 +4,10 @@
   "description": "Mediajel Tracker",
   "main": "index.js",
   "scripts": {
-    "dev": "parcel public/index.html",
-    "build": "parcel build src/index.js",
-    "deploy": "aws s3 cp dist s3://mediajel-tracker-staging --recursive "
+    "start": "parcel public/index.html",
+    "predeploy": "cd deploy && node predeploy.js",
+    "deploy": "parcel build src/index.js ",
+    "postdeploy": "cd deploy && node postdeploy.js"
   },
   "repository": {
     "type": "git",
@@ -19,6 +20,7 @@
   },
   "homepage": "https://github.com/MediaJel/mediajel-tracker#readme",
   "devDependencies": {
+    "aws-cli-js": "^2.2.2",
     "parcel-bundler": "^1.12.5"
   }
 }
