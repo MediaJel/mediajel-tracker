@@ -1,4 +1,4 @@
-import { setTrackerConfig } from './TrackerConfig/TrackerConfig';
+import setTrackerConfig from './TrackerConfig';
 
 //Identifiers &  variables
 let scripts = document.getElementsByTagName('script');

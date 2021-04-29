@@ -1,12 +1,12 @@
 //Modular Logic for Pageview
-export function Pageview(aid, col) {
+export default function Pageview(aid, col) {
   let mediajelAppId = aid;
   //Pageview SDK
-  (function(e, n, o, a, t, c, i) {
+  (function (e, n, o, a, t, c, i) {
     if (!e[t]) {
       e.GlobalSnowplowNamespace = e.GlobalSnowplowNamespace || [];
       e.GlobalSnowplowNamespace.push(t);
-      e[t] = function() {
+      e[t] = function () {
         (e[t].q = e[t].q || []).push(arguments);
       };
       e[t].q = e[t].q || [];

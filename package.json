@@ -22,5 +22,8 @@
   "devDependencies": {
     "aws-cli-js": "^2.2.2",
     "parcel-bundler": "^1.12.5"
-  }
+  },
+  "browserslist": [
+    "since 2017-06"
+  ]
 }

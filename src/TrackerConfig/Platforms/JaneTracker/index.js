@@ -1,8 +1,9 @@
 //To Add config here
 
-export function JaneTracker(aid) {
+export default function JaneTracker(aid) {
   let mediajelAppId = aid;
   //Ecommerce tracking
+
   window.addEventListener('message', receiveMessage, false);
   function receiveMessage(event) {
     var payload = event.data && event.data.payload;
