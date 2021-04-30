@@ -1,10 +1,6 @@
 import setTrackerConfig from './TrackerConfig';
-
-//Identifiers &  variables
+import config from './TrackerConfig/Config';
 let scripts = document.getElementsByTagName('script');
-let mediajelAppId = null;
-let environment = null;
-let production = true;
 
 const scriptArgs = Array.from(scripts).map((script) => {
   let src = script.getAttribute('src');
@@ -17,20 +13,21 @@ scriptArgs[0].map((arg) => {
   let pair = arg.split('=');
   let argName = pair[0];
   let argValue = pair[1];
+
   switch (argName) {
     case 'mediajelAppId':
-      mediajelAppId = argValue;
+      config.aid = argValue;
       break;
     case 'environment':
-      environment = argValue.toLowerCase();
+      config.env = argValue.toLowerCase();
       break;
     case 'test':
-      production = false;
+      config.col = '//collector.dmp.mediajel.ninja';
   }
 });
 
-if (mediajelAppId) {
-  setTrackerConfig(mediajelAppId, environment, production);
+if (config.aid) {
+  setTrackerConfig(config);
 } else {
   console.error('Please provide an app ID');
 }
