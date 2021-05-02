@@ -1,4 +1,4 @@
-//Tracker Config types
+//Tracker types
 import Pageview from './Types/Pageview';
 //Utility functions
 import DynamicImport from './Utils/DynamicImport';

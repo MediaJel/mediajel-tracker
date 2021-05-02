@@ -20,7 +20,7 @@ export default function Pageview(aid, col) {
     window,
     document,
     'script',
-    'http://drta3gpwmg66h.cloudfront.net/sp.js',
+    'https://drta3gpwmg66h.cloudfront.net/sp.js',
     `mediajelAppId`
   );
   window.mediajelAppId('newTracker', 'cf', `${col}`, {

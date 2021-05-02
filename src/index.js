@@ -1,15 +1,29 @@
-import setTrackerConfig from './TrackerConfig';
 import config from './TrackerConfig/Config';
-let scripts = document.getElementsByTagName('script');
+import setTrackerConfig from './TrackerConfig';
 
-const scriptArgs = Array.from(scripts).map((script) => {
-  let src = script.getAttribute('src');
-  let srcArg = src.split('?');
-  let args = srcArg[1];
-  return args.split('&');
+//Gathers all scripts of page
+let scripts = document.getElementsByTagName('script');
+let testCollector = '//collector.dmp.mediajel.ninja';
+
+const getAllScripts = Array.from(scripts).filter((raw) => {
+  return raw.getAttribute('src') !== null;
 });
 
-scriptArgs[0].map((arg) => {
+const handleScripts = getAllScripts
+  .filter((data) => {
+    let pixel = data.getAttribute('src');
+    return pixel.includes('mediajelAppId');
+  })
+  .map((script) => {
+    let src = script.getAttribute('src');
+    if (src.includes('mediajelAppId')) {
+      let srcArg = src.split('?');
+      let args = srcArg[1];
+      return args.split('&');
+    }
+  });
+
+handleScripts[0].map((arg) => {
   let pair = arg.split('=');
   let argName = pair[0];
   let argValue = pair[1];
@@ -22,7 +36,7 @@ scriptArgs[0].map((arg) => {
       config.env = argValue.toLowerCase();
       break;
     case 'test':
-      config.col = '//collector.dmp.mediajel.ninja';
+      config.col = testCollector;
   }
 });
 
