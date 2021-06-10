@@ -24,6 +24,7 @@ const handleScripts = getAllScripts
     return null;
   });
 
+// Todo: Assign return value
 handleScripts[0].map((arg) => {
   const pair = arg.split('=');
   const argName = pair[0];
@@ -37,7 +38,7 @@ handleScripts[0].map((arg) => {
       config.env = argValue.toLowerCase();
       break;
     case 'test':
-      config.col = testCollector;
+      config.col = testCollector.toLowerCase();
       break;
     default:
       console.error('Please provide an App ID!');
@@ -48,6 +49,4 @@ handleScripts[0].map((arg) => {
 
 if (config.aid) {
   setTrackerConfig(config);
-} else {
-  console.error('Please provide an app ID');
 }
