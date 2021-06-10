@@ -1,29 +1,30 @@
 {
-  "name": "mediajel-tracker",
-  "version": "1.0.0",
-  "description": "Mediajel Tracker",
-  "main": "index.js",
-  "scripts": {
-    "start": "parcel public/index.html",
-    "predeploy": "cd deploy && node predeploy.js",
-    "deploy": "parcel build src/index.js ",
-    "postdeploy": "cd deploy && node postdeploy.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/MediaJel/mediajel-tracker.git"
-  },
-  "author": "Pacholo Amit",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/MediaJel/mediajel-tracker/issues"
-  },
-  "homepage": "https://github.com/MediaJel/mediajel-tracker#readme",
-  "devDependencies": {
-    "aws-cli-js": "^2.2.2",
-    "parcel-bundler": "^1.12.5"
-  },
-  "browserslist": [
-    "since 2017-06"
-  ]
+	"name": "mediajel-tracker",
+	"version": "1.0.0",
+	"description": "Mediajel Tracker",
+	"main": "index.js",
+	"scripts": {
+		"start": "parcel public/index.html",
+		"predeploy": "node deploy/predeploy.js",
+		"deploy": "parcel build src/index.js ",
+		"postdeploy": "node deploy/postdeploy.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/MediaJel/mediajel-tracker.git"
+	},
+	"author": "Pacholo Amit",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/MediaJel/mediajel-tracker/issues"
+	},
+	"homepage": "https://github.com/MediaJel/mediajel-tracker#readme",
+	"devDependencies": {
+		"aws-cli-js": "^2.2.2",
+		"dotenv": "^5.0.1",
+		"parcel-bundler": "^1.12.5"
+	},
+	"browserslist": [
+		"since 2017-06"
+	]
 }

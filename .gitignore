@@ -1,6 +1,6 @@
-todo.txt
 node_modules
 .cache
 dist
 .env
-.parcel-cache/*
+.parcel-cache
+env
