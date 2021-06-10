@@ -24,7 +24,7 @@ const handleScripts = getAllScripts
     return null;
   });
 
-// Todo: Assign return value
+// Todo: Assign
 handleScripts[0].map((arg) => {
   const pair = arg.split('=');
   const argName = pair[0];

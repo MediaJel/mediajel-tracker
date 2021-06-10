@@ -1,6 +1,6 @@
-//Tracker types
+// Tracker types
 import Pageview from './Types/Pageview';
-//Utility functions
+// Utility functions
 import DynamicImport from './Utils/DynamicImport';
 
 export default function setTrackerConfig({ aid, env, col }) {
