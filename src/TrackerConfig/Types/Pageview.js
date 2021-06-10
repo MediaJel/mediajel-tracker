@@ -1,32 +1,80 @@
-//Modular Logic for Pageview
+/* eslint-disable */
+
+//Todo: Reference .env for URLs
 export default function Pageview(aid, col) {
-  let mediajelAppId = aid;
-  //Pageview SDK
-  (function (e, n, o, a, t, c, i) {
-    if (!e[t]) {
-      e.GlobalSnowplowNamespace = e.GlobalSnowplowNamespace || [];
-      e.GlobalSnowplowNamespace.push(t);
-      e[t] = function () {
-        (e[t].q = e[t].q || []).push(arguments);
+	let mediajelAppId = aid;
+
+	(function (e, o, n, t, a, c, i) {
+		if (!e[a]) {
+			e.GlobalSnowplowNamespace = e.GlobalSnowplowNamespace || [];
+			e.GlobalSnowplowNamespace.push(a);
+			e[a] = function () {
+				(e[a].q = e[a].q || []).push(arguments);
+			};
+			e[a].q = e[a].q || [];
+			c = o.createElement(n);
+			i = o.getElementsByTagName(n)[0];
+			c.async = 1;
+			c.src = t;
+			i.parentNode.insertBefore(c, i);
+		}
+	})(
+		window,
+		document,
+		'script',
+		'//dm2q9qfzyjfox.cloudfront.net/sp.js',
+		'mediajelAppId',
+	);
+	window.mediajelAppId('newTracker', 'cf', `${col}`, {
+		appId: mediajelAppId,
+		discoverRootDomain: true,
+		stateStorageStrategy: 'localStorage',
+		respectDoNotTrack: true,
+	});
+	window.mediajelAppId('enableActivityTracking', 30, 10);
+	window.mediajelAppId('trackPageView');
+	window.mediajelAppId('enableLinkClickTracking');
+	setTimeout(
+		function (e, o, n, t, a, c, i) {
+			if (!e[a]) {
+				e.GlobalSnowplowNamespace = e.GlobalSnowplowNamespace || [];
+				e.GlobalSnowplowNamespace.push(a);
+				e[a] = function () {
+					(e[a].q = e[a].q || []).push(arguments);
+				};
+				e[a].q = e[a].q || [];
+				c = o.createElement(n);
+				i = o.getElementsByTagName(n)[0];
+				c.decoding = 'async';
+				c.src = t;
+				c.height = 0;
+				c.width = 0;
+				c.border = 0;
+			}
+		},
+		1e3,
+		window,
+		document,
+		'img',
+		'https://sync.dmp.cnna.io/cs',
+		'Sync',
+	);
+  setTimeout((function(p, l, o, w, i, n, g) {
+    if (!p[i]) {
+      p.GlobalSnowplowNamespace = p.GlobalSnowplowNamespace || [];
+      p.GlobalSnowplowNamespace.push(i);
+      p[i] = function() {
+        (p[i].q = p[i].q || []).push(arguments);
       };
-      e[t].q = e[t].q || [];
-      c = n.createElement(o);
-      i = n.getElementsByTagName(o)[0];
-      c.async = 1;
-      c.src = a;
-      i.parentNode.insertBefore(c, i);
+      p[i].q = p[i].q || [];
+      n = l.createElement(o);
+      g = l.getElementsByTagName(o)[0];
+      n.decoding = 'async';
+      n.src = w;
+      n.height = 0;
+      n.width = 0;
+      n.border = 0;
+
     }
-  })(
-    window,
-    document,
-    'script',
-    'https://drta3gpwmg66h.cloudfront.net/sp.js',
-    `mediajelAppId`
-  );
-  window.mediajelAppId('newTracker', 'cf', `${col}`, {
-    appId: `${mediajelAppId}`,
-    discoverRootDomain: true,
-  });
-  window.mediajelAppId('enableActivityTracking', 30, 10);
-  window.mediajelAppId('trackPageView');
+  }), 1000, window, document, "img", "https://sync.dmp.mediajel.ninja/hash", "Sync");
 }
