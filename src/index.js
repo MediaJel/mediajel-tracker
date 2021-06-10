@@ -1,32 +1,33 @@
 import config from './TrackerConfig/Config';
 import setTrackerConfig from './TrackerConfig';
 
-//Gathers all scripts of page
-let scripts = document.getElementsByTagName('script');
-let testCollector = '//collector.dmp.mediajel.ninja';
+// Gathers all scripts of page
+const scripts = document.getElementsByTagName('script');
+const testCollector = '//collector.dmp.mediajel.ninja';
 
-const getAllScripts = Array.from(scripts).filter((raw) => {
-  return raw.getAttribute('src') !== null;
-});
+const getAllScripts = Array.from(scripts).filter(
+  (raw) => raw.getAttribute('src') !== null,
+);
 
 const handleScripts = getAllScripts
   .filter((data) => {
-    let pixel = data.getAttribute('src');
+    const pixel = data.getAttribute('src');
     return pixel.includes('mediajelAppId');
   })
   .map((script) => {
-    let src = script.getAttribute('src');
+    const src = script.getAttribute('src');
     if (src.includes('mediajelAppId')) {
-      let srcArg = src.split('?');
-      let args = srcArg[1];
+      const srcArg = src.split('?');
+      const args = srcArg[1];
       return args.split('&');
     }
+    return null;
   });
 
 handleScripts[0].map((arg) => {
-  let pair = arg.split('=');
-  let argName = pair[0];
-  let argValue = pair[1];
+  const pair = arg.split('=');
+  const argName = pair[0];
+  const argValue = pair[1];
 
   switch (argName) {
     case 'mediajelAppId':
@@ -37,7 +38,12 @@ handleScripts[0].map((arg) => {
       break;
     case 'test':
       config.col = testCollector;
+      break;
+    default:
+      console.error('Please provide an App ID!');
+      break;
   }
+  return null;
 });
 
 if (config.aid) {
