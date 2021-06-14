@@ -1,9 +1,9 @@
-import config from './TrackerConfig/Config';
-import setTrackerConfig from './TrackerConfig';
+import Context from './TrackerConfig/Context';
+import controller from './TrackerConfig/controller';
 
 // Gathers all scripts of page
 const scripts = document.getElementsByTagName('script');
-const testCollector = '//collector.dmp.mediajel.ninja';
+const context = new Context();
 
 const getAllScripts = Array.from(scripts).filter(
   (raw) => raw.getAttribute('src') !== null,
@@ -24,21 +24,22 @@ const handleScripts = getAllScripts
     return null;
   });
 
-// Todo: Assign
 handleScripts[0].map((arg) => {
+  // Todo: add testCollector to env file
+  const testCollector = '//collector.dmp.mediajel.ninja';
   const pair = arg.split('=');
   const argName = pair[0];
   const argValue = pair[1];
 
   switch (argName) {
     case 'mediajelAppId':
-      config.aid = argValue;
+      context.aid = argValue;
       break;
     case 'environment':
-      config.env = argValue.toLowerCase();
+      context.env = argValue.toLowerCase();
       break;
     case 'test':
-      config.col = testCollector.toLowerCase();
+      context.col = testCollector.toLowerCase();
       break;
     default:
       console.error('Please provide an App ID!');
@@ -47,6 +48,6 @@ handleScripts[0].map((arg) => {
   return null;
 });
 
-if (config.aid) {
-  setTrackerConfig(config);
+if (context.aid) {
+  controller(context);
 }
