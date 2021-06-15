@@ -20,6 +20,9 @@ jobs:
       - run:
           name: Install project dependencies
           command: npm install
+      - run:
+          name: Build
+          command: npm run build
       - aws-s3/sync:
           from: dist/
           to: "s3://mediajel-tracker-staging"
@@ -32,6 +35,9 @@ jobs:
       - run:
           name: Install project dependencies
           command: npm install
+      - run:
+          name: Build
+          command: npm run build
       - aws-s3/sync:
           from: dist/
           to: "s3://mediajel-tracker-production"
