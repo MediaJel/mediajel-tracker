@@ -1,0 +1,37 @@
+# Note that the following stanza uses CircleCI 2.1 to make use of a Reusable Executor
+# This allows defining a docker image to reuse across jobs.
+# visit https://circleci.com/docs/2.0/reusing-config/#authoring-reusable-executors to learn more.
+
+version: 2.1
+
+executors:
+  the-executor:
+    docker:
+      - image: cimg/node:10.24.1
+    working_directory: ~/mediajel-tracker
+jobs:
+  build:
+    executor: the-executor
+    steps:
+      - checkout
+      - run:
+          name: Install project dependencies
+          command: npm install
+      - run:
+          name: Build
+          command: npm run deploy
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build-staging:
+          context: STAGING
+          filters:
+            branches:
+              only: staging
+      - build-master:
+          context: PRODUCTION
+          filters:
+            branches:
+              only: main
