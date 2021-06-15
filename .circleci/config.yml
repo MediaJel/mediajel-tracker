@@ -8,7 +8,7 @@ executors:
   the-executor:
     docker:
       - image: cimg/node:10.24.1
-    working_directory: ~/mediajel-tracker
+    working_directory: ~/command
 jobs:
   build:
     executor: the-executor
