@@ -2,7 +2,7 @@ const fs = require('fs');
 const env = require('./config');
 
 function predeploy() {
-  fs.rm(env.dist_path, { recursive: true }, (err) => {
+  fs.rmdirSync(env.dist_path, { recursive: true }, (err) => {
     if (err) {
       // Do nothing, again.
       console.warn('\x1b[33m', `⚠️ No ${env.dist_path}`, '\x1b[0m');
