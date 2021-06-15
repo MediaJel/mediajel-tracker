@@ -25,12 +25,12 @@ workflows:
   version: 2
   build:
     jobs:
-      - build-staging:
+      - build:
           context: STAGING
           filters:
             branches:
               only: staging
-      - build-master:
+      - build:
           context: PRODUCTION
           filters:
             branches:
