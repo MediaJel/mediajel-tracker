@@ -9,43 +9,44 @@ executors:
     docker:
       - image: cimg/node:10.24.1
     working_directory: ~/mediajel-tracker
+
+orbs:
+  aws-s3: circleci/aws-s3@2.0.0
 jobs:
-  build:
+  build-staging:
     executor: the-executor
     steps:
       - checkout
       - run:
-          name: Export env variables
-          command: |
-            echo "export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" >> $BASH_ENV
-            echo "export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" >> $BASH_ENV
-            echo "export AWS_REGION=${AWS_ECR_REGION}" >> $BASH_ENV
-      - run: 
-          name: Install aws cli
-          command: |
-            curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
-            unzip awscli-bundle.zip
-            sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
-      - run:
-          name: Configure AWS CLI
-          command: aws configure aws ${ACCESS_KEY_ID} ${SECRET_ACCESS_KEY} ${AWS_REGION}
+          name: Install project dependencies
+          command: npm install
+      - aws-s3/sync:
+          from: dist/
+          to: "s3://mediajel-tracker-staging"
+          arguments: --cache-control "max-age=0,no-cache,no-store,must-revalidate"
+  
+  build-main:
+    executor: the-executor
+    steps:
+      - checkout
       - run:
           name: Install project dependencies
           command: npm install
-      - run:
-          name: Build
-          command: npm run deploy
+      - aws-s3/sync:
+          from: dist/
+          to: "s3://mediajel-tracker-production"
+          arguments: --cache-control "max-age=0,no-cache,no-store,must-revalidate"
   
 workflows:
   version: 2
   build:
     jobs:
-      - build:
+      - build-staging:
           context: STAGING
           filters:
             branches:
               only: staging
-      - build:
+      - build-main:
           context: PRODUCTION
           filters:
             branches:
