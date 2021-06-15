@@ -1,0 +1,59 @@
+# Note that the following stanza uses CircleCI 2.1 to make use of a Reusable Executor
+# This allows defining a docker image to reuse across jobs.
+# visit https://circleci.com/docs/2.0/reusing-config/#authoring-reusable-executors to learn more.
+
+version: 2.1
+
+executors:
+  the-executor:
+    docker:
+      - image: cimg/node:10.24.1
+    working_directory: ~/mediajel-tracker
+
+orbs:
+  aws-s3: circleci/aws-s3@2.0.0
+jobs:
+  build-staging:
+    executor: the-executor
+    steps:
+      - checkout
+      - run:
+          name: Install project dependencies
+          command: npm install
+      - run:
+          name: Build
+          command: npm run build
+      - aws-s3/sync:
+          from: dist/
+          to: "s3://mediajel-tracker-staging"
+          arguments: --cache-control "max-age=0,no-cache,no-store,must-revalidate"
+  
+  build-main:
+    executor: the-executor
+    steps:
+      - checkout
+      - run:
+          name: Install project dependencies
+          command: npm install
+      - run:
+          name: Build
+          command: npm run build
+      - aws-s3/sync:
+          from: dist/
+          to: "s3://mediajel-tracker-production"
+          arguments: --cache-control "max-age=0,no-cache,no-store,must-revalidate"
+  
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build-staging:
+          context: STAGING
+          filters:
+            branches:
+              only: staging
+      - build-main:
+          context: PRODUCTION
+          filters:
+            branches:
+              only: main
