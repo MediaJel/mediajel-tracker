@@ -41,7 +41,7 @@ jobs:
           command: npm install
       - run:
           name: Build
-          command: npm run build
+          command: npm run deploy
       - aws-s3/sync:
           from: dist/
           to: "s3://mediajel-tracker-production"
