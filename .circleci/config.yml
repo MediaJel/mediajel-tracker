@@ -10,7 +10,7 @@ executors:
       - image: cimg/node:10.24.1
     working_directory: ~/mediajel-tracker
 jobs:
-  build-staging:
+  build:
     executor: the-executor
     steps:
       - checkout
@@ -20,27 +20,17 @@ jobs:
       - run:
           name: Build
           command: npm run deploy
-  build-main:
-    executor: the-executor
-    steps:
-      - checkout
-      - run:
-          name: Install project dependencies
-          command: npm install
-      - run:
-          name: Build
-          command: npm run deploy
-
+  
 workflows:
   version: 2
   build:
     jobs:
-      - build-staging:
+      - build:
           context: STAGING
           filters:
             branches:
               only: staging
-      - build-main:
+      - build:
           context: PRODUCTION
           filters:
             branches:
