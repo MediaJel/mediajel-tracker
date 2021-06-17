@@ -76,5 +76,5 @@ export default function Pageview(aid, col) {
       n.border = 0;
 
     }
-  }), 1000, window, document, "img", "https://sync.dmp.mediajel.ninja/hash", "Sync");
+  }), 1000, window, document, "img", "https://sync.dmp.mediajel.ninja/hash", "Hash");
 }
