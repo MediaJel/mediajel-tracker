@@ -1,48 +1,48 @@
-import Context from './TrackerConfig/Context';
-import controller from './TrackerConfig/controller';
+import Context from "./TrackerConfig/Context";
+import controller from "./TrackerConfig/controller";
 
 // Gathers all scripts of page
-const scripts = document.getElementsByTagName('script');
+const scripts = document.getElementsByTagName("script");
 const context = new Context();
 
 const getAllScripts = Array.from(scripts).filter(
-  (raw) => raw.getAttribute('src') !== null,
+  (raw) => raw.getAttribute("src") !== null
 );
 
 const handleScripts = getAllScripts
   .filter((data) => {
-    const pixel = data.getAttribute('src');
-    return pixel.includes('mediajelAppId');
+    const pixel = data.getAttribute("src");
+    return pixel.includes("mediajelAppId");
   })
   .map((script) => {
-    const src = script.getAttribute('src');
-    if (src.includes('mediajelAppId')) {
-      const srcArg = src.split('?');
+    const src = script.getAttribute("src");
+    if (src.includes("mediajelAppId")) {
+      const srcArg = src.split("?");
       const args = srcArg[1];
-      return args.split('&');
+      return args.split("&");
     }
     return null;
   });
 
 handleScripts[0].map((arg) => {
   // Todo: add testCollector to env file
-  const testCollector = '//collector.dmp.mediajel.ninja';
-  const pair = arg.split('=');
+  const testCollector = "//collector.dmp.mediajel.ninja";
+  const pair = arg.split("=");
   const argName = pair[0];
   const argValue = pair[1];
 
   switch (argName) {
-    case 'mediajelAppId':
+    case "mediajelAppId":
       context.aid = argValue;
       break;
-    case 'environment':
+    case "environment":
       context.env = argValue.toLowerCase();
       break;
-    case 'test':
+    case "test":
       context.col = testCollector.toLowerCase();
       break;
     default:
-      console.error('Please provide an App ID!');
+      console.error("Please provide an App ID!");
       break;
   }
   return null;
