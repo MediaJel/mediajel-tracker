@@ -16,11 +16,17 @@ The collector the script tag points to is currently the test collector as its de
 
 ## Usage
 
-Import this script tag to the header/footer of a site. Append the `{APP_ID_HERE}` argument to contain the app id you would use for your site/app.
+Import this script tag to the header/footer of a site. Append the `APP_ID_HERE` argument to contain the app id you would use for your site/app.
 NOTE: CI/CD pipeline not yet in place for deployment.
 
+### Production/Main
 ```javascript
-<script src="https://d16wenkznr8os4.cloudfront.net/?mediajelAppId=APP_ID_HERE&environment={CART_PLATFORM_HERE}&test"></script>
+<script src="https://tag.cnna.io/?mediajelAppId=APP_ID_HERE&environment=CART_PLATFORM_HERE&test"></script>
+```
+
+### Staging (for testing & development)
+```javascript
+<script src="http://tag.mediajel.ninja/?mediajelAppId=APP_ID_HERE&environment=CART_PLATFORM_HERE&test"></script>
 ```
 
 ### Arguments
