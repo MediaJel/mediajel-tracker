@@ -39,9 +39,12 @@ Input the App Id for the collector on this argument. This will trigger a pagevie
 
 Input the cart environment for the collector on this argument. This will trigger ecommerce tracking for the specific environment.
 
-<b>Options:</b>
+<table>
+  <tr><b>Options</b></tr>
+<tr align="center">jane</tr>
+<tr align="center">dutchieiframe</tr>
+</table>
 
-`jane`
 
 ### `@OPTIONAL | &test`
 
