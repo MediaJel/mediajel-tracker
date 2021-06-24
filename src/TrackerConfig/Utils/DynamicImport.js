@@ -10,6 +10,11 @@ export default async function DynamicImport(env) {
       func();
       break;
     }
+    case "shopify": {
+      const { default: func } = await import("../Platforms/Shopify");
+      func();
+      break;
+    }
     default:
       console.error("Undefined environment");
       break;
