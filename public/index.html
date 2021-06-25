@@ -1,62 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+  <head>
     <!-- Tracker START -->
-  <script src="../src/index.js?mediajelAppId=testing&environment=shopify&test" ></script>
+    <script src="../src/index.js?mediajelAppId=testing&environment=shopify&test"></script>
     <!-- Tracker END -->
 
     <!-- AWS Staging Tracker START -->
     <!-- <script src='http://tag.mediajel.ninja/?mediajelAppId=Testing&environment=jane&test'></script> -->
     <!-- AWS Staging Treacker END -->
 
-
     <!-- AWS Production Tracker START -->
     <!-- <script src='https://tag.cnna.io/?mediajelAppId=Testing&environment=jane&test'></script>-->
-     <!-- AWS Production Treacker END -->
-    
+    <!-- AWS Production Treacker END -->
+
     <!-- Interface START -->
-    <script src='../src/Interface.js'></script>
+    <!-- <script src="../src/Interface.js"></script>-->
     <!-- Interface END -->
 
-    <!-- Bootstrap CDN -->
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-      crossorigin="anonymous"
-    />
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
-      crossorigin="anonymous"
-    ></script>
-    <!-- Bootstrap CDN -->
+    <title>App</title>
   </head>
   <body>
-    <!-- NavBar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <a class="navbar-brand">Environments</a>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbarNavAltMarkup"
-        aria-controls="navbarNavAltMarkup"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-        <div class="navbar-nav">
-          <a class="nav-item nav-link active" href="jane"
-            >Jane<span class="sr-only">(current)</span></a
-          >
-          <a class="nav-item nav-link active" href="dutchie">Dutchie</a>
-          <a class="nav-item nav-link active" href="webjoint">Webjoint</a>
-          <a class="nav-item nav-link active" href="meadow">Meadow</a>
-        </div>
-      </div>
-    </nav>
-    <!-- NavBar -->
+    <div id="root"></div>
+  <script src="../View/index.js"></script>
   </body>
 </html>
+
+
