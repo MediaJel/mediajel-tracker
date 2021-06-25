@@ -5,9 +5,9 @@
 	"main": "index.js",
 	"scripts": {
 		"start": "parcel public/index.html",
-		"predeploy": "node deploy/predeploy.js",
+		"predeploy": "node -r dotenv/config deploy/predeploy.js",
 		"deploy": "parcel build src/index.js ",
-		"postdeploy": "node deploy/postdeploy.js"
+		"postdeploy": "node -r dotenv/config deploy/postdeploy.js"
 	},
 	"repository": {
 		"type": "git",

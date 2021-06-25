@@ -1,6 +1,5 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 const awsCli = require("aws-cli-js");
-const env = require("./config");
+const env = require("./deployConfig");
 
 const { Options, Aws } = awsCli;
 
