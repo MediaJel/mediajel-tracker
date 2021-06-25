@@ -1,6 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-require('dotenv').config();
-
 const config = {
   access_key: process.env.AWS_ACCESS_KEY_ID,
   secret_key: process.env.AWS_SECRET_ACCESS_KEY,
