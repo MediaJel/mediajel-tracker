@@ -12,7 +12,7 @@ module.exports = {
         cacheableResponse: {
           statuses: [0, 200]
         },
-        cacheName: "cache"
+        cacheName: "tag-v1"
       }
     }
   ],
