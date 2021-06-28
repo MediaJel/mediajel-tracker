@@ -25,8 +25,6 @@ const handleScripts = getAllScripts
   });
 
 handleScripts[0].map((arg) => {
-  // Todo: add testCollector to env file
-  const testCollector = "//collector.dmp.mediajel.ninja";
   const pair = arg.split("=");
   const argName = pair[0];
   const argValue = pair[1];
@@ -39,7 +37,7 @@ handleScripts[0].map((arg) => {
       context.env = argValue.toLowerCase();
       break;
     case "test":
-      context.col = testCollector.toLowerCase();
+      context.col = process.env.MJ_STAGING_COLLECTOR_URL;
       break;
     default:
       console.error("Please provide an App ID!");
