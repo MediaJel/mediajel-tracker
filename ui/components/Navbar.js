@@ -4,7 +4,9 @@ import Box from "@material-ui/core/Box";
 import Toolbar from "@material-ui/core/Toolbar";
 import Button from "@material-ui/core/Button";
 
-export default function Navbar() {
+// Todo: Set up actual routing... Nothing to actually route to right now :(
+
+function Navbar() {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
@@ -15,3 +17,4 @@ export default function Navbar() {
     </Box>
   );
 }
+export default Navbar;
