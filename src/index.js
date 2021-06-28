@@ -1,5 +1,6 @@
 import Context from "../entities/Context";
 import controller from "./tracker-config/controller";
+
 // Gathers all scripts of page
 
 const scripts = document.getElementsByTagName("script");
