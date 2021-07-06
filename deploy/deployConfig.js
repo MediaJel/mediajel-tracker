@@ -5,6 +5,7 @@ const config = {
   cdn_id: process.env.MJ_TRACKER_AWS_CLOUDFRONT_DIST_ID,
   cdn_path: process.env.MJ_TRACKER_AWS_CLOUDFRONT_CDN_PATH,
   dist_path: process.env.MJ_TRACKER_DIST_PATH,
+  max_age: process.env.MJ_CACHE_MAX_AGE,
 };
 
 module.exports = config;

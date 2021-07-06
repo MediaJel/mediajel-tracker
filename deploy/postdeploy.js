@@ -9,7 +9,9 @@ const aws = new Aws(options);
 (async function postDeploy() {
   // Upload to S3 bucket
   await aws
-    .command(`s3 sync ${env.dist_path} ${env.s3_bucket} --delete`)
+    .command(
+      `s3 sync ${env.dist_path} ${env.s3_bucket} --delete --cache-control max-age=${env.max_age}`
+    )
     .then((data) => {
       console.log("\x1b[36m", data.raw, "\x1b[0m");
       console.info("\x1b[32m ", "✨ Upload completed!!!", "\x1b[0m");
