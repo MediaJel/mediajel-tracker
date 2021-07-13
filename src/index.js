@@ -1,5 +1,5 @@
 import Context from "./TrackerConfig/Context";
-import controller from "./TrackerConfig/controller";
+import handleTag from "./TrackerConfig/handleTag";
 
 // Gathers all scripts of page
 const scripts = document.getElementsByTagName("script");
@@ -47,5 +47,5 @@ handleScripts[0].map((arg) => {
 });
 
 if (context.aid) {
-  controller(context);
+  handleTag(context);
 }
