@@ -1,4 +1,5 @@
-import checkJsonString from "../utils/parseJson";I
+import checkJsonString from "../utils/parseJson";
+
 export default function dutchieTracker(appId) {
   const clientAppId = appId;
 
