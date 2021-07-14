@@ -1,5 +1,6 @@
-export default function janeTracker(appId) {
-  const clientAppId = appId;
+export default function JaneTracker(aid) {
+  const mediajelAppId = aid;
+  // Ecommerce tracking
 
   function receiveMessage(event) {
     const { payload, messageType } = event.data;
@@ -8,10 +9,10 @@ export default function janeTracker(appId) {
 
     if (payload.name === "checkout") {
       const { products, cartId, estimatedTotal } = payload.properties;
-      window.clientAppId(
+      window.mediajelAppId(
         "addTrans",
         cartId,
-        `${clientAppId}`,
+        `${mediajelAppId}`,
         estimatedTotal,
         "0",
         "0",
@@ -23,7 +24,7 @@ export default function janeTracker(appId) {
       for (let i = 0, l = products.length; i < l; i += 1) {
         const item = products[i];
 
-        window.clientAppId(
+        window.mediajelAppId(
           "addItem",
           cartId,
           item.product_id,
@@ -34,11 +35,11 @@ export default function janeTracker(appId) {
         );
       }
 
-      window.clientAppId("trackTrans");
+      window.mediajelAppId("trackTrans");
     }
     if (payload.name === "cartItemAdd") {
       const { product, productId } = payload.properties;
-      window.clientAppId(
+      window.mediajelAppId(
         "trackAddToCart",
         productId.toString(),
         product.name,
@@ -51,7 +52,7 @@ export default function janeTracker(appId) {
     if (payload.name === "cartItemRemoval") {
       const { productId } = payload.properties;
 
-      window.clientAppId(
+      window.mediajelAppId(
         "trackRemoveFromCart",
         productId.toString(),
         "N/A",

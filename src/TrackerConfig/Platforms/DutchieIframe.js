@@ -1,6 +1,7 @@
-import checkJsonString from "../utils/parseJson";I
-export default function dutchieTracker(appId) {
-  const clientAppId = appId;
+import checkJsonString from "../Utils/checkJsonString";
+
+export default function DutchieIframeTracker(aid) {
+  const mediajelAppId = aid;
 
   function receiveMessage(event) {
     const rawData = checkJsonString(event.data);
@@ -11,7 +12,7 @@ export default function dutchieTracker(appId) {
       const cartArray = rawData.payload.playload;
       for (let i = 0, l = cartArray.length; i < l; i += 1) {
         const cartItem = cartArray[i];
-        window.clientAppId(
+        window.mediajelAppId(
           "trackAddToCart",
           cartItem.id,
           cartItem.name,
@@ -27,10 +28,10 @@ export default function dutchieTracker(appId) {
       rawData.payload.playload[0] === "purchase"
     ) {
       const transaction = rawData.payload.playload[1];
-      window.clientAppId(
+      window.mediajelAppId(
         "addTrans",
         transaction.id,
-        `${clientAppId}`,
+        `${mediajelAppId}`,
         transaction.revenue,
         0,
         0,
@@ -39,7 +40,7 @@ export default function dutchieTracker(appId) {
         "USA",
         "USD"
       );
-      Iindow.clientAppId("trackTrans");
+      window.mediajelAppId("trackTrans");
     }
   }
 
