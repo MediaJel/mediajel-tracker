@@ -1,9 +1,9 @@
-import Pageview from "./Types/Pageview";
-import DynamicImport from "./Utils/DynamicImport";
+import pageview from "./types/pageview";
+import dynamicImport from "./utils/dynamicImport";
 
-export default function handleTag({ aid, env, col }) {
-  Pageview(aid, col);
-  if (env) {
-    DynamicImport(env);
+export default function handleTag({ appId, environment, collector }) {
+  pageview(appId, collector);
+  if (environment) {
+    dynamicImport(environment);
   }
 }
