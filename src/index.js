@@ -1,5 +1,6 @@
-import Context from "./TrackerConfig/Context";
-import handleTag from "./TrackerConfig/handleTag";
+import Context from "./trackerConfig/context";
+import handleTag from "./trackerConfig/handleTag";
+import getQueryString from "./trackerConfig/utils/getQueryString.js"
 
 // Gathers all scripts of page
 const scripts = document.getElementsByTagName("script");
@@ -12,40 +13,22 @@ const getAllScripts = Array.from(scripts).filter(
 const handleScripts = getAllScripts
   .filter((data) => {
     const pixel = data.getAttribute("src");
-    return pixel.includes("mediajelAppId");
+    return pixel.includes("appId");
   })
   .map((script) => {
     const src = script.getAttribute("src");
-    if (src.includes("mediajelAppId")) {
-      const srcArg = src.split("?");
-      const args = srcArg[1];
-      return args.split("&");
+    if (src.includes("appId")) {
+      const queryString = src.split("?");
+      return getQueryString(queryString[1]);
     }
-    return null;
   });
 
-handleScripts[0].map((arg) => {
-  const pair = arg.split("=");
-  const argName = pair[0];
-  const argValue = pair[1];
+context.appId = handleScripts[0].appId;
+context.environment = handleScripts[0].environment.toLowerCase();
+context.collector = process.env.MJ_STAGING_COLLECTOR_URL;
 
-  switch (argName) {
-    case "mediajelAppId":
-      context.aid = argValue;
-      break;
-    case "environment":
-      context.env = argValue.toLowerCase();
-      break;
-    case "test":
-      context.col = process.env.MJ_STAGING_COLLECTOR_URL;
-      break;
-    default:
-      console.error("Please provide an App ID!");
-      break;
-  }
-  return null;
-});
+console.log(context);
 
-if (context.aid) {
+if (context.appId) {
   handleTag(context);
 }

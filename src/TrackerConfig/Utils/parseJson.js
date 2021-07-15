@@ -1,4 +1,4 @@
-export default function checkJsonString(string) {
+export default function parseJson(string) {
   let result;
   try {
     result = JSON.parse(string);
