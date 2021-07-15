@@ -1,8 +1,8 @@
 /* eslint-disable */
 
 //Todo: Reference .env for URLs
-export default function Pageview(aid, col) {
-	let mediajelAppId = aid;
+export default function pageview(appId, collector) {
+	let clientAppId = appId;
 
 	(function (e, o, n, t, a, c, i) {
 		if (!e[a]) {
@@ -23,17 +23,17 @@ export default function Pageview(aid, col) {
 		document,
 		'script',
 		'//dm2q9qfzyjfox.cloudfront.net/sp.js',
-		'mediajelAppId',
+		'clientAppId',
 	);
-	window.mediajelAppId('newTracker', 'cf', `${col}`, {
-		appId: mediajelAppId,
+	window.clientAppId('newTracker', 'cf', `${collector}`, {
+		appId: clientAppId,
 		discoverRootDomain: true,
 		stateStorageStrategy: 'localStorage',
 		respectDoNotTrack: true,
 	});
-	window.mediajelAppId('enableActivityTracking', 30, 10);
-	window.mediajelAppId('trackPageView');
-	window.mediajelAppId('enableLinkClickTracking');
+	window.clientAppId('enableActivityTracking', 30, 10);
+	window.clientAppId('trackPageView');
+	window.clientAppId('enableLinkClickTracking');
 	setTimeout(
 		function (e, o, n, t, a, c, i) {
 			if (!e[a]) {
