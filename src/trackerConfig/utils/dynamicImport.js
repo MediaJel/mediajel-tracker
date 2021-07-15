@@ -5,8 +5,8 @@ export default async function dynamicImport(environment) {
       func();
       break;
     }
-    case "dutchie": {
-      const { default: func } = await import("../platforms/dutchie");
+    case "dutchieSubdomain": {
+      const { default: func } = await import("../platforms/dutchieSubdomain");
       func();
       break;
     }
