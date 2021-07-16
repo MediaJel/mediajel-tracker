@@ -23,21 +23,17 @@ const handleScripts = getAllScripts
 		}
 	});
 
-console.log(handleScripts);
-
 if (handleScripts) {
-	context.appId = handleScripts[0].appId;
-	context.environment = handleScripts[0].environment.toLowerCase();
-	context.tr_af = handleScripts[0].tr_af;
-	if (handleScripts[0].hasOwnProperty("test")) {
-		console.log("HELLO!");
-		context.collector = process.env.MJ_STAGING_COLLECTOR_URL;
-	} else {
-		context.collector = process.env.MJ_PRODUCTION_COLLECTOR_URL;
-	}
-	console.log(context);
+  context.appId = handleScripts[0].appId;
+  context.environment = handleScripts[0].environment.toLowerCase();
+  context.retailId = handleScripts[0].retailId.toLowerCase();
+  if (handleScripts[0].hasOwnProperty("test")) {
+    context.collector = process.env.MJ_STAGING_COLLECTOR_URL;
+  } else {
+    context.collector = process.env.MJ_PRODUCTION_COLLECTOR_URL;
+  }
 }
 
 if (context.appId) {
-	handleTag(context);
+  handleTag(context);
 }
