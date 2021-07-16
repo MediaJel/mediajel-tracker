@@ -13,7 +13,6 @@ export default function tymberTracker(appId) {
     
         if (data.model.event === "purchase") {
           const { id, revenue, tax } = actionField;
-          console.log(actionField);
           window.clientAppId("addTrans",
             id.toString(),
             `${clientAppId}`,
@@ -28,7 +27,6 @@ export default function tymberTracker(appId) {
     
           for (let i = 0, l = products.length; i < l; i += 1) {
             const item = products[i];
-            console.log(item);
             window.clientAppId("addItem",
               actionField.id,
               item.id,
@@ -43,7 +41,6 @@ export default function tymberTracker(appId) {
 
         if (data.model.event === "addToCart") {
           const { category, id, name, price, quantity } = ecommerce.add.products[0];
-          console.log(ecommerce.add.products[0]);
           window.clientAppId(
             "trackAddToCart",
             id.toString(),
@@ -57,7 +54,6 @@ export default function tymberTracker(appId) {
 
         if (data.model.event === "removeFromCart") {
           const { category, id, name, price, quantity } = ecommerce.remove.products[0];
-          console.log(ecommerce.remove.products[0]);
           window.clientAppId(
             "trackRemoveFromCart",
             id.toString(),
