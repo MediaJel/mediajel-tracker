@@ -1,4 +1,4 @@
-export default function janeTracker(appId) {
+export default function janeTracker(appId, retailId) {
   const clientAppId = appId;
 
   function receiveMessage(event) {
@@ -11,7 +11,7 @@ export default function janeTracker(appId) {
       window.clientAppId(
         "addTrans",
         cartId,
-        `${clientAppId}`,
+        !retailId ? clientAppId : retailId,
         estimatedTotal,
         "0",
         "0",
@@ -52,15 +52,7 @@ export default function janeTracker(appId) {
     if (payload.name === "cartItemRemoval") {
       const { productId } = payload.properties;
 
-      window.clientAppId(
-        "trackRemoveFromCart",
-        productId.toString(),
-        "N/A",
-        "N/A",
-        0,
-        1,
-        "USD"
-      );
+      window.clientAppId("trackRemoveFromCart", productId.toString(), "N/A", "N/A", 0, 1, "USD");
     }
   }
   window.addEventListener("message", receiveMessage, false);

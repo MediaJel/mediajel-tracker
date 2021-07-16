@@ -1,4 +1,4 @@
-export default function tymberTracker(appId) {
+export default function tymberTracker(appId, retailId) {
   const clientAppId = appId;
 
   function receiveMessage(event) {
@@ -16,7 +16,7 @@ export default function tymberTracker(appId) {
       window.clientAppId(
         "addTrans",
         id.toString(),
-        `${clientAppId}`,
+        !retailId ? clientAppId : retailId,
         revenue,
         tax ? tax : 0,
         0,

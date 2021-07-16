@@ -1,4 +1,4 @@
-export default function dutchieSubdomainTracker(appId) {
+export default function dutchieSubdomainTracker(appId, retailId) {
   const clientAppId = appId;
 
   function receiveMessage(event) {
@@ -15,7 +15,7 @@ export default function dutchieSubdomainTracker(appId) {
       window.clientAppId(
         "addTrans",
         transaction_id.toString(),
-        `${clientAppId}`,
+        !retailId ? clientAppId : retailId,
         value,
         0,
         0,
