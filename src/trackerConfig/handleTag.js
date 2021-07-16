@@ -1,4 +1,4 @@
-import pageview from "./types/pageview";
+import pageview from "./types/pageview"
 import dynamicImport from "./utils/dynamicImport";
 
 export default function handleTag({ appId, environment, collector }) {
