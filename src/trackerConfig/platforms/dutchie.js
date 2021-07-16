@@ -1,4 +1,4 @@
-export default function tymberTracker(appId) {
+export default function dutchieSubdomainTracker(appId) {
   const clientAppId = appId;
 
   function receiveMessage(event) {
@@ -8,17 +8,16 @@ export default function tymberTracker(appId) {
       return;
     }
     const ecommerce = data.model.ecommerce;
-    const actionField = ecommerce.actionField;
-    const products = ecommerce.products;
+    const products = ecommerce.items;
 
     if (data.model.event === "purchase") {
-      const { id, revenue, tax } = actionField;
+      const { transaction_id, value } = ecommerce;
       window.clientAppId(
         "addTrans",
-        id.toString(),
+        transaction_id.toString(),
         `${clientAppId}`,
-        revenue,
-        tax ? tax : 0,
+        value,
+        0,
         0,
         "N/A",
         "California",
@@ -30,10 +29,10 @@ export default function tymberTracker(appId) {
         const item = products[i];
         window.clientAppId(
           "addItem",
-          actionField.id,
-          item.id,
-          item.name,
-          item.category,
+          ecommerce.transaction_id,
+          item.item_id,
+          item.item_name,
+          item.item_category,
           item.price,
           item.quantity
         );
@@ -42,28 +41,28 @@ export default function tymberTracker(appId) {
     }
 
     if (data.model.event === "addToCart") {
-      const { category, id, name, price, quantity } = ecommerce.add.products[0];
+      const { item_category, item_id, item_name, price, quantity } = products;
       window.clientAppId(
         "trackAddToCart",
-        id.toString(),
-        name ? name : "N/A",
-        category ? category : "N/A",
+        item_id.toString(),
+        item_name ? item_name : "N/A",
+        item_category ? item_category : "N/A",
         price ? price : 0,
         quantity ? quantity : 1,
-        ecommerce.currencyCode ? ecommerce.currencyCode : "USD"
+        "USD"
       );
     }
 
     if (data.model.event === "removeFromCart") {
-      const { category, id, name, price, quantity } = ecommerce.remove.products[0];
+      const { item_category, item_id, item_name, price, quantity } = products;
       window.clientAppId(
         "trackRemoveFromCart",
-        id.toString(),
-        name ? name : "N/A",
-        category ? category : "N/A",
+        item_id.toString(),
+        item_name ? item_name : "N/A",
+        item_category ? item_category : "N/A",
         price ? price : 0,
         quantity ? quantity : 1,
-        ecommerce.currencyCode ? ecommerce.currencyCode : "USD"
+        "USD"
       );
     }
   }
