@@ -15,6 +15,11 @@ export default async function dynamicImport(environment) {
       func();
       break;
     }
+    case "tymber": {
+      const { default: func } = await import("../platforms/tymber");
+      func();
+      break;
+    }
     default:
       console.error("Undefined environment");
       break;

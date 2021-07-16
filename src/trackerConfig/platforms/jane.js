@@ -17,7 +17,8 @@ export default function janeTracker(appId) {
         "0",
         "N/A",
         "California",
-        "USA"
+        "USA",
+        "USD"
       );
 
       for (let i = 0, l = products.length; i < l; i += 1) {
