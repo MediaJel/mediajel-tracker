@@ -1,5 +1,7 @@
-export default function janeTracker(appId, retailId) {
-  const clientAppId = appId;
+import { EcommerceContext } from "../../interface";
+
+export default function janeTracker(context: EcommerceContext) {
+  const { appId, retailId } = context;
 
   function receiveMessage(event) {
     const { payload, messageType } = event.data;
@@ -8,10 +10,10 @@ export default function janeTracker(appId, retailId) {
 
     if (payload.name === "checkout") {
       const { products, cartId, estimatedTotal } = payload.properties;
-      window.clientAppId(
+      window.appId(
         "addTrans",
         cartId,
-        !retailId ? clientAppId : retailId,
+        !retailId ? appId : retailId,
         estimatedTotal,
         "0",
         "0",
@@ -24,7 +26,7 @@ export default function janeTracker(appId, retailId) {
       for (let i = 0, l = products.length; i < l; i += 1) {
         const item = products[i];
 
-        window.clientAppId(
+        window.appId(
           "addItem",
           cartId,
           item.product_id,
@@ -35,11 +37,11 @@ export default function janeTracker(appId, retailId) {
         );
       }
 
-      window.clientAppId("trackTrans");
+      window.appId("trackTrans");
     }
     if (payload.name === "cartItemAdd") {
       const { product, productId } = payload.properties;
-      window.clientAppId(
+      window.appId(
         "trackAddToCart",
         productId.toString(),
         product.name,
@@ -52,7 +54,15 @@ export default function janeTracker(appId, retailId) {
     if (payload.name === "cartItemRemoval") {
       const { productId } = payload.properties;
 
-      window.clientAppId("trackRemoveFromCart", productId.toString(), "N/A", "N/A", 0, 1, "USD");
+      window.appId(
+        "trackRemoveFromCart",
+        productId.toString(),
+        "N/A",
+        "N/A",
+        0,
+        1,
+        "USD"
+      );
     }
   }
   window.addEventListener("message", receiveMessage, false);

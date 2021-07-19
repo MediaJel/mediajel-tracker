@@ -1,10 +1,9 @@
-/* eslint-disable */
+import { PageviewContext } from "../../interface";
 
-//Todo: Reference .env for URLs
-export default function pageview(appId, collector, retailId) {
-  if (window.location.href.includes(retailId) || !retailId) {
-    let clientAppId = appId;
+export default function pageview(context: PageviewContext): Boolean {
+  const { retailId, appId, collector } = context;
 
+  if (location.href.includes(retailId) || !retailId) {
     (function (e, o, n, t, a, c, i) {
       if (!e[a]) {
         e.GlobalSnowplowNamespace = e.GlobalSnowplowNamespace || [];
@@ -19,16 +18,22 @@ export default function pageview(appId, collector, retailId) {
         c.src = t;
         i.parentNode.insertBefore(c, i);
       }
-    })(window, document, "script", "//dm2q9qfzyjfox.cloudfront.net/sp.js", "clientAppId");
-    window.clientAppId("newTracker", "cf", `${collector}`, {
-      appId: clientAppId,
+    })(
+      window,
+      document,
+      "script",
+      "//dm2q9qfzyjfox.cloudfront.net/sp.js",
+      "appId"
+    );
+    window.appId("newTracker", "cf", `${collector}`, {
+      appId,
       discoverRootDomain: true,
       stateStorageStrategy: "localStorage",
       respectDoNotTrack: true,
     });
-    window.clientAppId("enableActivityTracking", 30, 10);
-    window.clientAppId("trackPageView");
-    window.clientAppId("enableLinkClickTracking");
+    window.appId("enableActivityTracking", 30, 10);
+    window.appId("trackPageView");
+    window.appId("enableLinkClickTracking");
     setTimeout(
       function (e, o, n, t, a, c, i) {
         if (!e[a]) {
@@ -80,4 +85,5 @@ export default function pageview(appId, collector, retailId) {
       "Hash"
     );
   }
+  return true;
 }

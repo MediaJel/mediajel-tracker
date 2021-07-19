@@ -1,5 +1,7 @@
-export default function tymberTracker(appId, retailId) {
-  const clientAppId = appId;
+import { EcommerceContext } from "../../interface";
+
+export default function tymberTracker(context: EcommerceContext) {
+  const { appId, retailId } = context;
 
   function receiveMessage(event) {
     const { data, name } = event.data;
@@ -13,10 +15,10 @@ export default function tymberTracker(appId, retailId) {
 
     if (data.model.event === "purchase") {
       const { id, revenue, tax } = actionField;
-      window.clientAppId(
+      window.appId(
         "addTrans",
         id.toString(),
-        !retailId ? clientAppId : retailId,
+        !retailId ? appId : retailId,
         revenue,
         tax ? tax : 0,
         0,
@@ -28,7 +30,7 @@ export default function tymberTracker(appId, retailId) {
 
       for (let i = 0, l = products.length; i < l; i += 1) {
         const item = products[i];
-        window.clientAppId(
+        window.appId(
           "addItem",
           actionField.id,
           item.id,
@@ -38,12 +40,12 @@ export default function tymberTracker(appId, retailId) {
           item.quantity
         );
       }
-      window.clientAppId("trackTrans");
+      window.appId("trackTrans");
     }
 
     if (data.model.event === "addToCart") {
       const { category, id, name, price, quantity } = ecommerce.add.products[0];
-      window.clientAppId(
+      window.appId(
         "trackAddToCart",
         id.toString(),
         name ? name : "N/A",
@@ -55,8 +57,9 @@ export default function tymberTracker(appId, retailId) {
     }
 
     if (data.model.event === "removeFromCart") {
-      const { category, id, name, price, quantity } = ecommerce.remove.products[0];
-      window.clientAppId(
+      const { category, id, name, price, quantity } =
+        ecommerce.remove.products[0];
+      window.appId(
         "trackRemoveFromCart",
         id.toString(),
         name ? name : "N/A",
