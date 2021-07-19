@@ -2,7 +2,6 @@ import { ContextInterface } from "./interface";
 import handleTag from "./trackerConfig/handle-tag";
 import createContext from "./trackerConfig/utils/create-context";
 import getQueryString from "./trackerConfig/utils/get-query-string";
-import keyWords from "./constants/key-words";
 import getBasedOn from "./trackerConfig/utils/get-based-on";
 
 // Gathers all scripts of page
