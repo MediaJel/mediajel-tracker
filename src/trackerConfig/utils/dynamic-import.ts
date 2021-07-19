@@ -1,5 +1,7 @@
 import { DynamicContext, EcommerceContext } from "../../interface";
 
+// Dynamically imports the correct tracker config based
+// on arguments provided from tag params
 export default async function dynamicImport(
   context: DynamicContext
 ): Promise<void> {
