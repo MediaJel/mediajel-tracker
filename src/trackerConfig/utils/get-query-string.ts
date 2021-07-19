@@ -1,12 +1,16 @@
-function getQueryString(url: string): {} {
+import { ContextArg } from "../../interface";
+
+function getQueryString(url: string): ContextArg {
   const result = {};
   const parsedUrl = url;
+
   const inputData = (key, val) => {
     if (result[key] === undefined) {
       result[key] = val;
     }
   };
-  if (!parsedUrl) throw new Error("there is no query.");
+
+  if (!parsedUrl) throw new Error("There is no query.");
 
   if (parsedUrl.includes("&")) {
     parsedUrl.split("&").forEach((x) => {
@@ -18,6 +22,8 @@ function getQueryString(url: string): {} {
     inputData(param, value);
   }
 
-  return result;
+  const context: ContextArg = result;
+
+  return context;
 }
 export { getQueryString };
