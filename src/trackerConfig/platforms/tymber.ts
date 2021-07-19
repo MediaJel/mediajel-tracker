@@ -1,3 +1,4 @@
+import { isNoSubstitutionTemplateLiteral } from "typescript";
 import { EcommerceContext } from "../../interface";
 
 export default function tymberTracker(context: EcommerceContext) {
@@ -15,6 +16,7 @@ export default function tymberTracker(context: EcommerceContext) {
 
     if (data.model.event === "purchase") {
       const { id, revenue, tax } = actionField;
+      const { orderCity, orderState, orderCountry, currencyCode } = ecommerce;
       window.appId(
         "addTrans",
         id.toString(),
@@ -22,10 +24,10 @@ export default function tymberTracker(context: EcommerceContext) {
         revenue,
         tax ? tax : 0,
         0,
-        "N/A",
-        "California",
-        "USA",
-        "USD"
+        orderCity ? orderCity : "N/A",
+        orderState ? orderState : "California",
+        orderCountry ? orderCountry : "USA",
+        currencyCode ? currencyCode : "USD"
       );
 
       for (let i = 0, l = products.length; i < l; i += 1) {
@@ -35,9 +37,10 @@ export default function tymberTracker(context: EcommerceContext) {
           actionField.id,
           item.id,
           item.name,
-          item.category,
+          !item.category ? item.brand : item.category,
           item.price,
-          item.quantity
+          item.quantity,
+          ecommerce.currencyCode ? ecommerce.currencyCode : "USD"
         );
       }
       window.appId("trackTrans");
@@ -57,8 +60,7 @@ export default function tymberTracker(context: EcommerceContext) {
     }
 
     if (data.model.event === "removeFromCart") {
-      const { category, id, name, price, quantity } =
-        ecommerce.remove.products[0];
+      const { category, id, name, price, quantity } = ecommerce.remove.products[0];
       window.appId(
         "trackRemoveFromCart",
         id.toString(),

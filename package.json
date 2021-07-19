@@ -6,7 +6,7 @@
   "scripts": {
     "start": "./start.sh",
     "predeploy": "node -r dotenv/config deploy/predeploy.js",
-    "deploy": "parcel build src/index.js",
+    "deploy": "parcel build src/index.ts",
     "postdeploy": "node -r dotenv/config deploy/postdeploy.js"
   },
   "repository": {
