@@ -3,6 +3,7 @@ import { ContextArg } from "../../interface";
 function getQueryString(url: string): ContextArg {
   const result = {};
   const parsedUrl = url;
+  const context: ContextArg = result;
 
   const inputData = (key, val) => {
     if (result[key] === undefined) {
@@ -21,8 +22,6 @@ function getQueryString(url: string): ContextArg {
     const [param, value] = parsedUrl.split("=");
     inputData(param, value);
   }
-
-  const context: ContextArg = result;
 
   return context;
 }
