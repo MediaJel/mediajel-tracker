@@ -4,7 +4,7 @@ import {
   PageviewContext,
 } from "../interface";
 import pageview from "./trackerTypes/pageview";
-import dynamicImport from "./utils/dynamic-import";
+import { dynamicImport } from "./utils/";
 
 export default function handleTag(context: ContextInterface): void {
   const { environment, retailId, appId, collector } = context;

@@ -1,4 +1,4 @@
-export default function getQueryString(url: string): {} {
+function getQueryString(url: string): {} {
   const result = {};
   const parsedUrl = url;
   const inputData = (key, val) => {
@@ -20,3 +20,4 @@ export default function getQueryString(url: string): {} {
 
   return result;
 }
+export { getQueryString };

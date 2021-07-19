@@ -3,7 +3,7 @@ import { ContextArg, ContextInterface } from "../../interface";
 // Creates Context object from the first index of the array
 // retruned from the scripts that matched our criteria
 // based on KeyWords
-export default function createContext(array: ContextArg[]): ContextInterface {
+function createContext(array: ContextArg[]): ContextInterface {
   const { appId, test, environment, retailId } = array[0];
 
   const context: ContextInterface = {
@@ -17,3 +17,4 @@ export default function createContext(array: ContextArg[]): ContextInterface {
 
   return context;
 }
+export { createContext };
