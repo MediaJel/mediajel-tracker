@@ -6,9 +6,9 @@ declare global {
 }
 
 export interface ContextArg {
-  appId: string;
-  environment: string;
-  retailId: string;
+  appId?: string;
+  environment?: string;
+  retailId?: string;
   test?: boolean | undefined;
 }
 
