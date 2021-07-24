@@ -18,7 +18,13 @@ export default function pageview(context: PageviewContext): Boolean {
         c.src = t;
         i.parentNode.insertBefore(c, i);
       }
-    })(window, document, "script", "//dm2q9qfzyjfox.cloudfront.net/sp.js", "appId");
+    })(
+      window,
+      document,
+      "script",
+      "//dm2q9qfzyjfox.cloudfront.net/sp.js",
+      "appId"
+    );
     window.appId("newTracker", "cf", `${collector}`, {
       appId,
       discoverRootDomain: true,

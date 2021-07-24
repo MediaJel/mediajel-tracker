@@ -1,6 +1,6 @@
-import { getBasedOnKeyword } from "./trackerConfig/utils";
+import { getBasedOnKeyword } from "../tracker-config/utils";
 
-export default function findTag(nullSafeScripts: HTMLScriptElement[]) {
+export function findTag(nullSafeScripts: HTMLScriptElement[]) {
   const universalTag: HTMLScriptElement[] = nullSafeScripts.filter(
     (data: HTMLScriptElement) => {
       const pixel: string = data.getAttribute("src");

@@ -1,6 +1,6 @@
-import { getQueryString } from "./trackerConfig/utils";
+import { getQueryString } from "../tracker-config/utils";
 
-export default function parseToObject(universalTag: HTMLScriptElement[]) {
+export function parseToObject(universalTag: HTMLScriptElement[]) {
   const context = universalTag.map((script) => {
     const src: string = script.getAttribute("src");
     const queryString: string[] = src.split("?");

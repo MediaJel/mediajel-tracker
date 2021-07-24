@@ -2,6 +2,7 @@ declare global {
   interface Window {
     appId: any;
     GlobalSnowplowNamespace: any;
+    snowplow: any;
   }
 }
 

@@ -1,10 +1,39 @@
-import handleTag from "./trackerConfig/handle-tag";
-import getAllScripts from "./get-all-scripts";
-import filterNullScripts from "./filter-null-scripts";
-import findTag from "./find-tag";
-import parseToObject from "./parse-to-object";
+import handleTag from "./tracker-config/handle-tag";
+import {
+  filterNullScripts,
+  parseToObject,
+  getAllScripts,
+  findTag,
+} from "./tools";
 import { ContextInterface } from "./interface";
-import { createContext } from "./trackerConfig/utils/index";
+import { createContext } from "./tracker-config/utils/index";
+
+const spPattern =
+  /^[^:]+:\/\/[^/?#;]+(\/[^/]+)*?\/(i\?(tv=|.*&tv=)|com\.snowplowanalytics\.snowplow\/tp2)/i;
+const plPattern = /^iglu:[^\/]+\/payload_data/i;
+
+function isSnowplow(request): boolean {
+  if (spPattern.test(request.url)) {
+    return true;
+  } else {
+    // It's possible that the request uses a custom endpoint via postPath
+    if (request.method === "POST" && typeof request.postData !== "undefined") {
+      // Custom endpoints only support POST requests
+      try {
+        const post = JSON.parse(request.postData.text) || {};
+        return (
+          typeof post === "object" &&
+          "schema" in post &&
+          plPattern.test(post.schema)
+        );
+      } catch {
+        // invalid JSON, not a Snowplow event
+      }
+    }
+  }
+
+  return false;
+}
 
 try {
   // Gathers all scripts of page where our scripts is loaded
