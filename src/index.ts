@@ -4,36 +4,10 @@ import {
   parseToObject,
   getAllScripts,
   findTag,
+  handleIsDuplicate,
 } from "./tools";
 import { ContextInterface } from "./interface";
 import { createContext } from "./tracker-config/utils/index";
-
-const spPattern =
-  /^[^:]+:\/\/[^/?#;]+(\/[^/]+)*?\/(i\?(tv=|.*&tv=)|com\.snowplowanalytics\.snowplow\/tp2)/i;
-const plPattern = /^iglu:[^\/]+\/payload_data/i;
-
-function isSnowplow(request): boolean {
-  if (spPattern.test(request.url)) {
-    return true;
-  } else {
-    // It's possible that the request uses a custom endpoint via postPath
-    if (request.method === "POST" && typeof request.postData !== "undefined") {
-      // Custom endpoints only support POST requests
-      try {
-        const post = JSON.parse(request.postData.text) || {};
-        return (
-          typeof post === "object" &&
-          "schema" in post &&
-          plPattern.test(post.schema)
-        );
-      } catch {
-        // invalid JSON, not a Snowplow event
-      }
-    }
-  }
-
-  return false;
-}
 
 try {
   // Gathers all scripts of page where our scripts is loaded
@@ -52,12 +26,15 @@ try {
 
   const parsedURL = parseToObject(universalTag);
 
+  // Checks for duplicates
+  const isDuplicate = handleIsDuplicate(parsedURL);
+
   // Creates Context object to be passed down to children functions
 
-  const context: ContextInterface = createContext(parsedURL); // <--- Adjust code for type
+  const context: ContextInterface = createContext(isDuplicate); // <--- Adjust code for type
 
   context && handleTag(context);
 } catch (err) {
   // Meant to be customer facing error
-  throw new Error("Please ensure you have filled in the required arguments");
+  throw new Error("An error has occured, please contact your pixel provider");
 }

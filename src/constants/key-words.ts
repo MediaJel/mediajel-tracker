@@ -1,4 +1,4 @@
 // Keywords as criteria to get URL element
-const keyWords: string[] = ["appId"];
+const keyWords: string[] = ["appId", "mediajelAppId"];
 
-export default keyWords;
+export { keyWords };
