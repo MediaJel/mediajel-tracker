@@ -36,5 +36,6 @@ try {
   context && handleTag(context);
 } catch (err) {
   // Meant to be customer facing error
+  console.error(err);
   throw new Error("An error has occured, please contact your pixel provider");
 }

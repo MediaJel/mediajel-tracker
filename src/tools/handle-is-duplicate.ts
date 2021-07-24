@@ -1,12 +1,10 @@
-import { getBasedOnKeyword } from "../tracker-config/utils";
-import { ContextArg } from "../interface";
+import { ContextArg, ErrorContext } from "../interface";
+import { throwError } from "./throw-error";
 
-// Todo: Refactor
-// Set types
-// Refactor boolean determiner
-export function handleIsDuplicate(context: ContextArg[]) {
+// Checks if present candidate scripts is more than 1
+export function handleIsDuplicate(context: ContextArg[]): ContextArg[] {
   if (context.length > 1) {
-    console.error("Pixel of the same nature already installed");
+    throwError({ name: "handleIsDuplicate:", cause: "Duplicate string" });
   } else {
     return context;
   }

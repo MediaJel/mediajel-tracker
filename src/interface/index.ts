@@ -1,3 +1,4 @@
+import { ErrorName } from "./enum";
 declare global {
   interface Window {
     appId: any;
@@ -18,6 +19,11 @@ export interface ContextInterface {
   environment: string;
   collector: string;
   retailId: string;
+}
+
+export interface ErrorContext {
+  name: ErrorName | string;
+  cause?: string;
 }
 
 export interface DynamicContext {

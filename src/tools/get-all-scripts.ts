@@ -1,5 +1,14 @@
+import { throwError } from "./throw-error";
+
 export function getAllScripts(): HTMLCollectionOf<HTMLScriptElement> {
-  const scripts: HTMLCollectionOf<HTMLScriptElement> =
-    document.getElementsByTagName("script");
-  return scripts;
+  try {
+    const scripts: HTMLCollectionOf<HTMLScriptElement> =
+      document.getElementsByTagName("script");
+    return scripts;
+  } catch {
+    throwError({
+      name: "getAllScripts",
+      cause: "Error getting DOM script elements",
+    });
+  }
 }
