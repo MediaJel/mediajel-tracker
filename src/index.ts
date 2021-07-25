@@ -9,33 +9,47 @@ import {
 import { ContextInterface } from "./interface";
 import { createContext } from "./tracker-config/utils/index";
 
-try {
-  // Gathers all scripts of page where our scripts is loaded
+function initializeTracker(): Boolean {
+  let isSuccessful: Boolean = false;
 
-  const scripts = getAllScripts();
+  try {
+    // Gathers all scripts of page where our scripts is loaded
 
-  // Filters all scripts for type safety, removing this will result in an error
+    const scripts = getAllScripts();
 
-  const nullSafeScripts = filterNullScripts(scripts);
+    // Filters all scripts for type safety, removing this will result in an error
 
-  // Uses our KeyWords array to filter for our Universal Tag
+    const nullSafeScripts = filterNullScripts(scripts);
 
-  const universalTag = findTag(nullSafeScripts);
+    // Uses our KeyWords array to filter for our Universal Tag
 
-  // Parses the arguments of the filterred URL to be used for our tracker
+    const universalTag = findTag(nullSafeScripts);
 
-  const parsedURL = parseToObject(universalTag);
+    // Parses the arguments of the filterred URL to be used for our tracker
 
-  // Checks for duplicates
-  const isDuplicate = handleIsDuplicate(parsedURL);
+    const parsedURL = parseToObject(universalTag);
 
-  // Creates Context object to be passed down to children functions
+    // Checks for duplicates
+    const isDuplicate = handleIsDuplicate(parsedURL);
 
-  const context: ContextInterface = createContext(isDuplicate); // <--- Adjust code for type
+    // Creates Context object to be passed down to children functions
+    const context: ContextInterface = createContext(isDuplicate);
 
-  context && handleTag(context);
-} catch (err) {
-  // Meant to be customer facing error
-  console.error(err);
-  throw new Error("An error has occured, please contact your pixel provider");
+    // Pass down tag context to execute the appropriate tag through handleTag
+    context && handleTag(context);
+
+    // Sets success to true if no errors
+    isSuccessful = true;
+  } catch (err) {
+    // Adds additional context if new Error provided within the previous functions
+
+    console.error(err);
+
+    // Meant to be customer facing error
+    throw new Error("An error has occured, please contact your pixel provider");
+  } finally {
+    return isSuccessful;
+  }
 }
+
+const result: Boolean = initializeTracker();
