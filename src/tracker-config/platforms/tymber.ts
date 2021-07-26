@@ -16,7 +16,7 @@ export default function tymberTracker(context: EcommerceContext) {
     if (data.model.event === "purchase") {
       const { id, revenue, tax } = actionField;
       const { orderCity, orderState, orderCountry, currencyCode } = ecommerce;
-      window.appId(
+      window.tracker(
         "addTrans",
         id.toString(),
         !retailId ? appId : retailId,
@@ -31,7 +31,7 @@ export default function tymberTracker(context: EcommerceContext) {
 
       for (let i = 0, l = products.length; i < l; i += 1) {
         const item = products[i];
-        window.appId(
+        window.tracker(
           "addItem",
           actionField.id,
           item.id,
@@ -42,12 +42,12 @@ export default function tymberTracker(context: EcommerceContext) {
           ecommerce.currencyCode ? ecommerce.currencyCode : "USD"
         );
       }
-      window.appId("trackTrans");
+      window.tracker("trackTrans");
     }
 
     if (data.model.event === "addToCart") {
       const { category, id, name, price, quantity } = ecommerce.add.products[0];
-      window.appId(
+      window.tracker(
         "trackAddToCart",
         id.toString(),
         name ? name : "N/A",
@@ -60,7 +60,7 @@ export default function tymberTracker(context: EcommerceContext) {
 
     if (data.model.event === "removeFromCart") {
       const { category, id, name, price, quantity } = ecommerce.remove.products[0];
-      window.appId(
+      window.tracker(
         "trackRemoveFromCart",
         id.toString(),
         name ? name : "N/A",
