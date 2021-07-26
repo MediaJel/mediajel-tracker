@@ -9,7 +9,7 @@ export default function meadowTracker(context: EcommerceContext) {
     if (rawData.type === "ANALYTICS_CART_ADD") {
       var cartData = rawData.payload;
       var product = rawData.payload.product;
-      window.appId(
+      window.tracker(
         "trackAddToCart",
         String(product.id),
         product.name,
@@ -25,7 +25,7 @@ export default function meadowTracker(context: EcommerceContext) {
     if (rawData.type === "ANALYTICS_CART_REMOVE") {
       var cartData = rawData.payload;
       var product = rawData.payload.product;
-      window.appId(
+      window.tracker(
         "trackRemoveFromCart",
         String(product.id),
         product.name,
@@ -42,7 +42,7 @@ export default function meadowTracker(context: EcommerceContext) {
       var transaction = rawData.payload.order;
       var lineItem = transaction.lineItems;
 
-      window.appId(
+      window.tracker(
         "addTrans",
         String(transaction.id),
         !retailId ? appId : retailId,
@@ -59,21 +59,19 @@ export default function meadowTracker(context: EcommerceContext) {
         var item = lineItem[i].product;
         var quantity = lineItem[i].quantity;
 
-        window.appId(
+        window.tracker(
           "addItem",
           String(transaction.id),
           item.id,
           item.name,
-          item.primaryCategory.name
-            ? item.primaryCategory.name
-            : String(item.primaryCategory.id),
+          item.primaryCategory.name ? item.primaryCategory.name : String(item.primaryCategory.id),
           item.option.price / 100,
           quantity,
           "US"
         );
       }
 
-      window.appId("trackTrans");
+      window.tracker("trackTrans");
     }
   }
   window.addEventListener("message", receiveMessage, false);

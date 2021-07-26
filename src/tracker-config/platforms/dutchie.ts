@@ -14,7 +14,7 @@ export default function dutchieSubdomainTracker(context: EcommerceContext) {
 
     if (data.model.event === "purchase") {
       const { transaction_id, value } = ecommerce;
-      window.appId(
+      window.tracker(
         "addTrans",
         transaction_id.toString(),
         !retailId ? appId : retailId,
@@ -29,7 +29,7 @@ export default function dutchieSubdomainTracker(context: EcommerceContext) {
 
       for (let i = 0, l = products.length; i < l; i += 1) {
         const item = products[i];
-        window.appId(
+        window.tracker(
           "addItem",
           ecommerce.transaction_id,
           item.item_id,
@@ -39,12 +39,12 @@ export default function dutchieSubdomainTracker(context: EcommerceContext) {
           item.quantity
         );
       }
-      window.appId("trackTrans");
+      window.tracker("trackTrans");
     }
 
     if (data.model.event === "addToCart") {
       const { item_category, item_id, item_name, price, quantity } = products;
-      window.appId(
+      window.tracker(
         "trackAddToCart",
         item_id.toString(),
         item_name ? item_name : "N/A",
@@ -57,7 +57,7 @@ export default function dutchieSubdomainTracker(context: EcommerceContext) {
 
     if (data.model.event === "removeFromCart") {
       const { item_category, item_id, item_name, price, quantity } = products;
-      window.appId(
+      window.tracker(
         "trackRemoveFromCart",
         item_id.toString(),
         item_name ? item_name : "N/A",
