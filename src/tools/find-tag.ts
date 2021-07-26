@@ -7,5 +7,6 @@ export function findTag(nullSafeScripts: HTMLScriptElement[]) {
       return getBasedOnKeyword(pixel);
     }
   );
+
   return universalTag;
 }

@@ -30,6 +30,7 @@ function initializeTracker(): Boolean {
     const parsedURL = parseToObject(universalTag);
 
     // Checks for duplicates
+
     const isDuplicate = handleIsDuplicate(parsedURL);
 
     // Creates Context object to be passed down to children functions

@@ -9,6 +9,7 @@ declare global {
 
 export interface ContextArg {
   appId?: string;
+  mediajelAppId?: string;
   environment?: string;
   retailId?: string;
   test?: boolean | undefined;

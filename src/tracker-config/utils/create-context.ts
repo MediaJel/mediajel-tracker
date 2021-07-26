@@ -4,10 +4,10 @@ import { ContextArg, ContextInterface } from "../../interface";
 // retruned from the scripts that matched our criteria
 // based on KeyWords
 function createContext(array: ContextArg[]): ContextInterface {
-  const { appId, test, environment, retailId } = array[0];
+  const { appId, test, environment, retailId, mediajelAppId } = array[0];
 
   const context: ContextInterface = {
-    appId,
+    appId: appId ?? mediajelAppId,
     retailId,
     environment,
     collector: test
