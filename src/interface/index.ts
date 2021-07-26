@@ -4,6 +4,7 @@ declare global {
     appId: any;
     GlobalSnowplowNamespace: any;
     snowplow: any;
+    tracker: any;
   }
 }
 

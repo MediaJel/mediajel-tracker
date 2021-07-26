@@ -18,22 +18,16 @@ export default function pageview(context: PageviewContext): Boolean {
         c.src = t;
         i.parentNode.insertBefore(c, i);
       }
-    })(
-      window,
-      document,
-      "script",
-      "//dm2q9qfzyjfox.cloudfront.net/sp.js",
-      "appId"
-    );
-    window.appId("newTracker", "cf", `${collector}`, {
-      appId,
+    })(window, document, "script", "//dm2q9qfzyjfox.cloudfront.net/sp.js", "tracker");
+    window.tracker("newTracker", "cf", `${collector}`, {
+      appId: appId,
       discoverRootDomain: true,
       stateStorageStrategy: "localStorage",
       respectDoNotTrack: true,
     });
-    window.appId("enableActivityTracking", 30, 10);
-    window.appId("trackPageView");
-    window.appId("enableLinkClickTracking");
+    window.tracker("enableActivityTracking", 30, 10);
+    window.tracker("trackPageView");
+    window.tracker("enableLinkClickTracking");
     setTimeout(
       function (e, o, n, t, a, c, i) {
         if (!e[a]) {
