@@ -1,12 +1,15 @@
+import { ErrorName } from "./enum";
 declare global {
   interface Window {
     appId: any;
     GlobalSnowplowNamespace: any;
+    snowplow: any;
   }
 }
 
 export interface ContextArg {
   appId?: string;
+  mediajelAppId?: string;
   environment?: string;
   retailId?: string;
   test?: boolean | undefined;
@@ -17,6 +20,11 @@ export interface ContextInterface {
   environment: string;
   collector: string;
   retailId: string;
+}
+
+export interface ErrorContext {
+  name: ErrorName | string;
+  cause?: string;
 }
 
 export interface DynamicContext {

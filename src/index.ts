@@ -1,34 +1,56 @@
-import handleTag from "./trackerConfig/handle-tag";
-import getAllScripts from "./get-all-scripts";
-import filterNullScripts from "./filter-null-scripts";
-import findTag from "./find-tag";
-import parseToObject from "./parse-to-object";
+import handleTag from "./tracker-config/handle-tag";
+import {
+  filterNullScripts,
+  parseToObject,
+  getAllScripts,
+  findTag,
+  handleIsDuplicate,
+} from "./tools";
 import { ContextInterface } from "./interface";
-import { createContext } from "./trackerConfig/utils/index";
+import { createContext } from "./tracker-config/utils/index";
 
-try {
-  // Gathers all scripts of page where our scripts is loaded
+function initializeTracker(): Boolean {
+  let isSuccessful: Boolean = false;
 
-  const scripts = getAllScripts();
+  try {
+    // Gathers all scripts of page where our scripts is loaded
 
-  // Filters all scripts for type safety, removing this will result in an error
+    const scripts = getAllScripts();
 
-  const nullSafeScripts = filterNullScripts(scripts);
+    // Filters all scripts for type safety, removing this will result in an error
 
-  // Uses our KeyWords array to filter for our Universal Tag
+    const nullSafeScripts = filterNullScripts(scripts);
 
-  const universalTag = findTag(nullSafeScripts);
+    // Uses our KeyWords array to filter for our Universal Tag
 
-  // Parses the arguments of the filterred URL to be used for our tracker
+    const universalTag = findTag(nullSafeScripts);
 
-  const parsedURL = parseToObject(universalTag);
+    // Parses the arguments of the filterred URL to be used for our tracker
 
-  // Creates Context object to be passed down to children functions
+    const parsedURL = parseToObject(universalTag);
 
-  const context: ContextInterface = createContext(parsedURL); // <--- Adjust code for type
+    // Checks for duplicates
 
-  context && handleTag(context);
-} catch (err) {
-  // Meant to be customer facing error
-  throw new Error("Please ensure you have filled in the required arguments");
+    const isDuplicate = handleIsDuplicate(parsedURL);
+
+    // Creates Context object to be passed down to children functions
+    const context: ContextInterface = createContext(isDuplicate);
+
+    // Pass down tag context to execute the appropriate tag through handleTag
+    context && handleTag(context);
+
+    // Sets success to true if no errors
+    isSuccessful = true;
+  } catch (err) {
+    // Adds additional context if new Error provided within the previous functions
+
+    console.error(err);
+
+    // Meant to be customer facing error
+    throw new Error("An error has occured, please contact your pixel provider");
+  } finally {
+    return isSuccessful;
+  }
 }
+
+const result: Boolean = initializeTracker();

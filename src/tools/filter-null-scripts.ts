@@ -1,5 +1,5 @@
 // Filters all scripts for type safety, removing this will result in an error
-export default function filterNullScripts(
+export function filterNullScripts(
   scripts: HTMLCollectionOf<HTMLScriptElement>
 ) {
   const nullSafeScripts = Array.from(scripts).filter(
