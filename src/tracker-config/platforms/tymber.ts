@@ -1,4 +1,3 @@
-import { isNoSubstitutionTemplateLiteral } from "typescript";
 import { EcommerceContext } from "../../interface";
 
 export default function tymberTracker(context: EcommerceContext) {
