@@ -1,5 +1,7 @@
-export default function tymberTracker(appId, retailId) {
-  const clientAppId = appId;
+import { EcommerceContext } from "../../interface";
+
+export default function tymberTracker(context: EcommerceContext) {
+  const { appId, retailId } = context;
 
   function receiveMessage(event) {
     const { data, name } = event.data;
@@ -13,37 +15,39 @@ export default function tymberTracker(appId, retailId) {
 
     if (data.model.event === "purchase") {
       const { id, revenue, tax } = actionField;
-      window.clientAppId(
+      const { orderCity, orderState, orderCountry, currencyCode } = ecommerce;
+      window.tracker(
         "addTrans",
         id.toString(),
-        !retailId ? clientAppId : retailId,
+        !retailId ? appId : retailId,
         revenue,
         tax ? tax : 0,
         0,
-        "N/A",
-        "California",
-        "USA",
-        "USD"
+        orderCity ? orderCity : "N/A",
+        orderState ? orderState : "California",
+        orderCountry ? orderCountry : "USA",
+        currencyCode ? currencyCode : "USD"
       );
 
       for (let i = 0, l = products.length; i < l; i += 1) {
         const item = products[i];
-        window.clientAppId(
+        window.tracker(
           "addItem",
           actionField.id,
           item.id,
           item.name,
-          item.category,
+          !item.category ? item.brand : item.category,
           item.price,
-          item.quantity
+          item.quantity,
+          ecommerce.currencyCode ? ecommerce.currencyCode : "USD"
         );
       }
-      window.clientAppId("trackTrans");
+      window.tracker("trackTrans");
     }
 
     if (data.model.event === "addToCart") {
       const { category, id, name, price, quantity } = ecommerce.add.products[0];
-      window.clientAppId(
+      window.tracker(
         "trackAddToCart",
         id.toString(),
         name ? name : "N/A",
@@ -56,7 +60,7 @@ export default function tymberTracker(appId, retailId) {
 
     if (data.model.event === "removeFromCart") {
       const { category, id, name, price, quantity } = ecommerce.remove.products[0];
-      window.clientAppId(
+      window.tracker(
         "trackRemoveFromCart",
         id.toString(),
         name ? name : "N/A",
