@@ -2,7 +2,7 @@ import { PageviewContext } from "../../interface";
 
 export default function pageview(context: PageviewContext): Boolean {
   const { retailId, appId, collector } = context;
-  console.log(appId);
+
   if (location.href.includes(retailId) || !retailId) {
     (function (e, o, n, t, a, c, i) {
       if (!e[a]) {
