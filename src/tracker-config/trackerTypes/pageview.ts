@@ -2,7 +2,7 @@ import { PageviewContext } from "../../interface";
 
 export default function pageview(context: PageviewContext): Boolean {
   const { retailId, appId, collector } = context;
-
+  console.log(appId);
   if (location.href.includes(retailId) || !retailId) {
     (function (e, o, n, t, a, c, i) {
       if (!e[a]) {
@@ -18,7 +18,13 @@ export default function pageview(context: PageviewContext): Boolean {
         c.src = t;
         i.parentNode.insertBefore(c, i);
       }
-    })(window, document, "script", "//dm2q9qfzyjfox.cloudfront.net/sp.js", "tracker");
+    })(
+      window,
+      document,
+      "script",
+      "//dm2q9qfzyjfox.cloudfront.net/sp.js",
+      "tracker"
+    );
     window.tracker("newTracker", "cf", `${collector}`, {
       appId: appId,
       discoverRootDomain: true,
