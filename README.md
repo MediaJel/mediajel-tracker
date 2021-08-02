@@ -1,6 +1,7 @@
 <h1 align="center"><strong>Mediajel universal tracker</strong></h1>
 
-[![dumi](https://img.shields.io/badge/docs%20by-dumi-blue)](https://github.com/umijs/dumi)
+![React](https://badges.aleen42.com/src/react.svg)
+![TypeScript](https://badges.frapsoft.com/typescript/awesome/typescript.png?v=101)
 
 <div align="center"><img src="public/logo.png "width="200" height="200" /></div>
 
@@ -37,21 +38,40 @@ NOTE: CI/CD pipeline not yet in place for deployment.
 
 Input the App Id for the collector on this argument. This will trigger a pageview event.
 
-### `@OPTIONAL | environment={ENUM}`
+### `@OPTIONAL | environment={STRING}`
+
+Append the Retail ID of the ecommerce site here. It is
+imperative that the Retail ID is persistent from initial
+visit up until cart checkout.
+
+### `@OPTIONAL | environment={OPTIONS:ENUM}`
 
 Input the cart environment for the collector on this argument. This will trigger ecommerce tracking for the specific environment.
 
 <table>
-  <tr><b>Options</b></tr>
-<tr align="center">jane</tr>
-<tr align="center">dutchie</tr>
-<tr align="center">meadow</tr>
-<tr align="center">tymber</tr>
+  <tr>
+    <th>
+      <b>Options
+      </b>
+    </th>
+  </tr>
+  <tr>
+    <td>jane</td>
+  </tr>
+    <tr>
+    <td>dutchie</td>
+  </tr>
+    <tr>
+    <td>meadow</td>
+  </tr>
+    <tr>
+    <td>tymber</td>
+  </tr>
 </table>
 
-### `@OPTIONAL | &test`
+### `@OPTIONAL | &test={BOOLEAN}`
 
-Append `&test` at then end of the URL if you want to switch to the test collector.
+Append `&test=true` at then end of the URL if you want to switch to the test collector.
 
 ## Pre-requisites
 
@@ -85,6 +105,7 @@ Run the development server through the following commands:
 
 ```
 npm install
+
 npm run dev
 ```
 
@@ -106,10 +127,10 @@ npm run deploy
       </a>
     </td>
       <td width="160" height="160"  align="center">
-      <a target="_blank" href="https://getbootstrap.com/">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Bootstrap_logo.svg/1024px-Bootstrap_logo.svg.png" />
+      <a target="_blank" href="https://reactjs.org/">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg" />
         <br />
-        <strong>Bootstrap</strong>
+        <strong>React JS</strong>
       </a>
     </td>
     <td width="160" height="160"  align="center">
@@ -131,31 +152,15 @@ npm run deploy
 
 ## Road Map
 
-### Functions
-
-- [x] Implement collectorURL as a query string argument
-- [x] Integrate multiple integration developer environments, all accessible in one place.
-- [ ] Addition of other environments.
-
-### Platforms
-
-- [x] Jane platform
-  - [x] Add to Cart
-  - [x] Remove From Cart
-  - [x] Transactions
-  - [x] Transaction_items (objects in baskets)
-- [x] Meadow platform (To refactor code to the js file but I know it works)
-  - [x] Add to Cart
-  - [x] Remove From Cart
-  - [x] Transactions
-  - [x] Transaction_items (objects in baskets)
-- [ ] Dutchie Iframe
-  - [ ] Add to Cart
-  - [ ] Remove From cart
-  - [x] Transactions
-  - [ ] Transaction_items (objects in baskets)
-- [ ] Webjoint
-  - [ ] Add to Cart
-  - [ ] Remove From cart
-  - [ ] Transactions
-  - [ ] Transaction_items (objects in baskets)
+- [ ] Implement Duplication safety
+  - [x] Universal tag will not duplicate if another universal tag is present
+  - [x] Universal tag will not duplicate if another raw javascript tag is present
+- [ ] Develop Tests
+  - [ ] Implement tests within CircleCI
+  - [ ] Develop Unit tests for instantiation of the Snowplow tracker
+  - [ ] Develop Unit tests for pageviews
+  - [ ] Develop Unit tests for Ecommerce platforms
+    - [ ] Develop tests for Jane
+    - [ ] Develop tests for Dutchie
+    - [ ] Develop tests for Meadow
+    - [ ] Develop tests for Tymber
