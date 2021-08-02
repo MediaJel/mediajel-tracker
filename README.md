@@ -20,18 +20,20 @@ Import this script tag to the header/footer of a site. Append the `APP_ID_HERE` 
 NOTE: CI/CD pipeline not yet in place for deployment.
 
 ### Production/Main
+
 ```javascript
-<script src="https://tag.cnna.io/?mediajelAppId=APP_ID_HERE&environment=CART_PLATFORM_HERE&test"></script>
+<script src="https://tags.cnna.io/?appId=APP_ID_HERE&retailId=RETAIL_ID_HERE&environment=CART_PLATFORM_HERE&test=true"></script>
 ```
 
 ### Staging (for testing & development)
+
 ```javascript
-<script src="http://tag.mediajel.ninja/?mediajelAppId=APP_ID_HERE&environment=CART_PLATFORM_HERE&test"></script>
+<script src="http://tags.mediajel.ninja/?appId=APP_ID_HERE&retailId=RETAIL_ID_HERE&environment=CART_PLATFORM_HERE&test=true"></script>
 ```
 
 ### Arguments
 
-### `@REQUIRED | mediajelAppId={STRING}`
+### `@REQUIRED | AppId={STRING}`
 
 Input the App Id for the collector on this argument. This will trigger a pageview event.
 
@@ -42,9 +44,10 @@ Input the cart environment for the collector on this argument. This will trigger
 <table>
   <tr><b>Options</b></tr>
 <tr align="center">jane</tr>
-<tr align="center">dutchieiframe</tr>
+<tr align="center">dutchie</tr>
+<tr align="center">meadow</tr>
+<tr align="center">tymber</tr>
 </table>
-
 
 ### `@OPTIONAL | &test`
 
@@ -60,9 +63,10 @@ First, you should have node, and ensure that the node version is 10.13 or above.
 $ node -v
 v10.13.0
 ```
+
 ### `aws-cli >= v2.2.10`
 
-You also need to install the aws-cli for deploying changes to the staging version. 
+You also need to install the aws-cli for deploying changes to the staging version.
 Reference to install `aws-cli v2.2.10` [here](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html). You may check your `aws-cli` version by running the command below
 
 ```
@@ -70,6 +74,7 @@ $ aws --version
 aws-cli/2.2.10 Python/3.8.8 Linux/5.8.0-55-generic exe/x86_64.zorin.16 prompt/off
 
 ```
+
 ### `.env` files
 
 If you want to test your tracker configuration is working and the environment is not available within this repository. You may want to deploy your tracker to `AWS cloudfront.` so you may test it on a live environment. You will require the appropriate `.env` files that point to the appropriate `staging` Cloudfront CDN server. Please contact the team for the `.env` files.
@@ -77,15 +82,18 @@ If you want to test your tracker configuration is working and the environment is
 ## Development
 
 Run the development server through the following commands:
+
 ```
 npm install
 npm run dev
 ```
+
 If you have the appropriate `.env` files. You may deploy your changes to AWS cloudfront staging via the `deploy` command. This will update the `staging` AWS S3 Bucket & AWS Cloudfront CDN. Then you may take the Cloudfront URL and inject it to a website to test if the appropriate tracker configuration is tracking the correct events for the environment/platform you are working on.
 
 ```
 npm run deploy
 ```
+
 ## Dev Dependencies/Architecture
 
 <table>
