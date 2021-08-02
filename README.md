@@ -97,7 +97,7 @@ aws-cli/2.2.10 Python/3.8.8 Linux/5.8.0-55-generic exe/x86_64.zorin.16 prompt/of
 
 ### `.env` files
 
-If you want to test your tracker configuration is working and the environment is not available within this repository. You may want to deploy your tracker to `AWS cloudfront.` so you may test it on a live environment. You will require the appropriate `.env` files that point to the appropriate `staging` Cloudfront CDN server. Please contact the team for the `.env` files.
+If you want to test your tracker configuration is working and the environment is not available within this repository. You may want to deploy your current tracker config to `AWS cloudfront` or `AWS S3` so you may test it on a live environment. You will require the appropriate `.env` files that point to the appropriate `staging` Cloudfront CDN server (or AWS S3.) Please contact the team for the `.env` files.
 
 ## Development
 
@@ -109,7 +109,7 @@ npm install
 npm run dev
 ```
 
-If you have the appropriate `.env` files. You may deploy your changes to AWS cloudfront staging via the `deploy` command. This will update the `staging` AWS S3 Bucket & AWS Cloudfront CDN. Then you may take the Cloudfront URL and inject it to a website to test if the appropriate tracker configuration is tracking the correct events for the environment/platform you are working on.
+If you have the appropriate `.env` files. You may deploy your changes to AWS cloudfront staging or S3 via the `deploy` command. This will update the `staging` AWS S3 Bucket & AWS Cloudfront CDN. Then you may take the Cloudfront or S3 URL and inject it to a website to test if the appropriate tracker configuration is tracking the correct events for the environment/platform you are working on.
 
 ```
 npm run deploy
@@ -154,7 +154,7 @@ npm run deploy
 
 - [ ] Implement Duplication safety
   - [x] Universal tag will not duplicate if another universal tag is present
-  - [x] Universal tag will not duplicate if another raw javascript tag is present
+  - [ ] Universal tag will not duplicate if another raw javascript tag is present
 - [ ] Develop Tests
   - [ ] Implement tests within CircleCI
   - [ ] Develop Unit tests for instantiation of the Snowplow tracker
