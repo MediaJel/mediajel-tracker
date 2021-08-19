@@ -3,6 +3,21 @@ import { PageviewContext } from "../../interface";
 export default function pageview(context: PageviewContext): Boolean {
   const { retailId, appId, collector } = context;
 
+  (function (c, d) {
+    var a = document.createElement("script");
+    a.type = "text/javascript";
+    a.async = !0;
+    a.src =
+      "https://tracking.lqm.io/odin/handle_sync.js?seg=G8aqIT2yoccd7G3eEQ4uMw&gdpr=" +
+      ("1" === c ? "1" : "0") +
+      "&gdpr_consent=" +
+      (d ? encodeURIComponent(d) : "") +
+      "&cb=" +
+      new Date().getTime();
+    var b = document.getElementsByTagName("script")[0];
+    b.parentNode.insertBefore(a, b);
+  })();
+
   if (location.href.includes(retailId) || !retailId) {
     (function (e, o, n, t, a, c, i) {
       if (!e[a]) {
@@ -18,7 +33,13 @@ export default function pageview(context: PageviewContext): Boolean {
         c.src = t;
         i.parentNode.insertBefore(c, i);
       }
-    })(window, document, "script", "//dm2q9qfzyjfox.cloudfront.net/sp.js", "tracker");
+    })(
+      window,
+      document,
+      "script",
+      "//dm2q9qfzyjfox.cloudfront.net/sp.js",
+      "tracker"
+    );
     window.tracker("newTracker", "cf", `${collector}`, {
       appId: appId,
       discoverRootDomain: true,
@@ -27,6 +48,7 @@ export default function pageview(context: PageviewContext): Boolean {
     });
     window.tracker("enableActivityTracking", 30, 10);
     window.tracker("trackPageView");
+    window.tracker("enableFormTracking")
     window.tracker("enableLinkClickTracking");
     setTimeout(
       function (e, o, n, t, a, c, i) {
