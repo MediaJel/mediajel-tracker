@@ -42,7 +42,7 @@ export default function dutchieSubdomainTracker(context: EcommerceContext) {
       window.tracker("trackTrans");
     }
 
-    if (data.model.event === "addToCart") {
+    if (data.model.event === "add_to_cart") {
       const { item_category, item_id, item_name, price, quantity } = products;
       window.tracker(
         "trackAddToCart",
@@ -55,7 +55,7 @@ export default function dutchieSubdomainTracker(context: EcommerceContext) {
       );
     }
 
-    if (data.model.event === "removeFromCart") {
+    if (data.model.event === "remove_from_cart") {
       const { item_category, item_id, item_name, price, quantity } = products;
       window.tracker(
         "trackRemoveFromCart",

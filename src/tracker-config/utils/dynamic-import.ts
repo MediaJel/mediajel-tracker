@@ -27,6 +27,11 @@ async function dynamicImport(context: DynamicContext): Promise<void> {
       func(ecommerceContext);
       break;
     }
+    case "liquidm": {
+      const { default: func } = await import("../platforms/liquidm");
+      func();
+      break;
+    }
     default:
       console.error("Undefined environment");
       break;
