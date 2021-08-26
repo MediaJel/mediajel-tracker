@@ -12,8 +12,13 @@ async function dynamicImport(context: DynamicContext): Promise<void> {
       func(ecommerceContext);
       break;
     }
-    case "dutchie": {
-      const { default: func } = await import("../platforms/dutchie");
+    case "dutchie-subdomain": {
+      const { default: func } = await import("../platforms/dutchie-subdomain");
+      func(ecommerceContext);
+      break;
+    }
+    case "dutchie-iframe": {
+      const { default: func } = await import("../platforms/dutchie-iframe");
       func(ecommerceContext);
       break;
     }
