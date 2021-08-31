@@ -1,6 +1,7 @@
 import { createContext } from "./create-context";
-import { dynamicImport } from "./dynamic-import";
+import { loadEnvironmentConfig } from "./load-environment-config";
 import { getBasedOnKeyword } from "./get-based-on-keyword";
 import { getQueryString } from "./get-query-string";
+import { loadClientConfig } from './load-client-config'
 
-export { createContext, dynamicImport, getBasedOnKeyword, getQueryString };
+export { createContext, loadEnvironmentConfig, getBasedOnKeyword, getQueryString, loadClientConfig };

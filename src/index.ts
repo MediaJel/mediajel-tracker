@@ -12,6 +12,7 @@ import { createContext } from "./tracker-config/utils/index";
 function initializeTracker(): Boolean {
   let isSuccessful: Boolean = false;
 
+
   try {
     // Gathers all scripts of page where our scripts is loaded
 

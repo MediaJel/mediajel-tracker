@@ -1,19 +1,23 @@
 import {
   ContextInterface,
-  DynamicContext,
+  TagContext,
   PageviewContext,
 } from "../interface";
 import pageview from "./trackerTypes/pageview";
-import { dynamicImport } from "./utils";
+import { loadClientConfig, loadEnvironmentConfig } from "./utils";
 
 export default function handleTag(context: ContextInterface): void {
-  const { environment, retailId, appId, collector } = context;
-  const dynamicContext: DynamicContext = { appId, environment, retailId };
+  const { environment, retailId, appId, collector, client } = context;
+
+  const tagContext: TagContext = { appId, environment, retailId, client };
   const pageviewContext: PageviewContext = { appId, collector, retailId };
 
   const isPageview: Boolean = pageview(pageviewContext);
 
   if (isPageview && environment) {
-    dynamicImport(dynamicContext);
+    loadEnvironmentConfig(tagContext);
+  }
+  if (isPageview && client) {
+    loadClientConfig(tagContext)
   }
 }

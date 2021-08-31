@@ -1,4 +1,7 @@
 import { ErrorName } from "./enum";
+
+
+export type ContextArg = Partial<ContextInterface> & { mediajelAppId?: string, test?: boolean | undefined }
 declare global {
   interface Window {
     appId: any;
@@ -8,19 +11,14 @@ declare global {
   }
 }
 
-export interface ContextArg {
-  appId?: string;
-  mediajelAppId?: string;
-  environment?: string;
-  retailId?: string;
-  test?: boolean | undefined;
-}
+
 
 export interface ContextInterface {
   appId: string;
   environment: string;
   collector: string;
   retailId: string;
+  client: string
 }
 
 export interface ErrorContext {
@@ -28,10 +26,11 @@ export interface ErrorContext {
   cause?: string;
 }
 
-export interface DynamicContext {
+export interface TagContext {
   appId: string;
   environment: string;
   retailId: string;
+  client: string
 }
 
 export interface EcommerceContext {
