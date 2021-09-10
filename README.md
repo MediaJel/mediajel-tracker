@@ -47,49 +47,26 @@ visit up until cart checkout.
 ### `@OPTIONAL | environment={OPTIONS:ENUM}`
 
 Input the cart environment for the collector on this argument. This will trigger ecommerce tracking for the specific environment.
-This should not be used with the `client` field.
-
-### `@OPTIONAL | client={OPTIONS:ENUM}`
-
-This field is client specific and should not be used with the `environment` field.
 
 <table>
-   <tr>
-      <th>
-         <b>Environment Options:
-         </b>
-      </th>
-   </tr>
-   <tr>
-      <td>jane</td>
-   </tr>
-   <tr>
-      <td>dutchie-iframe</td>
-   </tr>
-   <tr>
-      <td>dutchie-subdomain</td>
-   </tr>
-   <tr>
-      <td>meadow</td>
-   </tr>
-   <tr>
-      <td>liquidm</td>
-   </tr>
-   <tr>
-      <td>tymber</td>
-   </tr>
-</table>
-
-<table>
-   <tr>
-      <th>
-         <b>Client Options:
-         </b>
-      </th>
-   </tr>
-   <tr>
-      <td>citycompassionatecaregivers</td>
-   </tr>
+  <tr>
+    <th>
+      <b>Options
+      </b>
+    </th>
+  </tr>
+  <tr>
+    <td>jane</td>
+  </tr>
+    <tr>
+    <td>dutchie</td>
+  </tr>
+    <tr>
+    <td>meadow</td>
+  </tr>
+    <tr>
+    <td>tymber</td>
+  </tr>
 </table>
 
 ### `@OPTIONAL | &test={BOOLEAN}`

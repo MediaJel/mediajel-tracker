@@ -16,7 +16,6 @@ export default function tymberTracker(context: EcommerceContext) {
     if (data.model.event === "purchase") {
       const { id, revenue, tax } = actionField;
       const { orderCity, orderState, orderCountry, currencyCode } = ecommerce;
-
       window.tracker(
         "addTrans",
         id.toString(),
