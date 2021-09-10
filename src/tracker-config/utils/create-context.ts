@@ -9,8 +9,8 @@ function createContext(array: ContextArg[]): ContextInterface {
   const context: ContextInterface = {
     appId: appId ?? mediajelAppId,
     retailId,
-    client: client ? client.toLowerCase() : null,
-    environment: environment ? environment.toLowerCase() : null,
+    client: client ?? null,
+    environment,
     collector: test
       ? process.env.MJ_STAGING_COLLECTOR_URL
       : process.env.MJ_PRODUCTION_COLLECTOR_URL,

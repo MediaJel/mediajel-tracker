@@ -1,21 +1,18 @@
+import { triggerAsyncId } from "async_hooks";
 import { EcommerceContext } from "../../interface";
 
 export default function cityCompassionateCaregiversTracker(context: EcommerceContext) {
   const { appId, retailId } = context;
-
   (function (ns, fetch) {
     if (typeof fetch !== "function") return;
     ns.fetch = function () {
       var out = fetch.apply(this, arguments);
-
       out.then(async (response) => {
         const clone = response.clone();
         await clone.text().then((res) => {
-          const response = JSON.parse(res);
-          const ecommerce = response.data.findOrder;
+          const ecommerce = res.data.findOrder;
           const products = ecommerce.orderItems;
 
-          if (!ecommerce) return;
           window.tracker(
             "addTrans",
             ecommerce.cartId.toString(),
