@@ -1,10 +1,11 @@
-import { TagContext, EcommerceContext } from "../../interface";
+import { DynamicContext, EcommerceContext } from "../../interface";
 
 // Dynamically imports the correct tracker config based
 // on arguments provided from tag params
-async function loadEnvironmentConfig(context: TagContext): Promise<void> {
-  const { environment, appId, retailId, client } = context;
+async function dynamicImport(context: DynamicContext): Promise<void> {
+  const { environment, appId, retailId } = context;
   const ecommerceContext: EcommerceContext = { appId, retailId };
+
   switch (environment) {
     case "jane": {
       const { default: func } = await import("../platforms/jane");
@@ -41,4 +42,4 @@ async function loadEnvironmentConfig(context: TagContext): Promise<void> {
       break;
   }
 }
-export { loadEnvironmentConfig };
+export { dynamicImport };
