@@ -32,6 +32,16 @@ async function dynamicImport(context: DynamicContext): Promise<void> {
       func(ecommerceContext);
       break;
     }
+    case "greenrush": {
+      const { default: func } = await import("../platforms/greenrush");
+      func(ecommerceContext);
+      break;
+    }
+    case "buddi": {
+      const { default: func } = await import("../platforms/buddi");
+      func(ecommerceContext);
+      break;
+    }
     case "liquidm": {
       const { default: func } = await import("../platforms/liquidm");
       func();

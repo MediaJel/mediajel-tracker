@@ -1,6 +1,6 @@
 import { EcommerceContext } from "../../interface";
 
-export default function dutchieIframeTracker(context: EcommerceContext) {
+export default function buddiTracker(context: EcommerceContext) {
   const { appId, retailId } = context;
 
   (function () {
