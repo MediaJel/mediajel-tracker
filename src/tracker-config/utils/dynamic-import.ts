@@ -32,6 +32,11 @@ async function dynamicImport(context: DynamicContext): Promise<void> {
       func(ecommerceContext);
       break;
     }
+    case "woocommerce": {
+      const { default: func } = await import("../platforms/woocommerce");
+      func(ecommerceContext);
+      break;
+    }
     case "greenrush": {
       const { default: func } = await import("../platforms/greenrush");
       func(ecommerceContext);
