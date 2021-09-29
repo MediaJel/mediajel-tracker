@@ -1,7 +1,7 @@
 import { EcommerceContext } from "../../interface";
 
 export default function woocommerceTracker(context: EcommerceContext) {
-  const { appId } = context;
+  const { appId, retailId } = context;
   const order = '<?php echo wc_get_order( $order_id );?>';
   const id = '<?php echo $order_id;?>';
   const total = '<?php echo wc_get_order( $order_id )->get_total();?>';
@@ -14,7 +14,7 @@ export default function woocommerceTracker(context: EcommerceContext) {
   window.tracker(
     'addTrans',
     id,
-    appId,
+    !retailId ? appId : retailId,
     total,
     tax,
     shipping,
