@@ -97,7 +97,7 @@ export default function pageview(context: PageviewContext): Boolean {
       window,
       document,
       "img",
-      "https://sync.dmp.mediajel.ninja/hash",
+      "https://sync.dmp.cnna.io/hash",
       "Hash"
     );
   }
