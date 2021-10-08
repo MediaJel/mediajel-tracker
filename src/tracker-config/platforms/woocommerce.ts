@@ -3,7 +3,6 @@ import { EcommerceContext } from "../../interface";
 export default function woocommerceTracker(context: EcommerceContext) {
   const { appId, retailId } = context;
 
-
   `<?php add_action( 'woocommerce_thankyou', function ($order_id) { ?>`
 
   const order = '<?php echo wc_get_order( $order_id );?>';
