@@ -2,6 +2,10 @@ import { EcommerceContext } from "../../interface";
 
 export default function woocommerceTracker(context: EcommerceContext) {
   const { appId, retailId } = context;
+
+
+  `<?php add_action( 'woocommerce_thankyou', function ($order_id) { ?>`
+
   const order = '<?php echo wc_get_order( $order_id );?>';
   const id = '<?php echo $order_id;?>';
   const total = '<?php echo wc_get_order( $order_id )->get_total();?>';
@@ -24,4 +28,6 @@ export default function woocommerceTracker(context: EcommerceContext) {
     currency,
   );
   window.tracker('trackTrans');
+
+  `<?php } );`
 }
