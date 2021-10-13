@@ -3,9 +3,6 @@ import { EcommerceContext } from "../../interface";
 export default function shopifyTracker(context: EcommerceContext) {
   const { appId, retailId } = context;
 
-  function receiveMessage(event) {
-    const { data, name } = event.data;
-
     window.tracker("addTrans",
       "{{ order.order_number }}",
       !retailId ? appId : retailId,
@@ -29,5 +26,4 @@ export default function shopifyTracker(context: EcommerceContext) {
     );
 
     window.tracker('trackTrans');
-  }
 }
