@@ -47,6 +47,11 @@ async function dynamicImport(context: DynamicContext): Promise<void> {
       func(ecommerceContext);
       break;
     }
+    case "shopify": {
+      const { default: func } = await import("../platforms/shopify");
+      func(ecommerceContext);
+      break;
+    }
     case "liquidm": {
       const { default: func } = await import("../platforms/liquidm");
       func();
