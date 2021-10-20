@@ -37,7 +37,7 @@ export default function pageview(context: PageviewContext): Boolean {
       window,
       document,
       "script",
-      "//dm2q9qfzyjfox.cloudfront.net/sp.js",
+      "https://snowplow-distribution.s3.amazonaws.com/sp.js",
       "tracker"
     );
     window.tracker("newTracker", "cf", `${collector}`, {
@@ -46,7 +46,10 @@ export default function pageview(context: PageviewContext): Boolean {
       stateStorageStrategy: "localStorage",
       respectDoNotTrack: true,
     });
-    window.tracker("enableActivityTracking", 30, 10);
+    window.tracker("enableActivityTracking", {
+      minimumVisitLength: 30,
+      heartbeatDelay: 10
+    });
     window.tracker("trackPageView");
     window.tracker("enableFormTracking")
     window.tracker("enableLinkClickTracking");
