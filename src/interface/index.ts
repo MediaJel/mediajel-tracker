@@ -6,6 +6,11 @@ declare global {
     snowplow: any;
     tracker: any;
   }
+
+  type order = any;
+  type product = any;
+  type customer_address = any;
+  type currency = any;
 }
 
 export interface ContextArg {
