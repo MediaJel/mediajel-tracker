@@ -1,10 +1,10 @@
 import { EcommerceContext } from "../../interface";
 
 export default function shopifyTracker(context: EcommerceContext) {
-  const order = document.currentScript.getAttribute('order');
-  const product = document.currentScript.getAttribute('product');
-  const customer_address = document.currentScript.getAttribute('customer_address');
-  const currency = document.currentScript.getAttribute('currency');
+  const order = document.currentScript.getAttribute('data-order');
+  const product = document.currentScript.getAttribute('data-product');
+  const customer_address = document.currentScript.getAttribute('data-customer_address');
+  const currency = document.currentScript.getAttribute('data-currency');
 
   const { appId, retailId } = context;
 
