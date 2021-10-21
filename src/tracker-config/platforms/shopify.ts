@@ -5,8 +5,6 @@ export default function shopifyTracker(context: EcommerceContext) {
   const transaction = window.Shopify.checkout;
   const products = transaction.line_items;
   // window.Shopify.checkout.order.total_price * 100;
-  console.log("STARTS HERE " + transaction);
-  console.log(products);
 
   window.tracker("addTrans",
     transaction.order_id.toString(),
@@ -19,15 +17,6 @@ export default function shopifyTracker(context: EcommerceContext) {
     (transaction.billing_address.country ?  transaction.billing_address.country : "N/A").toString(),
     transaction.currency.toString()
   )
-
-  console.log("DIS THE MIDDLE " + transaction.order_id);
-  console.log(transaction.total_price);
-  console.log(transaction.total_tax);
-  console.log(transaction.shipping_rate.price);
-  console.log(transaction.billing_address.city);
-  console.log(transaction.billing_address.province);
-  console.log(transaction.billing_address.country);
-  console.log(transaction.currency);
   
   for(let i = 0; i < products.length; ++i) {
     window.tracker("addItem",
@@ -40,8 +29,6 @@ export default function shopifyTracker(context: EcommerceContext) {
       transaction.currency.toString()
     );
   }
-  
-  console.log("ENDS HERE " + products[0].price);
 
   window.tracker('trackTrans');
 }
