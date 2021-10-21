@@ -5,14 +5,12 @@ declare global {
     GlobalSnowplowNamespace: any;
     snowplow: any;
     tracker: any;
-    Shopify: any
   }
 
   type order = any;
   type product = any;
   type customer_address = any;
   type currency = any;
-  type Shopify = any;
 }
 
 export interface ContextArg {
