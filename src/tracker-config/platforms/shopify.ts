@@ -1,34 +1,34 @@
 import { EcommerceContext } from "../../interface";
 
 export default function shopifyTracker(context: EcommerceContext) {
-  const order: order = document.currentScript.getAttribute('data-order');
-  const product: product = document.currentScript.getAttribute('data-product');
-  const customer_address: customer_address = document.currentScript.getAttribute('data-customer_address');
-  const currency: currency = document.currentScript.getAttribute('data-currency');
-
   const { appId, retailId } = context;
+  const transaction = window.Shopify.checkout;
+  const products = transaction.line_items;
+  // window.Shopify.checkout.order.total_price * 100;
 
   window.tracker("addTrans",
-    order.order_number.toString(),
+    transaction.order_id.toString(),
     !retailId ? appId : retailId,
-    parseInt(order.total_price),
-    parseInt(order.tax_price ? order.tax_price : 0),
-    parseInt(order.shipping_price ? order.shipping_price : 0),
-    (customer_address.city ?  customer_address.city : "N/A").toString(),
-    (customer_address.province ? customer_address.province : "N/A").toString(),
-    (customer_address.country ?  customer_address.country : "N/A").toString(),
-    currency.iso_code.toString()
+    parseInt(transaction.order.total_price),
+    parseInt(transaction.order.total_tax ? transaction.total_tax : 0),
+    parseInt(transaction.shipping_rate.price ? transaction.shipping_rate.price : 0),
+    (transaction.billing_address.city ?  transaction.billing_address.city : "N/A").toString(),
+    (transaction.billing_address.province ? transaction.billing_address.province : "N/A").toString(),
+    (transaction.billing_address.country ?  transaction.billing_address.country : "N/A").toString(),
+    transaction.currency.toString()
   )
   
-  window.tracker("addItem",
-    order.order_number.toString(),
-    product.variants.toString(),
-    product.title.toString(),
-    product.first_available_variant.toString(),
-    parseInt(product.price_min),
-    parseInt(product.available ? product.available : 1),
-    currency.iso_code.toString()
-  );
+  for(let i = 0; i < products.length; ++i) {
+    window.tracker("addItem",
+      transaction.order_id.toString(),
+      products[i].id.toString(),
+      products[i].title.toString(),
+      products[i].first_available_variant.toString(),
+      parseInt(products[i].price),
+      parseInt(products[i].quantity ? products[i].quantity : 1),
+      transaction.currency.toString()
+    );
+  }
 
   window.tracker('trackTrans');
 }

@@ -5,6 +5,7 @@ declare global {
     GlobalSnowplowNamespace: any;
     snowplow: any;
     tracker: any;
+    Shopify: any;
   }
 
   type order = any;
