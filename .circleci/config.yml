@@ -7,7 +7,7 @@ version: 2.1
 executors:
   the-executor:
     docker:
-      - image: cimg/node:17.0.1
+      - image: cimg/node:12.11.0
     working_directory: ~/mediajel-tracker
 
 orbs:
