@@ -41,7 +41,7 @@ export default function shopifyTracker(context: EcommerceContext) {
     );
   }
   
-  console.log("ENDS HERE " + transaction.products[0].price);
+  console.log("ENDS HERE " + products[0].price);
 
   window.tracker('trackTrans');
 }
