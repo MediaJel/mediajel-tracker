@@ -37,7 +37,7 @@ export default function pageview(context: PageviewContext): Boolean {
       window,
       document,
       "script",
-      "https://snowplow-distribution.s3.amazonaws.com/sp.js",
+      "//dm2q9qfzyjfox.cloudfront.net/sp.js",
       "tracker"
     );
     window.tracker("newTracker", "cf", `${collector}`, {
