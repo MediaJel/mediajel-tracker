@@ -6,9 +6,9 @@
     "start": "./start.sh",
     "test": "node ./test/selenium.ts",
     "predeploy": "node -r dotenv/config deploy/predeploy.js",
-    "deploy": "parcel build src/index.ts --no-scope-hoist --dist-dir dist",
+    "deploy": "parcel build src/index.ts --no-scope-hoist",
     "postdeploy": "node -r dotenv/config deploy/postdeploy.js",
-    "build": "parcel build src/index.ts --no-scope-hoist --dist-dir dist"
+    "build": "parcel build src/index.ts --no-scope-hoist"
   },
   "repository": {
     "type": "git",
