@@ -2,31 +2,19 @@ import { EcommerceContext } from "../../interface";
 
 export default function woocommerceTracker(context: EcommerceContext) {
   const { appId, retailId } = context;
+  const transaction = JSON.parse(window.order);
 
-  `<?php add_action( 'woocommerce_thankyou', function ($order_id) { ?>`
-
-  const order = '<?php echo wc_get_order( $order_id );?>';
-  const id = '<?php echo $order_id;?>';
-  const total = '<?php echo wc_get_order( $order_id )->get_total();?>';
-  const tax = '<?php echo wc_get_order( $order_id )->get_total_tax();?>';
-  const shipping = '<?php echo wc_get_order( $order_id )->get_total_shipping();?>';
-  const city = '<?php echo wc_get_order( $order_id )->get_billing_city();?>';
-  const state = '<?php echo wc_get_order( $order_id )->get_billing_state();?>';
-  const country = '<?php echo wc_get_order( $order_id )->get_billing_country();?>';
-  const currency = '<?php echo wc_get_order( $order_id )->get_currency();?>';
   window.tracker(
     'addTrans',
-    id,
+    (transaction.cart_hash).toString(),
     !retailId ? appId : retailId,
-    total,
-    tax,
-    shipping,
-    city,
-    state,
-    country,
-    currency,
+    parseFloat(transaction.total),
+    parseFloat(transaction.total_tax),
+    parseFloat(transaction.shipping_total),
+    (transaction.billing.city).toString(),
+    (transaction.billing.state).toString(),
+    (transaction.billing.country).toString(),
+    (transaction.currency).toString(),
   );
   window.tracker('trackTrans');
-
-  `<?php } );`
 }
