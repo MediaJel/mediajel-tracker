@@ -2,11 +2,10 @@ import { EcommerceContext } from "../../interface";
 
 export default function woocommerceTracker(context: EcommerceContext) {
   const { appId, retailId } = context;
+  const transaction = JSON.parse(document.currentScript.getAttribute('data-order'));
   
-  if(!window.order) return;
+  if(!transaction) return;
   else {
-    const transaction = JSON.parse(window.order);
-
     window.tracker(
       'addTrans',
       (transaction.cart_hash).toString(),
