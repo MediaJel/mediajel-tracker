@@ -8,6 +8,9 @@ export default function woocommerceTracker(context: EcommerceContext) {
   const transaction = JSON.parse(scriptName.getAttribute('data-order'));
   console.log(transaction);
   
+  const testing = document.currentScript.getAttribute('data-test');
+  console.log(testing);
+  
   if(!transaction) return;
   else {
     window.tracker(
