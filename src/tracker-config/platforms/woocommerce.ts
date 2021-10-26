@@ -6,6 +6,7 @@ export default function woocommerceTracker(context: EcommerceContext) {
   
   if(!transaction) return;
   else {
+    console.log(transaction);
     window.tracker(
       'addTrans',
       (transaction.cart_hash).toString(),
