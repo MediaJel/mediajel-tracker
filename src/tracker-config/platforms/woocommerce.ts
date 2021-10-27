@@ -2,15 +2,14 @@ import { EcommerceContext } from "../../interface";
 
 export default function woocommerceTracker(context: EcommerceContext) {
   const { appId, retailId } = context;
-  const scripts = document.getElementById('universal');
-  const transaction = JSON.parse(scripts.getAttribute('data-order'));
-  console.log(transaction);
-  
-  if(!transaction) return;
-  else {
+
+  if(window.location.pathname.includes("/checkout/order-received/") && window.location.search) {
+    const scripts = document.getElementById('universal');
+    const transaction = JSON.parse(scripts.getAttribute('data-order'));
+    
     window.tracker(
       'addTrans',
-      (transaction.cart_hash).toString(),
+      (transaction.id).toString(),
       !retailId ? appId : retailId,
       parseFloat(transaction.total),
       parseFloat(transaction.total_tax),
@@ -21,5 +20,8 @@ export default function woocommerceTracker(context: EcommerceContext) {
       (transaction.currency).toString(),
     );
     window.tracker('trackTrans');
+  }
+  else {
+    return;
   }
 }
