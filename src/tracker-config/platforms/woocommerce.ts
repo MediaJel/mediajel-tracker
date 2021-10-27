@@ -2,7 +2,7 @@ import { EcommerceContext } from "../../interface";
 
 export default function woocommerceTracker(context: EcommerceContext) {
   const { appId, retailId } = context;
-  const scripts = document.getElementById('tracker');
+  const scripts = document.getElementById('universal');
   const transaction = JSON.parse(scripts.getAttribute('data-order'));
   console.log(transaction);
   
