@@ -4,9 +4,8 @@ export default function woocommerceTracker(context: EcommerceContext) {
   const { appId, retailId } = context;
 
   if(window.location.pathname.includes("/checkout/order-received/") && window.location.search) {
-    const scripts = document.getElementById('universal');
-    const transaction = JSON.parse(scripts.getAttribute('data-order'));
-    const products = JSON.parse(scripts.getAttribute('data-product'));
+    const transaction = JSON.parse(window.transactionOrder);
+    const products = JSON.parse(window.transactionItems);
     
     window.tracker("addTrans",
       (transaction.id).toString(),

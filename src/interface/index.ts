@@ -6,6 +6,8 @@ declare global {
     snowplow: any;
     tracker: any;
     Shopify: any;
+    transactionOrder: any;
+    transactionItems: any;
   }
 }
 
