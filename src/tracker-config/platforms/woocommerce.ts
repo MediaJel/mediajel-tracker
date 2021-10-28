@@ -4,6 +4,7 @@ export default function woocommerceTracker(context: EcommerceContext) {
   const { appId, retailId } = context;
 
   if(window.location.pathname.includes("/checkout/order-received/") && window.location.search) {
+    if(!window.transactionOrder && !window.transactionItems) return;
     const transaction = JSON.parse(window.transactionOrder);
     const products = JSON.parse(window.transactionItems);
     
@@ -22,7 +23,7 @@ export default function woocommerceTracker(context: EcommerceContext) {
     for(let i = 0; i < products.length; ++i) {
       window.tracker("addItem",
         transaction.id.toString(),
-        products[i].id.toString(),
+        products[i].product_id.toString(),
         (products[i].name ? products[i].name : "N/A").toString(),
         (products[i].category ? products[i].category : "N/A").toString(),
         parseFloat(products[i].total),
