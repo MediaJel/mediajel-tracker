@@ -8,7 +8,7 @@ export default function woocommerceTracker(context: EcommerceContext) {
     const products = JSON.parse(window.transactionItems);
     
     window.tracker("addTrans",
-      (transaction.id).toString(),
+      transaction.id.toString(),
       !retailId ? appId : retailId,
       parseFloat(transaction.total),
       parseFloat(transaction.total_tax ? transaction.total_tax : 0),
@@ -21,7 +21,7 @@ export default function woocommerceTracker(context: EcommerceContext) {
 
     for(let i = 0; i < products.length; ++i) {
       window.tracker("addItem",
-        transaction.order_id.toString(),
+        transaction.id.toString(),
         products[i].id.toString(),
         (products[i].name ? products[i].name : "N/A").toString(),
         (products[i].category ? products[i].category : "N/A").toString(),
