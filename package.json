@@ -2,13 +2,13 @@
   "name": "mediajel-tracker",
   "version": "1.0.0",
   "description": "Mediajel Tracker",
-  "main": "index.js",
   "scripts": {
     "start": "./start.sh",
-    "test": "jest ./test",
+    "test": "node ./test/selenium.ts",
     "predeploy": "node -r dotenv/config deploy/predeploy.js",
     "deploy": "parcel build src/index.ts",
-    "postdeploy": "node -r dotenv/config deploy/postdeploy.js"
+    "postdeploy": "node -r dotenv/config deploy/postdeploy.js",
+    "build": "parcel build src/index.ts"
   },
   "repository": {
     "type": "git",
@@ -39,7 +39,7 @@
     "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-react": "^7.24.0",
     "global": "^4.4.0",
-    "parcel-bundler": "^1.12.5",
+    "parcel": "2.0.0",
     "prettier": "^2.3.1",
     "react": "^16.8.0 || ^17.0.0",
     "react-dom": "^16.8.0 || ^17.0.0",
@@ -48,5 +48,8 @@
   },
   "browserslist": [
     "since 2017-06"
-  ]
+  ],
+  "dependencies": {
+    "selenium-webdriver": "^4.0.0-beta.4"
+  }
 }
