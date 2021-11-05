@@ -43,15 +43,15 @@ export default function pageview(context: PageviewContext): Boolean {
     window.tracker("newTracker", "cf", `${collector}`, {
       appId: appId,
       discoverRootDomain: true,
-      stateStorageStrategy: "localStorage",
+      stateStorageStrategy: "cookieAndLocalStorage",
       respectDoNotTrack: true,
     });
     window.tracker("enableActivityTracking", {
       minimumVisitLength: 30,
-      heartbeatDelay: 10
+      heartbeatDelay: 10,
     });
     window.tracker("trackPageView");
-    window.tracker("enableFormTracking")
+    window.tracker("enableFormTracking");
     window.tracker("enableLinkClickTracking");
     setTimeout(
       function (e, o, n, t, a, c, i) {
