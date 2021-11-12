@@ -3,73 +3,34 @@ import { EcommerceContext } from "../../interface";
 export default function tymberTracker(context: EcommerceContext) {
   const { appId, retailId } = context;
 
-  function receiveMessage(event) {
-    const { data, name } = event.data;
+  (function () {
+    var origOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function () {
+      this.addEventListener("load", function () {
+        var response = this.responseText;
 
-    if (!data || name !== "datalayer.push") {
-      return;
-    }
-    const ecommerce = data.model.ecommerce;
-    const actionField = ecommerce.actionField;
-    const products = ecommerce.products;
+        if (this.responseURL.includes("?delivery_type=")) {
+          var responseData = JSON.parse(response.data);
+          if (responseData.type === "orders") {
+            var transaction = responseData.attributes;
+            window.tracker(
+              "addTrans",
+              transaction.order_number.toString(),
+              !retailId ? appId : retailId,
+              parseFloat(transaction.total.amount) / 100,
+              parseFloat(transaction.tax_total.amount || 0) / 100,
+              parseFloat(transaction.delivery_fee.amount || 0) / 100,
+              transaction.delivery_address.city.toString() || "N/A",
+              transaction.delivery_address.state.toString() || "N/A",
+              transaction.delivery_address.country.toString() || "US",
+              transaction.total.currency.toString() || "USD"
+            );
 
-    if (data.model.event === "purchase") {
-      const { id, revenue, tax } = actionField;
-      const { orderCity, orderState, orderCountry, currencyCode } = ecommerce;
-      window.tracker(
-        "addTrans",
-        id.toString(),
-        !retailId ? appId : retailId,
-        revenue,
-        tax ? tax : 0,
-        0,
-        orderCity ? orderCity : "N/A",
-        orderState ? orderState : "California",
-        orderCountry ? orderCountry : "USA",
-        currencyCode ? currencyCode : "USD"
-      );
-
-      for (let i = 0, l = products.length; i < l; i += 1) {
-        const item = products[i];
-        window.tracker(
-          "addItem",
-          actionField.id,
-          item.id,
-          item.name,
-          !item.category ? item.brand : item.category,
-          item.price,
-          item.quantity,
-          ecommerce.currencyCode ? ecommerce.currencyCode : "USD"
-        );
-      }
-      window.tracker("trackTrans");
-    }
-
-    if (data.model.event === "addToCart") {
-      const { category, id, name, price, quantity } = ecommerce.add.products[0];
-      window.tracker(
-        "trackAddToCart",
-        id.toString(),
-        name ? name : "N/A",
-        category ? category : "N/A",
-        price ? price : 0,
-        quantity ? quantity : 1,
-        ecommerce.currencyCode ? ecommerce.currencyCode : "USD"
-      );
-    }
-
-    if (data.model.event === "removeFromCart") {
-      const { category, id, name, price, quantity } = ecommerce.remove.products[0];
-      window.tracker(
-        "trackRemoveFromCart",
-        id.toString(),
-        name ? name : "N/A",
-        category ? category : "N/A",
-        price ? price : 0,
-        quantity ? quantity : 1,
-        ecommerce.currencyCode ? ecommerce.currencyCode : "USD"
-      );
-    }
-  }
-  window.addEventListener("message", receiveMessage, false);
+            window.tracker("trackTrans");
+          }
+        }
+      });
+      origOpen.apply(this, arguments);
+    };
+  })();
 }
