@@ -10,9 +10,9 @@ export default function tymberTracker(context: EcommerceContext) {
         var response = this.responseText;
 
         if (this.responseURL.includes("?delivery_type=")) {
-          if(!responseData.data) return;
+          if(!response.data) return;
           var responseData = JSON.parse(response.data);
-          
+
           if (responseData.type !== "orders") return;
           var transaction = responseData.attributes;
           window.tracker(
