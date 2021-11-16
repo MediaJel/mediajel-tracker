@@ -31,10 +31,10 @@ function initializeTracker(): Boolean {
 
     // Checks for duplicates
 
-    // const isDuplicate = handleIsDuplicate(parsedURL);
+    const isDuplicate = handleIsDuplicate(parsedURL);
 
     // Creates Context object to be passed down to children functions
-    const context: ContextInterface = createContext(parsedURL);
+    const context: ContextInterface = createContext(isDuplicate);
 
     // Pass down tag context to execute the appropriate tag through handleTag
     context && handleTag(context);
