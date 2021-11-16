@@ -16,7 +16,6 @@ export default function tymberTracker(context: EcommerceContext) {
           if (responseData.data.type === "orders") {
             const transaction = responseData.data.attributes;
             const products = responseData.included;
-            const item = products.attributes;
             window.tracker(
               "addTrans",
               transaction.order_number.toString(),
@@ -32,14 +31,15 @@ export default function tymberTracker(context: EcommerceContext) {
 
             for(let i = 0; i < products.length; ++i) {
               if (products[i].type === "products") {
+                const item = products[i].attributes;
                 window.tracker("addItem",
                   transaction.order_number.toString(),
-                  (item[i].sku || item[i].id).toString(),
-                  (item[i].name ? products[i].title : "N/A").toString(),
-                  (item[i].variant_title ? products[i].variant_title : "N/A").toString(),
-                  parseFloat(products[i].price),
-                  parseFloat(products[i].quantity ? products[i].quantity : 1),
-                  (transaction.currency ? transaction.currency : "USD").toString()
+                  (item.sku || item.id).toString(),
+                  (item.name || "N/A").toString(),
+                  (item.flower_type || "N/A").toString(),
+                  parseFloat(item.unit_price.amount || 0) / 100,
+                  parseFloat(item.unit_prices.quantity || 1),
+                  (transaction.total.currency || "USD").toString()
                 );
               }
             }
