@@ -3,6 +3,7 @@ import { throwError } from "./throw-error";
 
 // Checks if present candidate scripts is more than 1
 export function handleIsDuplicate(context: ContextArg[]): ContextArg[] {
+  console.log(context);
   if (context.length > 1) {
     throwError({ name: "handleIsDuplicate:", cause: "Duplicate string" });
   } else {
