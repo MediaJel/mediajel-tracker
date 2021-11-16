@@ -4,31 +4,48 @@ export default function tymberTracker(context: EcommerceContext) {
   const { appId, retailId } = context;
 
   (function () {
-    var origOpen = XMLHttpRequest.prototype.open;
+    const origOpen = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = function () {
       this.addEventListener("load", function () {
-        var response = this.responseText;
+        const response = this.responseText;
 
         if (this.responseURL.includes("?delivery_type=")) {
-          if(!response.data) return;
-          var responseData = JSON.parse(response.data);
+          const responseData = JSON.parse(response);
 
-          if (responseData.type !== "orders") return;
-          var transaction = responseData.attributes;
-          window.tracker(
-            "addTrans",
-            transaction.order_number.toString(),
-            !retailId ? appId : retailId,
-            parseFloat(transaction.total.amount) / 100,
-            parseFloat(transaction.tax_total.amount || 0) / 100,
-            parseFloat(transaction.delivery_fee.amount || 0) / 100,
-            (transaction.delivery_address.city || "N/A").toString(),
-            (transaction.delivery_address.state || "N/A").toString(),
-            (transaction.delivery_address.country || "US").toString(),
-            (transaction.total.currency || "USD").toString()
-          );
+          if (!responseData.data) return;
+          if (responseData.data.type === "orders") {
+            const transaction = responseData.data.attributes;
+            const products = responseData.included;
+            window.tracker(
+              "addTrans",
+              transaction.order_number.toString(),
+              !retailId ? appId : retailId,
+              parseFloat(transaction.total.amount) / 100,
+              parseFloat(transaction.tax_total.amount || 0) / 100,
+              parseFloat(transaction.delivery_fee.amount || 0) / 100,
+              (transaction.delivery_address.city || "N/A").toString(),
+              (transaction.delivery_address.state || "N/A").toString(),
+              (transaction.delivery_address.country || "US").toString(),
+              (transaction.total.currency || "USD").toString()
+            );
 
-          window.tracker("trackTrans")
+            for(let i = 0; i < products.length; ++i) {
+              if (products[i].type === "products") {
+                const item = products[i].attributes;
+                window.tracker("addItem",
+                  transaction.order_number.toString(),
+                  (item.sku || item.id).toString(),
+                  (item.name || "N/A").toString(),
+                  (item.flower_type || "N/A").toString(),
+                  parseFloat(item.unit_price.amount || 0) / 100,
+                  parseFloat(item.unit_prices.quantity || 1),
+                  (transaction.total.currency || "USD").toString()
+                );
+              }
+            }
+
+            window.tracker("trackTrans")
+          }
         }
       });
       origOpen.apply(this, arguments);
