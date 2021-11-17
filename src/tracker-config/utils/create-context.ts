@@ -3,8 +3,8 @@ import { ContextArg, ContextInterface } from "../../interface";
 // Creates Context object from the first index of the array
 // retruned from the scripts that matched our criteria
 // based on KeyWords
-function createContext(array: ContextArg[]): ContextInterface {
-  const { appId, test, environment, retailId, mediajelAppId } = array[0];
+function createContext(data: ContextArg): ContextInterface {
+  const { appId, test, environment, retailId, mediajelAppId } = data;
 
   const context: ContextInterface = {
     appId: appId ?? mediajelAppId,

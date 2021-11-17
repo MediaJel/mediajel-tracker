@@ -31,10 +31,10 @@ function initializeTracker(): Boolean {
 
     // Checks for duplicates
 
-    // const isDuplicate = handleIsDuplicate(parsedURL);
+    const isDuplicate = handleIsDuplicate(parsedURL);
 
     // Creates Context object to be passed down to children functions
-    const context: ContextInterface = createContext(parsedURL);
+    const context: ContextInterface = createContext(isDuplicate);
 
     // Pass down tag context to execute the appropriate tag through handleTag
     context && handleTag(context);
@@ -44,10 +44,9 @@ function initializeTracker(): Boolean {
   } catch (err) {
     // Adds additional context if new Error provided within the previous functions
 
-    console.error(err);
-
-    // Meant to be customer facing error
-    throw new Error("An error has occured, please contact your pixel provider");
+    console.error(
+      "An error has occured, please contact your pixel provider" + err
+    );
   } finally {
     return isSuccessful;
   }
