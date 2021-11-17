@@ -1,8 +1,10 @@
-import { PageviewContext } from "./interface";
+import { TagContext } from "../../shared/types";
 
-const entrypoint = (context: PageviewContext): Boolean => {
-  const { retailId, appId, collector } = context;
-
+const entrypoint = ({
+  collector,
+  appId,
+  retailId,
+}: Pick<TagContext, "retailId" | "appId" | "collector">): Boolean => {
   (function (c, d) {
     var a = document.createElement("script");
     a.type = "text/javascript";

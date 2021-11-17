@@ -1,8 +1,9 @@
-import { EcommerceContext } from "../helpers/interface";
+import { TagContext } from "../../../shared/types";
 
-export default function buddiTracker(context: EcommerceContext) {
-  const { appId, retailId } = context;
-
+const greenrushTracker = ({
+  appId,
+  retailId,
+}: Pick<TagContext, "appId" | "retailId">) => {
   (function () {
     var origOpen = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = function () {
@@ -10,26 +11,15 @@ export default function buddiTracker(context: EcommerceContext) {
         var response = this.responseText;
         if (
           this.responseURL.includes("cart") &&
-          !this.response.includes("delete")
+          this.response.includes("pending")
         ) {
-          var product = JSON.parse(response);
-          window.tracker(
-            "trackAddToCart",
-            product.id.toString(),
-            product.name,
-            "N/A",
-            product.price,
-            product.qty,
-            "USD"
-          );
-        } else if (this.responseURL.includes("orders")) {
-          var transaction = JSON.parse(response);
-          var product = transaction.products;
+          var transaction = JSON.parse(response.data);
+          var product = transaction.items.data;
           window.tracker(
             "addTrans",
             transaction.id,
             !retailId ? appId : retailId,
-            transaction.total,
+            parseInt(transaction.total),
             parseInt(transaction.tax),
             0,
             "N/A",
@@ -37,26 +27,25 @@ export default function buddiTracker(context: EcommerceContext) {
             "USA",
             "US"
           );
-
           for (var i = 0, l = product.length; i < l; i++) {
             var item = product[i];
-
             window.tracker(
               "addItem",
               transaction.id,
-              item.product_id,
-              item.product.name,
-              item.product.subcategory,
+              item.id,
+              item.name,
+              item.subcategory,
               item.price,
-              item.qty,
+              item.quantity,
               "US"
             );
           }
-
           window.tracker("trackTrans");
         }
       });
       origOpen.apply(this, arguments);
     };
   })();
-}
+};
+
+export default greenrushTracker;

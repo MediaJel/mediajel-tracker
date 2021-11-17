@@ -7,4 +7,4 @@ const domains: string[] = [
   "universal-tag-localhost",
 ];
 
-export { domains };
+export default domains;

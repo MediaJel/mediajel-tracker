@@ -1,8 +1,9 @@
-import { EcommerceContext } from "../helpers/interface";
+import { TagContext } from "../../../shared/types";
 
-export default function woocommerceTracker(context: EcommerceContext) {
-  const { appId, retailId } = context;
-
+const woocommerceTracker = ({
+  appId,
+  retailId,
+}: Pick<TagContext, "appId" | "retailId">) => {
   if (
     window.location.pathname.includes("/checkout/order-received/") &&
     window.location.search
@@ -47,4 +48,6 @@ export default function woocommerceTracker(context: EcommerceContext) {
   } else {
     return;
   }
-}
+};
+
+export default woocommerceTracker;

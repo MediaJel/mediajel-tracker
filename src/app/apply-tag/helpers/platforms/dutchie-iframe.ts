@@ -1,8 +1,9 @@
-import { EcommerceContext } from "../helpers/interface";
+import { TagContext } from "../../../shared/types";
 
-export default function dutchieIframeTracker(context: EcommerceContext) {
-  const { appId, retailId } = context;
-
+const dutchieIframeTracker = ({
+  appId,
+  retailId,
+}: Pick<TagContext, "appId" | "retailId">) => {
   function receiveMessage(event) {
     const rawData = JSON.parse(event.data);
     if (rawData.payload.event === "ec:addProduct") {
@@ -41,4 +42,6 @@ export default function dutchieIframeTracker(context: EcommerceContext) {
     }
   }
   window.addEventListener("message", receiveMessage, false);
-}
+};
+
+export default dutchieIframeTracker;

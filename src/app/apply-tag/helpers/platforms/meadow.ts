@@ -1,8 +1,9 @@
-import { EcommerceContext } from "../helpers/interface";
+import { TagContext } from "../../../shared/types";
 
-export default function meadowTracker(context: EcommerceContext) {
-  const { appId, retailId } = context;
-
+const meadowTracker = ({
+  appId,
+  retailId,
+}: Pick<TagContext, "appId" | "retailId">) => {
   function receiveMessage(event) {
     var rawData = event.data;
 
@@ -77,4 +78,5 @@ export default function meadowTracker(context: EcommerceContext) {
     }
   }
   window.addEventListener("message", receiveMessage, false);
-}
+};
+export default meadowTracker;

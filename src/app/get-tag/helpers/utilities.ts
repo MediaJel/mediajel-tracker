@@ -1,6 +1,6 @@
-import { ContextInterface, TagContext } from "./interface";
-import { parseQueryString } from "./utils";
-import { domains } from "../constants/domains";
+import domains from "../../shared/domains";
+import { TagContext } from "../../shared/types";
+import { QueryStringParams } from "./types";
 
 /**
  * Gets all of the script tags on the page
@@ -54,14 +54,14 @@ const getValues = (scripts: HTMLScriptElement[]) =>
  * our domain. Also evaluates the array of contexts and throws an error if
  * length is greater than 1
  *
- * @param {TagContext[]} context All scripts that contain our domain
- * @returns {TagContext} The first script that contains our domain
+ * @param {QueryStringParams[]} context All scripts that contain our domain
+ * @returns {QueryStringParams} The first script that contains our domain
  */
-const handleIsDuplicate = (contexts: TagContext[]): TagContext => {
+const removeDuplicate = (contexts: QueryStringParams[]): QueryStringParams => {
   if (contexts.length > 1) {
     const duplicateMessage = `There is/are ${
       contexts.length - 1
-    } duplicate trackers installed. Please remove the duplicates`;
+    } duplicate tags installed. Please remove the duplicates`;
     throw new Error(duplicateMessage);
   }
   return contexts[0]; // Only return the first tag
@@ -72,10 +72,10 @@ const handleIsDuplicate = (contexts: TagContext[]): TagContext => {
  *  retruned from the scripts that matched our criteria
  *  based on KeyWords
  *
- * @param {TagContext} data
- * @returns {ContextInterface}
+ * @param {QueryStringParams} data
+ * @returns {TagContext}
  */
-const createContext = (data: TagContext): ContextInterface => {
+const createContext = (data: QueryStringParams): TagContext => {
   const { appId, test, environment, retailId, mediajelAppId } = data;
 
   return {
@@ -88,11 +88,44 @@ const createContext = (data: TagContext): ContextInterface => {
   };
 };
 
+/**
+ * Parses the query string to get the context
+ *
+ * @param url
+ * @returns
+ */
+
+const parseQueryString = (url: string): QueryStringParams => {
+  const result = {};
+  const parsedUrl = url;
+  const context: QueryStringParams = result;
+
+  const inputData = (key, val) => {
+    if (result[key] === undefined) {
+      result[key] = val;
+    }
+  };
+
+  if (!parsedUrl) throw new Error("There is no query.");
+
+  if (parsedUrl.includes("&")) {
+    parsedUrl.split("&").forEach((x) => {
+      const [param, value] = x.split("=");
+      inputData(param, value);
+    });
+  } else {
+    const [param, value] = parsedUrl.split("=");
+    inputData(param, value);
+  }
+
+  return context;
+};
+
 export {
   getAllScripts,
   filterNullScripts,
   findTag,
-  handleIsDuplicate,
+  removeDuplicate,
   getValues,
   createContext,
 };

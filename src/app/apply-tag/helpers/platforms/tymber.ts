@@ -1,8 +1,9 @@
-import { EcommerceContext } from "../helpers/interface";
+import { TagContext } from "../../../shared/types";
 
-export default function tymberTracker(context: EcommerceContext) {
-  const { appId, retailId } = context;
-
+const tymberTracker = ({
+  appId,
+  retailId,
+}: Pick<TagContext, "appId" | "retailId">) => {
   (function () {
     const origOpen = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = function () {
@@ -52,4 +53,5 @@ export default function tymberTracker(context: EcommerceContext) {
       origOpen.apply(this, arguments);
     };
   })();
-}
+};
+export default tymberTracker;

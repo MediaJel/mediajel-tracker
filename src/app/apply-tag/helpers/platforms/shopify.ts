@@ -1,8 +1,9 @@
-import { EcommerceContext } from "../helpers/interface";
+import { TagContext } from "../../../shared/types";
 
-export default function shopifyTracker(context: EcommerceContext) {
-  const { appId, retailId } = context;
-
+const shopifyTracker = ({
+  appId,
+  retailId,
+}: Pick<TagContext, "appId" | "retailId">) => {
   if (!window.Shopify.checkout) return;
   else {
     const transaction = window.Shopify.checkout;
@@ -50,4 +51,6 @@ export default function shopifyTracker(context: EcommerceContext) {
 
     window.tracker("trackTrans");
   }
-}
+};
+
+export default shopifyTracker;

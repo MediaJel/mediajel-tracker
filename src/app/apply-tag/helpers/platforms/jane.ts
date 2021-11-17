@@ -1,8 +1,9 @@
-import { EcommerceContext } from "../helpers/interface";
+import { TagContext } from "../../../shared/types";
 
-export default function janeTracker(context: EcommerceContext) {
-  const { appId, retailId } = context;
-
+const janeTracker = ({
+  appId,
+  retailId,
+}: Pick<TagContext, "appId" | "retailId">) => {
   function receiveMessage(event) {
     const { payload, messageType } = event.data;
 
@@ -66,4 +67,6 @@ export default function janeTracker(context: EcommerceContext) {
     }
   }
   window.addEventListener("message", receiveMessage, false);
-}
+};
+
+export default janeTracker;
