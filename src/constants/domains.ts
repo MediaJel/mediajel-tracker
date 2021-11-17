@@ -1,5 +1,5 @@
 // Keywords as criteria to get URL element
-const keyWords: string[] = [
+const domains: string[] = [
   "tags.cnna.io",
   "tags.mediajel.ninja",
   "tag.cnna.io",
@@ -7,4 +7,4 @@ const keyWords: string[] = [
   "universal-tag-localhost",
 ];
 
-export { keyWords };
+export { domains };
