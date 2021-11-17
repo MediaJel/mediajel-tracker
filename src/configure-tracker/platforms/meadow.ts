@@ -1,4 +1,4 @@
-import { EcommerceContext } from "../../interface";
+import { EcommerceContext } from "../helpers/interface";
 
 export default function meadowTracker(context: EcommerceContext) {
   const { appId, retailId } = context;
@@ -64,7 +64,9 @@ export default function meadowTracker(context: EcommerceContext) {
           String(transaction.id),
           item.id,
           item.name,
-          item.primaryCategory.name ? item.primaryCategory.name : String(item.primaryCategory.id),
+          item.primaryCategory.name
+            ? item.primaryCategory.name
+            : String(item.primaryCategory.id),
           item.option.price / 100,
           quantity,
           "US"

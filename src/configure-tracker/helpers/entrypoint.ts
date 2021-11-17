@@ -1,6 +1,6 @@
-import { PageviewContext } from "../../interface";
+import { PageviewContext } from "./interface";
 
-export default function pageview(context: PageviewContext): Boolean {
+const entrypoint = (context: PageviewContext): Boolean => {
   const { retailId, appId, collector } = context;
 
   (function (c, d) {
@@ -105,4 +105,6 @@ export default function pageview(context: PageviewContext): Boolean {
     );
   }
   return true;
-}
+};
+
+export default entrypoint;

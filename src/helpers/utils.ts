@@ -1,9 +1,16 @@
-import { ContextArg } from "../../interface";
+import { TagContext } from "./interface";
 
-function getQueryString(url: string): ContextArg {
+/**
+ * Parses the query string to get the context
+ *
+ * @param url
+ * @returns
+ */
+
+const parseQueryString = (url: string): TagContext => {
   const result = {};
   const parsedUrl = url;
-  const context: ContextArg = result;
+  const context: TagContext = result;
 
   const inputData = (key, val) => {
     if (result[key] === undefined) {
@@ -24,5 +31,5 @@ function getQueryString(url: string): ContextArg {
   }
 
   return context;
-}
-export { getQueryString };
+};
+export { parseQueryString };

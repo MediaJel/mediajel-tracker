@@ -1,4 +1,4 @@
-import { EcommerceContext } from "../../interface";
+import { EcommerceContext } from "../helpers/interface";
 
 export default function dutchieSubdomainTracker(context: EcommerceContext) {
   const { appId, retailId } = context;

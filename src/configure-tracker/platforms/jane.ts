@@ -1,4 +1,4 @@
-import { EcommerceContext } from "../../interface";
+import { EcommerceContext } from "../helpers/interface";
 
 export default function janeTracker(context: EcommerceContext) {
   const { appId, retailId } = context;
@@ -54,7 +54,15 @@ export default function janeTracker(context: EcommerceContext) {
     if (payload.name === "cartItemRemoval") {
       const { productId } = payload.properties;
 
-      window.tracker("trackRemoveFromCart", productId.toString(), "N/A", "N/A", 0, 1, "USD");
+      window.tracker(
+        "trackRemoveFromCart",
+        productId.toString(),
+        "N/A",
+        "N/A",
+        0,
+        1,
+        "USD"
+      );
     }
   }
   window.addEventListener("message", receiveMessage, false);
