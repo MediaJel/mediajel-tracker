@@ -7,10 +7,6 @@ export function handleIsDuplicate(context: ContextArg[]): ContextArg {
     console.error(
       "Please review pixel implementation as duplicate tags are being implemented"
     );
-    // throwError({
-    //   name: "handleIsDuplicate:",
-    //   cause: "Tracker is being invoked multiple times",
-    // });
-    return context[0];
   }
+  return context[0];
 }
