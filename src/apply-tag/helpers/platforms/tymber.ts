@@ -1,8 +1,9 @@
-import { EcommerceContext } from "../../interface";
+import { TagContext } from "../../../shared/types";
 
-export default function tymberTracker(context: EcommerceContext) {
-  const { appId, retailId } = context;
-
+const tymberTracker = ({
+  appId,
+  retailId,
+}: Pick<TagContext, "appId" | "retailId">) => {
   (function () {
     const origOpen = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = function () {
@@ -29,10 +30,11 @@ export default function tymberTracker(context: EcommerceContext) {
               (transaction.total.currency || "USD").toString()
             );
 
-            for(let i = 0; i < products.length; ++i) {
+            for (let i = 0; i < products.length; ++i) {
               if (products[i].type === "products") {
                 const item = products[i].attributes;
-                window.tracker("addItem",
+                window.tracker(
+                  "addItem",
                   transaction.order_number.toString(),
                   (item.sku || item.id).toString(),
                   (item.name || "N/A").toString(),
@@ -44,11 +46,12 @@ export default function tymberTracker(context: EcommerceContext) {
               }
             }
 
-            window.tracker("trackTrans")
+            window.tracker("trackTrans");
           }
         }
       });
       origOpen.apply(this, arguments);
     };
   })();
-}
+};
+export default tymberTracker;
