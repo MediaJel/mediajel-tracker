@@ -44,7 +44,7 @@ const shopifyTracker = ({
           : "N/A"
         ).toString(),
         parseFloat(products[i].price),
-        parseFloat(products[i].quantity ? products[i].quantity : 1),
+        parseInt(products[i].quantity ? products[i].quantity : 1),
         (transaction.currency ? transaction.currency : "USD").toString()
       );
     }
