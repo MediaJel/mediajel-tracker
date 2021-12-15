@@ -1,8 +1,9 @@
-import { EcommerceContext } from "../../interface";
+import { TagContext } from "../../../shared/types";
 
-export default function dutchieSubdomainTracker(context: EcommerceContext) {
-  const { appId, retailId } = context;
-
+const dutchieSubdomainTracker = ({
+  appId,
+  retailId,
+}: Pick<TagContext, "appId" | "retailId">) => {
   function receiveMessage(event) {
     const { data, name } = event.data;
 
@@ -69,4 +70,5 @@ export default function dutchieSubdomainTracker(context: EcommerceContext) {
     }
   }
   window.addEventListener("message", receiveMessage, false);
-}
+};
+export default dutchieSubdomainTracker;

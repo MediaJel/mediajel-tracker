@@ -1,8 +1,9 @@
-import { EcommerceContext } from "../../interface";
+import { TagContext } from "../../../shared/types";
 
-export default function meadowTracker(context: EcommerceContext) {
-  const { appId, retailId } = context;
-
+const meadowTracker = ({
+  appId,
+  retailId,
+}: Pick<TagContext, "appId" | "retailId">) => {
   function receiveMessage(event) {
     var rawData = event.data;
 
@@ -64,7 +65,9 @@ export default function meadowTracker(context: EcommerceContext) {
           String(transaction.id),
           item.id,
           item.name,
-          item.primaryCategory.name ? item.primaryCategory.name : String(item.primaryCategory.id),
+          item.primaryCategory.name
+            ? item.primaryCategory.name
+            : String(item.primaryCategory.id),
           item.option.price / 100,
           quantity,
           "US"
@@ -75,4 +78,5 @@ export default function meadowTracker(context: EcommerceContext) {
     }
   }
   window.addEventListener("message", receiveMessage, false);
-}
+};
+export default meadowTracker;

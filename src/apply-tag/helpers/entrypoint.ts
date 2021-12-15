@@ -1,8 +1,10 @@
-import { PageviewContext } from "../../interface";
+import { TagContext } from "../../shared/types";
 
-export default function pageview(context: PageviewContext): Boolean {
-  const { retailId, appId, collector } = context;
-
+const entrypoint = ({
+  collector,
+  appId,
+  retailId,
+}: Pick<TagContext, "retailId" | "appId" | "collector">): Boolean => {
   (function (c, d) {
     var a = document.createElement("script");
     a.type = "text/javascript";
@@ -105,4 +107,6 @@ export default function pageview(context: PageviewContext): Boolean {
     );
   }
   return true;
-}
+};
+
+export default entrypoint;
