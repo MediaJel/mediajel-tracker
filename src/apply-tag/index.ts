@@ -59,6 +59,11 @@ const applyTag = async (context: TagContext) => {
         func({ appId, retailId });
         break;
       }
+      case "lightspeed": {
+        const { default: func } = await import("./helpers/platforms/lightspeed");
+        func({ appId, retailId });
+        break;
+      }
       case "liquidm": {
         const { default: func } = await import("./helpers/platforms/liquidm");
         func();
