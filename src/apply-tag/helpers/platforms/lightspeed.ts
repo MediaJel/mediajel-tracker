@@ -1,6 +1,6 @@
 import { TagContext } from "../../../shared/types";
 
-const shopifyTracker = ({
+const lightspeedTracker = ({
   appId,
   retailId,
 }: Pick<TagContext, "appId" | "retailId">) => {
@@ -39,4 +39,4 @@ const shopifyTracker = ({
   }
 };
 
-export default shopifyTracker;
+export default lightspeedTracker;
