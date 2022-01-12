@@ -53,7 +53,7 @@ const dutchieSubdomainTracker = ({
       window.tracker(
         "addTrans",
         transaction_id.toString(),
-        "dutchiesubdomain", // Change this later
+        retailId ?? appId,
         parseInt(value),
         0,
         0,
