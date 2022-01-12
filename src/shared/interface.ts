@@ -10,5 +10,6 @@ declare global {
     lightspeedTransaction: any;
     transactionOrder: any;
     transactionItems: any;
+    dataLayer: any;
   }
 }
