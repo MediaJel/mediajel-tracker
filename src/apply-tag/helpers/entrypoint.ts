@@ -39,7 +39,7 @@ const entrypoint = ({
       window,
       document,
       "script",
-      "//dm2q9qfzyjfox.cloudfront.net/sp.js",
+      "//mediajel-tracker-staging.s3.amazonaws.com/mj.js",
       "tracker"
     );
     window.tracker("newTracker", "cf", `${collector}`, {
