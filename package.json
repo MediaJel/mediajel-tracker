@@ -5,6 +5,7 @@
   "scripts": {
     "start": "./start.sh",
     "test": "node ./test/selenium.ts",
+    "check": "tsc --noEmit",
     "predeploy": "node -r dotenv/config deploy/predeploy.js",
     "deploy": "parcel build src/index.ts",
     "postdeploy": "node -r dotenv/config deploy/postdeploy.js",
