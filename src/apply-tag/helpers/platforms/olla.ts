@@ -7,7 +7,7 @@ const ollaTracker = ({
 
   const dataLayer = window.dataLayer || [];
 
-  function onDataLayerChange() {
+  // function onDataLayerChange() {
     const data = dataLayer.slice(-1)[0]; // Gets the newest array member of dataLayer
 
     // data.event is at array index 1
@@ -88,13 +88,13 @@ const ollaTracker = ({
 
       window.tracker('trackTrans');
     }
-  }
+  // }
 
-  dataLayer.push = function () {
-    Array.prototype.push.apply(this, arguments);
-    console.log("dataLayer.push!");
-    onDataLayerChange();
-  };
+  // dataLayer.push = function () {
+  //   Array.prototype.push.apply(this, arguments);
+  //   console.log("dataLayer.push!");
+  //   onDataLayerChange();
+  // };
 };
 
 export default ollaTracker;
