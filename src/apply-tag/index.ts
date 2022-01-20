@@ -51,13 +51,14 @@ const applyTag = async (context: TagContext) => {
         break;
       }
       // TODO: UNSTABLE
+      // UNABLE TO TEST DUE ID REQUIREMENTS ON CHECKOUT -- Tested on MountainRemedy
       case "greenrush": {
         const { default: func } = await import("./helpers/platforms/greenrush");
         func({ appId, retailId });
         break;
       }
-      // TODO: UNSTABLE
-      // NOT TRACKING TRANSACTIONS
+      //! TODO: NOT WORKING
+      // NOT TRACKING TRANSACTIONS -- TESTED on Gormley
       case "buddi": {
         const { default: func } = await import("./helpers/platforms/buddi");
         func({ appId, retailId });
