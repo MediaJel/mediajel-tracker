@@ -1,8 +1,9 @@
-import { EcommerceContext } from "../../interface";
+import { TagContext } from "../../../shared/types";
 
-export default function janeTracker(context: EcommerceContext) {
-  const { appId, retailId } = context;
-
+const janeTracker = ({
+  appId,
+  retailId,
+}: Pick<TagContext, "appId" | "retailId">) => {
   function receiveMessage(event) {
     const { payload, messageType } = event.data;
 
@@ -54,8 +55,18 @@ export default function janeTracker(context: EcommerceContext) {
     if (payload.name === "cartItemRemoval") {
       const { productId } = payload.properties;
 
-      window.tracker("trackRemoveFromCart", productId.toString(), "N/A", "N/A", 0, 1, "USD");
+      window.tracker(
+        "trackRemoveFromCart",
+        productId.toString(),
+        "N/A",
+        "N/A",
+        0,
+        1,
+        "USD"
+      );
     }
   }
   window.addEventListener("message", receiveMessage, false);
-}
+};
+
+export default janeTracker;

@@ -1,5 +1,4 @@
 export default function liquidm() {
-
   const unstruct = {
     schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-1",
     data: {
@@ -16,7 +15,7 @@ export default function liquidm() {
     },
   };
 
-  const mjcx = []
+  const mjcx = [];
 
   const cCx = {
     schema: "iglu:com.mediajel.contexts/client/jsonschema/1-0-0",
@@ -44,8 +43,7 @@ export default function liquidm() {
   };
 
   mjcx.push(cCx),
-  mjcx.push(cCx2),
-  mjcx.push(cCx3),
-
-  window.tracker("trackSelfDescribingEvent", unstruct, mjcx)
+    mjcx.push(cCx2),
+    mjcx.push(cCx3),
+    window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
 }
