@@ -36,7 +36,7 @@ const applyTag = async (context: TagContext) => {
         func({ appId, retailId });
         break;
       }
-      // TODO: UNSTABLE
+      //* STABLE
       case "tymber": {
         const { default: func } = await import("./helpers/platforms/tymber");
         func({ appId, retailId });
