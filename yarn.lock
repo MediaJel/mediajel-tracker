@@ -4979,11 +4979,6 @@ unbox-primitive@^1.0.1:
     has-symbols "^1.0.2"
     which-boxed-primitive "^1.0.2"
 
-underscore-observe@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/underscore-observe/-/underscore-observe-1.0.0.tgz#06e75a28fbb4ba9a535d31e5c965afec30665a92"
-  integrity sha1-BudaKPu0uppTXTHlyWWv7DBmWpI=
-
 unpipe@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/unpipe/-/unpipe-1.0.0.tgz#b2bf4ee8514aae6165b4817829d21b2ef49904ec"

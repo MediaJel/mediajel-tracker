@@ -1,5 +1,4 @@
 import { TagContext } from "../../../shared/types";
-import * as _ from 'underscore-observe';
 
 const ollaTracker = ({
   appId,
@@ -91,13 +90,11 @@ const ollaTracker = ({
     }
   }
 
-  _.observe(dataLayer, function () {
+
+  dataLayer.push = function () {
+    Array.prototype.push.apply(this, arguments);
     onDataLayerChange();
-  });
-  // dataLayer.push = function () {
-  //   Array.prototype.push.apply(this, arguments);
-  //   onDataLayerChange();
-  // };
+  };
 };
 
 export default ollaTracker;
