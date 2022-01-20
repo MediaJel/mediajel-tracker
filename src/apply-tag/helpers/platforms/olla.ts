@@ -1,5 +1,5 @@
 import { TagContext } from "../../../shared/types";
-import _ from 'underscore-observe';
+import * as _ from 'underscore-observe';
 
 const ollaTracker = ({
   appId,
