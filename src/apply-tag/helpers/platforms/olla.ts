@@ -9,11 +9,11 @@ const ollaTracker = ({
 
   function onDataLayerChange() {
     const data = dataLayer.slice(-1)[0]; // Gets the newest array member of dataLayer
-    console.log(data);
 
-    if (data.event === "add_to_cart") {
-      const items = data.items;
-      console.log(items);
+    // data.event is at array index 1
+    // data.items is at array index 2
+    if (data.event === "add_to_cart" || data[1] === "add_to_cart") {
+      const items = data.items || data[2].items;
 
       items.forEach((item) => {
         const { id, name, price, quantity, category } = item;
@@ -30,9 +30,10 @@ const ollaTracker = ({
       });
     }
 
-    if (data.event === "remove_from_cart") {
-      const items = data.items;
-      console.log(items);
+    // data.event is at array index 1
+    // data.items is at array index 2
+    if (data.event === "remove_from_cart" || data[1] === "remove_from_cart") {
+      const items = data.items || data[2].items;
 
       items.forEach((item) => {
         const { id, name, price, quantity, category } = item;
@@ -49,12 +50,13 @@ const ollaTracker = ({
       });
     }
 
-    if (data.event === "purchase") {
-      const transaction_id = data.transaction_id;
-      const transaction_total = data.value;
-      const transaction_currency = data.currency;
-      const items = data.items;
-      console.log(items);
+    // data.event is at array index 1
+    // data.items and everything else is at array index 2
+    if (data.event === "purchase" || data[1] === "purchase") {
+      const transaction_id = data.transaction_id || data[2].transaction_id;
+      const transaction_total = data.value || data[2].value;
+      const transaction_currency = data.currency || data[2].currency;
+      const items = data.items || data[2].items;
 
       window.tracker(
         "addTrans",
@@ -85,7 +87,6 @@ const ollaTracker = ({
       });
 
       window.tracker('trackTrans');
-      console.log("trackTrans!");
     }
   }
 
