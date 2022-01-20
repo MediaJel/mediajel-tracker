@@ -57,6 +57,7 @@ const applyTag = async (context: TagContext) => {
         break;
       }
       // TODO: UNSTABLE
+      // NOT TRACKING TRANSACTIONS
       case "buddi": {
         const { default: func } = await import("./helpers/platforms/buddi");
         func({ appId, retailId });
