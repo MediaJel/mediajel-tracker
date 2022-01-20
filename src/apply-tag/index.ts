@@ -74,6 +74,11 @@ const applyTag = async (context: TagContext) => {
         func({ appId, retailId });
         break;
       }
+      case "olla": {
+        const { default: func } = await import("./helpers/platforms/olla");
+        func({ appId, retailId });
+        break;
+      }
       //! UNUSED/DEPRECATED
       case "liquidm": {
         const { default: func } = await import("./helpers/platforms/liquidm");
