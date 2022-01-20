@@ -14,7 +14,7 @@ const applyTag = async (context: TagContext) => {
         func({ appId, retailId });
         break;
       }
-      // TODO: UNSTABLE
+      //* STABLE
       case "dutchie-subdomain": {
         const { default: func } = await import(
           "./helpers/platforms/dutchie-subdomain"
