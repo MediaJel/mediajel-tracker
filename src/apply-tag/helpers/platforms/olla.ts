@@ -9,9 +9,11 @@ const ollaTracker = ({
 
   function onDataLayerChange() {
     const data = dataLayer.slice(-1)[0]; // Gets the newest array member of dataLayer
+    console.log(data);
 
     if (data.event === "add_to_cart") {
       const items = data.items;
+      console.log(items);
 
       items.forEach((item) => {
         const { id, name, price, quantity, category } = item;
@@ -30,6 +32,7 @@ const ollaTracker = ({
 
     if (data.event === "remove_from_cart") {
       const items = data.items;
+      console.log(items);
 
       items.forEach((item) => {
         const { id, name, price, quantity, category } = item;
@@ -51,18 +54,19 @@ const ollaTracker = ({
       const transaction_total = data.value;
       const transaction_currency = data.currency;
       const items = data.items;
+      console.log(items);
 
       window.tracker(
         "addTrans",
-        transaction_id.toString(),                              // Transaction ID - required
-        retailId ?? appId,                                      // Affiliation or store name
-        parseFloat(transaction_total),                          // Total - required
-        0,                                                      // Tax
-        0,                                                      // Shipping
-        "N/A",                                                  // City
-        "N/A",                                                  // State or province
-        "USA",                                                  // Country
-        (transaction_currency || "USD").toString()              // Currency code
+        transaction_id.toString(),
+        retailId ?? appId,
+        parseFloat(transaction_total),
+        0,
+        0,
+        "N/A",
+        "N/A",
+        "USA",
+        (transaction_currency || "USD").toString()
       );
 
       items.forEach((item) => {
