@@ -7,21 +7,9 @@ const ollaTracker = ({
   retailId,
 }: Pick<TagContext, "appId" | "retailId">) => {
 
-  let dataLayer = window.dataLayer || [];
+  const dataLayer = window.dataLayer || [];
 
   observeArray(dataLayer, onDataLayerChange);
-  // const observe = (object: any, func: Function) => new Proxy(
-  //   object, {
-  //   set(obj, key, val) {
-  //     obj[key] = val;
-  //     return func(object);
-  //   }
-  // });
-
-  // dataLayer = observe(window.dataLayer, dataLayer => {
-  //   console.log('Change!', dataLayer);
-  // });
-
 
   function onDataLayerChange() {
     console.log('CHANGGGEEE!!!');
@@ -106,12 +94,6 @@ const ollaTracker = ({
       window.tracker('trackTrans');
     }
   }
-
-
-  // dataLayer.push = function () {
-  //   Array.prototype.push.apply(this, arguments);
-  //   onDataLayerChange();
-  // };
 };
 
 export default ollaTracker;
