@@ -9,6 +9,7 @@ const ollaTracker = ({
   const dataLayer = window.dataLayer || [];
   const dataLayerObservable = Observable.from(dataLayer);
 
+  console.log(dataLayerObservable);
   dataLayerObservable.observe((changes: any[]) => {
     changes.forEach(change => console.log(change));
   });
