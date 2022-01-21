@@ -8,10 +8,7 @@ const ollaTracker = ({
   retailId,
 }: Pick<TagContext, "appId" | "retailId">) => {
 
-  const dataLayer = window.dataLayer || [];
-  // observeArray(window.dataLayer, onDataLayerChange);
-
-  const helper = new DataLayerHelper(dataLayer, { listener: onDataLayerChange });
+  observeArray(window.dataLayer, onDataLayerChange);
 
   function onDataLayerChange() {
     const data = window.dataLayer.slice(-1)[0]; // Gets the newest array member of dataLayer
