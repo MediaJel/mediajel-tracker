@@ -50,8 +50,7 @@ const applyTag = async (context: TagContext) => {
         func({ appId, retailId });
         break;
       }
-      // TODO: UNSTABLE
-      // UNABLE TO TEST DUE ID REQUIREMENTS ON CHECKOUT -- Tested on MountainRemedy
+      //* STABLE 
       case "greenrush": {
         const { default: func } = await import("./helpers/platforms/greenrush");
         func({ appId, retailId });
