@@ -1,7 +1,5 @@
 import { TagContext } from "../../../shared/types";
 import { observeArray } from "../utils/observe-array";
-import 'node_modules/data-layer-helper/dist/data-layer-helper';
-
 
 const ollaTracker = ({
   appId,
