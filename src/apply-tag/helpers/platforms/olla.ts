@@ -1,4 +1,5 @@
 import { TagContext } from "../../../shared/types";
+import { observeArray } from "../utils/observe-array";
 
 
 const ollaTracker = ({
@@ -8,21 +9,22 @@ const ollaTracker = ({
 
   let dataLayer = window.dataLayer || [];
 
+  observeArray(dataLayer, onDataLayerChange);
+  // const observe = (object: any, func: Function) => new Proxy(
+  //   object, {
+  //   set(obj, key, val) {
+  //     obj[key] = val;
+  //     return func(object);
+  //   }
+  // });
 
-  const observe = (object: any, func: Function) => new Proxy(
-    object, {
-    set(obj, key, val) {
-      obj[key] = val;
-      return func(object);
-    }
-  });
-
-  dataLayer = observe(window.dataLayer, dataLayer => {
-    console.log('Change!', dataLayer);
-  });
+  // dataLayer = observe(window.dataLayer, dataLayer => {
+  //   console.log('Change!', dataLayer);
+  // });
 
 
   function onDataLayerChange() {
+    console.log('CHANGGGEEE!!!');
     const data = dataLayer.slice(-1)[0]; // Gets the newest array member of dataLayer
 
     // data.event is at array index 1
@@ -104,8 +106,6 @@ const ollaTracker = ({
       window.tracker('trackTrans');
     }
   }
-
-
 
 
   // dataLayer.push = function () {
