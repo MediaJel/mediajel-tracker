@@ -1,5 +1,6 @@
 import { TagContext } from "../../../shared/types";
 import { observeArray } from "../utils/observe-array";
+import 'node_modules/data-layer-helper/dist/data-layer-helper';
 
 
 const ollaTracker = ({
@@ -7,7 +8,10 @@ const ollaTracker = ({
   retailId,
 }: Pick<TagContext, "appId" | "retailId">) => {
 
-  observeArray(window.dataLayer, onDataLayerChange);
+  const dataLayer = window.dataLayer || [];
+  // observeArray(window.dataLayer, onDataLayerChange);
+
+  const helper = new DataLayerHelper(dataLayer, { listener: onDataLayerChange });
 
   function onDataLayerChange() {
     const data = window.dataLayer.slice(-1)[0]; // Gets the newest array member of dataLayer
