@@ -19,7 +19,7 @@ const buddiTracker = ({
             const product = response;
             
             cartList.push(product);
-            console.log(cartList);
+            console.log("cartList: " + cartList);
             window.tracker(
               "trackAddToCart",
               product.id.toString(),
@@ -40,16 +40,23 @@ const buddiTracker = ({
               !cartList.includes(x);
             }));
             
-            console.log("removedItem: " + removedItem);
-            window.tracker(
-              "trackRemoveFromCart",
-              removedItem.id.toString(),
-              (removedItem.name || "N/A").toString(),
-              "N/A",
-              parseFloat(removedItem.price || 0),
-              parseInt(removedItem.qty || 1),
-              "USD"
-            );
+            console.log("removedItem: " + JSON.stringify(removedItem));
+            try {
+              for (let i = removedItem.length; i > 0; i--) {
+                window.tracker(
+                  "trackRemoveFromCart",
+                  removedItem[i-1].id.toString(),
+                  (removedItem[i-1].name || "N/A").toString(),
+                  "N/A",
+                  parseFloat(removedItem[i-1].price || 0),
+                  parseInt(removedItem[i-1].qty || 1),
+                  "USD"
+                );
+                removedItem.length -= 1;
+              }
+              removedItem.length = 0;
+            }
+            catch { return; }
           } 
           else if (this.responseURL.includes("orders")) {
             const transaction = response;
