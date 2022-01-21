@@ -1,4 +1,5 @@
 import { TagContext } from "../../../shared/types";
+import { Observable } from 'object-observer';
 
 const ollaTracker = ({
   appId,
@@ -6,6 +7,11 @@ const ollaTracker = ({
 }: Pick<TagContext, "appId" | "retailId">) => {
 
   const dataLayer = window.dataLayer || [];
+  const dataLayerObservable = Observable.from(dataLayer);
+
+  dataLayerObservable.observe((changes: any[]) => {
+    changes.forEach(change => console.log(change));
+  });
 
   function onDataLayerChange() {
     const data = dataLayer.slice(-1)[0]; // Gets the newest array member of dataLayer
@@ -99,7 +105,6 @@ const ollaTracker = ({
     }
   });
 
-  console.log(proxy);
   // dataLayer.push = function () {
   //   Array.prototype.push.apply(this, arguments);
   //   onDataLayerChange();
