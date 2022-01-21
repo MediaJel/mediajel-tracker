@@ -57,11 +57,11 @@ const buddiTracker = ({
 
             window.tracker(
               "addTrans",
-              transaction.id,
+              transaction.id.toString(),
               !retailId ? appId : retailId,
-              transaction.total,
-              parseInt(transaction.tax),
-              0,
+              parseFloat(transaction.total),
+              parseFloat(transaction.tax || 0),
+              parseFloat(transaction.delivery_fee || 0),
               "N/A",
               "N/A",
               "USA",
@@ -73,13 +73,13 @@ const buddiTracker = ({
 
               window.tracker(
                 "addItem",
-                transaction.id,
-                item.product_id,
-                item.product.name,
-                item.product.subcategory,
-                item.price,
-                item.qty,
-                "US"
+                transaction.id.toString(),
+                (item.product_id || "N/A").toString(),
+                (item.product.name || "N/A").toString(),
+                (item.product.strain_type || "N/A").toString(),
+                parseFloat(item.price || 0),
+                parseInt(item.qty || 1),
+                "USD"
               );
             }
 
