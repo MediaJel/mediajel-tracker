@@ -91,10 +91,19 @@ const ollaTracker = ({
   }
 
 
-  dataLayer.push = function () {
-    Array.prototype.push.apply(this, arguments);
-    onDataLayerChange();
-  };
+  const proxy = new Proxy(dataLayer, {
+    get: function (object, prop) {
+      console.log(object);
+      console.log(prop);
+      return dataLayer;
+    }
+  });
+
+  console.log(proxy);
+  // dataLayer.push = function () {
+  //   Array.prototype.push.apply(this, arguments);
+  //   onDataLayerChange();
+  // };
 };
 
 export default ollaTracker;
