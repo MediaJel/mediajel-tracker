@@ -12,7 +12,6 @@ const ollaTracker = ({
   observeArray(dataLayer, onDataLayerChange);
 
   function onDataLayerChange() {
-    console.log('CHANGGGEEE!!!');
     const data = dataLayer.slice(-1)[0]; // Gets the newest array member of dataLayer
 
     // data.event is at array index 1
