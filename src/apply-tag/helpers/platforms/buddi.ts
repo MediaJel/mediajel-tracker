@@ -5,57 +5,97 @@ const buddiTracker = ({
   retailId,
 }: Pick<TagContext, "appId" | "retailId">) => {
   (function () {
-    var origOpen = XMLHttpRequest.prototype.open;
+    const origOpen = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = function () {
       this.addEventListener("load", function () {
-        var response = this.responseText;
-        if (
-          this.responseURL.includes("cart") &&
-          !this.response.includes("delete")
-        ) {
-          var product = JSON.parse(response);
-          window.tracker(
-            "trackAddToCart",
-            product.id.toString(),
-            product.name,
-            "N/A",
-            product.price,
-            product.qty,
-            "USD"
-          );
-        } else if (this.responseURL.includes("orders")) {
-          var transaction = JSON.parse(response);
-          var product = transaction.products;
-          window.tracker(
-            "addTrans",
-            transaction.id,
-            !retailId ? appId : retailId,
-            transaction.total,
-            parseInt(transaction.tax),
-            0,
-            "N/A",
-            "N/A",
-            "USA",
-            "US"
-          );
+        try {
+          const response = JSON.parse(this.responseText);
+          const cartList = []; // Creates an empty array to store cart items for comparison with removeFromCart array
+        
+          if (
+            this.responseURL.includes("cart") &&
+            !this.response.includes("delete")
+          ) {
+            const product = response;
+            
+            cartList.push(product);
+            console.log("cartList: " + cartList);
+            window.tracker(
+              "trackAddToCart",
+              product.id.toString(),
+              (product.name || "N/A").toString(),
+              "N/A",
+              parseFloat(product.price || 0),
+              parseInt(product.qty || 1),
+              "USD"
+            );
+          } 
+          else if (this.responseURL.includes("delete-product-from-cart")) {
+            const product = response.items;
 
-          for (var i = 0, l = product.length; i < l; i++) {
-            var item = product[i];
+            // This filters out the items that are being removed from the cart
+            const removedItem = cartList.filter(x => {
+              !product.includes(x);
+            }).concat(product.filter(x => {
+              !cartList.includes(x);
+            }));
+            
+            console.log("removedItem: " + JSON.stringify(removedItem));
+            try {
+              for (let i = removedItem.length; i > 0; i--) {
+                window.tracker(
+                  "trackRemoveFromCart",
+                  removedItem[i-1].id.toString(),
+                  (removedItem[i-1].name || "N/A").toString(),
+                  "N/A",
+                  parseFloat(removedItem[i-1].price || 0),
+                  parseInt(removedItem[i-1].qty || 1),
+                  "USD"
+                );
+                removedItem.length -= 1;
+              }
+              removedItem.length = 0;
+            }
+            catch { return; }
+          } 
+          else if (this.responseURL.includes("orders")) {
+            const transaction = response;
+            const product = transaction.products;
 
             window.tracker(
-              "addItem",
-              transaction.id,
-              item.product_id,
-              item.product.name,
-              item.product.subcategory,
-              item.price,
-              item.qty,
+              "addTrans",
+              transaction.id.toString(),
+              !retailId ? appId : retailId,
+              parseFloat(transaction.total),
+              parseFloat(transaction.tax || 0),
+              parseFloat(transaction.delivery_fee || 0),
+              "N/A",
+              "N/A",
+              "USA",
               "US"
             );
-          }
 
-          window.tracker("trackTrans");
+            for (let i = 0; i < product.length; ++i) {
+              const item = product[i];
+
+              window.tracker(
+                "addItem",
+                transaction.id.toString(),
+                (item.product_id || "N/A").toString(),
+                (item.product.name || "N/A").toString(),
+                (item.product.strain_type || "N/A").toString(),
+                parseFloat(item.price || 0),
+                parseInt(item.qty || 1),
+                "USD"
+              );
+            }
+
+            window.tracker("trackTrans");
+            cartList.length = 0; // This clears the cartList array
+          }
         }
+        catch { return; }
+        
       });
       origOpen.apply(this, arguments);
     };

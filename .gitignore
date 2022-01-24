@@ -5,3 +5,4 @@ dist
 .parcel-cache
 env
 todo.txt
+yarn-error.log

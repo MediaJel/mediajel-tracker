@@ -14,7 +14,7 @@ const applyTag = async (context: TagContext) => {
         func({ appId, retailId });
         break;
       }
-      // TODO: UNSTABLE
+      //* STABLE
       case "dutchie-subdomain": {
         const { default: func } = await import(
           "./helpers/platforms/dutchie-subdomain"
@@ -36,7 +36,7 @@ const applyTag = async (context: TagContext) => {
         func({ appId, retailId });
         break;
       }
-      // TODO: UNSTABLE
+      //* STABLE
       case "tymber": {
         const { default: func } = await import("./helpers/platforms/tymber");
         func({ appId, retailId });
@@ -50,13 +50,13 @@ const applyTag = async (context: TagContext) => {
         func({ appId, retailId });
         break;
       }
-      // TODO: UNSTABLE
+      //* STABLE 
       case "greenrush": {
         const { default: func } = await import("./helpers/platforms/greenrush");
         func({ appId, retailId });
         break;
       }
-      // TODO: UNSTABLE
+      //* STABLE
       case "buddi": {
         const { default: func } = await import("./helpers/platforms/buddi");
         func({ appId, retailId });
@@ -71,6 +71,11 @@ const applyTag = async (context: TagContext) => {
       //* STABLE
       case "lightspeed": {
         const { default: func } = await import("./helpers/platforms/lightspeed");
+        func({ appId, retailId });
+        break;
+      }
+      case "olla": {
+        const { default: func } = await import("./helpers/platforms/olla");
         func({ appId, retailId });
         break;
       }
