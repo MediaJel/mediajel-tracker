@@ -5,13 +5,14 @@ const dutchieSubdomainTracker = ({
   retailId,
 }: Pick<TagContext, "appId" | "retailId">) => {
   function dataLayerListener(dataLayerEvent) {
-    const event = dataLayerEvent.detail.event;
-    const transaction = dataLayerEvent.detail.ecommerce;
+    const response = JSON.parse(dataLayerEvent)
+    const event = response.detail.event;
+    const transaction = response.detail.ecommerce;
     const products = transaction.items;
 
     // TODO: REMOVE CONSOLE LOGS AFTER TESTING
-    console.log(`event: ${event}`);
-    console.log(`ecommerce: ${transaction}`);
+    console.log(`event: ${ event }`);
+    console.log(`ecommerce: ${ JSON.stringify(transaction) }`);
 
     if (event === "add_to_cart") {
       const { item_id, item_name, item_category, price, quantity } = products;
