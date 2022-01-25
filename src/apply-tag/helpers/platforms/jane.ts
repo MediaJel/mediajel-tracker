@@ -56,18 +56,20 @@ const janeTracker = ({
         "USD"
       );
 
-      for (let i = 0; i < products.length; ++i) {
+      products.forEach(items => {
+        const { product_id, name, category, unit_price, count } = items
+
         window.tracker(
           "addItem",
           cartId.toString(),
-          (products[i].product_id).toString(),
-          (products[i].name || "N/A").toString(),
-          (products[i].category || "N/A").toString(),
-          parseFloat(products[i].unit_price || 0),
-          parseInt(products[i].count || 1),
+          product_id.toString(),
+          (name || "N/A").toString(),
+          (category || "N/A").toString(),
+          parseFloat(unit_price || 0),
+          parseInt(count || 1),
           "USD"
         );
-      }
+      })
 
       window.tracker("trackTrans");
     }
