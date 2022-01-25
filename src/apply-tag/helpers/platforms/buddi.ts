@@ -81,7 +81,7 @@ const buddiTracker = ({
               window.tracker(
                 "addItem",
                 transaction.id.toString(),
-                (item.product_id || "N/A").toString(),
+                item.product_id.toString(),
                 (item.product.name || "N/A").toString(),
                 (item.product.strain_type || "N/A").toString(),
                 parseFloat(item.price || 0),
