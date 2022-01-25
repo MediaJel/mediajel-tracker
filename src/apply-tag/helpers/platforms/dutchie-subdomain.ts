@@ -4,12 +4,33 @@ const dutchieSubdomainTracker = ({
   appId,
   retailId,
 }: Pick<TagContext, "appId" | "retailId">) => {
+
+  // Whenever something is pushed, creates an event and dispatches that.
+  // Listens from every file to this event to act on whenever a value is added to the dataLayer array.
+  window.dataLayer = window.dataLayer || new Proxy([], {
+    set: (obj, prop, value) => {
+      console.log("Hello, I am working in Proxy")
+      if (prop !== 'length') {
+        const pushEvent = new CustomEvent('datalayerpush', {
+          detail: value
+        });
+  
+        window.dispatchEvent(pushEvent);
+      }
+      
+      return Reflect.set(obj, prop, value);
+    }
+  });
+  
+  window.addEventListener('datalayerpush', dataLayerListener, false);
+
   function dataLayerListener(dataLayerEvent) {
     try {
       console.log("Hello, I'm inside the dataLayerListener");
-      const response = JSON.parse(dataLayerEvent)
-      const event = response.detail.event;
-      const transaction = response.detail.ecommerce;
+      console.log(dataLayerEvent.detail);
+      const response = JSON.parse(dataLayerEvent.detail)
+      const event = response.event;
+      const transaction = response.ecommerce;
       const products = transaction.items;
 
       // TODO: REMOVE CONSOLE LOGS AFTER TESTING
@@ -84,25 +105,6 @@ const dutchieSubdomainTracker = ({
       return;
     }
   }
-
-  // Whenever something is pushed, creates an event and dispatches that.
-  // Listens from every file to this event to act on whenever a value is added to the dataLayer array.
-  window.dataLayer = window.dataLayer || new Proxy([], {
-    set: (obj, prop, value) => {
-      console.log("Hello, I am working in Proxy")
-      if (prop !== 'length') {
-        const pushEvent = new CustomEvent('datalayerpush', {
-          detail: value
-        });
-  
-        window.dispatchEvent(pushEvent);
-      }
-      
-      return Reflect.set(obj, prop, value);
-    }
-  });
-  
-  window.addEventListener('datalayerpush', dataLayerListener, false);
 };
 
 export default dutchieSubdomainTracker;
