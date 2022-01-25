@@ -4,6 +4,7 @@ const dutchieSubdomainTracker = ({
   appId,
   retailId,
 }: Pick<TagContext, "appId" | "retailId">) => {
+  console.log("Hello I am in dutchieSubdomainTracker");
 
   // Whenever something is pushed, creates an event and dispatches that.
   // Listens from every file to this event to act on whenever a value is added to the dataLayer array.
@@ -28,7 +29,7 @@ const dutchieSubdomainTracker = ({
     try {
       console.log("Hello, I'm inside the dataLayerListener");
       console.log(dataLayerEvent.detail);
-      const response = JSON.parse(dataLayerEvent.detail)
+      const response = dataLayerEvent.detail
       const event = response.event;
       const transaction = response.ecommerce;
       const products = transaction.items;
