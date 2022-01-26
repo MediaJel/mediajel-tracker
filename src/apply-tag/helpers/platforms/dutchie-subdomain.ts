@@ -1,10 +1,22 @@
 import { TagContext } from "../../../shared/types";
+import { DataLayerHelper } from '../../../../node_modules/data-layer-helper/src/helper/helper.js';
 
 const dutchieSubdomainTracker = ({
   appId,
   retailId,
 }: Pick<TagContext, "appId" | "retailId">) => {
   console.log("Hello I am in dutchieSubdomainTracker");
+
+  const dataLayer = window.dataLayer || [];
+
+  function listener(model, message) {
+    console.log("Model: " + model);
+    console.log("Message: " + message);
+  }
+
+  const helper = new DataLayerHelper(dataLayer, {listener: listener});
+
+  console.log("Helper: " + helper);
 
   // Whenever something is pushed, creates an event and dispatches that.
   // Listens from every file to this event to act on whenever a value is added to the dataLayer array.
