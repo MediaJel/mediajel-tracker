@@ -32,7 +32,7 @@ export default function liquidm() {
     data: {
       DSP: "LiquidM",
       GAID: "{GAID}",
-      GAID_MD5: "{GAID_MD5 }",
+      GAID_MD5: "{GAID_MD5}",
       GAID_SHA1: "{GAID_SHA1}",
       IDFA: "{IDFA}",
       IDFA_MD5: "{IDFA_MD5}",
@@ -43,7 +43,7 @@ export default function liquidm() {
   };
 
   mjcx.push(cCx),
-    mjcx.push(cCx2),
-    mjcx.push(cCx3),
-    window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
+  mjcx.push(cCx2),
+  mjcx.push(cCx3),
+  window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
 }
