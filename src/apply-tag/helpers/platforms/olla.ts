@@ -1,7 +1,5 @@
 import { TagContext } from "../../../shared/types";
 import { observeArray } from "../utils/observe-array";
-import 'node_modules/data-layer-helper/dist/data-layer-helper';
-
 
 const ollaTracker = ({
   appId,
@@ -74,8 +72,8 @@ const ollaTracker = ({
         (transaction_currency || "USD").toString()
       );
 
-      items.forEach((item) => {
-        const { id, name, price, quantity, category } = item;
+      items.forEach((items) => {
+        const { id, name, price, quantity, category } = items;
 
         window.tracker(
           "addItem",
