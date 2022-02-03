@@ -7,14 +7,15 @@ const dutchieIframeTracker = ({
   function receiveMessage(event) {
     const rawData = JSON.parse(event.data);
     const payload = rawData.payload.payload;
-    const products = payload.ecommerce.items;
+    const transaction = payload.ecommerce;
+    const products = transaction.items;
 
     if (rawData.event === "analytics:dataLayer" && payload.event === "add_to_cart") {
       const { item_id, item_name, item_category, price, quantity } = products[0];
 
       window.tracker(
         "trackAddToCart",
-        (item_id).toString(),
+        item_id.toString(),
         (item_name || "N/A").toString(),
         (item_category || "N/A").toString(),
         parseFloat(price || 0),
@@ -28,7 +29,7 @@ const dutchieIframeTracker = ({
 
       window.tracker(
         "trackRemoveFromCart",
-        (item_id).toString(),
+        item_id.toString(),
         (item_name || "N/A").toString(),
         (item_category || "N/A").toString(),
         parseFloat(price || 0),
@@ -37,16 +38,15 @@ const dutchieIframeTracker = ({
       );
     }
 
-    if (
-      rawData.payload.event == "ec:setAction" &&
-      rawData.payload.playload[0] == "purchase"
-    ) {
-      const transaction = rawData.payload.playload[1];
+    if (rawData.event == "analytics:dataLayer" && payload.event == "purchase") {
+      const { transaction_id, value } = transaction;
+      
+      // Hardcoded because most fields are empty
       window.tracker(
         "addTrans",
-        transaction.id,
-        !retailId ? appId : retailId,
-        transaction.revenue ?? 0,
+        transaction.id.toString(),
+        retailId ?? appId,
+        parseFloat(value),
         0,
         0,
         "N/A",
@@ -54,9 +54,26 @@ const dutchieIframeTracker = ({
         "USA",
         "USD"
       );
+
+      products.forEach(items => {
+        const { item_id, item_name, item_category, price, quantity } = items;
+
+        window.tracker(
+          "addItem",
+          transaction_id.toString(),
+          item_id.toString(),
+          (item_name || "N/A").toString(),
+          (item_category || "N/A").toString(),
+          parseFloat(price || 0),
+          parseInt(quantity || 1),
+          "USD"
+        );
+      })
+
       window.tracker("trackTrans");
     }
   }
+
   window.addEventListener("message", receiveMessage, false);
 };
 
