@@ -7,7 +7,7 @@ const applyTag = async (context: TagContext) => {
 
   const isSnowplowEnabled: Boolean = entrypoint({ appId, collector, retailId });
 
-  const recordIntegration = recordIntegration({appId, environment})
+  recordIntegration({ appId, environment })
 
   if (isSnowplowEnabled && environment) {
     switch (environment) {
