@@ -50,9 +50,9 @@ const janeTracker = ({
         parseFloat(estimatedTotal),
         parseFloat(salesTax + storeTax || 0),
         parseFloat(deliveryFee || 0),
-        (deliveryAddress.city || "N/A").toString(),
-        (deliveryAddress.state_code || "N/A").toString(),
-        (deliveryAddress.country_code || "N/A").toString(),
+        (deliveryAddress.city ?? "N/A").toString(),
+        (deliveryAddress.state_code ?? "N/A").toString(),
+        (deliveryAddress.country_code ?? "N/A").toString(),
         "USD"
       );
 
