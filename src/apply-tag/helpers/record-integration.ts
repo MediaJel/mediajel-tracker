@@ -1,8 +1,8 @@
-import {TagContext} from '../../shared/types'
+import { TagContext } from '../../shared/types'
 
 
 
-export default recordIntegration = ({appId, environment}): Pick<TagContext, 'appId' | 'environment'> => {
+const recordIntegration = ({ appId, environment }: Pick<TagContext, 'appId' | 'environment'>) => {
 
     const recordSchema = {
         schema: "iglu:com.mediajel.events/record/jsonschema/1-0-0",
@@ -15,3 +15,5 @@ export default recordIntegration = ({appId, environment}): Pick<TagContext, 'app
     window.tracker('trackSelfDescribingEvent', recordSchema)
 
 }
+
+export default recordIntegration
