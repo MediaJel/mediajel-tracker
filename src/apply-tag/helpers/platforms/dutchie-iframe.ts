@@ -6,21 +6,37 @@ const dutchieIframeTracker = ({
 }: Pick<TagContext, "appId" | "retailId">) => {
   function receiveMessage(event) {
     const rawData = JSON.parse(event.data);
-    if (rawData.payload.event === "ec:addProduct") {
-      const cartArray = rawData.payload.playload;
-      for (let i = 0, l = cartArray.length; i < l; i++) {
-        const cartItem = cartArray[i];
-        window.tracker(
-          "trackAddToCart",
-          cartItem.id.toString(),
-          cartItem.name.toString() ?? "N/A",
-          cartItem.category.toString() ?? "N/A",
-          parseInt(cartItem.price) ?? 0,
-          parseInt(cartItem.quantity) ?? 1,
-          "USD"
-        );
-      }
+    const payload = rawData.payload.payload;
+    const products = payload.ecommerce.items;
+
+    if (rawData.event === "analytics:dataLayer" && payload.event === "add_to_cart") {
+      const { item_id, item_name, item_category, price, quantity } = products[0];
+
+      window.tracker(
+        "trackAddToCart",
+        (item_id).toString(),
+        (item_name || "N/A").toString(),
+        (item_category || "N/A").toString(),
+        parseFloat(price || 0),
+        parseInt(quantity || 1),
+        "USD"
+      );
     }
+
+    if (rawData.event === "analytics:dataLayer" && payload.event === "remove_from_cart") {
+      const { item_id, item_name, item_category, price, quantity } = products[0];
+
+      window.tracker(
+        "trackRemoveFromCart",
+        (item_id).toString(),
+        (item_name || "N/A").toString(),
+        (item_category || "N/A").toString(),
+        parseFloat(price || 0),
+        parseInt(quantity || 1),
+        "USD"
+      );
+    }
+
     if (
       rawData.payload.event == "ec:setAction" &&
       rawData.payload.playload[0] == "purchase"
