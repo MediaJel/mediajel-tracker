@@ -12,8 +12,8 @@ const dutchieSubdomainTracker = ({
     if (data.event === "add_to_cart") {
       const items = data.ecommerce.items;
 
-      items.forEach((item, i) => {
-        const { item_id, item_name, price, quantity, item_category } = item;
+      items.forEach(items => {
+        const { item_id, item_name, price, quantity, item_category } = items;
 
         window.tracker(
           "trackAddToCart",
@@ -30,8 +30,8 @@ const dutchieSubdomainTracker = ({
     if (data.event === "remove_from_cart") {
       const items = data.ecommerce.items;
 
-      items.forEach((item, i) => {
-        const { item_id, item_name, price, quantity, item_category } = item;
+      items.forEach(items => {
+        const { item_id, item_name, price, quantity, item_category } = items;
         window.tracker(
           "trackRemoveFromCart",
           item_id.toString(),
@@ -63,8 +63,8 @@ const dutchieSubdomainTracker = ({
         "USD"
       );
 
-      items.forEach((item, i) => {
-        const { item_id, item_name, price, quantity, item_category } = item;
+      items.forEach(items => {
+        const { item_id, item_name, price, quantity, item_category } = items;
 
         window.tracker(
           "addItem",
