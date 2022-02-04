@@ -8,53 +8,50 @@ const dutchieSubdomainTracker = ({
 
   function onDataLayerChange() {
     const data = dataLayer.slice(-1)[0]; // Gets the newest array member of dataLayer
+    const transaction = data.ecommerce;
+    const products = data.ecommerce.items;
 
     if (data.event === "add_to_cart") {
-      const items = data.ecommerce.items;
-
-      items.forEach(items => {
-        const { item_id, item_name, price, quantity, item_category } = items;
+      products.forEach(items => {
+        const { item_id, item_name, item_category, price, quantity } = items;
 
         window.tracker(
           "trackAddToCart",
           item_id.toString(),
-          item_name,
-          item_category,
-          price,
-          quantity,
+          (item_name || "N/A").toString(),
+          (item_category || "N/A").toString(),
+          parseFloat(price || 0),
+          parseInt(quantity || 1),
           "USD"
         );
       });
     }
 
     if (data.event === "remove_from_cart") {
-      const items = data.ecommerce.items;
-
-      items.forEach(items => {
-        const { item_id, item_name, price, quantity, item_category } = items;
+      products.forEach(items => {
+        const { item_id, item_name, item_category, price, quantity } = items;
+        
         window.tracker(
           "trackRemoveFromCart",
           item_id.toString(),
-          item_name,
-          item_category,
-          price,
-          quantity,
+          (item_name || "N/A").toString(),
+          (item_category || "N/A").toString(),
+          parseFloat(price || 0),
+          parseInt(quantity || 1),
           "USD"
         );
       });
     }
 
     if (data.event === "purchase") {
-      const ecommerce = data.ecommerce;
-      const { transaction_id, value } = ecommerce;
-      const items = ecommerce.items;
+      const { transaction_id, value } = transaction;
 
       // Hardcoded because most fields are empty
       window.tracker(
         "addTrans",
         transaction_id.toString(),
         retailId ?? appId,
-        parseInt(value),
+        parseFloat(value),
         0,
         0,
         "N/A",
@@ -63,17 +60,17 @@ const dutchieSubdomainTracker = ({
         "USD"
       );
 
-      items.forEach(items => {
-        const { item_id, item_name, price, quantity, item_category } = items;
+      products.forEach(items => {
+        const { item_id, item_name, item_category, price, quantity } = items;
 
         window.tracker(
           "addItem",
           transaction_id.toString(),
-          item_id,
-          item_name,
-          item_category,
-          price,
-          quantity,
+          item_id.toString(),
+          (item_name || "N/A").toString(),
+          (item_category || "N/A").toString(),
+          parseFloat(price || 0),
+          parseInt(quantity || 1),
           "USD"
         );
       });
@@ -82,6 +79,7 @@ const dutchieSubdomainTracker = ({
     }
   }
 
+  // Stores the original dataLayer.push method before modifying it to execute our snowplow tracker
   const originalPush = dataLayer.push
   dataLayer.push = function (...args) {
     originalPush(...args);

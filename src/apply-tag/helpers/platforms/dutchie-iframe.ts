@@ -51,7 +51,7 @@ const dutchieIframeTracker = ({
         0,
         "N/A",
         "N/A",
-        "USA",
+        "N/A",
         "USD"
       );
 
