@@ -1,4 +1,4 @@
-function tryParseJSONObject (jsonString) {
+export const tryParseJSONObject = jsonString => {
   try {
       const o = JSON.parse(jsonString);
       if (o && typeof o === "object") {
