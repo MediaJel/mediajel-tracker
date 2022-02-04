@@ -4,7 +4,9 @@ const shopifyTracker = ({
   appId,
   retailId,
 }: Pick<TagContext, "appId" | "retailId">) => {
-  if (!window.Shopify.checkout) return;
+  if (!window.Shopify.checkout) {
+    return;
+  }
   else {
     const transaction = window.Shopify.checkout;
     const products = transaction.line_items;
