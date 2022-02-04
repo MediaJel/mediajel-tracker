@@ -15,7 +15,7 @@ const shopifyTracker = ({
       "addTrans",
       (transaction.liquid_order_name || transaction.order_id).toString(),
       retailId ?? appId,
-      parseFloat(transaction.total_price),
+      parseFloat(transaction.liquid_total_price || transaction.total_price),
       parseFloat(transaction.total_tax || 0),
       parseFloat(transaction.shipping_rate.price || 0),
       (transaction.billing_address.city || "N/A").toString(),
