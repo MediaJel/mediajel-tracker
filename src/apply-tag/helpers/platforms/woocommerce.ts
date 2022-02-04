@@ -7,9 +7,14 @@ const woocommerceTracker = ({
   if (!window.transactionOrder && !window.transactionItems) {
     return;
   }
+  const transaction = window.transactionOrder;
+  const products = window.transactionItems;
 
-  const transaction = JSON.parse(window.transactionOrder);
-  const products = JSON.parse(window.transactionItems);
+  // Legacy support for previous WooCommerce integration
+  if (typeof window.transactionItems === 'string' || window.transactionItems instanceof String && typeof window.transactionOrder === 'string' || window.transactionOrder instanceof String) {
+    JSON.parse(transaction);
+    JSON.parse(products);
+  }
 
   window.tracker(
     "addTrans",

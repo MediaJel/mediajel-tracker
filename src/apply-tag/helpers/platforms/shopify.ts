@@ -11,6 +11,7 @@ const shopifyTracker = ({
     const transaction = window.Shopify.checkout;
     const products = transaction.line_items;
 
+    // liquid_total_price is legacy support for old shopify integration
     window.tracker(
       "addTrans",
       (transaction.liquid_order_name || transaction.order_id).toString(),
