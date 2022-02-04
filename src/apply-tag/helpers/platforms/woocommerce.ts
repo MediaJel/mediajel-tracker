@@ -1,4 +1,5 @@
 import { TagContext } from "../../../shared/types";
+import { tryParseJSONObject } from "../utils/tryParseJSONObject";
 
 const woocommerceTracker = ({
   appId,
