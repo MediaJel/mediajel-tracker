@@ -39,18 +39,6 @@ const woocommerceTracker = ({
   })
 
   window.tracker("trackTrans");
-
-  function tryParseJSONObject (jsonString) {
-    try {
-        const o = JSON.parse(jsonString);
-        if (o && typeof o === "object") {
-            return o;
-        }
-    }
-    catch (e) { }
-
-    return jsonString;
-  };
 };
 
 export default woocommerceTracker;
