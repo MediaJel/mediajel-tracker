@@ -11,7 +11,7 @@ const dutchieSubdomainTracker = ({
 
     if (data.event === "add_to_cart") {
       const products = data.ecommerce.items;
-      const { item_id, item_name, item_category, price, quantity } = products;
+      const { item_id, item_name, item_category, price, quantity } = products[0];
 
       window.tracker(
         "trackAddToCart",
@@ -26,7 +26,7 @@ const dutchieSubdomainTracker = ({
 
     if (data.event === "remove_from_cart") {
       const products = data.ecommerce.items;
-      const { item_id, item_name, item_category, price, quantity } = products;
+      const { item_id, item_name, item_category, price, quantity } = products[0];
       
       window.tracker(
         "trackRemoveFromCart",
