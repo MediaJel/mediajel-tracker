@@ -77,7 +77,7 @@ const applyTag = async (context: TagContext) => {
         func({ appId, retailId });
         break;
       }
-      // TODO: IMPLEMENT NEW DATALAYER LISTENER
+      //* STABLE
       case "olla": {
         const { default: func } = await import("./helpers/platforms/olla");
         func({ appId, retailId });
