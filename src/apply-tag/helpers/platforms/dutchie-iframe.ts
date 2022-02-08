@@ -8,10 +8,7 @@ const dutchieIframeTracker = ({
   function receiveMessage(event) {
     const rawData = tryParseJSONObject(event.data);
 
-    if(!rawData.payload.payload.ecommerce || !rawData.payload.payload.ecommerce.items) {
-      return;
-    }
-    else {
+    try {
       const payload = rawData.payload.payload;
       const transaction = payload.ecommerce;
       const products = transaction.items;
@@ -78,6 +75,9 @@ const dutchieIframeTracker = ({
 
         window.tracker("trackTrans");
       }
+    }
+    catch (err) {
+      throw err;
     }
   }
 
