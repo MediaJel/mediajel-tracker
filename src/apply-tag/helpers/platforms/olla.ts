@@ -1,64 +1,53 @@
 import { TagContext } from "../../../shared/types";
-import { observeArray } from "../utils/observe-array";
 
 const ollaTracker = ({
   appId,
   retailId,
 }: Pick<TagContext, "appId" | "retailId">) => {
-
-  observeArray(window.dataLayer, onDataLayerChange);
+  const dataLayer = window.dataLayer || [];
 
   function onDataLayerChange() {
     const data = window.dataLayer.slice(-1)[0]; // Gets the newest array member of dataLayer
+    const dataLayerEvent = data[1];   // data.event is at array index 1
 
-    // data.event is at array index 1
-    // data.items is at array index 2
-    if (data.event === "add_to_cart" || data[1] === "add_to_cart") {
-      const items = data.items || data[2].items;
+    if (data.event === "add_to_cart" || dataLayerEvent === "add_to_cart") {
+      const products = data.items || data[2].items;   // data.items is at array index 2
+      const { id, name, price, quantity, category } = products[0];
 
-      items.forEach((item) => {
-        const { id, name, price, quantity, category } = item;
-
-        window.tracker(
-          "trackAddToCart",
-          id.toString(),
-          (name || "N/A").toString(),
-          (category || "N/A").toString(),
-          parseFloat(price || 0),
-          parseInt(quantity || 1),
-          "USD"
-        );
-      });
+      window.tracker(
+        "trackAddToCart",
+        id.toString(),
+        (name || "N/A").toString(),
+        (category || "N/A").toString(),
+        parseFloat(price || 0),
+        parseInt(quantity || 1),
+        "USD"
+      );
     }
 
-    // data.event is at array index 1
-    // data.items is at array index 2
-    if (data.event === "remove_from_cart" || data[1] === "remove_from_cart") {
-      const items = data.items || data[2].items;
+    if (data.event === "remove_from_cart" || dataLayerEvent === "remove_from_cart") {
+      const products = data.items || data[2].items;   // data.items is at array index 2
+      const { id, name, price, quantity, category } = products[0];
 
-      items.forEach((item) => {
-        const { id, name, price, quantity, category } = item;
-
-        window.tracker(
-          "trackRemoveFromCart",
-          id.toString(),
-          (name || "N/A").toString(),
-          (category || "N/A").toString(),
-          parseFloat(price || 0),
-          parseInt(quantity || 1),
-          "USD"
-        );
-      });
+      window.tracker(
+        "trackRemoveFromCart",
+        id.toString(),
+        (name || "N/A").toString(),
+        (category || "N/A").toString(),
+        parseFloat(price || 0),
+        parseInt(quantity || 1),
+        "USD"
+      );
     }
 
-    // data.event is at array index 1
-    // data.items and everything else is at array index 2
-    if (data.event === "purchase" || data[1] === "purchase") {
+    if (data.event === "purchase" || dataLayerEvent === "purchase") {
+      // all ecommerce information is at array index 2
       const transaction_id = data.transaction_id || data[2].transaction_id;
       const transaction_total = data.value || data[2].value;
       const transaction_currency = data.currency || data[2].currency;
-      const items = data.items || data[2].items;
+      const products = data.items || data[2].items;
 
+      // Hardcoded because most fields are empty
       window.tracker(
         "addTrans",
         transaction_id.toString(),
@@ -68,12 +57,12 @@ const ollaTracker = ({
         0,
         "N/A",
         "N/A",
-        "USA",
+        "N/A",
         (transaction_currency || "USD").toString()
       );
 
-      items.forEach((item) => {
-        const { id, name, price, quantity, category } = item;
+      products.forEach(items => {
+        const { id, name, price, quantity, category } = items;
 
         window.tracker(
           "addItem",
@@ -90,6 +79,13 @@ const ollaTracker = ({
       window.tracker('trackTrans');
     }
   }
+
+  // Stores the original dataLayer.push method before modifying it to execute our snowplow tracker
+  const originalPush = dataLayer.push
+  dataLayer.push = function (...args) {
+    originalPush(...args);
+    onDataLayerChange();
+  };
 };
 
 export default ollaTracker;

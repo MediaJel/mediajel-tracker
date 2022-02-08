@@ -1,10 +1,13 @@
 import entrypoint from "./helpers/entrypoint";
+import recordIntegration from './helpers/record-integration'
 import { TagContext } from "../shared/types";
 
 const applyTag = async (context: TagContext) => {
   const { environment, retailId, appId, collector } = context;
 
   const isSnowplowEnabled: Boolean = entrypoint({ appId, collector, retailId });
+
+  recordIntegration({ appId, environment })
 
   if (isSnowplowEnabled && environment) {
     switch (environment) {
@@ -74,6 +77,7 @@ const applyTag = async (context: TagContext) => {
         func({ appId, retailId });
         break;
       }
+      // TODO: IMPLEMENT NEW DATALAYER LISTENER
       case "olla": {
         const { default: func } = await import("./helpers/platforms/olla");
         func({ appId, retailId });

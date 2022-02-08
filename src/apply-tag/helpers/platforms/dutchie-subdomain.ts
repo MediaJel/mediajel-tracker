@@ -4,76 +4,72 @@ const dutchieSubdomainTracker = ({
   appId,
   retailId,
 }: Pick<TagContext, "appId" | "retailId">) => {
-
   const dataLayer = window.dataLayer || [];
 
   function onDataLayerChange() {
     const data = dataLayer.slice(-1)[0]; // Gets the newest array member of dataLayer
 
     if (data.event === "add_to_cart") {
-      const items = data.ecommerce.items;
-      console.log(items);
+      const products = data.ecommerce.items;
+      const { item_id, item_name, item_category, price, quantity } = products[0];
 
-      items.forEach((item, i) => {
-        const { item_id, item_name, price, quantity, item_category } = item;
-        window.tracker(
-          "trackAddToCart",
-          item_id.toString(),
-          item_name,
-          item_category,
-          price,
-          quantity,
-          "USD"
-        );
-      });
+      window.tracker(
+        "trackAddToCart",
+        item_id.toString(),
+        (item_name || "N/A").toString(),
+        (item_category || "N/A").toString(),
+        parseFloat(price || 0),
+        parseInt(quantity || 1),
+        "USD"
+      );
     }
 
     if (data.event === "remove_from_cart") {
-      const items = data.ecommerce.items;
-      console.log(items);
-      items.forEach((item, i) => {
-        const { item_id, item_name, price, quantity, item_category } = item;
-        window.tracker(
-          "trackRemoveFromCart",
-          item_id.toString(),
-          item_name,
-          item_category,
-          price,
-          quantity,
-          "USD"
-        );
-      });
+      const products = data.ecommerce.items;
+      const { item_id, item_name, item_category, price, quantity } = products[0];
+      
+      window.tracker(
+        "trackRemoveFromCart",
+        item_id.toString(),
+        (item_name || "N/A").toString(),
+        (item_category || "N/A").toString(),
+        parseFloat(price || 0),
+        parseInt(quantity || 1),
+        "USD"
+      );
     }
 
     if (data.event === "purchase") {
-      const ecommerce = data.ecommerce;
-      const { transaction_id, value } = ecommerce;
-      const items = ecommerce.items;
-      console.log(ecommerce);
+      const transaction = data.ecommerce;
+      const products = transaction.items;
+      const { transaction_id, value } = transaction;
+
+      // Hardcoded because most fields are empty
       window.tracker(
         "addTrans",
         transaction_id.toString(),
         retailId ?? appId,
-        parseInt(value),
+        parseFloat(value),
         0,
         0,
         "N/A",
         "N/A",
-        "USA",
+        "N/A",
         "USD"
       );
 
-      items.forEach((item, i) => {
-        const { item_id, item_name, price, quantity, item_category } = item;
+      products.forEach(items => {
+        const { item_id, item_name, item_category, price, quantity } = items;
 
         window.tracker(
           "addItem",
           transaction_id.toString(),
-          item_id,
-          item_name,
-          item_category,
-          price,
-          quantity
+          item_id.toString(),
+          (item_name || "N/A").toString(),
+          (item_category || "N/A").toString(),
+          parseFloat(price || 0),
+          parseInt(quantity || 1),
+          "USD"
         );
       });
 
@@ -81,9 +77,12 @@ const dutchieSubdomainTracker = ({
     }
   }
 
-  dataLayer.push = function () {
-    Array.prototype.push.apply(this, arguments);
+  // Stores the original dataLayer.push method before modifying it to execute our snowplow tracker
+  const originalPush = dataLayer.push
+  dataLayer.push = function (...args) {
+    originalPush(...args);
     onDataLayerChange();
   };
 };
+
 export default dutchieSubdomainTracker;
