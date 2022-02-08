@@ -7,9 +7,12 @@ const dutchieIframeTracker = ({
 }: Pick<TagContext, "appId" | "retailId">) => {
   function receiveMessage(event) {
     const rawData = tryParseJSONObject(event.data);
+    const payload = rawData.payload.payload;
 
-    try {
-      const payload = rawData.payload.payload;
+    if(rawData.event === "analytics:dataLayer" && !payload.ecommerce || !payload.ecommerce.items) {
+      return;
+    }
+    else {
       const transaction = payload.ecommerce;
       const products = transaction.items;
 
@@ -75,9 +78,6 @@ const dutchieIframeTracker = ({
 
         window.tracker("trackTrans");
       }
-    }
-    catch (err) {
-      throw err;
     }
   }
 
