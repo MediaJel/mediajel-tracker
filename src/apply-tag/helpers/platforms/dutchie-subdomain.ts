@@ -17,35 +17,31 @@ const dutchieSubdomainTracker = ({
       const products = transaction.items;
 
       if (data.event === "add_to_cart") {
-        products.forEach(items => {
-          const { item_id, item_name, item_category, price, quantity } = items;
+        const { item_id, item_name, item_category, price, quantity } = products;
 
-          window.tracker(
-            "trackAddToCart",
-            item_id.toString(),
-            (item_name || "N/A").toString(),
-            (item_category || "N/A").toString(),
-            parseFloat(price || 0),
-            parseInt(quantity || 1),
-            "USD"
-          );
-        });
+        window.tracker(
+          "trackAddToCart",
+          item_id.toString(),
+          (item_name || "N/A").toString(),
+          (item_category || "N/A").toString(),
+          parseFloat(price || 0),
+          parseInt(quantity || 1),
+          "USD"
+        );
       }
 
       if (data.event === "remove_from_cart") {
-        products.forEach(items => {
-          const { item_id, item_name, item_category, price, quantity } = items;
-          
-          window.tracker(
-            "trackRemoveFromCart",
-            item_id.toString(),
-            (item_name || "N/A").toString(),
-            (item_category || "N/A").toString(),
-            parseFloat(price || 0),
-            parseInt(quantity || 1),
-            "USD"
-          );
-        });
+        const { item_id, item_name, item_category, price, quantity } = products;
+        
+        window.tracker(
+          "trackRemoveFromCart",
+          item_id.toString(),
+          (item_name || "N/A").toString(),
+          (item_category || "N/A").toString(),
+          parseFloat(price || 0),
+          parseInt(quantity || 1),
+          "USD"
+        );
       }
 
       if (data.event === "purchase") {
