@@ -12,7 +12,7 @@ const ollaTracker = ({
 
     if (data.event === "add_to_cart" || dataLayerEvent === "add_to_cart") {
       const products = data.items || data[2].items;   // data.items is at array index 2
-      const { id, name, price, quantity, category } = products;
+      const { id, name, price, quantity, category } = products[0];
 
       window.tracker(
         "trackAddToCart",
@@ -27,7 +27,7 @@ const ollaTracker = ({
 
     if (data.event === "remove_from_cart" || dataLayerEvent === "remove_from_cart") {
       const products = data.items || data[2].items;   // data.items is at array index 2
-      const { id, name, price, quantity, category } = products;
+      const { id, name, price, quantity, category } = products[0];
 
       window.tracker(
         "trackRemoveFromCart",
