@@ -1,17 +1,18 @@
 import { TagContext } from "../../../shared/types";
+import { tryParseJSONObject } from "../utils/tryParseJSONObject";
 
 const dutchieIframeTracker = ({
   appId,
   retailId,
 }: Pick<TagContext, "appId" | "retailId">) => {
   function receiveMessage(event) {
-    const rawData = JSON.parse(event.data);
-    const payload = rawData.payload.payload;
+    const rawData = tryParseJSONObject(event.data);
 
-    if(!payload.ecommerce || !payload.ecommerce.items) {
+    if(!rawData.payload.payload.ecommerce || !rawData.payload.payload.ecommerce.items) {
       return;
     }
     else {
+      const payload = rawData.payload.payload;
       const transaction = payload.ecommerce;
       const products = transaction.items;
 
