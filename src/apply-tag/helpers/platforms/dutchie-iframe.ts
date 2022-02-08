@@ -47,7 +47,7 @@ const dutchieIframeTracker = ({
       // Hardcoded because most fields are empty
       window.tracker(
         "addTrans",
-        transaction.id.toString(),
+        transaction_id.toString(),
         retailId ?? appId,
         parseFloat(value),
         0,
