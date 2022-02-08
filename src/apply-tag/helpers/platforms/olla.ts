@@ -12,38 +12,32 @@ const ollaTracker = ({
 
     if (data.event === "add_to_cart" || dataLayerEvent === "add_to_cart") {
       const products = data.items || data[2].items;   // data.items is at array index 2
+      const { id, name, price, quantity, category } = products;
 
-      products.forEach(items => {
-        const { id, name, price, quantity, category } = items;
-
-        window.tracker(
-          "trackAddToCart",
-          id.toString(),
-          (name || "N/A").toString(),
-          (category || "N/A").toString(),
-          parseFloat(price || 0),
-          parseInt(quantity || 1),
-          "USD"
-        );
-      });
+      window.tracker(
+        "trackAddToCart",
+        id.toString(),
+        (name || "N/A").toString(),
+        (category || "N/A").toString(),
+        parseFloat(price || 0),
+        parseInt(quantity || 1),
+        "USD"
+      );
     }
 
     if (data.event === "remove_from_cart" || dataLayerEvent === "remove_from_cart") {
       const products = data.items || data[2].items;   // data.items is at array index 2
+      const { id, name, price, quantity, category } = products;
 
-      products.forEach(items => {
-        const { id, name, price, quantity, category } = items;
-
-        window.tracker(
-          "trackRemoveFromCart",
-          id.toString(),
-          (name || "N/A").toString(),
-          (category || "N/A").toString(),
-          parseFloat(price || 0),
-          parseInt(quantity || 1),
-          "USD"
-        );
-      });
+      window.tracker(
+        "trackRemoveFromCart",
+        id.toString(),
+        (name || "N/A").toString(),
+        (category || "N/A").toString(),
+        parseFloat(price || 0),
+        parseInt(quantity || 1),
+        "USD"
+      );
     }
 
     if (data.event === "purchase" || dataLayerEvent === "purchase") {
