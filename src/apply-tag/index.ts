@@ -3,11 +3,11 @@ import recordIntegration from './helpers/record-integration'
 import { TagContext } from "../shared/types";
 
 const applyTag = async (context: TagContext) => {
-  const { environment, retailId, appId, collector } = context;
+  const { environment, retailId, appId, collector, version } = context;
 
   const isSnowplowEnabled: Boolean = entrypoint({ appId, collector, retailId });
 
-  recordIntegration({ appId, environment })
+  recordIntegration({ appId, environment, version })
 
   if (isSnowplowEnabled && environment) {
     switch (environment) {

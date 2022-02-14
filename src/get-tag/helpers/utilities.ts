@@ -76,12 +76,13 @@ const removeDuplicate = (contexts: QueryStringParams[]): QueryStringParams => {
  * @returns {TagContext}
  */
 const createContext = (data: QueryStringParams): TagContext => {
-  const { appId, test, environment, retailId, mediajelAppId } = data;
+  const { appId, test, environment, retailId, mediajelAppId, version } = data;
 
   return {
     appId: appId ?? mediajelAppId,
     retailId,
     environment,
+    version,
     collector: test
       ? process.env.MJ_STAGING_COLLECTOR_URL
       : process.env.MJ_PRODUCTION_COLLECTOR_URL,
