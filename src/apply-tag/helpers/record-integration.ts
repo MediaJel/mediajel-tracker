@@ -6,7 +6,7 @@ const recordIntegration = ({
   version,
 }: Pick<TagContext, "appId" | "environment" | "version">) => {
   const recordSchema = {
-    schema: "iglu:com.mediajel.events/record/jsonschema/1-0-1",
+    schema: "iglu:com.mediajel.events/record/jsonschema/1-0-2",
     data: {
       appId,
       cart: environment,
