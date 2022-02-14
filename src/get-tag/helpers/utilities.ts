@@ -82,7 +82,7 @@ const createContext = (data: QueryStringParams): TagContext => {
     appId: appId ?? mediajelAppId,
     retailId,
     environment,
-    version,
+    version: version ?? "latest",
     collector: test
       ? process.env.MJ_STAGING_COLLECTOR_URL
       : process.env.MJ_PRODUCTION_COLLECTOR_URL,

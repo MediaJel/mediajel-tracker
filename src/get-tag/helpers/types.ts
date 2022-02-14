@@ -4,6 +4,6 @@ export type QueryStringParams = {
   mediajelAppId?: string;
   environment?: string;
   retailId?: string;
-  version?: string | undefined;
+  version?: string;
   test?: boolean | undefined;
 };
