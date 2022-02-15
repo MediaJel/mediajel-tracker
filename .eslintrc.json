@@ -22,5 +22,13 @@
     "no-console": "off",
     "prettier/prettier": "error",
     "import/no-extraneous-dependencies": ["error", { "devDependencies": true }]
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [".ts"],
+        "moduleDirectory": ["src", "node_modules"]
+      }
+    }
   }
 }

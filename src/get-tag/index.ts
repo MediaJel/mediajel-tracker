@@ -1,4 +1,3 @@
-import {} from "../shared/interface";
 import {
   filterNullScripts,
   getValues,
