@@ -55,8 +55,14 @@ const entrypoint = ({
     window.tracker("trackPageView");
     window.tracker("enableFormTracking");
     window.tracker("enableLinkClickTracking");
-    fetch("https://sync.dmp.mediajel.ninja/cs");
-    fetch("https://sync.dmp.mediajel.ninja/hash");
+    fetch("https://sync.dmp.mediajel.ninja/cs", {
+      mode: 'cors', 
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
+    fetch("https://sync.dmp.mediajel.ninja/hash", {
+      mode: 'cors',
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
     // setTimeout(
     //   function (e, o, n, t, a, c, i) {
     //     if (!e[a]) {
