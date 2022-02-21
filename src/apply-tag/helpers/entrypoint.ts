@@ -55,8 +55,8 @@ const entrypoint = ({
     window.tracker("trackPageView");
     window.tracker("enableFormTracking");
     window.tracker("enableLinkClickTracking");
-    fetch("https://sync.dmp.cnna.io/cs");
-    fetch("https://sync.dmp.cnna.io/hash");
+    fetch("https://sync.dmp.mediajel.ninja/cs");
+    fetch("https://sync.dmp.mediajel.ninja/hash");
     // setTimeout(
     //   function (e, o, n, t, a, c, i) {
     //     if (!e[a]) {
