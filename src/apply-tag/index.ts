@@ -1,13 +1,13 @@
 import entrypoint from "./helpers/entrypoint";
-import recordIntegration from './helpers/record-integration'
+import recordIntegration from "./helpers/record-integration";
 import { TagContext } from "../shared/types";
 
 const applyTag = async (context: TagContext) => {
   const { environment, retailId, appId, collector, version } = context;
 
-  const isSnowplowEnabled: Boolean = entrypoint({ appId, collector, retailId });
+  const isSnowplowEnabled: boolean = entrypoint({ appId, collector, retailId });
 
-  recordIntegration({ appId, environment, version })
+  recordIntegration({ appId, environment, version });
 
   if (isSnowplowEnabled && environment) {
     switch (environment) {
@@ -53,7 +53,7 @@ const applyTag = async (context: TagContext) => {
         func({ appId, retailId });
         break;
       }
-      //* STABLE 
+      //* STABLE
       case "greenrush": {
         const { default: func } = await import("./helpers/platforms/greenrush");
         func({ appId, retailId });
@@ -73,7 +73,9 @@ const applyTag = async (context: TagContext) => {
       }
       //* STABLE
       case "lightspeed": {
-        const { default: func } = await import("./helpers/platforms/lightspeed");
+        const { default: func } = await import(
+          "./helpers/platforms/lightspeed"
+        );
         func({ appId, retailId });
         break;
       }
