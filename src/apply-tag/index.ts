@@ -83,6 +83,12 @@ const applyTag = async (context: TagContext) => {
         func({ appId, retailId });
         break;
       }
+      // For Testing
+      case "sign_up": {
+        const { default: func } = await import("./helpers/platforms/sign_up");
+        func();
+        break;
+      }
       //! UNUSED/DEPRECATED
       case "liquidm": {
         const { default: func } = await import("./helpers/platforms/liquidm");
