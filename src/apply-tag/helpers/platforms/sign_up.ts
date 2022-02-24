@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 
-export default function liquidm() {
+export default function sign_up() {
   window.tracker("trackSelfDescribingEvent", {
     schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-1",
     data: {
