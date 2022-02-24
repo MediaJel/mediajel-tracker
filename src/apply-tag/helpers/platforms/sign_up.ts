@@ -12,8 +12,8 @@ export default function liquidm() {
       address: "address",
       city: "city",
       state: "state",
-      phoneNumber: "phoneNumber",
-      advertiser: "advertiser"
+      phoneNumber: "useragent",
+      advertiser: "user_ipaddress"
     }
   });
 
