@@ -1,4 +1,4 @@
-import { TagContext } from "../../shared/types";
+import { TagContext } from "../../../shared/types";
 
 const recordIntegration = ({
   appId,

@@ -1,30 +1,28 @@
-import {
-  filterNullScripts,
-  getValues,
-  getAllScripts,
-  findTag,
-  removeDuplicate,
-  createContext,
-} from "./helpers/utilities";
+import { URLSearchParams } from "url";
+import { QueryStringParams } from "./helpers/types";
 
 const getContext = () => {
-  // Gathers all scripts of page where our scripts is loaded
-  const allScripts = getAllScripts();
+  const getQueryString = (document.currentScript as HTMLScriptElement).src.substring( (document.currentScript as HTMLScriptElement).src.indexOf("?") );
+  const params = new URLSearchParams( getQueryString );
+  const queryStringResult = Object.fromEntries((params as URLSearchParams).entries());
 
-  // Filters all scripts for type safety, removing this will result in an error
-  const nullSafeScripts = filterNullScripts(allScripts);
+  // More efficient way to get queryStrings
+  // const params = new Proxy (new URLSearchParams(querystring), {
+  //   get: (searchParams, prop) => searchParams.get(prop as string),
+  // })
 
-  // Uses our KeyWords array to filter for our Universal Tag
-  const universalTag = findTag(nullSafeScripts);
+  const contextObject = {
+    ...queryStringResult,
+    appId: queryStringResult.appId ?? queryStringResult.mediajelAppId,
+    version: queryStringResult.version ?? "latest",
+    collector: queryStringResult.test
+      ? process.env.MJ_STAGING_COLLECTOR_URL
+      : process.env.MJ_PRODUCTION_COLLECTOR_URL,
+  };
+  
+  delete (contextObject as QueryStringParams).mediajelAppId && delete (contextObject as QueryStringParams).test;
 
-  // Parses the arguments of the filterred URL to be used for our tracker
-  const tagContext = getValues(universalTag);
-
-  // Checks for duplicates
-  const primaryTag = removeDuplicate(tagContext);
-
-  // Creates Context object to be passed down to children functions
-  return createContext(primaryTag);
+  return contextObject;
 };
 
 export default getContext;

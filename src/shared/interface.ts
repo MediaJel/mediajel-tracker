@@ -4,6 +4,7 @@ declare global {
   interface Window {
     appId: any;
     GlobalSnowplowNamespace: any;
+    src: any;
     snowplow: any;
     tracker: any;
     Shopify: any;

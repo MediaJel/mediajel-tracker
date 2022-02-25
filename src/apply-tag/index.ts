@@ -1,11 +1,11 @@
-import entrypoint from "./helpers/entrypoint";
-import recordIntegration from './helpers/record-integration'
+import entrypoint from "./helpers/snowplow-events/entrypoint";
+import recordIntegration from './helpers/snowplow-events/record-integration'
 import { TagContext } from "../shared/types";
 
 const applyTag = async (context: TagContext) => {
-  const { environment, retailId, appId, collector, version } = context;
+  const { environment, retailId, appId, collector, version, event } = context;
 
-  const isSnowplowEnabled: Boolean = entrypoint({ appId, collector, retailId });
+  const isSnowplowEnabled: Boolean = entrypoint({ appId, collector, retailId, event });
 
   recordIntegration({ appId, environment, version })
 
@@ -81,12 +81,6 @@ const applyTag = async (context: TagContext) => {
       case "olla": {
         const { default: func } = await import("./helpers/platforms/olla");
         func({ appId, retailId });
-        break;
-      }
-      // For Testing
-      case "sign_up": {
-        const { default: func } = await import("./helpers/platforms/sign_up");
-        func();
         break;
       }
       //! UNUSED/DEPRECATED
