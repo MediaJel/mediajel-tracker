@@ -1,10 +1,7 @@
-import { TagContext } from "../../shared/types";
+import { Transactions } from "../../../shared/types";
 
-const recordIntegration = ({
-  appId,
-  environment,
-  version,
-}: Pick<TagContext, "appId" | "environment" | "version">) => {
+const recordIntegration = (context: Transactions) => {
+  const { appId, environment, version } = context;
   const recordSchema = {
     schema: "iglu:com.mediajel.events/record/jsonschema/1-0-2",
     data: {
