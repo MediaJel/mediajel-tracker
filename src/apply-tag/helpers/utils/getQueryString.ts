@@ -1,5 +1,3 @@
-import { URLSearchParams } from "url";
-
 const getQueryString = () => {
   const querystring: string = (document.currentScript as HTMLScriptElement).src.substring( (document.currentScript as HTMLScriptElement).src.indexOf("?") );
   // const params: URLSearchParams = new URLSearchParams( querystring );
