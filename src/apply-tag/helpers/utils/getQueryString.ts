@@ -3,10 +3,8 @@ const getQueryString = () => {
   const index = scripts.length - 1;
   const myScript = scripts[index];
   const querystring: string = myScript.src.substring(myScript.src.indexOf("?"));
-  // const params: URLSearchParams = new URLSearchParams( querystring );
-  // const queryStringResult: any = Object.fromEntries((params as URLSearchParams).entries());
 
-  // * More efficient way to get queryStrings
+  // Gets the query string from the script tag
   const queryStringResult = new Proxy (new URLSearchParams(querystring), {
     get: (searchParams, prop) => searchParams.get(prop as string),
   })
