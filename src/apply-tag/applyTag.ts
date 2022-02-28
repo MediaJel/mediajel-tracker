@@ -20,6 +20,7 @@ const applyTag = async (context) => {
   }
 
   if (isTrackerInitialized) {
+    console.log("event: " + context.event);
     switch(context.event) {
       case "transaction": 
         await chooseCart(context as Transactions);
