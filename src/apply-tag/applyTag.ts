@@ -13,7 +13,7 @@ const applyTag = async (context: any) => {
     isTrackerInitialized = true;
   }
 
-  if(context.event === 'transaction' || context.event === 'impression')
+  if(context.event === "transaction" || context.event === "impression")
   {
     pageview();
     recordIntegration(context as Transactions);
@@ -21,13 +21,13 @@ const applyTag = async (context: any) => {
 
   if (isTrackerInitialized) {
     switch(context.event) {
-      case 'transaction': 
+      case "transaction": 
         await chooseCart(context as Transactions);
         break;
-      case 'sign_up':
+      case "sign_up":
         signUp(context as SignUp);
         break;
-      case 'impression':
+      case "impression":
         await chooseImpression(context as Impressions);
         break;
       default:
