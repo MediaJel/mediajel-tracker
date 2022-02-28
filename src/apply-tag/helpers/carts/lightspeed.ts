@@ -1,9 +1,9 @@
-import { TagContext } from "../../../shared/types";
+import { Transactions } from "../../../shared/types";
 
 const lightspeedTracker = ({
   appId,
   retailId,
-}: Pick<TagContext, "appId" | "retailId">) => {
+}: Pick<Transactions, "appId" | "retailId">) => {
   if (!window.lightspeedTransaction) return;
   else {
     const transaction = window.lightspeedTransaction;

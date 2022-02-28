@@ -1,9 +1,9 @@
-import { TagContext } from "../../../shared/types";
+import { Transactions } from "../../../shared/types";
 
 const meadowTracker = ({
   appId,
   retailId,
-}: Pick<TagContext, "appId" | "retailId">) => {
+}: Pick<Transactions, "appId" | "retailId">) => {
   function receiveMessage(event) {
     const rawData = event.data;
 

@@ -1,9 +1,9 @@
-import { TagContext } from "../../../shared/types";
+import { Transactions } from "../../../shared/types";
 
 const dutchieSubdomainTracker = ({
   appId,
   retailId,
-}: Pick<TagContext, "appId" | "retailId">) => {
+}: Pick<Transactions, "appId" | "retailId">) => {
   const dataLayer = window.dataLayer || [];
 
   function onDataLayerChange() {

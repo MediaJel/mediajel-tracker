@@ -1,10 +1,10 @@
-import { TagContext } from "../../../shared/types";
+import { Transactions } from "../../../shared/types";
 import { tryParseJSONObject } from "../utils/tryParseJSONObject";
 
 const dutchieIframeTracker = ({
   appId,
   retailId,
-}: Pick<TagContext, "appId" | "retailId">) => {
+}: Pick<Transactions, "appId" | "retailId">) => {
   function receiveMessage(event) {
     try {
       const rawData = tryParseJSONObject(event.data);
