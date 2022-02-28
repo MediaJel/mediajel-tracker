@@ -7,6 +7,7 @@ import { Impressions, QueryStringParams, SignUp, Transactions } from "../shared/
 
 const applyTag = async (context) => {
   let isTrackerInitialized: Boolean = false;
+  console.log(context);
 
   if(!window.tracker) {
     loadTracker(context as QueryStringParams);
