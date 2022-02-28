@@ -1,24 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <link rel="stylesheet" href="index.css" />
-
-    <!-- AWS Production Tracker START -->
-    <!-- <script src="https://tag.cnna.io/?mediajelAppId=universal-tag-production&environment=jane&test"></script> -->
-    <!-- AWS Production Tracker END -->
-
-    <!-- Tracker START, note: Make sure app id is the same as in your .env file-->
-    <!-- <script src="../src/index.ts?appId=universal-tag-localhost&environment=liquidm&test=true"></script> -->
-    <!-- Tracker END -->
-
-    <!-- AWS Staging Tracker START -->
-    <script type="module" src="https://tag.mediajel.ninja/?appId=universal-tag-staging-testing&environment=jane&retaildId=localhost&test=true"></script>
-    <!-- AWS Staging Tracker END -->
-
-    <title>App</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="../ui/index.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <!-- You will need to create your own index.js file in the public folder containing simple changes in order to make tests in the web browser -->
+  <script src="../public/index.js?mediajelAppId=RetailIdSegregation&environment=jane&retailId=localhost&test=true"> </script>
+  <!-- <script src="../public/index.js?appId=EcommerceTracking&environment=dutchie&test=false"> </script> -->
+  <!-- <script src="../public/index.js?appId=SignUps&event=sign_up&emailAddress=test@gmail.com"> </script> -->
+</body>
 </html>
