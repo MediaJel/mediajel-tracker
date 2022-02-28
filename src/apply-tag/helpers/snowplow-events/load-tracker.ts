@@ -1,7 +1,9 @@
-import { QueryStringParams } from "../../../shared/types";
+import { Transactions } from "../../../shared/types";
+import recordIntegration from "./record-integration";
 
-const loadTracker = (context: QueryStringParams) => {
+const loadTracker = (context: Transactions) => {
   const { appId, collector } = context;
+
   if(!window.tracker) {
     // Loading tracker with the snowplow tag by fetching our sp.js file
     // Creates a global function called "tracker" which we use to access the Snowplow Tracker
@@ -36,13 +38,12 @@ const loadTracker = (context: QueryStringParams) => {
       respectDoNotTrack: true,
     });
 
-    // General events that we want to include in tracking
+    // General events that we want to include in tracking after loading sp.js file
+    recordIntegration(context as Transactions);
     window.tracker("enableFormTracking");
     window.tracker("enableLinkClickTracking");
-
-    return true;
   }
-  console.log("Snowplow Tracker already loaded!");
+  
   return true;
 };
 

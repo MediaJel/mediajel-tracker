@@ -9,7 +9,7 @@ export type QueryStringParams = {
 };
 
 // Data structure of the tag after parsing
-export type Transactions = Omit<QueryStringParams, "mediajelAppId" | "test" | "event"> & {
+export type Transactions = Omit<QueryStringParams, "mediajelAppId" | "test"> & {
   environment: string;
   retailId?: string;
 };

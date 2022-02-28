@@ -1,8 +1,8 @@
 import { QueryStringParams } from "../shared/types";
 import getQueryString from "./helpers/utils/getQueryString";
 
-const getContextObject = (myScript) => {
-  const queryStringResult: any = getQueryString(myScript);
+const getContextObject = () => {
+  const queryStringResult: any = getQueryString();
   const contextObject: QueryStringParams = {
     ...queryStringResult,
     appId: queryStringResult.appId ?? queryStringResult.mediajelAppId, // Legacy support for old universal tag

@@ -1,22 +1,14 @@
 import loadTracker from "./helpers/snowplow-events/load-tracker";
-import recordIntegration from './helpers/snowplow-events/record-integration'
 import signUp from "./helpers/snowplow-events/sign-up";
 import pageview from "./helpers/snowplow-events/pageview";
 import { chooseCart, chooseImpression } from "./helpers/dynamic-import";
-import { Impressions, QueryStringParams, SignUp, Transactions } from "../shared/types";
+import { Impressions, SignUp, Transactions } from "../shared/types";
 
 const applyTag = async (context) => {
-  let isTrackerInitialized: Boolean = loadTracker(context as QueryStringParams);
-  console.log(context);
-
-  if(context.event === "transaction" || context.event === "impression")
-  {
-    pageview();
-    recordIntegration(context as Transactions);
-  }
+  const isTrackerInitialized: Boolean = loadTracker(context as Transactions);
 
   if (isTrackerInitialized) {
-    console.log("event: " + context.event);
+    pageview(context as Transactions);
     switch(context.event) {
       case "transaction": 
         await chooseCart(context as Transactions);
