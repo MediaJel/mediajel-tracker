@@ -5,7 +5,7 @@ import pageview from "./helpers/snowplow-events/pageview";
 import { chooseCart, chooseImpression } from "./helpers/dynamic-import";
 import { Impressions, QueryStringParams, SignUp, Transactions } from "../shared/types";
 
-const applyTag = async (context: any) => {
+const applyTag = async (context) => {
   let isTrackerInitialized: Boolean = false;
 
   if(!window.tracker) {
