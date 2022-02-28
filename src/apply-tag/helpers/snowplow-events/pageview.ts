@@ -3,7 +3,8 @@ import { Transactions } from "../../../shared/types";
 const pageview = (context: Transactions) => {
   const { event, retailId } = context;
 
-  if(event === "transaction" || event === "impression" && !retailId)
+  // We only want to trigger pageviews for transaction without retailId and impression events
+  if((event === "transaction" || event === "impression") && !retailId)
   {
     window.tracker("trackPageView");
     window.tracker("enableActivityTracking", {
@@ -29,7 +30,7 @@ const pageview = (context: Transactions) => {
 
     cookieSync();
   }
-  
+
   return;
 }
 
