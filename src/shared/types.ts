@@ -4,8 +4,8 @@ export type QueryStringParams = {
   version: string;
   collector: string;
   event: string;
-  mediajelAppId?: string;
-  test?: string;
+  mediajelAppId: string;
+  test: string;
 };
 
 // Data structure of the tag after parsing

@@ -1,6 +1,6 @@
-import { Transactions } from "../../shared/types";
+import { Transactions, Impressions } from "../../shared/types";
 
-const chooseCart = async (context: Transactions) => {
+export const chooseCart = async (context: Transactions) => {
   const { appId, environment, retailId } = context;
   switch (environment) {
     //* STABLE
@@ -81,4 +81,16 @@ const chooseCart = async (context: Transactions) => {
   }
 }
 
-export default chooseCart;
+export const chooseImpression = async (context: Impressions) => {
+  const { environment } = context;
+  switch (environment) {
+    case "liquidm": {
+      const { default: func } = await import("./impressions/liquidm");
+      func();
+      break;
+    }
+    default:
+      console.error("Undefined environment");
+      break;
+  }
+}

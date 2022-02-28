@@ -1,5 +1,4 @@
-import { QueryStringParams, Transactions } from "../../../shared/types";
-import pageview from "./pageview";
+import { QueryStringParams } from "../../../shared/types";
 
 const loadTracker = (context: QueryStringParams) => {
   const { appId, collector } = context;

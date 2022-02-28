@@ -1,3 +1,4 @@
+// TODO: Remove import and properly declare global scope for interface Window
 import { QueryStringParams } from "../shared/types";
 
 declare global {
