@@ -1,8 +1,7 @@
-import { QueryStringParams } from "../get-tag/helpers/types";
+import { QueryStringParams } from "../shared/types";
 
 declare global {
   interface Window {
-    appId: any;
     GlobalSnowplowNamespace: any;
     src: any;
     snowplow: any;

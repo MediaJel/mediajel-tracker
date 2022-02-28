@@ -1,17 +1,3 @@
-/**
- * When this is being run, the document's last element will be this very script.
- * Explanations on http://feather.elektrum.org/book/src.html
- */
-// var scripts = document.getElementsByTagName('script');
-// var index = scripts.length - 1;
-// var myScript = scripts[index];
-  // document.currentScript.src will be this file's URL, including its query string.
-  // e.g. file:///mytests/querystring.js?foo=script
-
-/**
-* Now just turn the query string (if any) into a URLSearchParams
-to let us easily check values.
-*/
 var querystring = (document.currentScript).src.substring( (document.currentScript).src.indexOf("?") );
 var urlParams = new URLSearchParams( querystring );
 
@@ -30,7 +16,8 @@ const contextObject = {...queryStringResult,
   version: queryStringResult.version ?? "latest",
   collector: queryStringResult.test
     ? true
-    : false
+    : false,
+  event: queryStringResult.event ?? "transaction",
   };
 
 delete contextObject.mediajelAppId && delete contextObject.test;
@@ -55,3 +42,62 @@ delete contextObject.mediajelAppId && delete contextObject.test;
 
 console.log(contextObject);
 // console.log(proxyContextObject);
+
+(function (e, o, n, t, a, c, i) {
+  if (!e[a]) {
+    e.GlobalSnowplowNamespace = e.GlobalSnowplowNamespace || [];
+    e.GlobalSnowplowNamespace.push(a);
+    e[a] = function () {
+      (e[a].q = e[a].q || []).push(arguments);
+    };
+    e[a].q = e[a].q || [];
+    c = o.createElement(n);
+    i = o.getElementsByTagName(n)[0];
+    c.async = 1;
+    c.src = t;
+    i.parentNode.insertBefore(c, i);
+  }
+})(
+  window,
+  document,
+  "script",
+  "https://dm2q9qfzyjfox.cloudfront.net/sp.js",
+  "tracker"
+);
+
+window.tracker("newTracker", "cf", `//collector.dmp.mediajel.ninja`, {
+  appId: contextObject.appId,
+  discoverRootDomain: true,
+  stateStorageStrategy: "cookieAndLocalStorage",
+  cookieSameSite: "Lax",
+  respectDoNotTrack: true,
+});
+
+const pageview = event => {
+  if(event === 'transaction') {
+    window.tracker("trackPageView");
+    window.tracker("enableActivityTracking", {
+      minimumVisitLength: 30,
+      heartbeatDelay: 10,
+    });
+
+    // LiquidM Retargeting Pixel
+    (function (c, d) {
+      var a = document.createElement("script");
+      a.type = "text/javascript";
+      a.async = !0;
+      a.src =
+        "https://tracking.lqm.io/odin/handle_sync.js?seg=G8aqIT2yoccd7G3eEQ4uMw&gdpr=" +
+        ("1" === c ? "1" : "0") +
+        "&gdpr_consent=" +
+        (d ? encodeURIComponent(d) : "") +
+        "&cb=" +
+        new Date().getTime();
+      var b = document.getElementsByTagName("script")[0];
+      b.parentNode.insertBefore(a, b);
+    })();
+  }
+  return;
+}
+
+pageview(contextObject.event);

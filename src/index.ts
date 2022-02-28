@@ -1,5 +1,5 @@
-import getTag from "./get-tag";
-import applyTag from "./apply-tag";
+import getTag from "./get-tag/getContext";
+import applyTag from "./apply-tag/applyTag";
 
 (async () => {
   try {

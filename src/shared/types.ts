@@ -1,11 +1,22 @@
-import { QueryStringParams } from "../get-tag/helpers/types";
-
-// Data structure of the tag after parsing
-export type TagContext = Omit<QueryStringParams, "mediajelAppId" | "test"> & {
+// Params available to the tag's query string
+export type QueryStringParams = {
+  appId: string;
+  version: string;
   collector: string;
+  event: string;
+  mediajelAppId?: string;
+  test?: string;
 };
 
-export type SignUp = TagContext & {
+// Data structure of the tag after parsing
+export type Transactions = Omit<QueryStringParams, "mediajelAppId" | "test" | "event"> & {
+  environment: string;
+  retailId?: string;
+};
+
+export type Impressions = Omit<Transactions, "retailId">;
+
+export type SignUp = Omit<QueryStringParams, "mediajelAppId" | "test" | "event"> & {
   uuid ?: string,
   firstName ?: string,
   lastName ?: string,

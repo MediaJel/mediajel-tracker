@@ -1,18 +1,8 @@
 import { createHash } from 'crypto';
 import { SignUp } from '../../../shared/types';
 
-const sign_up = ({
-  uuid,
-  firstName,
-  lastName,
-  gender,
-  emailAddress,
-  address,
-  city,
-  state,
-  phoneNumber,
-  advertiser
-}: Pick<SignUp, "uuid" | "firstName" | "lastName" | "gender" | "emailAddress" | "address" | "city" | "state" | "phoneNumber" | "advertiser">) => {
+const signUp = (context: SignUp) => {
+  const { uuid, firstName, lastName, gender, emailAddress, address, city, state, phoneNumber, advertiser } = context;
   window.tracker("trackSelfDescribingEvent", {
     schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-1",
     data: {
@@ -30,4 +20,4 @@ const sign_up = ({
   });
 }
 
-export default sign_up;
+export default signUp;
