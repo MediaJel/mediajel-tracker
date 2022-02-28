@@ -3,7 +3,10 @@ import getContextObject from "./apply-tag/getContextObject";
 
 (async () => {
   try {
-    const context = getContextObject();
+    const scripts = document.getElementsByTagName('script');
+    const index = scripts.length - 1;
+    const myScript = scripts[index];
+    const context = getContextObject(myScript);
     console.log(context);
     await applyTag(context);
   } catch (err) {

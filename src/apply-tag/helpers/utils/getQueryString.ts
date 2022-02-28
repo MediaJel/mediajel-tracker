@@ -1,7 +1,4 @@
-const getQueryString = () => {
-  const scripts = document.getElementsByTagName('script');
-  const index = scripts.length - 1;
-  const myScript = scripts[index];
+const getQueryString = (myScript) => {
   const querystring: string = myScript.src.substring(myScript.src.indexOf("?"));
   const params = new URLSearchParams( querystring );
   const queryStringResult: any = Object.fromEntries((params as any).entries());
