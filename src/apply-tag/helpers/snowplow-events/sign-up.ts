@@ -1,5 +1,5 @@
 import { SignUp } from '../../../shared/types';
-import encrypt from '../utils/encrypt';
+// import encrypt from '../utils/encrypt';
 
 const signUp = (context: SignUp) => {
   const { uuid, firstName, lastName, gender, emailAddress, address, city, state, phoneNumber, advertiser } = context;
@@ -8,7 +8,7 @@ const signUp = (context: SignUp) => {
     if(key === "appId") {
       return; // Skip appId field
     }
-    key = encrypt(context.appId, context[key]);
+    // key = encrypt(context.appId, context[key]);
   })
 
   window.tracker("trackSelfDescribingEvent", {
