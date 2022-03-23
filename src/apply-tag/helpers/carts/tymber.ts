@@ -40,8 +40,8 @@ const tymberTracker = ({
                   (item.name || "N/A").toString(),
                   (item.flower_type || "N/A").toString(),
                   parseFloat(item.unit_price.amount || 0) / 100,
-                  parseFloat(item?.unit_prices?.quantity || 1),
-                  (transaction.total.currency || "USD").toString()
+                  parseFloat(item.unit_prices.quantity || 1),
+                  (transaction.total.currency ?? "USD").toString()
                 );
               }
             }
