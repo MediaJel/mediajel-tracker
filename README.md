@@ -38,7 +38,7 @@ NOTE: CI/CD pipeline not yet in place for deployment.
 
 Input the App Id for the collector on this argument. This will trigger a pageview event.
 
-### `@OPTIONAL | environment={STRING}`
+### `@OPTIONAL | retailId={STRING}`
 
 Append the Retail ID of the ecommerce site here. It is
 imperative that the Retail ID is persistent from initial
@@ -67,6 +67,7 @@ Input the cart environment for the collector on this argument. This will trigger
     <tr>
     <td>tymber</td>
   </tr>
+  
 </table>
 
 ### `@OPTIONAL | &test={BOOLEAN}`
