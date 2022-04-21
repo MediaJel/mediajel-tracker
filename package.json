@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "description": "Mediajel Tracker",
   "scripts": {
-    "prestart": "parcel build src/index.ts",
-    "start": "concurrently --kill-others \"npx ts-node ./server/index.ts\" \"npx tsc --noEmit --watch & parcel --no-cache ./public/index.html\" ",
+    "start": "rimraf dist && parcel build src/index.ts && concurrently \"npx ts-node ./server/index.ts\" \"npx tsc --noEmit --watch & parcel --no-cache ./public/index.html\" ",
     "predeploy": "node -r dotenv/config deploy/predeploy.js",
     "deploy": "parcel build src/index.ts",
     "postdeploy": "node -r dotenv/config deploy/postdeploy.js",
@@ -28,6 +27,7 @@
     "@typescript-eslint/eslint-plugin": "^4.28.4",
     "@typescript-eslint/parser": "^4.28.4",
     "aws-cli-js": "^2.2.2",
+    "concurrently": "^7.1.0",
     "dotenv": "^5.0.1",
     "eslint": "^7.31.0",
     "eslint-config-prettier": "^8.3.0",

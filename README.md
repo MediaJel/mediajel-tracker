@@ -1,6 +1,5 @@
 <h1 align="center"><strong>Mediajel universal tracker</strong></h1>
 
-![React](https://badges.aleen42.com/src/react.svg)
 ![TypeScript](https://badges.frapsoft.com/typescript/awesome/typescript.png?v=101)
 
 <div align="center"><img src="public/logo.png "width="200" height="200" /></div>
@@ -48,27 +47,18 @@ visit up until cart checkout.
 
 Input the cart environment for the collector on this argument. This will trigger ecommerce tracking for the specific environment.
 
-<table>
-  <tr>
-    <th>
-      <b>Options
-      </b>
-    </th>
-  </tr>
-  <tr>
-    <td>jane</td>
-  </tr>
-    <tr>
-    <td>dutchie</td>
-  </tr>
-    <tr>
-    <td>meadow</td>
-  </tr>
-    <tr>
-    <td>tymber</td>
-  </tr>
-  
-</table>
+**Options:**
+
+- jane
+- dutchie-iframe
+- dutchie-subdomain
+- greenrush
+- lightspeed
+- meadow
+- olla
+- shopify
+- tymber
+- woocommerce
 
 ### `@OPTIONAL | &test={BOOLEAN}`
 
@@ -104,10 +94,12 @@ If you want to test your tracker configuration is working and the environment is
 
 Run the development server through the following commands:
 
-```
-npm install
+```bash
+yarn install
 
-npm run dev
+yarn start
+
+# Open http://localhost:1234
 ```
 
 If you have the appropriate `.env` files. You may deploy your changes to AWS cloudfront staging or S3 via the `deploy` command. This will update the `staging` AWS S3 Bucket & AWS Cloudfront CDN. Then you may take the Cloudfront or S3 URL and inject it to a website to test if the appropriate tracker configuration is tracking the correct events for the environment/platform you are working on.
@@ -122,16 +114,9 @@ npm run deploy
 <tr>
  <td width="160" height="160" align="center">
       <a target="_blank" href="https://parceljs.org/">
-        <img src="https://parceljs.org/assets/parcel-front.webp" />
+        <img src="https://parceljs.org/avatar.733335a8.avif" />
         <br />
         <strong>Parcel JS</strong>
-      </a>
-    </td>
-      <td width="160" height="160"  align="center">
-      <a target="_blank" href="https://reactjs.org/">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg" />
-        <br />
-        <strong>React JS</strong>
       </a>
     </td>
     <td width="160" height="160"  align="center">
@@ -150,18 +135,3 @@ npm run deploy
     </td>
     </tr>
 </table>
-
-## Road Map
-
-- [ ] Implement Duplication safety
-  - [x] Universal tag will not duplicate if another universal tag is present
-  - [ ] Universal tag will not duplicate if another raw javascript tag is present
-- [ ] Develop Tests
-  - [ ] Implement tests within CircleCI
-  - [ ] Develop Unit tests for instantiation of the Snowplow tracker
-  - [ ] Develop Unit tests for pageviews
-  - [ ] Develop Unit tests for Ecommerce platforms
-    - [ ] Develop tests for Jane
-    - [ ] Develop tests for Dutchie
-    - [ ] Develop tests for Meadow
-    - [ ] Develop tests for Tymber
