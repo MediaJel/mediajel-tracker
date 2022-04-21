@@ -5,6 +5,7 @@
   "scripts": {
     "start": "rimraf dist && parcel build src/index.ts && concurrently \"npx ts-node ./server/index.ts\" \"npx tsc --noEmit --watch & parcel --no-cache ./public/index.html\" ",
     "predeploy": "node -r dotenv/config deploy/predeploy.js",
+    "check": "tsc --noEmit",
     "deploy": "parcel build src/index.ts",
     "postdeploy": "node -r dotenv/config deploy/postdeploy.js",
     "build": "parcel build src/index.ts"
