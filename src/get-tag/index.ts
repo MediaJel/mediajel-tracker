@@ -10,7 +10,7 @@ import {
 const getContext = () => {
   // Gathers all scripts of page where our scripts is loaded
   const allScripts = getAllScripts();
-  console.log({ allScripts });
+
   // Filters all scripts for type safety, removing this will result in an error
   const nullSafeScripts = filterNullScripts(allScripts);
 

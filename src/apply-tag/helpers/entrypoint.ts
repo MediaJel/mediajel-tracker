@@ -47,6 +47,7 @@ const entrypoint = ({
       discoverRootDomain: true,
       stateStorageStrategy: "cookieAndLocalStorage",
       respectDoNotTrack: true,
+      eventMethod: "post",
     });
     window.tracker("enableActivityTracking", {
       minimumVisitLength: 30,
