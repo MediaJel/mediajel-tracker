@@ -4,6 +4,7 @@ const domains: string[] = [
   "tags.mediajel.ninja",
   "tag.cnna.io",
   "tag.mediajel.ninja",
+  "localhost",
   "universal-tag-localhost",
 ];
 
