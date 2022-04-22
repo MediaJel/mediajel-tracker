@@ -6,8 +6,7 @@ const shopifyTracker = ({
 }: Pick<TagContext, "appId" | "retailId">) => {
   if (!window.Shopify.checkout) {
     return;
-  }
-  else {
+  } else {
     const transaction = window.Shopify.checkout;
     const products = transaction.line_items;
 
@@ -25,7 +24,7 @@ const shopifyTracker = ({
       (transaction.currency || "USD").toString()
     );
 
-    products.forEach(items => {
+    products.forEach((items) => {
       const { id, product_id, title, variant_title, price, quantity } = items;
 
       window.tracker(
@@ -38,7 +37,7 @@ const shopifyTracker = ({
         parseInt(quantity || 1),
         (transaction.currency || "USD").toString()
       );
-    })
+    });
 
     window.tracker("trackTrans");
   }
