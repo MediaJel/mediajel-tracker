@@ -3,10 +3,9 @@
   "version": "1.0.0",
   "description": "Mediajel Tracker",
   "scripts": {
-    "start": "./start.sh",
-    "test": "node ./test/selenium.ts",
-    "check": "tsc --noEmit",
+    "start": "rimraf dist && parcel build src/index.ts && concurrently \"npx ts-node ./server/index.ts\" \"npx tsc --noEmit --watch & parcel --no-cache ./public/index.html\" ",
     "predeploy": "node -r dotenv/config deploy/predeploy.js",
+    "check": "tsc --noEmit",
     "deploy": "parcel build src/index.ts",
     "postdeploy": "node -r dotenv/config deploy/postdeploy.js",
     "build": "parcel build src/index.ts"
@@ -22,35 +21,25 @@
   },
   "homepage": "https://github.com/MediaJel/mediajel-tracker#readme",
   "devDependencies": {
-    "@emotion/react": "^11.4.0",
-    "@emotion/styled": "^11.3.0",
-    "@material-ui/core": "^4.12.2",
-    "@material-ui/icons": "^4.11.2",
+    "@types/express": "^4.17.13",
     "@types/jest": "^26.0.24",
     "@types/node": "^17.0.17",
     "@types/react": "^17.0.15",
     "@typescript-eslint/eslint-plugin": "^4.28.4",
     "@typescript-eslint/parser": "^4.28.4",
     "aws-cli-js": "^2.2.2",
+    "concurrently": "^7.1.0",
     "dotenv": "^5.0.1",
     "eslint": "^7.31.0",
-    "eslint-config-airbnb-base": "^14.2.1",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.23.4",
-    "eslint-plugin-prettier": "^3.4.0",
-    "eslint-plugin-react": "^7.24.0",
+    "express": "^4.17.3",
     "global": "^4.4.0",
     "parcel": "2.0.0",
     "prettier": "^2.3.1",
-    "react": "^16.8.0 || ^17.0.0",
-    "react-dom": "^16.8.0 || ^17.0.0",
-    "react-router-dom": "^5.2.0",
     "typescript": "^4.3.5"
   },
   "browserslist": [
     "since 2017-06"
-  ],
-  "dependencies": {
-    "selenium-webdriver": "^4.0.0-beta.4"
-  }
+  ]
 }
