@@ -7,9 +7,9 @@ import { Impressions, SignUp, Transactions } from "../shared/types";
 const applyTag = async (context) => {
   const isTrackerInitialized: Boolean = loadTracker(context as Transactions);
 
-  // if(!context.appId) {
-  //   throw new Error("appId is required");
-  // };
+  if(!context.appId) {
+    throw new Error("appId is required");
+  };
 
   if (isTrackerInitialized) {
     pageview(context as Transactions);
