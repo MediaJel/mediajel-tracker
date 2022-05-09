@@ -1,9 +1,9 @@
-import { TagContext } from "../../../shared/types";
+import { Transactions } from "../../../shared/types";
 
 const janeTracker = ({
   appId,
   retailId,
-}: Pick<TagContext, "appId" | "retailId">) => {
+}: Pick<Transactions, "appId" | "retailId">) => {
   function receiveMessage(event) {
     const { payload, messageType } = event.data;
 

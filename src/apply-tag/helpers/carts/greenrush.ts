@@ -1,9 +1,9 @@
-import { TagContext } from "../../../shared/types";
+import { Transactions } from "../../../shared/types";
 
 const greenrushTracker = ({
   appId,
   retailId,
-}: Pick<TagContext, "appId" | "retailId">) => {
+}: Pick<Transactions, "appId" | "retailId">) => {
   (function () {
     var origOpen = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = function () {

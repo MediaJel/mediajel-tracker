@@ -1,12 +1,13 @@
-import { TagContext } from "../../../shared/types";
+import { Transactions } from "../../../shared/types";
 
 const shopifyTracker = ({
   appId,
   retailId,
-}: Pick<TagContext, "appId" | "retailId">) => {
+}: Pick<Transactions, "appId" | "retailId">) => {
   if (!window.Shopify.checkout) {
     return;
-  } else {
+  }
+  else {
     const transaction = window.Shopify.checkout;
     const products = transaction.line_items;
 
@@ -24,7 +25,7 @@ const shopifyTracker = ({
       (transaction.currency || "USD").toString()
     );
 
-    products.forEach((items) => {
+    products.forEach(items => {
       const { id, product_id, title, variant_title, price, quantity } = items;
 
       window.tracker(
@@ -37,7 +38,7 @@ const shopifyTracker = ({
         parseInt(quantity || 1),
         (transaction.currency || "USD").toString()
       );
-    });
+    })
 
     window.tracker("trackTrans");
   }

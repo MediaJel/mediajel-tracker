@@ -7,5 +7,5 @@
     },
     "typeRoots": ["node_modules/@types"]
   },
-  "include": ["src/**/*", "test/**/*", "server/**/*"]
+  "include": ["src/**/*", "server/**/*"]
 }
