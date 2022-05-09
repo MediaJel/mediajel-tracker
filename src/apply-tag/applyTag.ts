@@ -5,14 +5,13 @@ import { chooseCart, chooseImpression } from "./helpers/dynamic-import";
 import { Impressions, SignUp, Transactions } from "../shared/types";
 
 const applyTag = async (context) => {
-  const isTrackerInitialized: Boolean = loadTracker(context as Transactions);
+  let isTrackerInitialized: Boolean = loadTracker(context as Transactions);
 
   if(!context.appId) {
     throw new Error("appId is required");
   };
 
   if (isTrackerInitialized) {
-    pageview(context as Transactions);
     switch(context.event) {
       case "transaction": 
         await chooseCart(context as Transactions);

@@ -1,10 +1,12 @@
 import { Transactions } from "../../../shared/types";
+import pageview from "./pageview";
 import recordIntegration from "./record-integration";
 
 const loadTracker = (context: Transactions) => {
   const { appId, collector } = context;
 
-  if(!window.tracker) {
+  if(!window.tracker)
+  {
     // Loading tracker with the snowplow tag by fetching our sp.js file
     // Creates a global function called "tracker" which we use to access the Snowplow Tracker
     (function (e, o, n, t, a, c, i) {
@@ -37,13 +39,14 @@ const loadTracker = (context: Transactions) => {
       cookieSameSite: "Lax",
       respectDoNotTrack: true,
     });
-
-    // General events that we want to include in tracking after loading sp.js file
-    recordIntegration(context as Transactions);
-    window.tracker("enableFormTracking");
-    window.tracker("enableLinkClickTracking");
   }
-  
+
+  // General events that we want to include in tracking after loading sp.js file
+  pageview(context as Transactions);
+  recordIntegration(context as Transactions);
+  window.tracker("enableFormTracking");
+  window.tracker("enableLinkClickTracking");
+
   return true;
 };
 

@@ -2,6 +2,7 @@ import { Transactions, Impressions } from "../../shared/types";
 
 export const chooseCart = async (context: Transactions) => {
   const { appId, environment, retailId } = context;
+
   switch (environment) {
     //* STABLE
     case "jane": {
@@ -83,6 +84,7 @@ export const chooseCart = async (context: Transactions) => {
 
 export const chooseImpression = async (context: Impressions) => {
   const { environment } = context;
+  
   switch (environment) {
     case "liquidm": {
       const { default: func } = await import("./impressions/liquidm");
