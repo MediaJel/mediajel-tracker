@@ -4,54 +4,87 @@ const tymberTracker = ({
   appId,
   retailId,
 }: Pick<Transactions, "appId" | "retailId">) => {
-  (function () {
-    const origOpen = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function () {
-      this.addEventListener("load", function () {
-        const response = this.responseText;
+  const dataLayer = window.dataLayer || [];
 
-        if (this.responseURL.includes("?delivery_type=")) {
-          const responseData = JSON.parse(response);
+  function onDataLayerChange() {
+    const data = dataLayer.slice(-1)[0]; // Gets the newest array member of dataLayer
 
-          if (!responseData.data) return;
-          if (responseData.data.type === "orders") {
-            const transaction = responseData.data.attributes;
-            const products = responseData.included;
-            window.tracker(
-              "addTrans",
-              transaction.order_number.toString(),
-              !retailId ? appId : retailId,
-              parseFloat(transaction.total.amount) / 100,
-              parseFloat(transaction.tax_total.amount || 0) / 100,
-              parseFloat(transaction.delivery_fee.amount || 0) / 100,
-              (transaction.delivery_address.city || "N/A").toString(),
-              (transaction.delivery_address.state || "N/A").toString(),
-              (transaction.delivery_address.country || "US").toString(),
-              (transaction.total.currency || "USD").toString()
-            );
+    if (data.event === "addToCart") {
+      const products = data.ecommerce.add.products;
+      const currency = data.ecommerce.currency.toUpperCase();
+      const { brand, category, id, name, price, quantity } = products[0];
 
-            for (let i = 0; i < products.length; ++i) {
-              if (products[i].type === "products") {
-                const item = products[i].attributes;
-                window.tracker(
-                  "addItem",
-                  transaction.order_number.toString(),
-                  (item.sku || item.id).toString(),
-                  (item.name || "N/A").toString(),
-                  (item.flower_type || "N/A").toString(),
-                  parseFloat(item.unit_price.amount || 0) / 100,
-                  parseFloat(item.unit_prices.quantity || 1),
-                  (transaction.total.currency ?? "USD").toString()
-                );
-              }
-            }
+      window.tracker(
+        "trackAddToCart",
+        id.toString(),
+        (name || "N/A").toString(),
+        (category || "N/A").toString(),
+        parseFloat(price || 0),
+        parseInt(quantity || 1),
+        (currency || "USD").toString()
+      );
+    }
 
-            window.tracker("trackTrans");
-          }
-        }
+    if (data.event === "removeFromCart") {
+      const products = data.ecommerce.remove.products;
+      const currency = data.ecommerce.currency.toUpperCase();
+      const { brand, category, id, name, price, quantity } = products[0];
+      
+      window.tracker(
+        "trackRemoveFromCart",
+        id.toString(),
+        (name || "N/A").toString(),
+        (category || "N/A").toString(),
+        parseFloat(price || 0),
+        parseInt(quantity || 1),
+        (currency || "USD").toString()
+      );
+    }
+
+    // TODO: Get order details from 'Order Successful' event in dataLayer
+    if (data.event === "purchase") {
+      const transaction = data.ecommerce.actionField;
+      const products = data.ecommerce.products;
+      const { id, revenue, tax } = transaction;
+
+      window.tracker(
+        "addTrans",
+        id.toString(),
+        retailId ?? appId,
+        parseFloat(revenue),
+        parseFloat(tax),
+        0,
+        "N/A",
+        "N/A",
+        "N/A",
+        "USD"
+      );
+
+      products.forEach(items => {
+        const { brand, category, id, name, price, quantity } = items;
+
+        window.tracker(
+          "addItem",
+          transaction.id.toString(),
+          items.id.toString(),
+          (name || "N/A").toString(),
+          (category || "N/A").toString(),
+          parseFloat(price || 0),
+          parseInt(quantity || 1),
+          "USD"
+        );
       });
-      origOpen.apply(this, arguments);
-    };
-  })();
+
+      window.tracker('trackTrans');
+    }
+  }
+
+  // Stores the original dataLayer.push method before modifying it to execute our snowplow tracker
+  const originalPush = dataLayer.push
+  dataLayer.push = function (...args) {
+    originalPush(...args);
+    onDataLayerChange();
+  };
 };
+
 export default tymberTracker;
