@@ -11,7 +11,7 @@ const tymberTracker = ({
 
     if (data.event === "addToCart") {
       const products = data.ecommerce.add.products;
-      const currency = data.ecommerce.currency.toUpperCase();
+      const currency = data.ecommerce.currency;
       const { brand, category, id, name, price, quantity } = products[0];
 
       window.tracker(
@@ -27,7 +27,7 @@ const tymberTracker = ({
 
     if (data.event === "removeFromCart") {
       const products = data.ecommerce.remove.products;
-      const currency = data.ecommerce.currency.toUpperCase();
+      const currency = data.ecommerce.currency;
       const { brand, category, id, name, price, quantity } = products[0];
       
       window.tracker(
