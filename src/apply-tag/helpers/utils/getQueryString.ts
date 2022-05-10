@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 const getQueryString = () => {
   const scripts = document.getElementsByTagName('script');
   const index = scripts.length - 1;

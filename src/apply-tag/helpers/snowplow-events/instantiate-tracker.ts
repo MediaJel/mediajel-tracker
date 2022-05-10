@@ -38,6 +38,7 @@ const loadTracker = (context: Transactions) => {
       stateStorageStrategy: "cookieAndLocalStorage",
       cookieSameSite: "Lax",
       respectDoNotTrack: true,
+      eventMethod: "post",
     });
   }
 
