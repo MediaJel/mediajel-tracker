@@ -8,7 +8,7 @@ const getContextObject = () => {
     appId: queryStringResult.appId ?? queryStringResult.mediajelAppId, // Legacy support for old universal tag
     version: queryStringResult.version ?? "latest",
     collector: queryStringResult.test ? process.env.MJ_STAGING_COLLECTOR_URL : process.env.MJ_PRODUCTION_COLLECTOR_URL,
-    event: queryStringResult.environment ? "transaction" : "pageview",
+    event: queryStringResult.event ? queryStringResult.event : queryStringResult.environment ? "transaction" : "pageview",
   };
   
   // Delete useless key-value pair in contextObject

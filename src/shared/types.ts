@@ -16,12 +16,13 @@ export type Transactions = Omit<QueryStringParams, "mediajelAppId" | "test"> & {
 
 export type Impressions = Omit<Transactions, "retailId">;
 
-export type SignUp = Omit<QueryStringParams, "mediajelAppId" | "test" | "event"> & {
+export type Signup = {
   uuid ?: string,
   firstName ?: string,
   lastName ?: string,
   gender ?: string,
   emailAddress ?: string,
+  hashedEmailAddress ?: string,
   address ?: string,
   city ?: string,
   state ?: string,
