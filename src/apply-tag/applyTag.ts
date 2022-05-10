@@ -6,12 +6,17 @@ import { Impressions, SignUp, Transactions } from "../shared/types";
 
 const applyTag = async (context) => {
   let isTrackerInitialized: Boolean = loadTracker(context as Transactions);
+  console.log(context);
+  console.log(context.appId);
 
   if(!context.appId) {
-    throw new Error("appId is required");
+    // throw new Error("appId is required");
+    console.log("context is empty: " + JSON.parse(context));
+    console.log("context.appId is null: " + context.appId);
   };
 
   if (isTrackerInitialized) {
+    pageview(context as Transactions);
     switch(context.event) {
       case "transaction": 
         await chooseCart(context as Transactions);

@@ -38,11 +38,11 @@ const loadTracker = (context: Transactions) => {
       stateStorageStrategy: "cookieAndLocalStorage",
       cookieSameSite: "Lax",
       respectDoNotTrack: true,
+      eventMethod: "post",
     });
   }
 
   // General events that we want to include in tracking after loading sp.js file
-  pageview(context as Transactions);
   recordIntegration(context as Transactions);
   window.tracker("enableFormTracking");
   window.tracker("enableLinkClickTracking");
