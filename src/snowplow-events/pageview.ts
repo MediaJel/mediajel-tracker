@@ -1,4 +1,4 @@
-import { Transactions } from "../../../shared/types";
+import { Transactions } from "../shared/types";
 
 const pageview = (context: Transactions) => {
   const { event, retailId } = context;
