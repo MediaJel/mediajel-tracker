@@ -1,11 +1,15 @@
 import loadTracker from "./helpers/snowplow-events/instantiate-tracker";
 import signUp from "./helpers/snowplow-events/sign-up";
-import pageview from "./helpers/snowplow-events/pageview";
 import { chooseCart, chooseImpression } from "./helpers/dynamic-import";
 import { Impressions, SignUp, Transactions } from "../shared/types";
 
 const applyTag = async (context) => {
-  let isTrackerInitialized: Boolean = loadTracker(context as Transactions);
+  let isTrackerInitialized: Boolean = false;
+
+  if(!window.tracker) {
+    loadTracker(context as Transactions);
+    isTrackerInitialized = true;
+  }
   console.log(context);
   console.log(context.appId);
 
@@ -16,7 +20,7 @@ const applyTag = async (context) => {
   };
 
   if (isTrackerInitialized) {
-    pageview(context as Transactions);
+    console.log(context.event);
     switch(context.event) {
       case "transaction": 
         await chooseCart(context as Transactions);

@@ -1,18 +1,10 @@
 import { SignUp } from '../../../shared/types';
-// import encrypt from '../utils/encrypt';
 
 const signUp = (context: SignUp) => {
   const { uuid, firstName, lastName, gender, emailAddress, address, city, state, phoneNumber, advertiser } = context;
 
-  Object.keys(context).forEach(key => {
-    if(key === "appId") {
-      return; // Skip appId field
-    }
-    // key = encrypt(context.appId, context[key]);
-  })
-
   window.tracker("trackSelfDescribingEvent", {
-    schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-1",
+    schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-2",
     data: {
       uuid: uuid,
       firstName: firstName,
