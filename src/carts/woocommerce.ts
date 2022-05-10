@@ -1,5 +1,5 @@
-import { Transactions } from "../../../shared/types";
-import { tryParseJSONObject } from "../utils/tryParseJSONObject";
+import { Transactions } from "../shared/types";
+import { tryParseJSONObject } from "../shared/utils";
 
 const woocommerceTracker = ({
   appId,

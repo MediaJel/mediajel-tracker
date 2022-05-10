@@ -1,6 +1,6 @@
-import loadTracker from "./helpers/snowplow-events/instantiate-tracker";
-import signup from "./helpers/snowplow-events/signup";
-import { chooseCart, chooseImpression } from "./helpers/dynamic-import";
+import loadTracker from "../snowplow-events/instantiate-tracker";
+import signup from "../snowplow-events/signup";
+import { chooseCart, chooseImpression } from "./dynamic-import";
 import { Impressions, Signup, Transactions } from "../shared/types";
 
 const applyTag = async (context) => {

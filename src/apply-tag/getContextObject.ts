@@ -1,5 +1,5 @@
 import { QueryStringParams } from "../shared/types";
-import getQueryString from "./helpers/utils/getQueryString";
+import { getQueryString } from "../shared/utils";
 
 const getContextObject = () => {
   const queryStringResult: any = getQueryString();

@@ -1,4 +1,4 @@
-const getQueryString = () => {
+export const getQueryString = () => {
   const target = document.currentScript as HTMLScriptElement || (function() {
     const scripts = document.getElementsByTagName('script');
     return scripts[scripts.length - 1];
@@ -17,4 +17,14 @@ const getQueryString = () => {
   return queryStringResult;
 }
 
-export default getQueryString;
+export const tryParseJSONObject = jsonString => {
+  try {
+      const o = JSON.parse(jsonString);
+      if (o && typeof o === "object") {
+          return o;
+      }
+  }
+  catch (e) { }
+
+  return jsonString;
+};
