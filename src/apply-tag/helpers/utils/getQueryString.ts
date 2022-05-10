@@ -8,6 +8,9 @@ const getQueryString = () => {
   const params = new URLSearchParams( querystring );
   const queryStringResult: any = Object.fromEntries((params as any).entries());
 
+  console.log("queryString: " + querystring);
+  console.log("queryStringResult: " + queryStringResult);
+
   // Gets the query string from the script tag
   // Way more efficient in getting the query string but has issues with key-value pairs appending to objects
   // const queryStringResult = new Proxy (new URLSearchParams(querystring), {
