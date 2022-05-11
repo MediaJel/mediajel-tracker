@@ -43,11 +43,10 @@ const tymberTracker = ({
     }
 
     if (data.event === "Order Successful") {
-      console.log("HELLO I AM WORKING!");
       const ecommerceIdentityObject = {
         appId,
-        orderId: data.orderId,
-        identifier: appId + data.orderId,
+        orderId: data.orderID,
+        identifier: appId + data.orderID,
         hashedEmailAddress: data.orderEmail,
       }
       ecommerceIdentityGraph(ecommerceIdentityObject);
