@@ -41,6 +41,15 @@ const tymberTracker = ({
       );
     }
 
+    if (data.event === "Order Successful") {
+      const ecommerce_identity_graph = {
+        appId,
+        orderId: data.orderId,
+        identifier: appId + data.orderId,
+        hashedEmailAddress: data.orderEmail,
+      }
+    }
+
     // TODO: Get order details from 'Order Successful' event in dataLayer
     if (data.event === "purchase") {
       const transaction = data.ecommerce.actionField;
