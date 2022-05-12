@@ -1,5 +1,5 @@
 import { Transactions } from "../shared/types";
-import ecommerceIdentityGraph from "../snowplow-events/ecommerce-identity-graph";
+import signup from "../snowplow-events/signup";
 
 const tymberTracker = ({
   appId,
@@ -43,13 +43,7 @@ const tymberTracker = ({
     }
 
     if (data.event === "Order Successful") {
-      const ecommerceIdentityObject = {
-        appId,
-        orderId: data.orderID,
-        identifier: appId + data.orderID,
-        hashedEmailAddress: data.orderEmail,
-      }
-      ecommerceIdentityGraph(ecommerceIdentityObject);
+      signup(data.orderEmail);
     }
 
     // TODO: Get order details from 'Order Successful' event in dataLayer
