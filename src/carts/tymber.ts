@@ -1,5 +1,6 @@
 import { Transactions } from "../shared/types";
-import signup from "../snowplow-events/signup";
+import schema from "../shared/schema"
+import trackSelfDescribingEvent from "../snowplow-events/trackSelfDescribingEvent";
 
 const tymberTracker = ({
   appId,
@@ -43,7 +44,11 @@ const tymberTracker = ({
     }
 
     if (data.event === "Order Successful") {
-      signup(data.orderEmail);
+      const ecommerceIdentityObject = {
+        orderId: data.orderID,
+        hashedEmailAddress: data.orderEmail,
+      }
+      trackSelfDescribingEvent(schema.signupSchema, ecommerceIdentityObject);
     }
 
     // TODO: Get order details from 'Order Successful' event in dataLayer
