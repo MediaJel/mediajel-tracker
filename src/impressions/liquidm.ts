@@ -1,4 +1,4 @@
-export default function liquidm() {
+export const liquidm = () => {
   const unstruct = {
     schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-1",
     data: {
@@ -47,3 +47,5 @@ export default function liquidm() {
   mjcx.push(cCx3),
   window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
 }
+
+export default liquidm;
