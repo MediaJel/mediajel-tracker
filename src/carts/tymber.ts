@@ -44,11 +44,7 @@ const tymberTracker = ({
     }
 
     if (data.event === "Order Successful") {
-      const ecommerceIdentityObject = {
-        orderId: data.orderID,
-        hashedEmailAddress: data.orderEmail,
-      }
-      trackSelfDescribingEvent(schema.signupSchema, ecommerceIdentityObject);
+      window.tracker("setUserId", data.orderEmail);
     }
 
     // TODO: Get order details from 'Order Successful' event in dataLayer
