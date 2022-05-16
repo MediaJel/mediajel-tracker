@@ -91,6 +91,11 @@ export const chooseImpression = async (context: Impressions) => {
       func();
       break;
     }
+    case "ttd": {
+      const { default: func } = await import("../impressions/ttd");
+      func();
+      break;
+    }
     default:
       console.error("Undefined environment");
       break;
