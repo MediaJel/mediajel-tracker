@@ -1,30 +1,42 @@
-export const getQueryString = () => {
-  const target = document.currentScript as HTMLScriptElement || (function() {
-    const scripts = document.getElementsByTagName('script');
-    return scripts[scripts.length - 1];
-  })();
+import { QueryStringContext, QueryStringParams } from "../shared/types";
 
-  const querystring: string = target.src.substring(target.src.indexOf("?"));
-  const params = new URLSearchParams( querystring );
-  const queryStringResult: any = Object.fromEntries((params as any).entries());
-
-  // Gets the query string from the script tag
-  // Way more efficient in getting the query string but has issues with key-value pairs appending to objects
-  // const queryStringResult = new Proxy (new URLSearchParams(querystring), {
-  //   get: (searchParams, prop) => searchParams.get(prop as string),
-  // })
-
-  return queryStringResult;
+// Gets our tag
+const getQueryString = (): QueryStringParams => {
+  const scripts = document.getElementsByTagName('script');
+  const target = document.currentScript as HTMLScriptElement || scripts[scripts.length - 1];
+  const substring: string = target.src.substring(target.src.indexOf("?"));
+  const params = new URLSearchParams(substring);
+  return Object.fromEntries((params).entries()) as QueryStringParams;
 }
 
-export const tryParseJSONObject = jsonString => {
+// Creates the context object
+const getContextObject = (): QueryStringContext => {
+  const { appId, mediajelAppId, environment, event, test, version } = getQueryString();
+
+  if (!appId && !mediajelAppId) throw new Error("appId is required");
+
+  return {
+    appId: appId || mediajelAppId, // Legacy support for old universal tag
+    version: version || "v1",
+    collector: test ? process.env.MJ_STAGING_COLLECTOR_URL : process.env.MJ_PRODUCTION_COLLECTOR_URL,
+    event,
+    environment
+  };
+
+};
+
+export default getContextObject;
+
+
+
+export const tryParseJSONObject = (str: string) => {
   try {
-      const o = JSON.parse(jsonString);
-      if (o && typeof o === "object") {
-          return o;
-      }
+    const o = JSON.parse(str);
+    if (o && typeof o === "object") {
+      return o;
+    }
   }
   catch (e) { }
 
-  return jsonString;
+  return str;
 };

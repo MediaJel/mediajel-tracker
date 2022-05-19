@@ -1,4 +1,4 @@
-import { Transactions } from "../shared/types";
+import { Transactions } from "../../shared/types";
 
 const janeTracker = ({
   appId,
@@ -13,7 +13,7 @@ const janeTracker = ({
 
     if (payload.name === "cartItemAdd") {
       const { product, productId } = payload.properties;
-      
+
       window.tracker(
         "trackAddToCart",
         productId.toString(),
@@ -42,7 +42,7 @@ const janeTracker = ({
 
     if (payload.name === "checkout") {
       const { products, cartId, estimatedTotal, deliveryFee, deliveryAddress, salesTax, storeTax } = payload.properties;
-      
+
       // TODO: Reconfigure to add deliveryAddress object for city, state_code, and country_code
       window.tracker(
         "addTrans",
@@ -75,7 +75,7 @@ const janeTracker = ({
       window.tracker("trackTrans");
     }
   }
-  
+
   window.addEventListener("message", receiveMessage, false);
 };
 

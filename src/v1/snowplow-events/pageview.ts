@@ -1,11 +1,10 @@
-import { Transactions } from "../shared/types";
+import { Transactions } from "../../shared/types";
 
 const pageview = (context: Transactions) => {
   const { event, retailId } = context;
 
   // We only want to trigger pageviews for transaction without retailId and impression events
-  if((event === "transaction" || event === "impression" || event === "pageview") && !retailId)
-  {
+  if ((event === "transaction" || event === "impression" || event === "pageview") && !retailId) {
     window.tracker("trackPageView");
     window.tracker("enableActivityTracking", {
       minimumVisitLength: 30,

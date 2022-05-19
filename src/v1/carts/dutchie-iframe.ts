@@ -1,5 +1,5 @@
-import { Transactions } from "../shared/types";
-import { tryParseJSONObject } from "../shared/utils";
+import { Transactions } from "../../shared/types";
+import { tryParseJSONObject } from "../../shared/utils";
 
 const dutchieIframeTracker = ({
   appId,
@@ -44,7 +44,7 @@ const dutchieIframeTracker = ({
         const transaction = payload.ecommerce;
         const products = transaction.items;
         const { transaction_id, value } = transaction;
-        
+
         // Hardcoded because most fields are empty
         window.tracker(
           "addTrans",

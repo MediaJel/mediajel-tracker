@@ -1,6 +1,4 @@
-import { Transactions } from "../shared/types";
-import schema from "../shared/schema"
-import trackSelfDescribingEvent from "../snowplow-events/trackSelfDescribingEvent";
+import { Transactions } from "../../shared/types";
 
 const tymberTracker = ({
   appId,
@@ -31,7 +29,7 @@ const tymberTracker = ({
       const products = data.ecommerce.remove.products;
       const currency = data.ecommerce.currency;
       const { brand, category, id, name, price, quantity } = products[0];
-      
+
       window.tracker(
         "trackRemoveFromCart",
         id.toString(),

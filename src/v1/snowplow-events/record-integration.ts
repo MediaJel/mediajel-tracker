@@ -1,4 +1,4 @@
-import { Transactions } from "../shared/types";
+import { Transactions } from "../../shared/types";
 
 const recordIntegration = (context: Transactions) => {
   const { appId, environment, version } = context;

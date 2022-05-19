@@ -1,4 +1,4 @@
-import { Transactions } from "../shared/types";
+import { Transactions } from "../../shared/types";
 
 const buddiTracker = ({
   appId,
@@ -11,13 +11,13 @@ const buddiTracker = ({
         try {
           const response = JSON.parse(this.responseText);
           const cartList = []; // Creates an empty array to store cart items for comparison with removeFromCart array
-        
+
           if (
             this.responseURL.includes("cart") &&
             !this.response.includes("delete")
           ) {
             const product = response;
-            
+
             cartList.push(product);
             console.log("cartList: " + cartList);
             window.tracker(
@@ -29,7 +29,7 @@ const buddiTracker = ({
               parseInt(product.qty || 1),
               "USD"
             );
-          } 
+          }
           else if (this.responseURL.includes("delete-product-from-cart")) {
             const product = response.items;
 
@@ -39,17 +39,17 @@ const buddiTracker = ({
             }).concat(product.filter(x => {
               !cartList.includes(x);
             }));
-            
+
             console.log("removedItem: " + JSON.stringify(removedItem));
             try {
               for (let i = removedItem.length; i > 0; i--) {
                 window.tracker(
                   "trackRemoveFromCart",
-                  removedItem[i-1].id.toString(),
-                  (removedItem[i-1].name || "N/A").toString(),
+                  removedItem[i - 1].id.toString(),
+                  (removedItem[i - 1].name || "N/A").toString(),
                   "N/A",
-                  parseFloat(removedItem[i-1].price || 0),
-                  parseInt(removedItem[i-1].qty || 1),
+                  parseFloat(removedItem[i - 1].price || 0),
+                  parseInt(removedItem[i - 1].qty || 1),
                   "USD"
                 );
                 removedItem.length -= 1;
@@ -57,7 +57,7 @@ const buddiTracker = ({
               removedItem.length = 0;
             }
             catch { return; }
-          } 
+          }
           else if (this.responseURL.includes("orders")) {
             const transaction = response;
             const product = transaction.products;
@@ -95,7 +95,7 @@ const buddiTracker = ({
           }
         }
         catch { return; }
-        
+
       });
       origOpen.apply(this, arguments);
     };

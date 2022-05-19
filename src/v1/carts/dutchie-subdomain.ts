@@ -1,4 +1,4 @@
-import { Transactions } from "../shared/types";
+import { Transactions } from "../../shared/types";
 
 const dutchieSubdomainTracker = ({
   appId,
@@ -27,7 +27,7 @@ const dutchieSubdomainTracker = ({
     if (data.event === "remove_from_cart") {
       const products = data.ecommerce.items;
       const { item_id, item_name, item_category, price, quantity } = products[0];
-      
+
       window.tracker(
         "trackRemoveFromCart",
         item_id.toString(),

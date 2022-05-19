@@ -1,4 +1,4 @@
-import { Transactions } from "../shared/types";
+import { Transactions } from "../../shared/types";
 
 const lightspeedTracker = ({
   appId,
@@ -18,7 +18,7 @@ const lightspeedTracker = ({
       parseFloat(transaction.orderShipping ? transaction.orderShipping : 0),
       (transaction.orderCity ? transaction.orderCity : "N/A").toString(),
       (transaction.orderRegion ? transaction.orderRegion : "N/A").toString(),
-      (transaction.orderCountry? transaction.orderCountry : "N/A").toString(),
+      (transaction.orderCountry ? transaction.orderCountry : "N/A").toString(),
       (transaction.orderCurrency ? transaction.orderCurrency : "USD").toString()
     );
 

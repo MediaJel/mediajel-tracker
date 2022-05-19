@@ -1,4 +1,4 @@
-import { Signup } from '../shared/types';
+import { Signup } from '../../shared/types';
 
 const signup = (context: Signup) => {
   const signupObject: any = context;
