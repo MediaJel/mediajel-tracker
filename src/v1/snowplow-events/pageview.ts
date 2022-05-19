@@ -1,6 +1,6 @@
-import { Transactions } from "../../shared/types";
+import { QueryStringContext } from "../../shared/types";
 
-const pageview = (context: Transactions) => {
+const pageview = (context: QueryStringContext): void => {
   const { event, retailId } = context;
 
   // We only want to trigger pageviews for transaction without retailId and impression events

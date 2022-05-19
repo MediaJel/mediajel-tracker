@@ -1,6 +1,6 @@
-import { Transactions } from "../../shared/types";
+import { QueryStringContext } from "../../shared/types";
 
-const recordIntegration = (context: Transactions) => {
+const recordIntegration = (context: QueryStringContext): void => {
   const { appId, environment, version } = context;
   const recordSchema = {
     schema: "iglu:com.mediajel.events/record/jsonschema/1-0-2",

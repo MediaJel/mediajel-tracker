@@ -42,8 +42,8 @@ const loadTracker = (context: QueryStringContext): void => {
   }
 
   // General events that we want to include in tracking after loading sp.js file
-  pageview(context as Transactions);
-  recordIntegration(context as Transactions);
+  pageview(context);
+  recordIntegration(context);
   window.tracker("enableFormTracking");
   window.tracker("enableLinkClickTracking");
 

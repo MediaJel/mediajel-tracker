@@ -1,9 +1,10 @@
 import applyV1 from "./v1/";
-import getContextObject from "./shared/get-context"
+import getContext from "./shared/utils/get-context"
+import { QueryStringContext } from "./shared/types";
 
-(async () => {
+(async (): Promise<void> => {
   try {
-    const context = getContextObject();
+    const context: QueryStringContext = getContext();
     if (context.version === "v1") applyV1(context);
 
   } catch (err) {
