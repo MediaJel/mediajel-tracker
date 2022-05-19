@@ -1,7 +1,7 @@
 
 export type QueryStringParams = {
-  appId: string
-  mediajelAppId: string
+  appId?: string
+  mediajelAppId?: string
   environment: string
   event: string
   test: string
