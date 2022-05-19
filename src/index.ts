@@ -1,5 +1,5 @@
 import applyV1 from "./v1/";
-import getContextObject from "./shared/utils"
+import getContextObject from "./shared/get-context"
 
 (async () => {
   try {

@@ -1,11 +1,10 @@
-import loadTracker from "./snowplow-events/instantiate-tracker";
+import loadTracker from "./snowplow-events/load-tracker";
 import signup from "./snowplow-events/signup";
-import { chooseCart, chooseImpression } from "./utils/dynamic-import";
+import { chooseCart, chooseImpression } from "./imports/import";
 import { QueryStringContext, Signup } from "../shared/types";
 
 const applyV1 = (context: QueryStringContext): void => {
     loadTracker(context);
-    console.log({ context })
 
     switch (context.event) {
         case "transaction":
