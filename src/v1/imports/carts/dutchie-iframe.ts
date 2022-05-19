@@ -1,5 +1,5 @@
 import { Transactions } from "../../../shared/types";
-import { tryParseJSONObject } from "../../../shared/utils";
+import { tryParseJSONObject } from "../../../shared/utils/try-parse-json";
 
 const dutchieIframeTracker = ({
   appId,
