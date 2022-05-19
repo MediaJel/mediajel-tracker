@@ -11,7 +11,7 @@ export type QueryStringParams = {
 
 
 // Params available to the tag's query string
-export type QueryStringContext = Omit<QueryStringParams, "test"> & {
+export type QueryStringContext = QueryStringParams & {
   collector: string;
 };
 
