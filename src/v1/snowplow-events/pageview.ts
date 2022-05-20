@@ -85,8 +85,6 @@ const cookieSync = () => {
     "https://sync.dmp.cnna.io/hash",
     "Hash"
   );
-
-  return;
 }
 
 export default pageview;

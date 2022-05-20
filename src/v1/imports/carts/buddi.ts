@@ -1,10 +1,10 @@
-import { Transactions } from "../../../shared/types";
+import { QueryStringContext } from "../../../shared/types";
 
 const buddiTracker = ({
   appId,
   retailId,
-}: Pick<Transactions, "appId" | "retailId">) => {
-  (function () {
+}: Pick<QueryStringContext, "appId" | "retailId">) => {
+  (function (): void {
     const origOpen = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = function () {
       this.addEventListener("load", function () {

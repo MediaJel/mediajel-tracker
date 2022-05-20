@@ -1,11 +1,11 @@
-import { Transactions } from "../../../shared/types";
+import { QueryStringContext } from "../../../shared/types";
 import { tryParseJSONObject } from "../../../shared/utils/try-parse-json";
 
 const dutchieIframeTracker = ({
   appId,
   retailId,
-}: Pick<Transactions, "appId" | "retailId">) => {
-  function receiveMessage(event) {
+}: Pick<QueryStringContext, "appId" | "retailId">) => {
+  function receiveMessage(event: MessageEvent<any>) {
     try {
       const rawData = tryParseJSONObject(event.data);
       const payload = rawData.payload.payload;

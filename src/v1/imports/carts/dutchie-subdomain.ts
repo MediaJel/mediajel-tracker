@@ -1,9 +1,9 @@
-import { Transactions } from "../../../shared/types";
+import { QueryStringContext } from "../../../shared/types";
 
 const dutchieSubdomainTracker = ({
   appId,
   retailId,
-}: Pick<Transactions, "appId" | "retailId">) => {
+}: Pick<QueryStringContext, "appId" | "retailId">) => {
   const dataLayer = window.dataLayer || [];
 
   function onDataLayerChange() {

@@ -1,7 +1,7 @@
 import loadTracker from "./snowplow-events/load-tracker";
 import signup from "./snowplow-events/signup";
 import { chooseCart, chooseImpression } from "./imports/import";
-import { QueryStringContext, Signup } from "../shared/types";
+import { QueryStringContext, SignupParams } from "../shared/types";
 
 const applyV1 = (context: QueryStringContext): void => {
     loadTracker(context);
@@ -11,7 +11,7 @@ const applyV1 = (context: QueryStringContext): void => {
             chooseCart(context);
             break;
         case "signup":
-            signup(context as Signup); // <--- Not sure if this works or not
+            signup(context);
             break;
         case "impression":
             chooseImpression(context);

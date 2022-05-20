@@ -1,10 +1,10 @@
-import { Transactions } from "../../../shared/types";
+import { QueryStringContext } from "../../../shared/types";
 import { tryParseJSONObject } from "../../../shared/utils/try-parse-json";
 
 const woocommerceTracker = ({
   appId,
   retailId,
-}: Pick<Transactions, "appId" | "retailId">) => {
+}: Pick<QueryStringContext, "appId" | "retailId">) => {
   if (!window.transactionOrder && !window.transactionItems) {
     return;
   }

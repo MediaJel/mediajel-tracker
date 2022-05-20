@@ -1,6 +1,6 @@
-import { Transactions, Impressions } from "../../shared/types";
+import { QueryStringContext } from "../../shared/types";
 
-export const chooseCart = async (context: Transactions) => {
+export const chooseCart = async (context: QueryStringContext): Promise<void> => {
     const { appId, environment, retailId } = context;
 
 
@@ -83,7 +83,7 @@ export const chooseCart = async (context: Transactions) => {
     }
 }
 
-export const chooseImpression = async (context: Impressions) => {
+export const chooseImpression = async (context: QueryStringContext) => {
     const { environment } = context;
 
     switch (environment) {

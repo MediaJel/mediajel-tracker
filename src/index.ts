@@ -7,11 +7,11 @@ import { QueryStringContext } from "./shared/types";
     const context: QueryStringContext = getContext();
 
     switch (context.version) {
-      case "1.0.0": {
+      case "1.0": {
         const { default: load } = await import("./v1");
         load(context);
       }
-      case "2.0.0": {
+      case "2.0": {
         const { default: load } = await import("./v2");
         load(context)
       }

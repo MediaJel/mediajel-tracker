@@ -1,4 +1,4 @@
-import { QueryStringContext, Transactions } from "../../shared/types";
+import { QueryStringContext } from "../../shared/types";
 import pageview from "./pageview";
 import recordIntegration from "./record-integration";
 

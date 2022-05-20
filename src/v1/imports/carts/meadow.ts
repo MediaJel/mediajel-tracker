@@ -1,10 +1,10 @@
-import { Transactions } from "../../../shared/types";
+import { QueryStringContext } from "../../../shared/types";
 
 const meadowTracker = ({
   appId,
   retailId,
-}: Pick<Transactions, "appId" | "retailId">) => {
-  function receiveMessage(event) {
+}: Pick<QueryStringContext, "appId" | "retailId">) => {
+  function receiveMessage(event: MessageEvent<any>) {
     const rawData = event.data;
 
     if (rawData.type === "ANALYTICS_CART_ADD") {

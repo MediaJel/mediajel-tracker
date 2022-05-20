@@ -1,10 +1,10 @@
-import { Transactions } from "../../../shared/types";
+import { QueryStringContext } from "../../../shared/types";
 
 const janeTracker = ({
   appId,
   retailId,
-}: Pick<Transactions, "appId" | "retailId">) => {
-  function receiveMessage(event) {
+}: Pick<QueryStringContext, "appId" | "retailId">) => {
+  function receiveMessage(event: MessageEvent<any>) {
     const { payload, messageType } = event.data;
 
     if (!payload || messageType !== "analyticsEvent") {

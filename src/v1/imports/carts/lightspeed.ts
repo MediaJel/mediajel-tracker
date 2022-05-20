@@ -1,9 +1,9 @@
-import { Transactions } from "../../../shared/types";
+import { QueryStringContext } from "../../../shared/types";
 
 const lightspeedTracker = ({
   appId,
   retailId,
-}: Pick<Transactions, "appId" | "retailId">) => {
+}: Pick<QueryStringContext, "appId" | "retailId">) => {
   if (!window.lightspeedTransaction) return;
   else {
     const transaction = window.lightspeedTransaction;
