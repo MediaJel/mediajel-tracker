@@ -1,7 +1,7 @@
 import loadTracker from "./snowplow-events/load-tracker";
 import signup from "./snowplow-events/signup";
 import { chooseCart, chooseImpression } from "./imports/import";
-import { QueryStringContext, SignupParams } from "../shared/types";
+import { QueryStringContext } from "../shared/types";
 
 const applyV1 = (context: QueryStringContext): void => {
     loadTracker(context);
