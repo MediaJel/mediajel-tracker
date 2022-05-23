@@ -4,17 +4,14 @@ import { QueryStringContext } from "./shared/types";
 
 (async (): Promise<void> => {
   try {
+
     const context: QueryStringContext = getContext();
 
     switch (context.version) {
-      case "1.0": {
-        const { default: load } = await import("./v1");
-        load(context);
-      }
-      case "2.0": {
-        const { default: load } = await import("./v2");
-        load(context)
-      }
+      case "1.0": import("./v1").then(({ default: load }) => load(context))
+        break;
+      case "2.0": import("./v2").then(({ default: load }) => load(context))
+        break
     }
 
   } catch (err) {

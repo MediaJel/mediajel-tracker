@@ -11,10 +11,11 @@ const getContext = (): QueryStringContext => {
     // Validations
     if (!appId && !mediajelAppId) throw new Error("appId is required");
 
+
     return {
         appId: appId || mediajelAppId, // Legacy support for old universal tag
         version: version || "1.0",
-        collector: test ? process.env.MJ_STAGING_COLLECTOR_URL : process.env.MJ_PRODUCTION_COLLECTOR_URL,
+        collector: params.test ? process.env.MJ_STAGING_COLLECTOR_URL : process.env.MJ_PRODUCTION_COLLECTOR_URL,
         ...params
     };
 }

@@ -1,5 +1,4 @@
 import { QueryStringContext } from "../../shared/types"
-import { debuggerPlugin } from "../snowplow/plugins";
 
 const createTracker = ({ appId, collector, test }: QueryStringContext): void => {
     (function (e, o, n, t, a, c, i) {
@@ -27,6 +26,7 @@ const createTracker = ({ appId, collector, test }: QueryStringContext): void => 
         appId,
         discoverRootDomain: true,
         stateStorageStrategy: "cookieAndLocalStorage",
+        cookieSameSite: "Lax",
         respectDoNotTrack: true,
         eventMethod: "post",
     });
