@@ -7,15 +7,23 @@ import { tapadHashSyncPixel } from "./partners/tapad/hash-sync-pixel";
 
 
 const applyV2 = (context: QueryStringContext): void => {
-    createTracker(context);
-    liquidMRetargetingPixel()
-    tapadCookieSyncPixel()
-    tapadHashSyncPixel()
+    createTracker(context); // Creates the tracker with the configuration
+    liquidMRetargetingPixel() // Calls the LiquidM retargeting pixel
+    tapadCookieSyncPixel() // Calls the Tapad cookie sync pixel
+    tapadHashSyncPixel() // Calls the Tapad hash sync pixel
 
+    console.log({ context })
     // For debugging
     if (context.test === "true") {
         debuggerPlugin()
     }
+
+    switch (context.event) {
+        case "transaction": import("./imports/carts").then(({ default: load }): Promise<void> => load(context));
+            break;
+        default: console.warn("No event specified, Only pageview is active")
+    }
+
 };
 
 export default applyV2

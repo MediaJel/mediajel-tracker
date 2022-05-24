@@ -37,8 +37,6 @@ export default async (context: QueryStringContext): Promise<void> => {
         //* STABLE
         case "olla": import("./olla").then(({ default: load }): void => load({ appId, retailId }));
             break;
-        default:
-            console.error("Undefined environment");
-            break;
+        default: throw new Error("Undefined environment")
     }
 }
