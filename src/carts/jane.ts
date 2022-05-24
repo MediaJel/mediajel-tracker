@@ -46,7 +46,6 @@ const janeTracker = ({
 
       window.tracker("setUserId", customerEmail);
       
-      // TODO: Reconfigure to add deliveryAddress object for city, state_code, and country_code
       window.tracker(
         "addTrans",
         cartId.toString(),
