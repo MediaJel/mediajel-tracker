@@ -47,9 +47,9 @@ export const liquidm = () => {
   };
 
   mjcx.push(cCx),
-    mjcx.push(cCx2),
-    mjcx.push(cCx3),
-    window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
+  mjcx.push(cCx2),
+  mjcx.push(cCx3),
+  window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
 }
 
 export default liquidm;
