@@ -1,20 +1,17 @@
 import loadTracker from "./snowplow-events/load-tracker";
 import signup from "./snowplow-events/signup";
-import { chooseCart, chooseImpression } from "./imports/import";
 import { QueryStringContext } from "../shared/types";
 
 const applyV1 = (context: QueryStringContext): void => {
     loadTracker(context);
 
     switch (context.event) {
-        case "transaction":
-            chooseCart(context);
+        case "transaction": import("./imports/carts").then(({ default: load }): Promise<void> => load(context));
             break;
         case "signup":
             signup(context);
             break;
-        case "impression":
-            chooseImpression(context);
+        case "impression": import("./imports/impressions").then(({ default: load }): Promise<void> => load(context));
             break;
         default:
             break;
