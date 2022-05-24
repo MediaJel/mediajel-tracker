@@ -46,10 +46,12 @@ export const liquidm = () => {
     },
   };
 
-  mjcx.push(cCx),
-  mjcx.push(cCx2),
-  mjcx.push(cCx3),
+  mjcx.push(cCx)
+  mjcx.push(cCx2)
+  mjcx.push(cCx3)
   window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
+
+  window.tracker('enableLinkClickTracking', null, null, mjcx)
 }
 
 export default liquidm;
