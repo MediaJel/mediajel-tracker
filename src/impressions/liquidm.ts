@@ -1,6 +1,6 @@
 export const liquidm = () => {
   const unstruct = {
-    schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-1",
+    schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
     data: {
       advertiserId: "{CUSTOMER_ID}",
       insertionOrder: "{Campaign_ID}",
@@ -12,6 +12,10 @@ export const liquidm = () => {
       siteName: "{SITE_NAME}",
       appId: "{APP_STOREURL}",
       appName: "{APP_NAME}",
+      clickId: "{CLICK_ID}",
+      clickUrl: "{CLICK_URL}",
+      clickPixel: "{CLICK_PIXEL}",
+      clickThrough: "{CLICK_THROUGH}",
     },
   };
 

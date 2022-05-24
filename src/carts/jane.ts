@@ -41,9 +41,11 @@ const janeTracker = ({
     }
 
     if (payload.name === "checkout") {
-      const { products, cartId, estimatedTotal, deliveryFee, deliveryAddress, salesTax, storeTax } = payload.properties;
+      const { customerEmail, products, cartId, estimatedTotal, deliveryFee, deliveryAddress, salesTax, storeTax } = payload.properties;
+      const { city = "N/A", state_code = "N/A", country_code = "N/A" } = deliveryAddress;
+
+      window.tracker("setUserId", customerEmail);
       
-      // TODO: Reconfigure to add deliveryAddress object for city, state_code, and country_code
       window.tracker(
         "addTrans",
         cartId.toString(),
@@ -51,9 +53,9 @@ const janeTracker = ({
         parseFloat(estimatedTotal),
         parseFloat(salesTax + storeTax || 0),
         parseFloat(deliveryFee || 0),
-        "N/A",
-        "N/A",
-        "N/A",
+        (city || "N/A").toString(),
+        (state_code || "N/A").toString(),
+        (country_code || "N/A").toString(),
         "USD"
       );
 
