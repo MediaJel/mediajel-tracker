@@ -1,5 +1,5 @@
 
-export const datalayerSource = (callback: Function): void => {
+export const datalayerSource = (callback: (data: any) => void): void => {
     const dataLayer = window.dataLayer || [];
     const originalPush = dataLayer.push
     dataLayer.push = (...args: any): void => {
