@@ -1,9 +1,7 @@
-import { QueryStringContext, SignupParams } from '../../shared/types';
+import { SignupParams } from "../../shared/types";
 
-const signup = (context: QueryStringContext): void => {
-  const { uuid, firstName, lastName, gender, emailAddress, hashedEmailAddress, address, city, state, phoneNumber, advertiser } = context
-
-  const data: Partial<SignupParams> = {
+const signup = (context: Partial<SignupParams>): void => {
+  const {
     uuid,
     firstName,
     lastName,
@@ -14,13 +12,25 @@ const signup = (context: QueryStringContext): void => {
     city,
     state,
     phoneNumber,
-    advertiser
-  }
+    advertiser,
+  } = context;
 
   window.tracker("trackSelfDescribingEvent", {
     schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-2",
-    data
+    data: {
+      uuid,
+      firstName,
+      lastName,
+      gender,
+      emailAddress,
+      hashedEmailAddress,
+      address,
+      city,
+      state,
+      phoneNumber,
+      advertiser,
+    },
   });
-}
+};
 
 export default signup;

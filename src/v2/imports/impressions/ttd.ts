@@ -1,5 +1,5 @@
 const ttd = () => {
-  const unstruct = {
+  const adImpressionSchema = {
     schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-1",
     data: {
       advertiserId: "%%TTD_ADVERTISERID%%",
@@ -45,9 +45,14 @@ const ttd = () => {
   mjcx.push(cCx);
   mjcx.push(cCx2);
   mjcx.push(cCx3);
-  window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
+  window.tracker("trackSelfDescribingEvent", {
+    event: adImpressionSchema,
+    context: mjcx,
+  });
 
-  window.tracker("enableLinkClickTracking", null, null, mjcx);
+  window.tracker("enableLinkClickTracking", {
+    context: mjcx,
+  });
 };
 
 export default ttd;

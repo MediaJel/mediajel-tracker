@@ -27,6 +27,12 @@ const applyV2 = (context: QueryStringContext): void => {
     case "transaction":
       import("./imports/carts").then(({ default: load }): void => load(context));
       break;
+    case "impressions":
+      import("./imports/impressions").then(({ default: load }): Promise<void> => load(context));
+      break;
+    case "signup":
+      import("./snowplow/events/signup").then(({ default: load }): void => load(context));
+      break;
     default:
       console.warn("No event specified, Only pageview is active");
   }

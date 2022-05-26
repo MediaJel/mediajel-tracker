@@ -24,10 +24,10 @@ const createTracker = ({ appId, collector, test }: QueryStringContext): void => 
     respectDoNotTrack: true,
     eventMethod: "post",
   });
-  window.tracker("enableActivityTracking", {
-    minimumVisitLength: 30,
-    heartbeatDelay: 10,
-  });
+  // window.tracker("enableActivityTracking", {
+  //   minimumVisitLength: 30,
+  //   heartbeatDelay: 10,
+  // });
   window.tracker("trackPageView");
   window.tracker("enableFormTracking");
   window.tracker("enableLinkClickTracking");
