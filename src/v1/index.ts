@@ -5,10 +5,9 @@ const applyV1 = (context: QueryStringContext): void => {
   loadTracker(context);
 
   /**
-   * If not event is provided, By default use environment.
+   * If no event is provided, By default import carts.
    */
   if (!context.event && context.environment) {
-    console.log("hello");
     import("./imports/carts").then(({ default: load }): Promise<void> => load(context));
   }
 

@@ -17,7 +17,7 @@ const applyV2 = (context: QueryStringContext): void => {
   debuggerPlugin();
 
   /**
-   * If not event is provided, By default use environment.
+   * If no event is provided, By default import carts.
    */
   if (!context.event && context.environment) {
     import("./imports/carts").then(({ default: load }): void => load(context));
