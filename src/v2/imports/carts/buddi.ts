@@ -11,7 +11,7 @@ const buddiTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
         const product = response;
 
         cartList.push(product);
-        console.log("cartList: " + cartList);
+
         window.tracker("trackAddToCart", {
           sku: product.id.toString(),
           name: product.name.toString() || "N/A",

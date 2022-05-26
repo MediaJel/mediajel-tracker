@@ -12,54 +12,58 @@ const janeTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "re
     if (payload.name === "cartItemAdd") {
       const { product, productId } = payload.properties;
 
-      window.tracker(
-        "trackAddToCart",
-        productId.toString(),
-        (product.name || "N/A").toString(),
-        (product.category || "N/A").toString(),
-        parseFloat(product.unit_price || 0),
-        parseInt(product.count || 1),
-        "USD"
-      );
+      window.tracker("trackAddToCart", {
+        sku: productId.toString(),
+        name: (product.name || "N/A").toString(),
+        category: (product.category || "N/A").toString(),
+        unitPrice: parseFloat(product.unit_price || 0),
+        quantity: parseInt(product.count || 1),
+        currency: "USD",
+      });
     }
 
     if (payload.name === "cartItemRemoval") {
       const { productId } = payload.properties;
 
       // Hardcoded because most fields are empty
-      window.tracker("trackRemoveFromCart", productId.toString(), "N/A", "N/A", 0, 1, "USD");
+      window.tracker("trackRemoveFromCart", {
+        sku: productId.toString(),
+        name: "N/A",
+        category: "N/A",
+        unitPrice: 0,
+        quantity: 1,
+        currency: "USD",
+      });
     }
 
     if (payload.name === "checkout") {
       const { products, cartId, estimatedTotal, deliveryFee, deliveryAddress, salesTax, storeTax } = payload.properties;
 
       // TODO: Reconfigure to add deliveryAddress object for city, state_code, and country_code
-      window.tracker(
-        "addTrans",
-        cartId.toString(),
-        retailId || appId,
-        parseFloat(estimatedTotal),
-        parseFloat(salesTax + storeTax || 0),
-        parseFloat(deliveryFee || 0),
-        "N/A",
-        "N/A",
-        "N/A",
-        "USD"
-      );
+      window.tracker("addTrans", {
+        orderId: cartId.toString(),
+        total: parseFloat(estimatedTotal),
+        affiliation: retailId || appId,
+        tax: parseFloat(salesTax + storeTax || 0),
+        shipping: parseFloat(deliveryFee || 0),
+        city: "N/A",
+        state: "N/A",
+        country: "N/A",
+        currency: "USD",
+      });
 
       products.forEach((items) => {
         const { product_id, name, category, unit_price, count } = items;
 
-        window.tracker(
-          "addItem",
-          cartId.toString(),
-          product_id.toString(),
-          (name || "N/A").toString(),
-          (category || "N/A").toString(),
-          parseFloat(unit_price || 0),
-          parseInt(count || 1),
-          "USD"
-        );
+        window.tracker("addItem", {
+          orderId: cartId.toString(),
+          sku: product_id.toString(),
+          name: (name || "N/A").toString(),
+          category: (category || "N/A").toString(),
+          price: parseFloat(unit_price || 0),
+          quantity: parseInt(count || 1),
+          currency: "USD",
+        });
       });
 
       window.tracker("trackTrans");
