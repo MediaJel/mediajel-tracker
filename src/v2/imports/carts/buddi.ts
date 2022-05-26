@@ -12,15 +12,14 @@ const buddiTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
 
         cartList.push(product);
         console.log("cartList: " + cartList);
-        window.tracker(
-          "trackAddToCart",
-          product.id.toString(),
-          (product.name || "N/A").toString(),
-          "N/A",
-          parseFloat(product.price || 0),
-          parseInt(product.qty || 1),
-          "USD"
-        );
+        window.tracker("trackAddToCart", {
+          sku: product.id.toString(),
+          name: product.name.toString() || "N/A",
+          category: "N/A",
+          unitPrice: parseFloat(product.price) || 0,
+          quantity: parseInt(product.qty) || 1,
+          currency: "USD",
+        });
       } else if (xhr.responseURL.includes("delete-product-from-cart")) {
         const product = response.items;
 
@@ -35,18 +34,16 @@ const buddiTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
             })
           );
 
-        console.log("removedItem: " + JSON.stringify(removedItem));
         try {
           for (let i = removedItem.length; i > 0; i--) {
-            window.tracker(
-              "trackRemoveFromCart",
-              removedItem[i - 1].id.toString(),
-              (removedItem[i - 1].name || "N/A").toString(),
-              "N/A",
-              parseFloat(removedItem[i - 1].price || 0),
-              parseInt(removedItem[i - 1].qty || 1),
-              "USD"
-            );
+            window.tracker("trackRemoveFromCart", {
+              sku: removedItem[i - 1].id.toString(),
+              name: removedItem[i - 1].name.toString() || "N/A",
+              category: "N/A",
+              unitPrice: parseFloat(removedItem[i - 1].price) || 0,
+              quantity: parseInt(removedItem[i - 1].qty) || 1,
+              currency: "USD",
+            });
             removedItem.length -= 1;
           }
           removedItem.length = 0;
@@ -57,32 +54,30 @@ const buddiTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
         const transaction = response;
         const product = transaction.products;
 
-        window.tracker(
-          "addTrans",
-          transaction.id.toString(),
-          !retailId ? appId : retailId,
-          parseFloat(transaction.total),
-          parseFloat(transaction.tax || 0),
-          parseFloat(transaction.delivery_fee || 0),
-          "N/A",
-          "N/A",
-          "USA",
-          "US"
-        );
+        window.tracker("addTrans", {
+          orderId: transaction.id.toString(),
+          total: parseFloat(transaction.total), // required
+          affiliation: !retailId ? appId : retailId,
+          tax: parseFloat(transaction.tax) || 0,
+          shipping: parseFloat(transaction.delivery_fee) || 0,
+          city: "N/A",
+          state: "N/A",
+          country: "USA",
+          currency: "USD",
+        });
 
         for (let i = 0; i < product.length; ++i) {
           const item = product[i];
 
-          window.tracker(
-            "addItem",
-            transaction.id.toString(),
-            item.product_id.toString(),
-            (item.product.name || "N/A").toString(),
-            (item.product.strain_type || "N/A").toString(),
-            parseFloat(item.price || 0),
-            parseInt(item.qty || 1),
-            "USD"
-          );
+          window.tracker("addItem", {
+            orderId: transaction.id.toString(),
+            sku: item.product_id.toString(),
+            name: item.product.name.toString() || "N/A",
+            category: item.product.strain_type.toString() || "N/A",
+            price: parseFloat(item.price) || 0,
+            quantity: parseInt(item.qty) || 1,
+            currency: "USD",
+          });
         }
 
         window.tracker("trackTrans");
