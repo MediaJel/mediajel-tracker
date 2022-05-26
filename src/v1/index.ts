@@ -8,6 +8,7 @@ const applyV1 = (context: QueryStringContext): void => {
    * If not event is provided, By default use environment.
    */
   if (!context.event && context.environment) {
+    console.log("hello");
     import("./imports/carts").then(({ default: load }): Promise<void> => load(context));
   }
 

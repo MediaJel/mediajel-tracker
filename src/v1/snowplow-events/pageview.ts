@@ -3,32 +3,27 @@ import { QueryStringContext } from "../../shared/types";
 const pageview = (context: QueryStringContext): void => {
   const { event, retailId } = context;
 
-  // We only want to trigger pageviews for transaction without retailId and impression events
-  if ((event === "transaction" || event === "impression" || event === "pageview") && !retailId) {
-    window.tracker("trackPageView");
+  window.tracker("enableActivityTracking", 30, 10);
+  window.tracker("trackPageView");
 
-    window.tracker("enableActivityTracking", 30, 10)
-      // LiquidM Retargeting Pixel
-      (function (c, d) {
-        var a = document.createElement("script");
-        a.type = "text/javascript";
-        a.async = !0;
-        a.src =
-          "https://tracking.lqm.io/odin/handle_sync.js?seg=G8aqIT2yoccd7G3eEQ4uMw&gdpr=" +
-          ("1" === c ? "1" : "0") +
-          "&gdpr_consent=" +
-          (d ? encodeURIComponent(d) : "") +
-          "&cb=" +
-          new Date().getTime();
-        var b = document.getElementsByTagName("script")[0];
-        b.parentNode.insertBefore(a, b);
-      })();
+  // LiquidM Retargeting Pixel
+  (function (c, d) {
+    var a = document.createElement("script");
+    a.type = "text/javascript";
+    a.async = !0;
+    a.src =
+      "https://tracking.lqm.io/odin/handle_sync.js?seg=G8aqIT2yoccd7G3eEQ4uMw&gdpr=" +
+      ("1" === c ? "1" : "0") +
+      "&gdpr_consent=" +
+      (d ? encodeURIComponent(d) : "") +
+      "&cb=" +
+      new Date().getTime();
+    var b = document.getElementsByTagName("script")[0];
+    b.parentNode.insertBefore(a, b);
+  })();
 
-    cookieSync();
-  }
-
-  return;
-}
+  cookieSync();
+};
 
 const cookieSync = () => {
   setTimeout(
@@ -82,6 +77,6 @@ const cookieSync = () => {
     "https://sync.dmp.cnna.io/hash",
     "Hash"
   );
-}
+};
 
 export default pageview;
