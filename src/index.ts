@@ -1,19 +1,18 @@
-
-import getContext from "./shared/utils/get-context"
+import getContext from "./shared/utils/get-context";
 import { QueryStringContext } from "./shared/types";
 
 (async (): Promise<void> => {
   try {
-
     const context: QueryStringContext = getContext();
 
     switch (context.version) {
-      case "1.0": import("./v1").then(({ default: load }) => load(context))
+      case "1.0":
+        import("./v1").then(({ default: load }) => load(context));
         break;
-      case "2.0": import("./v2").then(({ default: load }) => load(context))
-        break
+      case "2.0":
+        import("./v2").then(({ default: load }) => load(context));
+        break;
     }
-
   } catch (err) {
     const clientError = `An error has occured, please contact your pixel provider: `;
     console.error(clientError + err.message);
