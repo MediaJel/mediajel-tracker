@@ -46,6 +46,8 @@ export const ttd = () => {
   mjcx.push(cCx2);
   mjcx.push(cCx3);
   window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
+
+  window.tracker('enableLinkClickTracking', null, null, mjcx)
 }
 
 export default ttd;

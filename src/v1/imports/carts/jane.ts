@@ -1,9 +1,6 @@
 import { QueryStringContext } from "../../../shared/types";
 
-const janeTracker = ({
-  appId,
-  retailId,
-}: Pick<QueryStringContext, "appId" | "retailId">) => {
+const janeTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   function receiveMessage(event: MessageEvent<any>) {
     const { payload, messageType } = event.data;
 
@@ -29,21 +26,16 @@ const janeTracker = ({
       const { productId } = payload.properties;
 
       // Hardcoded because most fields are empty
-      window.tracker(
-        "trackRemoveFromCart",
-        productId.toString(),
-        "N/A",
-        "N/A",
-        0,
-        1,
-        "USD"
-      );
+      window.tracker("trackRemoveFromCart", productId.toString(), "N/A", "N/A", 0, 1, "USD");
     }
 
     if (payload.name === "checkout") {
-      const { products, cartId, estimatedTotal, deliveryFee, deliveryAddress, salesTax, storeTax } = payload.properties;
+      const { customerEmail, products, cartId, estimatedTotal, deliveryFee, deliveryAddress, salesTax, storeTax } =
+        payload.properties;
+      const { city = "N/A", state_code = "N/A", country_code = "N/A" } = deliveryAddress;
 
-      // TODO: Reconfigure to add deliveryAddress object for city, state_code, and country_code
+      window.tracker("setUserId", customerEmail);
+
       window.tracker(
         "addTrans",
         cartId.toString(),
@@ -51,14 +43,14 @@ const janeTracker = ({
         parseFloat(estimatedTotal),
         parseFloat(salesTax + storeTax || 0),
         parseFloat(deliveryFee || 0),
-        "N/A",
-        "N/A",
-        "N/A",
+        (city || "N/A").toString(),
+        (state_code || "N/A").toString(),
+        (country_code || "N/A").toString(),
         "USD"
       );
 
-      products.forEach(items => {
-        const { product_id, name, category, unit_price, count } = items
+      products.forEach((items) => {
+        const { product_id, name, category, unit_price, count } = items;
 
         window.tracker(
           "addItem",
@@ -70,7 +62,7 @@ const janeTracker = ({
           parseInt(count || 1),
           "USD"
         );
-      })
+      });
 
       window.tracker("trackTrans");
     }

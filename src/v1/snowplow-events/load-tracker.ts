@@ -45,7 +45,6 @@ const loadTracker = (context: QueryStringContext): void => {
   pageview(context);
   recordIntegration(context);
   window.tracker("enableFormTracking");
-  window.tracker("enableLinkClickTracking");
 
 };
 
