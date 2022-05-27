@@ -9,30 +9,28 @@ const meadowTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "
       const cartData = rawData.payload;
       const product = rawData.payload.product;
 
-      window.tracker(
-        "trackAddToCart",
-        product.id.toString(),
-        (product.name || "N/A").toString(),
-        (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
-        parseFloat(product.option.price || 0) / 100,
-        parseInt(cartData.quantity || 1),
-        "USD"
-      );
+      window.tracker("trackAddToCart", {
+        sku: product.id.toString(),
+        name: (product.name || "N/A").toString(),
+        category: (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
+        unitPrice: parseFloat(product.option.price || 0) / 100,
+        quantity: parseInt(cartData.quantity || 1),
+        currency: "USD",
+      });
     }
 
     if (rawData.type === "ANALYTICS_CART_REMOVE") {
       const cartData = rawData.payload;
       const product = rawData.payload.product;
 
-      window.tracker(
-        "trackRemoveFromCart",
-        product.id.toString(),
-        (product.name || "N/A").toString(),
-        (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
-        parseFloat(product.option.price || 0) / 100,
-        parseInt(cartData.quantity || 1),
-        "USD"
-      );
+      window.tracker("trackRemoveFromCart", {
+        sku: product.id.toString(),
+        name: (product.name || "N/A").toString(),
+        category: (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
+        unitPrice: parseFloat(product.option.price || 0) / 100,
+        quantity: parseInt(cartData.quantity || 1),
+        currency: "USD",
+      });
     }
 
     if (rawData.type === "ANALYTICS_PURCHASE") {
@@ -40,32 +38,30 @@ const meadowTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "
       const products = transaction.lineItems;
 
       // Hardcoded because most fields are empty
-      window.tracker(
-        "addTrans",
-        transaction.id.toString(),
-        retailId ?? appId,
-        parseFloat(transaction.netPrice) / 100,
-        parseFloat(transaction.taxesTotal || 0) / 100,
-        0,
-        "N/A",
-        "N/A",
-        "N/A",
-        "USD"
-      );
+      window.tracker("addTrans", {
+        orderId: transaction.id.toString(),
+        affiliation: retailId ?? appId,
+        total: parseFloat(transaction.netPrice) / 100,
+        tax: parseFloat(transaction.taxesTotal || 0) / 100,
+        shipping: 0,
+        city: "N/A",
+        state: "N/A",
+        country: "N/A",
+        currency: "USD",
+      });
 
       products.forEach((items) => {
         const { product, quantity } = items;
 
-        window.tracker(
-          "addItem",
-          transaction.id.toString(),
-          product.id.toString(),
-          (product.name || "N/A").toString(),
-          (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
-          parseFloat(product.option.price || 0) / 100,
-          parseInt(quantity || 1),
-          "USD"
-        );
+        window.tracker("addItem", {
+          orderId: transaction.id.toString(),
+          sku: product.id.toString(),
+          name: (product.name || "N/A").toString(),
+          category: (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
+          price: parseFloat(product.option.price || 0) / 100,
+          quantity: parseInt(quantity || 1),
+          currency: "USD",
+        });
       });
 
       window.tracker("trackTrans");
