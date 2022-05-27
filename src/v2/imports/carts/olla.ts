@@ -8,30 +8,28 @@ const ollaTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "re
       const products = data.items || data[2].items; // data.items is at array index 2
       const { id, name, price, quantity, category } = products[0];
 
-      window.tracker(
-        "trackAddToCart",
-        id.toString(),
-        (name || "N/A").toString(),
-        (category || "N/A").toString(),
-        parseFloat(price || 0),
-        parseInt(quantity || 1),
-        "USD"
-      );
+      window.tracker("trackAddToCart", {
+        sku: id.toString(),
+        name: (name || "N/A").toString(),
+        category: (category || "N/A").toString(),
+        unitPrice: parseFloat(price || 0),
+        quantity: parseInt(quantity || 1),
+        currency: "USD",
+      });
     }
 
     if (data.event === "remove_from_cart" || dataLayerEvent === "remove_from_cart") {
       const products = data.items || data[2].items; // data.items is at array index 2
       const { id, name, price, quantity, category } = products[0];
 
-      window.tracker(
-        "trackRemoveFromCart",
-        id.toString(),
-        (name || "N/A").toString(),
-        (category || "N/A").toString(),
-        parseFloat(price || 0),
-        parseInt(quantity || 1),
-        "USD"
-      );
+      window.tracker("trackRemoveFromCart", {
+        sku: id.toString(),
+        name: (name || "N/A").toString(),
+        category: (category || "N/A").toString(),
+        unitPrice: parseFloat(price || 0),
+        quantity: parseInt(quantity || 1),
+        currency: "USD",
+      });
     }
 
     if (data.event === "purchase" || dataLayerEvent === "purchase") {
@@ -42,32 +40,30 @@ const ollaTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "re
       const products = data.items || data[2].items;
 
       // Hardcoded because most fields are empty
-      window.tracker(
-        "addTrans",
-        transaction_id.toString(),
-        retailId ?? appId,
-        parseFloat(transaction_total),
-        0,
-        0,
-        "N/A",
-        "N/A",
-        "N/A",
-        (transaction_currency || "USD").toString()
-      );
+      window.tracker("addTrans", {
+        orderId: transaction_id.toString(),
+        affiliation: retailId ?? appId,
+        total: parseFloat(transaction_total),
+        tax: 0,
+        shipping: 0,
+        city: "N/A",
+        state: "N/A",
+        country: "N/A",
+        currency: (transaction_currency || "USD").toString(),
+      });
 
       products.forEach((items) => {
         const { id, name, price, quantity, category } = items;
 
-        window.tracker(
-          "addItem",
-          transaction_id.toString(),
-          id.toString(),
-          (name || "N/A").toString(),
-          (category || "N/A").toString(),
-          parseFloat(price || 0),
-          parseInt(quantity || 1),
-          (transaction_currency || "USD").toString()
-        );
+        window.tracker("addItem", {
+          orderId: transaction_id.toString(),
+          sku: id.toString(),
+          name: (name || "N/A").toString(),
+          category: (category || "N/A").toString(),
+          price: parseFloat(price || 0),
+          quantity: parseInt(quantity || 1),
+          currency: (transaction_currency || "USD").toString(),
+        });
       });
 
       window.tracker("trackTrans");
