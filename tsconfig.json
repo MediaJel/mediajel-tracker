@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "lib": ["es5", "es6", "dom"],
-    "baseUrl": "./public/index.html",
     "paths": {
       "~/*": ["./*"]
     },

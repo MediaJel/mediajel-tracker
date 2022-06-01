@@ -4,6 +4,7 @@ import { tryParseJSONObject } from "../../../shared/utils/try-parse-json";
 
 const dutchieIframeTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
   postMessageSource((event: MessageEvent<any>): void => {
+    console.log(event);
     try {
       const rawData = tryParseJSONObject(event.data);
       const payload = rawData.payload.payload;

@@ -1,11 +1,9 @@
 import { QueryStringContext } from "../../../shared/types";
 import { tryParseJSONObject } from "../../../shared/utils/try-parse-json";
 
-const dutchieIframeTracker = ({
-  appId,
-  retailId,
-}: Pick<QueryStringContext, "appId" | "retailId">) => {
+const dutchieIframeTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   function receiveMessage(event: MessageEvent<any>) {
+    console.log(event);
     try {
       const rawData = tryParseJSONObject(event.data);
       const payload = rawData.payload.payload;
@@ -59,7 +57,7 @@ const dutchieIframeTracker = ({
           "USD"
         );
 
-        products.forEach(items => {
+        products.forEach((items) => {
           const { item_id, item_name, item_category, price, quantity } = items;
 
           window.tracker(
@@ -72,12 +70,11 @@ const dutchieIframeTracker = ({
             parseInt(quantity || 1),
             "USD"
           );
-        })
+        });
 
         window.tracker("trackTrans");
       }
-    }
-    catch (e) {
+    } catch (e) {
       throw e;
     }
   }
