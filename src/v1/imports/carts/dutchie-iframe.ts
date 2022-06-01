@@ -6,7 +6,7 @@ const dutchieIframeTracker = ({ appId, retailId }: Pick<QueryStringContext, "app
     console.log(event.data);
     try {
       const rawData = tryParseJSONObject(event.data);
-      const payload = rawData.payload.payload || null;
+      const payload = rawData?.payload?.payload || null;
 
       if (rawData.event === "analytics:dataLayer" && payload.event === "add_to_cart") {
         const products = payload.ecommerce.items;
