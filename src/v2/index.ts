@@ -13,8 +13,8 @@ const applyV2 = (context: QueryStringContext): void => {
   tapadCookieSyncPixel();
   tapadHashSyncPixel();
 
-  // For debugging in the console
-  debuggerPlugin();
+  /** For debugging in the console */
+  context.debugger === "true" && debuggerPlugin();
 
   /**
    * If no event is provided, By default import carts.

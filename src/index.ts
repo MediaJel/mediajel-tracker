@@ -6,10 +6,10 @@ import { QueryStringContext } from "./shared/types";
     const context: QueryStringContext = getContext();
 
     switch (context.version) {
-      case "1.0":
+      case "1":
         import("./v1").then(({ default: load }) => load(context));
         break;
-      case "2.0":
+      case "2":
         import("./v2").then(({ default: load }) => load(context));
         break;
     }

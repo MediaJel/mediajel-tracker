@@ -37,7 +37,11 @@ const janeTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "re
     }
 
     if (payload.name === "checkout") {
-      const { products, cartId, estimatedTotal, deliveryFee, deliveryAddress, salesTax, storeTax } = payload.properties;
+      const { customerEmail, products, cartId, estimatedTotal, deliveryFee, deliveryAddress, salesTax, storeTax } =
+        payload.properties;
+      const { city = "N/A", state_code = "N/A", country_code = "N/A" } = deliveryAddress;
+
+      window.tracker("setUserId", customerEmail);
 
       // TODO: Reconfigure to add deliveryAddress object for city, state_code, and country_code
       window.tracker("addTrans", {
