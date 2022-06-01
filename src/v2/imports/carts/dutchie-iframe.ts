@@ -4,10 +4,10 @@ import { tryParseJSONObject } from "../../../shared/utils/try-parse-json";
 
 const dutchieIframeTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
   postMessageSource((event: MessageEvent<any>): void => {
-    console.log(event);
+    console.log(event.data);
     try {
       const rawData = tryParseJSONObject(event.data);
-      const payload = rawData.payload.payload;
+      const payload = rawData.payload.payload || null;
 
       if (rawData.event === "analytics:dataLayer" && payload.event === "add_to_cart") {
         const products = payload.ecommerce.items;
