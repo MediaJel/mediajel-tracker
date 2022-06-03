@@ -1,8 +1,8 @@
 export const trackSelfDescribingEvent = (schema: string, data: any) => {
   window.tracker("trackSelfDescribingEvent", {
     schema,
-    data
+    data,
   });
-}
+};
 
 export default trackSelfDescribingEvent;

@@ -1,4 +1,4 @@
-import { SignupParams } from "../../shared/types";
+import { SignupParams } from "../../../shared/types";
 
 const signup = (context: Partial<SignupParams>): void => {
   const {

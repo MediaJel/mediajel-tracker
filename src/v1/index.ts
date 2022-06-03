@@ -1,8 +1,17 @@
-import loadTracker from "./snowplow-events/load-tracker";
+import createTracker from "./snowplow/events/create-tracker";
+import recordIntegration from "./snowplow/events/record-integration";
+
+import { liquidMRetargetingPixel } from "../shared/partners/liquidm/retargeting-pixel";
+import { tapadCookieSyncPixel } from "../shared/partners/tapad/cookie-sync-pixel";
+import { tapadHashSyncPixel } from "../shared/partners/tapad/hash-sync-pixel";
 import { QueryStringContext } from "../shared/types";
 
 const applyV1 = (context: QueryStringContext): void => {
-  loadTracker(context);
+  createTracker(context);
+  recordIntegration(context);
+  liquidMRetargetingPixel();
+  tapadCookieSyncPixel();
+  tapadHashSyncPixel();
 
   /**
    * If no event is provided, By default import carts.
@@ -19,7 +28,7 @@ const applyV1 = (context: QueryStringContext): void => {
       import("./imports/impressions").then(({ default: load }): Promise<void> => load(context));
       break;
     case "signup":
-      import("./snowplow-events/signup").then(({ default: load }): void => load(context));
+      import("./snowplow/events/signup").then(({ default: load }): void => load(context));
       break;
     default:
       console.warn("No event specified, Only pageview is active");

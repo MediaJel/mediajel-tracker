@@ -1,4 +1,4 @@
-import { QueryStringContext } from "../../shared/types";
+import { QueryStringContext } from "../../../shared/types";
 
 const recordIntegration = (context: QueryStringContext): void => {
   const { appId, environment: cart, version } = context;
