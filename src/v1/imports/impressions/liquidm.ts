@@ -24,7 +24,7 @@ const liquidm = () => {
     },
   };
 
-  const unstructMacros = {
+  const contexts = {
     schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
     data: {
       advertiserId: "{CUSTOMER_ID}",
@@ -76,7 +76,7 @@ const liquidm = () => {
   mjcx.push(cCx3);
   window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
 
-  window.tracker("enableLinkClickTracking", null, null, unstructMacros);
+  window.tracker("enableLinkClickTracking", null, null, [contexts]);
 };
 
 export default liquidm;
