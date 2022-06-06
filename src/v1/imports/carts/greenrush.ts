@@ -1,26 +1,20 @@
 import { QueryStringContext } from "../../../shared/types";
 
-const greenrushTracker = ({
-  appId,
-  retailId,
-}: Pick<QueryStringContext, "appId" | "retailId">) => {
+const greenrushTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   (function () {
     var origOpen = XMLHttpRequest.prototype.open;
     XMLHttpRequest.prototype.open = function () {
       this.addEventListener("load", function () {
         var response = this.responseText;
-        if (
-          this.responseURL.includes("cart") &&
-          this.response.includes("pending")
-        ) {
-          var transaction = JSON.parse(response.data);
-          var product = transaction.items.data;
+        if (response.includes("pending")) {
+          var transaction = JSON.parse(response);
+          var product = transaction.data.items.data;
           window.tracker(
             "addTrans",
-            transaction.id,
+            transaction.data.id.toString(),
             !retailId ? appId : retailId,
-            parseInt(transaction.total),
-            parseInt(transaction.tax),
+            parseInt(transaction.data.total),
+            parseInt(transaction.data.tax),
             0,
             "N/A",
             "N/A",
@@ -31,16 +25,18 @@ const greenrushTracker = ({
             var item = product[i];
             window.tracker(
               "addItem",
-              transaction.id,
-              item.id,
+              transaction.data.id.toString(),
+              item.id.toString(),
               item.name,
-              item.subcategory,
+              item.category,
               item.price,
               item.quantity,
               "US"
             );
           }
           window.tracker("trackTrans");
+        } else {
+          return;
         }
       });
       origOpen.apply(this, arguments);
