@@ -1,5 +1,5 @@
 const liquidm = () => {
-  if(window.tracker.impressions.liquidm_click_macros) {
+  if (window.tracker.impressions.liquidm_click_macros) {
     return;
   }
   const liquidmParams = window.tracker.impressions.liquidm_click_macros;
@@ -21,6 +21,26 @@ const liquidm = () => {
       clickUrl: liquidmParams.clickUrl,
       clickPixel: liquidmParams.clickPixel,
       clickThrough: liquidmParams.clickThrough,
+    },
+  };
+
+  const unstructMacros = {
+    schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
+    data: {
+      advertiserId: "{CUSTOMER_ID}",
+      insertionOrder: "{Campaign_ID}",
+      lineItemId: "LiquidM_MAIN",
+      creativeId: "{AD_NAME}",
+      publisherId: "{PUBLISHER_ID}",
+      publisherName: "{PUBLISHER_NAME}",
+      siteId: "{APP_DOMAIN}",
+      siteName: "{SITE_NAME}",
+      appId: "{APP_STOREURL}",
+      appName: "{APP_NAME}",
+      clickId: "{CLICK_ID}",
+      clickUrl: "{CLICK_URL}",
+      clickPixel: "{CLICK_PIXEL}",
+      clickThrough: "{CLICK_THROUGH}",
     },
   };
 
@@ -56,7 +76,7 @@ const liquidm = () => {
   mjcx.push(cCx3);
   window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
 
-  window.tracker("enableLinkClickTracking", null, null, mjcx);
+  window.tracker("enableLinkClickTracking", null, null, unstructMacros);
 };
 
 export default liquidm;
