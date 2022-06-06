@@ -1,21 +1,26 @@
 const liquidm = () => {
+  if(window.tracker.impressions.liquidm_click_macros) {
+    return;
+  }
+  const liquidmParams = window.tracker.impressions.liquidm_click_macros;
+
   const unstruct = {
     schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
     data: {
-      advertiserId: "{CUSTOMER_ID}",
-      insertionOrder: "{Campaign_ID}",
+      advertiserId: liquidmParams.customerId,
+      insertionOrder: liquidmParams.campaignId,
       lineItemId: "LiquidM_MAIN",
-      creativeId: "{AD_NAME}",
-      publisherId: "{PUBLISHER_ID}",
-      publisherName: "{PUBLISHER_NAME}",
-      siteId: "{APP_DOMAIN}",
-      siteName: "{SITE_NAME}",
-      appId: "{APP_STOREURL}",
-      appName: "{APP_NAME}",
-      clickId: "{CLICK_ID}",
-      clickUrl: "{CLICK_URL}",
-      clickPixel: "{CLICK_PIXEL}",
-      clickThrough: "{CLICK_THROUGH}",
+      creativeId: liquidmParams.adName,
+      publisherId: liquidmParams.publisherId,
+      publisherName: liquidmParams.publisherName,
+      siteId: liquidmParams.appDomain,
+      siteName: liquidmParams.siteName,
+      appId: liquidmParams.appStoreUrl,
+      appName: liquidmParams.appName,
+      clickId: liquidmParams.clickId,
+      clickUrl: liquidmParams.clickUrl,
+      clickPixel: liquidmParams.clickPixel,
+      clickThrough: liquidmParams.clickThrough,
     },
   };
 
@@ -35,12 +40,12 @@ const liquidm = () => {
     schema: "iglu:com.mediajel.contexts/identities/jsonschema/1-0-0",
     data: {
       DSP: "LiquidM",
-      GAID: "{GAID}",
-      GAID_MD5: "{GAID_MD5}",
-      GAID_SHA1: "{GAID_SHA1}",
-      IDFA: "{IDFA}",
-      IDFA_MD5: "{IDFA_MD5}",
-      IDFA_SHA1: "{IDFA_SHA1}",
+      GAID: liquidmParams.gaid,
+      GAID_MD5: liquidmParams.gaidMd5,
+      GAID_SHA1: liquidmParams.gaidSha1,
+      IDFA: liquidmParams.idfa,
+      IDFA_MD5: liquidmParams.idfaMd5,
+      IDFA_SHA1: liquidmParams.idfaSha1,
       DSPIDENTIFIER: "",
       DEVICEID: "",
     },
