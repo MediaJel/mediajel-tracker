@@ -24,6 +24,7 @@ const liquidm = () => {
     },
   };
 
+  // Do not touch please
   const contexts = {
     schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
     data: {
@@ -76,7 +77,7 @@ const liquidm = () => {
   mjcx.push(cCx3);
   window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
 
-  window.tracker("enableLinkClickTracking", null, null, [contexts]);
+  window.tracker("enableLinkClickTracking", null, null, [contexts]); // <--- Do not touch this
 };
 
 export default liquidm;
