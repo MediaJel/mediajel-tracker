@@ -34,7 +34,6 @@ const createTracker = (context: QueryStringContext): void => {
   window.tracker("enableActivityTracking", 30, 10);
   window.tracker("trackPageView");
   window.tracker("enableFormTracking");
-  window.tracker("enableLinkClickTracking");
 };
 
 export default createTracker;

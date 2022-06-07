@@ -1,5 +1,5 @@
 const liquidm = () => {
-  if(window.mj_liquidm_click_macros) {
+  if (window.tracker.impressions.liquidm_click_macros) {
     return;
   }
   const liquidmParams = window.mj_liquidm_click_macros;
@@ -23,6 +23,28 @@ const liquidm = () => {
       clickThrough: liquidmParams.clickThrough,
     },
   };
+
+  // Do not touch please
+  const lqmMacros = {
+    schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
+    data: {
+      advertiserId: "{CUSTOMER_ID}",
+      insertionOrder: "{Campaign_ID}",
+      lineItemId: "LiquidM_MAIN",
+      creativeId: "{AD_NAME}",
+      publisherId: "{PUBLISHER_ID}",
+      publisherName: "{PUBLISHER_NAME}",
+      siteId: "{APP_DOMAIN}",
+      siteName: "{SITE_NAME}",
+      appId: "{APP_STOREURL}",
+      appName: "{APP_NAME}",
+      clickId: "{CLICK_ID}",
+      clickUrl: "{CLICK_URL}",
+      clickPixel: "{CLICK_PIXEL}",
+      clickThrough: "{CLICK_THROUGH}",
+    },
+  };
+
 
   const mjcx = [];
 
@@ -54,9 +76,32 @@ const liquidm = () => {
   mjcx.push(cCx);
   mjcx.push(cCx2);
   mjcx.push(cCx3);
+
+  const cncx = []
+
+  const cncx3 = {
+    schema: "iglu:com.mediajel.contexts/identities/jsonschema/1-0-0",
+    data: {
+      DSP: "LiquidM",
+      GAID: "{GAID}",
+      GAID_MD5: "{GAID_MD5}",
+      GAID_SHA1: "{GAID_SHA1}",
+      IDFA: "{IDFA}",
+      IDFA_MD5: "{IDFA_MD5}",
+      IDFA_SHA1: "{IDFA_SHA1}",
+      DSPIDENTIFIER: "",
+      DEVICEID: "",
+    },
+  };
+
+  cncx.push(cCx)
+  cncx.push(cCx2)
+  cncx.push(cncx3)
+
+
   window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
 
-  window.tracker("enableLinkClickTracking", null, null, mjcx);
+  window.tracker("enableLinkClickTracking", null, false, false, [lqmMacros, ...cncx]); // <--- Do not touch this
 };
 
 export default liquidm;
