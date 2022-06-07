@@ -45,7 +45,6 @@ const liquidm = () => {
     },
   };
 
-  const contexts = [lqmMacros]
 
   const mjcx = [];
 
@@ -79,7 +78,7 @@ const liquidm = () => {
   mjcx.push(cCx3);
   window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
 
-  window.tracker("enableLinkClickTracking", null, null, contexts); // <--- Do not touch this
+  window.tracker("enableLinkClickTracking", null, false, false, [lqmMacros]); // <--- Do not touch this
 };
 
 export default liquidm;
