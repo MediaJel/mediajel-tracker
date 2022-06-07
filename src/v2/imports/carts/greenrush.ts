@@ -6,28 +6,28 @@ const greenrushTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" 
     const response = xhr.responseText;
     if (xhr.responseURL.includes("cart") && xhr.response.includes("pending")) {
       const transaction = JSON.parse(response);
-      const product = transaction.items.data;
+      const product = transaction.data.items.data;
       window.tracker("addTrans", {
-        orderId: transaction.id,
+        orderId: transaction.data.id.toString(),
         affiliation: !retailId ? appId : retailId,
-        total: parseInt(transaction.total),
-        tax: parseInt(transaction.tax),
+        total: parseFloat(transaction.data.total),
+        tax: parseFloat(transaction.data.tax),
         shipping: 0,
         city: "N/A",
         state: "N/A",
         country: "USA",
-        currency: "US",
+        currency: "USD",
       });
       for (let i = 0, l = product.length; i < l; i++) {
         const item = product[i];
         window.tracker("addItem", {
-          orderId: transaction.id,
-          sku: item.id,
-          name: item.name,
-          category: item.subcategory,
-          price: item.price,
-          quantity: item.quantity,
-          currency: "US",
+          orderId: transaction.data.id.toString(),
+          sku: item.id.toString(),
+          name: item.name.toString(),
+          category: item.category.toString(),
+          price: parseFloat(item.price),
+          quantity: parseInt(item.quantity),
+          currency: "USD",
         });
       }
       window.tracker("trackTrans");
