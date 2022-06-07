@@ -22,7 +22,7 @@ export type SnowplowParams = {
   appId?: string;
   mediajelAppId?: string;
   environment: string;
-  event: string;
+  event: 'impression' | 'transaction' | 'signup'
   test: string;
   version: string;
 };

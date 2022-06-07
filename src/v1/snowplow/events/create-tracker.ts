@@ -1,7 +1,7 @@
 import { QueryStringContext } from "../../../shared/types";
 
-const createTracker = (context: QueryStringContext): void => {
-  const { appId, collector } = context;
+const createTracker = ({ appId, collector, event }: QueryStringContext): void => {
+
 
   // Loading tracker with the snowplow tag by fetching our sp.js file
   // Creates a global function called "tracker" which we use to access the Snowplow Tracker
@@ -34,6 +34,14 @@ const createTracker = (context: QueryStringContext): void => {
   window.tracker("enableActivityTracking", 30, 10);
   window.tracker("trackPageView");
   window.tracker("enableFormTracking");
+
+  /**
+ * !IMPORTANT: We are disabling this as to not override Link click config for the impression pixel.
+ * Enabling this for impressions will cause click tracking to break
+ */
+  if (event !== 'impression') {
+    window.tracker("enableLinkClickTracking");
+  }
 };
 
 export default createTracker;

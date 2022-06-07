@@ -25,7 +25,7 @@ const applyV1 = (context: QueryStringContext): void => {
       import("./imports/carts").then(({ default: load }): Promise<void> => load(context));
       break;
     case "impression":
-      import("./imports/impressions").then(({ default: load }): Promise<void> => load(context));
+      import("./imports/impression").then(({ default: load }): Promise<void> => load(context));
       break;
     case "signup":
       import("./snowplow/events/signup").then(({ default: load }): void => load(context));
