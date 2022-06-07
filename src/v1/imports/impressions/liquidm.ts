@@ -76,9 +76,32 @@ const liquidm = () => {
   mjcx.push(cCx);
   mjcx.push(cCx2);
   mjcx.push(cCx3);
+
+  const cncx = []
+
+  const cncx3 = {
+    schema: "iglu:com.mediajel.contexts/identities/jsonschema/1-0-0",
+    data: {
+      DSP: "LiquidM",
+      GAID: "{GAID}",
+      GAID_MD5: "{GAID_MD5}",
+      GAID_SHA1: "{GAID_SHA1}",
+      IDFA: "{IDFA}",
+      IDFA_MD5: "{IDFA_MD5}",
+      IDFA_SHA1: "{IDFA_SHA1}",
+      DSPIDENTIFIER: "",
+      DEVICEID: "",
+    },
+  };
+
+  cncx.push(cCx)
+  cncx.push(cCx2)
+  cncx.push(cncx3)
+
+
   window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
 
-  window.tracker("enableLinkClickTracking", null, false, false, [lqmMacros]); // <--- Do not touch this
+  window.tracker("enableLinkClickTracking", null, false, false, [lqmMacros, ...cncx]); // <--- Do not touch this
 };
 
 export default liquidm;
