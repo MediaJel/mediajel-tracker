@@ -1,8 +1,8 @@
 const liquidm = () => {
-  if(window.tracker.impressions.liquidm_click_macros) {
+  if(window.mj_liquidm_click_macros) {
     return;
   }
-  const liquidmParams = window.tracker.impressions.liquidm_click_macros;
+  const liquidmParams = window.mj_liquidm_click_macros;
 
   const unstruct = {
     schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
