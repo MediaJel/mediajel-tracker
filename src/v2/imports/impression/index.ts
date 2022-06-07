@@ -5,7 +5,7 @@ export default async (context: QueryStringContext): Promise<void> => {
 
   switch (environment) {
     case "liquidm":
-      import("./liquidm").then(({ default: load }): void => load());
+      import("./liquidm").then(({ default: load }): void => load(context));
       break;
     case "ttd":
       import("./ttd").then(({ default: load }): void => load());
