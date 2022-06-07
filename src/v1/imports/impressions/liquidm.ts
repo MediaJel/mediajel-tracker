@@ -1,5 +1,5 @@
 const liquidm = () => {
-  if (window.tracker.impressions.liquidm_click_macros) {
+  if (window.mj_liquidm_click_macros) {
     return;
   }
   const liquidmParams = window.mj_liquidm_click_macros;
