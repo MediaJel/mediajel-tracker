@@ -1,10 +1,18 @@
-import getTag from "./get-tag";
-import applyTag from "./apply-tag";
+import getContext from "./shared/utils/get-context";
+import { QueryStringContext } from "./shared/types";
 
-(async () => {
+(async (): Promise<void> => {
   try {
-    const context = getTag();
-    await applyTag(context);
+    const context: QueryStringContext = getContext();
+
+    switch (context.version) {
+      case "1":
+        import("./v1").then(({ default: load }) => load(context));
+        break;
+      case "2":
+        import("./v2").then(({ default: load }) => load(context));
+        break;
+    }
   } catch (err) {
     const clientError = `An error has occured, please contact your pixel provider: `;
     console.error(clientError + err.message);

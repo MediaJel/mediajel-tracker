@@ -1,11 +1,12 @@
-import { QueryStringParams } from "../get-tag/helpers/types";
+export { }
 
 declare global {
   interface Window {
-    appId: any;
     GlobalSnowplowNamespace: any;
+    src: any;
     snowplow: any;
     tracker: any;
+    mj_liquidm_click_macros:any;
     Shopify: any;
     lightspeedTransaction: any;
     transactionOrder: any;
