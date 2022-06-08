@@ -37,9 +37,8 @@ const janeTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "re
     }
 
     if (payload.name === "checkout") {
-      const { customerEmail, products, cartId, estimatedTotal, deliveryFee, deliveryAddress, salesTax, storeTax } =
+      const { customerEmail, products, cartId, estimatedTotal, deliveryFee, deliveryAddress = {}, salesTax, storeTax } =
         payload.properties;
-      const { city = "N/A", state_code = "N/A", country_code = "N/A" } = deliveryAddress;
 
       window.tracker("setUserId", customerEmail);
 
@@ -50,9 +49,9 @@ const janeTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "re
         affiliation: retailId || appId,
         tax: parseFloat(salesTax + storeTax || 0),
         shipping: parseFloat(deliveryFee || 0),
-        city: "N/A",
-        state: "N/A",
-        country: "N/A",
+        city: (deliveryAddress?.city || "N/A").toString(),
+        state: (deliveryAddress?.state_code || "N/A").toString(),
+        country: (deliveryAddress?.country_code || "N/A").toString(),
         currency: "USD",
       });
 
