@@ -84,7 +84,7 @@ const liquidm = ({
   });
 
   window.tracker("enableLinkClickTracking", {
-    context: mjcx,
+    context: [unstruct, ...mjcx],
   });
 };
 

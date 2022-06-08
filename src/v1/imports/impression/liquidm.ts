@@ -24,7 +24,6 @@ const liquidm = ({
   DSPIDENTIFIER,
   DEVICEID
 }: Partial<LiquidmMacrosParams>): void => {
-
   const liquidmParams = window.mj_liquidm_click_macros || null
 
   const unstruct = {
@@ -82,7 +81,7 @@ const liquidm = ({
 
   window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
 
-  window.tracker("enableLinkClickTracking", null, false, false, mjcx);
+  window.tracker("enableLinkClickTracking", null, false, false, [unstruct, ...mjcx]);
 };
 
 export default liquidm;
