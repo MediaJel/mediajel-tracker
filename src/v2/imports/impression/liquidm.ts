@@ -1,5 +1,15 @@
 import { LiquidmMacrosParams } from "../../../shared/types";
 
+
+
+/**
+ * ! Note: Please do not change the order of the how the mjcx array is structured.
+ * ! Doing so will break the SQL query that displays the Liquid M Macros with
+ * ! the link clicks.
+ * 
+ * @param {Partial<LiquidmMacrosParams>} args Required args for Liquid M
+ */
+
 const liquidm = ({
   advertiserId,
   insertionOrder,
@@ -69,8 +79,8 @@ const liquidm = ({
       IDFA: liquidmParams?.idfa || IDFA || "N/A",
       IDFA_MD5: liquidmParams?.idfaMd5 || IDFA_MD5 || "N/A",
       IDFA_SHA1: liquidmParams?.idfaSha1 || IDFA_SHA1 || "N/A",
-      DSPIDENTIFIER: DSPIDENTIFIER || "",
-      DEVICEID: DEVICEID || "",
+      DSPIDENTIFIER: DSPIDENTIFIER || "N/A",
+      DEVICEID: DEVICEID || "N/A",
     },
   };
 
@@ -84,7 +94,7 @@ const liquidm = ({
   });
 
   window.tracker("enableLinkClickTracking", {
-    context: [unstruct, ...mjcx],
+    context: [unstruct, ...mjcx], // Do not change the order of the array
   });
 };
 
