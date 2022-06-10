@@ -8,7 +8,9 @@
     "check": "tsc --noEmit",
     "deploy": "parcel build src/index.ts",
     "postdeploy": "node -r dotenv/config deploy/postdeploy.js",
-    "build": "parcel build src/index.ts"
+    "build": "parcel build src/index.ts",
+    "cypress:open": "cypress open",
+    "pretest": "docker-compose up --force-recreate --remove-orphans && cypress open"
   },
   "repository": {
     "type": "git",
