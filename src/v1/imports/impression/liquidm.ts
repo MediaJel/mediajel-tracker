@@ -1,5 +1,13 @@
 import { LiquidmMacrosParams } from "../../../shared/types";
 
+/**
+ * ! Note: Please do not change the order of the how the mjcx array is structured.
+ * ! Doing so will break the SQL query that displays the Liquid M Macros with
+ * ! the link clicks.
+ * 
+ * @param {Partial<LiquidmMacrosParams>} args Required args for Liquid M
+ */
+
 const liquidm = ({
   advertiserId,
   insertionOrder,
@@ -24,25 +32,24 @@ const liquidm = ({
   DSPIDENTIFIER,
   DEVICEID
 }: Partial<LiquidmMacrosParams>): void => {
-  const liquidmParams = window.mj_liquidm_click_macros || null
 
   const unstruct = {
     schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
     data: {
-      advertiserId: liquidmParams?.customerId || advertiserId || "N/A",
-      insertionOrder: liquidmParams?.campaignId || insertionOrder || "N/A",
+      advertiserId: advertiserId || "N/A",
+      insertionOrder: insertionOrder || "N/A",
       lineItemId: lineItemId || "LiquidM_MAIN",
-      creativeId: liquidmParams?.adName || creativeId || "N/A",
-      publisherId: liquidmParams?.publisherId || publisherId || "N/A",
-      publisherName: liquidmParams?.publisherName || publisherName || "N/A",
-      siteId: liquidmParams?.appDomain || siteId || "N/A",
-      siteName: liquidmParams?.siteName || siteName || "N/A",
-      appId: liquidmParams?.appStoreUrl || liquidmAppId || "N/A",
-      appName: liquidmParams?.appName || appName || "N/A",
-      clickId: liquidmParams?.clickId || clickId || "N/A",
-      clickUrl: liquidmParams?.clickUrl || clickUrl || "N/A",
-      clickPixel: liquidmParams?.clickPixel || clickPixel || "N/A",
-      clickThrough: liquidmParams?.clickThrough || clickThrough || "N/A",
+      creativeId: creativeId || "N/A",
+      publisherId: publisherId || "N/A",
+      publisherName: publisherName || "N/A",
+      siteId: siteId || "N/A",
+      siteName: siteName || "N/A",
+      appId: liquidmAppId || "N/A",
+      appName: appName || "N/A",
+      clickId: clickId || "N/A",
+      clickUrl: clickUrl || "N/A",
+      clickPixel: clickPixel || "N/A",
+      clickThrough: clickThrough || "N/A",
     },
   };
 
@@ -63,14 +70,14 @@ const liquidm = ({
     schema: "iglu:com.mediajel.contexts/identities/jsonschema/1-0-0",
     data: {
       DSP: "LiquidM",
-      GAID: liquidmParams?.gaid || GAID || "N/A",
-      GAID_MD5: liquidmParams?.gaidMd5 || GAID_MD5 || "N/A",
-      GAID_SHA1: liquidmParams?.gaidSha1 || GAID_SHA1 || "N/A",
-      IDFA: liquidmParams?.idfa || IDFA || "N/A",
-      IDFA_MD5: liquidmParams?.idfaMd5 || IDFA_MD5 || "N/A",
-      IDFA_SHA1: liquidmParams?.idfaSha1 || IDFA_SHA1 || "N/A",
-      DSPIDENTIFIER: DSPIDENTIFIER || "",
-      DEVICEID: DEVICEID || "",
+      GAID: GAID || "N/A",
+      GAID_MD5: GAID_MD5 || "N/A",
+      GAID_SHA1: GAID_SHA1 || "N/A",
+      IDFA: IDFA || "N/A",
+      IDFA_MD5: IDFA_MD5 || "N/A",
+      IDFA_SHA1: IDFA_SHA1 || "N/A",
+      DSPIDENTIFIER: DSPIDENTIFIER || "N/A",
+      DEVICEID: DEVICEID || "N/A",
     },
   };
 
@@ -81,7 +88,7 @@ const liquidm = ({
 
   window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
 
-  window.tracker("enableLinkClickTracking", null, false, false, [unstruct, ...mjcx]);
+  window.tracker("enableLinkClickTracking", null, false, false, [unstruct, ...mjcx]); // Do not change the order of the array
 };
 
 export default liquidm;
