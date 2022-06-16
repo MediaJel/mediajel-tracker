@@ -25,13 +25,32 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 //
-// declare global {
-//   namespace Cypress {
-//     interface Chainable {
-//       login(email: string, password: string): Chainable<void>
-//       drag(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       dismiss(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       visit(originalFn: CommandOriginalFn, url: string, options: Partial<VisitOptions>): Chainable<Element>
-//     }
-//   }
-// }
+declare namespace Cypress {
+  interface Chainable {
+    /**
+     * Custom command to pass to age gate
+     * @example cy.ageGatePass()
+     */
+    ageGatePass(): Chainable<void>;
+    /**
+     * Custom command to load the Jane Iframe
+     * @example cy.loadJaneIframe()
+     */
+    loadJaneIframe(): Chainable<void>;
+  }
+}
+Cypress.Commands.add("ageGatePass", () => {
+  cy.get(".age-gate-submit-yes", { timeout: 40000 }).should("be.visible").click();
+  cy.get(".off-canvas-close.awb-icon-close", { timeout: 40000 }).should("be.visible").click();
+});
+
+Cypress.Commands.add("loadJaneIframe", () => {
+  cy.get("#jane-menu")
+    .its("0.contentDocument")
+    .should("exist")
+    .its("body")
+    .should("not.be.undefined")
+    .then(cy.wrap)
+    .find("#results")
+    .should("be.visible");
+});

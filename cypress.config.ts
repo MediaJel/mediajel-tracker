@@ -1,6 +1,7 @@
-import { defineConfig } from 'cypress'
+import { defineConfig } from "cypress";
 
 export default defineConfig({
-    projectId: "mediajel-tracker",
-    e2e: {}
-})
+  projectId: "mediajel-tracker",
+  e2e: {},
+  chromeWebSecurity: false,
+});
