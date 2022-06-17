@@ -7,6 +7,9 @@ const woocommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
   }
   const transaction = tryParseJSONObject(window.transactionOrder);
   const products = tryParseJSONObject(window.transactionItems);
+  const email = transaction.billing.email || "N/A";
+
+  window.tracker("setUserId", email);
 
   window.tracker("addTrans", {
     orderId: (transaction.id || transaction.transaction_id).toString(),

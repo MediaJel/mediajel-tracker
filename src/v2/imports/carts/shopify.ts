@@ -6,6 +6,9 @@ const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | 
   } else {
     const transaction = window.Shopify.checkout;
     const products = transaction.line_items;
+    const email = transaction.email || "N/A";
+
+    window.tracker("setUserId", email);
 
     // liquid_total_price is legacy support for old shopify integration
     window.tracker("addTrans", {

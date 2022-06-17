@@ -1,15 +1,14 @@
 import { QueryStringContext } from "../../../shared/types";
 
-const shopifyTracker = ({
-  appId,
-  retailId,
-}: Pick<QueryStringContext, "appId" | "retailId">) => {
+const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   if (!window.Shopify.checkout) {
     return;
-  }
-  else {
+  } else {
     const transaction = window.Shopify.checkout;
     const products = transaction.line_items;
+    const email = transaction.email || "N/A";
+
+    window.tracker("setUserId", email);
 
     // liquid_total_price is legacy support for old shopify integration
     window.tracker(
@@ -25,7 +24,7 @@ const shopifyTracker = ({
       (transaction.currency || "USD").toString()
     );
 
-    products.forEach(items => {
+    products.forEach((items) => {
       const { id, product_id, title, variant_title, price, quantity } = items;
 
       window.tracker(
@@ -38,7 +37,7 @@ const shopifyTracker = ({
         parseInt(quantity || 1),
         (transaction.currency || "USD").toString()
       );
-    })
+    });
 
     window.tracker("trackTrans");
   }
