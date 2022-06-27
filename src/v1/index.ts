@@ -13,6 +13,12 @@ const applyV1 = (context: QueryStringContext): void => {
   tapadCookieSyncPixel();
   tapadHashSyncPixel();
 
+
+  // UTM persist add on
+  if (context.utmPersist === 'true') {
+    utmPersist()
+  }
+
   /**
    * If no event is provided, By default import carts.
    */

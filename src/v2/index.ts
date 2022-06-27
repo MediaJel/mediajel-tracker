@@ -14,8 +14,12 @@ const applyV2 = (context: QueryStringContext): void => {
   tapadCookieSyncPixel();
   tapadHashSyncPixel();
 
+
+   /**UTM Persist add-on */
+  if (context.utmPersist === 'true') utmPersist()
+  
   /** For debugging in the console */
-  context.debugger === "true" && debuggerPlugin();
+  if (context.debugger === "true") debuggerPlugin()
 
   /**
    * If no event is provided, By default import carts.
