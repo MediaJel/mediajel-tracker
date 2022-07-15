@@ -47,6 +47,10 @@ export default (context: QueryStringContext): void => {
     case "olla":
       import("./olla").then(({ default: load }): void => load({ appId, retailId }));
       break;
+    //* STABLE
+    case "grassdoor":
+      import("./grassdoor").then(({ default: load }): void => load({ appId, retailId }));
+      break;
     default:
       throw new Error("Undefined environment");
   }
