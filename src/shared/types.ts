@@ -56,10 +56,15 @@ export type LiquidmMacrosParams = {
   DEVICEID: string
 }
 
+export type AddOnsParams = {
+  utmPersist: string
+}
+
 export type QueryStringParams = Partial<TransactionParams> &
   Partial<SignupParams> &
   Partial<SnowplowPluginParams> &
   Partial<LiquidmMacrosParams> &
+  Partial<AddOnsParams> &
   SnowplowParams;
 
 // Params available to the tag's query string
