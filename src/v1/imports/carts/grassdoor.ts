@@ -6,8 +6,6 @@ const greendoorTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" 
   function onDataLayerChange() {
     const data = window.dataLayer.slice(-1)[0]; // Gets the newest array member of dataLayer
 
-    console.log(data);
-
     if (data.event === "Product Added") {
       const products = data;
       const { sku, name, price, quantity, category } = products;
