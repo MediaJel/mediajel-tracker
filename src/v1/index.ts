@@ -1,7 +1,6 @@
 import createTracker from "./snowplow/events/create-tracker";
 import recordIntegration from "./snowplow/events/record-integration";
 
-import { liquidMRetargetingPixel } from "../shared/partners/liquidm/retargeting-pixel";
 import { tapadCookieSyncPixel } from "../shared/partners/tapad/cookie-sync-pixel";
 import { tapadHashSyncPixel } from "../shared/partners/tapad/hash-sync-pixel";
 import { QueryStringContext } from "../shared/types";
@@ -9,7 +8,6 @@ import { QueryStringContext } from "../shared/types";
 const applyV1 = (context: QueryStringContext): void => {
   createTracker(context);
   recordIntegration(context);
-  liquidMRetargetingPixel();
   tapadCookieSyncPixel();
   tapadHashSyncPixel();
 
