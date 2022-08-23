@@ -2,16 +2,17 @@ import { QueryStringContext } from "../../../shared/types";
 import { tryParseJSONObject } from "../../../shared/utils/try-parse-json";
 
 const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  if (!window.transactionOrder && !window.transactionItems && !window.email) {
+  if (!window.transactionOrder && !window.transactionItems) {
     return;
   }
   const transaction = tryParseJSONObject(window.transactionOrder);
   const products = tryParseJSONObject(window.transactionItems);
-  const email = window.email || "N/A";
-
   const tax = transaction.taxes.reduce((total, tax) => total + parseFloat(tax.value), 0);
 
-  window.tracker("setUserId", email);
+  if (window.email) {
+    const email = window.email || "N/A";
+    window.tracker("setUserId", email);
+  }
 
   window.tracker(
     "addTrans",
