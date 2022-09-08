@@ -8,24 +8,11 @@ const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
   const transaction = tryParseJSONObject(window.transactionOrder);
   const products = tryParseJSONObject(window.transactionItems);
 
-  console.log("transaction: ", transaction);
-  console.log("products: ", products);
-
-  console.log("orderTotal substring: " , transaction.orderTotal.substring(1));
-  console.log("orderSubtotalWithoutTax substring: " , transaction.orderSubtotalWithoutTax.substring(1));
-  console.log("orderSubtotal substring: " , transaction.orderSubtotal.substring(1));
-  console.log("orderShippingCost substring: " , transaction.orderShippingCost.substring(1));
-  
-  console.log("orderTotal substring: " , parseFloat(transaction.orderTotal.substring(1)));
-  console.log("orderSubtotalWithoutTax substring: " , parseFloat(transaction.orderSubtotalWithoutTax.substring(1)));
-  console.log("orderSubtotal substring: " , parseFloat(transaction.orderSubtotal.substring(1)));
-  console.log("orderShippingCost substring: " , parseFloat(transaction.orderShippingCost.substring(1)));
-
-  transaction.orderTotal.substring(1);
-  transaction.orderSubtotalWithoutTax.substring(1);
-  transaction.orderSubtotal.substring(1);
-  transaction.orderShippingCost.substring(1);
-  const transactionTax = Math.abs(transaction.OrderTotal - transaction.orderSubtotalWithoutTax);
+  const orderTotal = transaction.orderTotal.substring(1);
+  const orderSubtotalWithoutTax = transaction.orderSubtotalWithoutTax.substring(1);
+  const orderSubtotal = transaction.orderSubtotal.substring(1); // just in case for future use
+  const orderShippingCost = transaction.orderShippingCost.substring(1);
+  const transactionTax = Math.abs(orderTotal - orderSubtotalWithoutTax);
 
   if (window.transactionEmail) {
     const email = window.transactionEmail || "N/A";
@@ -36,9 +23,9 @@ const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
     "addTrans",
     transaction.orderNumber.toString(),
     retailId || appId,
-    parseFloat(transaction.orderTotal),
+    parseFloat(orderTotal),
     transactionTax,
-    parseFloat(transaction.orderShippingCost || 0),
+    parseFloat(orderShippingCost || 0),
     "N/A", // TODO: GET BILLING/SHIPPING ADDRESSES FOR ECWID
     "N/A",
     "N/A",
@@ -47,7 +34,7 @@ const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
 
   products.forEach((items) => {
     const { orderItemName, orderItemSku, orderItemPrice, orderItemQuantity } = items;
-    orderItemPrice.substring(1);
+    const itemPrice = orderItemPrice.substring(1);
 
     window.tracker(
       "addItem",
@@ -55,7 +42,7 @@ const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
       orderItemSku.toString(),
       (orderItemName || "N/A").toString(),
       "N/A", // No Category Field for Ecwid in transactionItems
-      parseFloat(orderItemPrice || 0),
+      parseFloat(itemPrice || 0),
       parseInt(orderItemQuantity || 1),
       "USD"
     );

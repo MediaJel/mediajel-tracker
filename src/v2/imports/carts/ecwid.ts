@@ -8,11 +8,11 @@ const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
   const transaction = tryParseJSONObject(window.transactionOrder);
   const products = tryParseJSONObject(window.transactionItems);
   
-  transaction.orderTotal.substring(1);
-  transaction.orderSubtotalWithoutTax.substring(1);
-  transaction.orderSubtotal.substring(1);
-  transaction.orderShippingCost.substring(1);
-  const transactionTax = Math.abs(transaction.OrderTotal - transaction.orderSubtotalWithoutTax);
+  const orderTotal = transaction.orderTotal.substring(1);
+  const orderSubtotalWithoutTax = transaction.orderSubtotalWithoutTax.substring(1);
+  const orderSubtotal = transaction.orderSubtotal.substring(1); // just in case for future use
+  const orderShippingCost = transaction.orderShippingCost.substring(1);
+  const transactionTax = Math.abs(orderTotal - orderSubtotalWithoutTax);
 
   if (window.transactionEmail) {
     const email = window.transactionEmail || "N/A";
@@ -22,9 +22,9 @@ const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
   window.tracker("addTrans", {
     orderId: transaction.orderNumber.toString(),
     affiliation: retailId || appId,
-    total: parseFloat(transaction.orderTotal),
+    total: parseFloat(orderTotal),
     tax: transactionTax,
-    shipping: parseFloat(transaction.shippingCost || 0),
+    shipping: parseFloat(orderShippingCost || 0),
     city: "N/A", // TODO: GET BILLING/SHIPPING ADDRESSES FOR ECWID
     state: "N/A",
     country: "N/A",
@@ -33,14 +33,14 @@ const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
 
   products.forEach((items) => {
     const { orderItemName, orderItemSku, orderItemPrice, orderItemQuantity } = items;
-    orderItemPrice.substring(1);
+    const itemPrice = orderItemPrice.substring(1);
 
     window.tracker("addItem", {
       orderId: transaction.orderNumber.toString(),
       sku: orderItemSku.toString(),
       name: (orderItemName || "N/A").toString(),
       category: "N/A", // No Category Field for Ecwid in transactionItems
-      unitPrice: parseFloat(orderItemPrice || 0),
+      unitPrice: parseFloat(itemPrice || 0),
       quantity: parseInt(orderItemQuantity || 1),
       currency: "USD",
     });
