@@ -7,37 +7,43 @@ const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
   }
   const transaction = tryParseJSONObject(window.transactionOrder);
   const products = tryParseJSONObject(window.transactionItems);
-  const tax = transaction.taxes.reduce((total, tax) => total + parseFloat(tax.value), 0);
 
-  if (window.email) {
-    const email = window.email || "N/A";
-    window.tracker("setUserId", email);
+  transaction.orderTotal.substring(1);
+  transaction.orderSubtotalWithoutTax.substring(1);
+  transaction.orderSubtotal.substring(1);
+  transaction.orderShippingCost.substring(1);
+  products.orderItemPrice.substring(1);
+  const transactionTax = Math.abs(transaction.OrderTotal - transaction.orderSubtotalWithoutTax);
+
+  if (window.transactionEmail) {
+    const email = window.transactionEmail || "N/A";
+    window.tracker("setUserId", (email).toString());
   }
 
   window.tracker(
     "addTrans",
-    transaction.number.toString(),
+    transaction.orderNumber.toString(),
     retailId || appId,
-    parseFloat(transaction.total),
-    parseFloat(tax || 0),
-    parseFloat(transaction.shippingCost || 0),
-    (transaction.shippingAddress.city || "N/A").toString(),
-    (transaction.billing.state || "N/A").toString(),
-    (transaction.billing.country || "N/A").toString(),
+    parseFloat(transaction.orderTotal),
+    transactionTax,
+    parseFloat(transaction.orderShippingCost || 0),
+    "N/A", // TODO: GET BILLING/SHIPPING ADDRESSES FOR ECWID
+    "N/A",
+    "N/A",
     "USD"
   );
 
   products.forEach((items) => {
-    const { name, sku, price, quantity } = items;
+    const { orderItemName, orderItemSku, orderItemPrice, orderItemQuantity } = items;
 
     window.tracker(
       "addItem",
-      transaction.id.toString(),
-      sku.toString(),
-      (name || "N/A").toString(),
+      transaction.orderNumber.toString(),
+      orderItemSku.toString(),
+      (orderItemName || "N/A").toString(),
       "N/A", // No Category Field for Ecwid in transactionItems
-      parseFloat(price),
-      parseInt(quantity || 1),
+      parseFloat(orderItemPrice || 0),
+      parseInt(orderItemQuantity || 1),
       "USD"
     );
   });

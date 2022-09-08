@@ -11,7 +11,7 @@ declare global {
     lightspeedTransaction: any;
     transactionOrder: any;
     transactionItems: any;
+    transactionEmail: any;
     dataLayer: any;
-    email: any;
   }
 }
