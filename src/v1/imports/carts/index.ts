@@ -39,7 +39,7 @@ export default async (context: QueryStringContext): Promise<void> => {
     case "shopify":
       import("./shopify").then(({ default: load }): void => load({ appId, retailId }));
       break;
-    //* STABLE
+    //* UNSTABLE
     case "lightspeed":
       import("./lightspeed").then(({ default: load }): void => load({ appId, retailId }));
       break;
@@ -51,7 +51,7 @@ export default async (context: QueryStringContext): Promise<void> => {
     case "grassdoor":
       import("./grassdoor").then(({ default: load }): void => load({ appId, retailId }));
       break;
-    //* STABLE
+    //* UNSTABLE
     case "ecwid":
       import("./ecwid").then(({ default: load }): void => load({ appId, retailId }));
       break;

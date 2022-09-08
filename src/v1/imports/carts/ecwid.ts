@@ -2,41 +2,48 @@ import { QueryStringContext } from "../../../shared/types";
 import { tryParseJSONObject } from "../../../shared/utils/try-parse-json";
 
 const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  if (!window.transactionOrder && !window.transactionItems && !window.email) {
+  if (!window.transactionOrder && !window.transactionItems) {
     return;
   }
   const transaction = tryParseJSONObject(window.transactionOrder);
   const products = tryParseJSONObject(window.transactionItems);
-  const email = window.email || "N/A";
 
-  const tax = transaction.taxes.reduce((total, tax) => total + parseFloat(tax.value), 0);
+  const orderTotal = transaction.orderTotal.substring(1);
+  const orderSubtotalWithoutTax = transaction.orderSubtotalWithoutTax.substring(1);
+  const orderSubtotal = transaction.orderSubtotal.substring(1); // just in case for future use
+  const orderShippingCost = transaction.orderShippingCost.substring(1);
+  const transactionTax = Math.abs(orderTotal - orderSubtotalWithoutTax);
 
-  window.tracker("setUserId", email);
+  if (window.transactionEmail) {
+    const email = window.transactionEmail || "N/A";
+    window.tracker("setUserId", (email).toString());
+  }
 
   window.tracker(
     "addTrans",
-    transaction.number.toString(),
+    transaction.orderNumber.toString(),
     retailId || appId,
-    parseFloat(transaction.total),
-    parseFloat(tax || 0),
-    parseFloat(transaction.shippingCost || 0),
-    (transaction.shippingAddress.city || "N/A").toString(),
-    (transaction.billing.state || "N/A").toString(),
-    (transaction.billing.country || "N/A").toString(),
+    parseFloat(orderTotal),
+    transactionTax,
+    parseFloat(orderShippingCost || 0),
+    "N/A", // TODO: GET BILLING/SHIPPING ADDRESSES FOR ECWID
+    "N/A",
+    "N/A",
     "USD"
   );
 
   products.forEach((items) => {
-    const { name, sku, price, quantity } = items;
+    const { orderItemName, orderItemSku, orderItemPrice, orderItemQuantity } = items;
+    const itemPrice = orderItemPrice.substring(1);
 
     window.tracker(
       "addItem",
-      transaction.id.toString(),
-      sku.toString(),
-      (name || "N/A").toString(),
+      transaction.orderNumber.toString(),
+      orderItemSku.toString(),
+      (orderItemName || "N/A").toString(),
       "N/A", // No Category Field for Ecwid in transactionItems
-      parseFloat(price),
-      parseInt(quantity || 1),
+      parseFloat(itemPrice || 0),
+      parseInt(orderItemQuantity || 1),
       "USD"
     );
   });
