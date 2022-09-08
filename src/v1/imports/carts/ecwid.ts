@@ -35,6 +35,7 @@ const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
 
   products.forEach((items) => {
     const { orderItemName, orderItemSku, orderItemPrice, orderItemQuantity } = items;
+    orderItemPrice.substring(1);
 
     window.tracker(
       "addItem",

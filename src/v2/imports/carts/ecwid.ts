@@ -12,7 +12,6 @@ const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
   transaction.orderSubtotalWithoutTax.substring(1);
   transaction.orderSubtotal.substring(1);
   transaction.orderShippingCost.substring(1);
-  products.orderItemPrice.substring(1);
   const transactionTax = Math.abs(transaction.OrderTotal - transaction.orderSubtotalWithoutTax);
 
   if (window.transactionEmail) {
@@ -34,6 +33,7 @@ const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
 
   products.forEach((items) => {
     const { orderItemName, orderItemSku, orderItemPrice, orderItemQuantity } = items;
+    orderItemPrice.substring(1);
 
     window.tracker("addItem", {
       orderId: transaction.orderNumber.toString(),
