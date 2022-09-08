@@ -7,35 +7,41 @@ const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
   }
   const transaction = tryParseJSONObject(window.transactionOrder);
   const products = tryParseJSONObject(window.transactionItems);
-  const tax = transaction.taxes.reduce((total, tax) => total + parseFloat(tax.value), 0);
+  
+  transaction.orderTotal.substring(1);
+  transaction.orderSubtotalWithoutTax.substring(1);
+  transaction.orderSubtotal.substring(1);
+  transaction.orderShippingCost.substring(1);
+  products.orderItemPrice.substring(1);
+  const transactionTax = Math.abs(transaction.OrderTotal - transaction.orderSubtotalWithoutTax);
 
-  if (window.email) {
-    const email = window.email || "N/A";
-    window.tracker("setUserId", email);
+  if (window.transactionEmail) {
+    const email = window.transactionEmail || "N/A";
+    window.tracker("setUserId", (email).toString());
   }
 
   window.tracker("addTrans", {
-    orderId: transaction.number.toString(),
+    orderId: transaction.orderNumber.toString(),
     affiliation: retailId || appId,
-    total: parseFloat(transaction.total),
-    tax: parseFloat(tax || 0),
+    total: parseFloat(transaction.orderTotal),
+    tax: transactionTax,
     shipping: parseFloat(transaction.shippingCost || 0),
-    city: (transaction.shippingAddress.city || "N/A").toString(),
-    state: (transaction.billing.state || "N/A").toString(),
-    country: (transaction.billing.country || "N/A").toString(),
+    city: "N/A", // TODO: GET BILLING/SHIPPING ADDRESSES FOR ECWID
+    state: "N/A",
+    country: "N/A",
     currency: "USD",
   });
 
   products.forEach((items) => {
-    const { name, sku, price, quantity } = items;
+    const { orderItemName, orderItemSku, orderItemPrice, orderItemQuantity } = items;
 
     window.tracker("addItem", {
-      orderId: transaction.number.toString(),
-      sku: sku.toString(),
-      name: (name || "N/A").toString(),
+      orderId: transaction.orderNumber.toString(),
+      sku: orderItemSku.toString(),
+      name: (orderItemName || "N/A").toString(),
       category: "N/A", // No Category Field for Ecwid in transactionItems
-      unitPrice: parseFloat(price),
-      quantity: parseInt(quantity || 1),
+      unitPrice: parseFloat(orderItemPrice || 0),
+      quantity: parseInt(orderItemQuantity || 1),
       currency: "USD",
     });
   });
