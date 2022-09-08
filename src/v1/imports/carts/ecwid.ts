@@ -8,6 +8,19 @@ const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
   const transaction = tryParseJSONObject(window.transactionOrder);
   const products = tryParseJSONObject(window.transactionItems);
 
+  console.log("transaction: ", transaction);
+  console.log("products: ", products);
+
+  console.log("orderTotal substring: " , transaction.orderTotal.substring(1));
+  console.log("orderSubtotalWithoutTax substring: " , transaction.orderSubtotalWithoutTax.substring(1));
+  console.log("orderSubtotal substring: " , transaction.orderSubtotal.substring(1));
+  console.log("orderShippingCost substring: " , transaction.orderShippingCost.substring(1));
+  
+  console.log("orderTotal substring: " , parseFloat(transaction.orderTotal.substring(1)));
+  console.log("orderSubtotalWithoutTax substring: " , parseFloat(transaction.orderSubtotalWithoutTax.substring(1)));
+  console.log("orderSubtotal substring: " , parseFloat(transaction.orderSubtotal.substring(1)));
+  console.log("orderShippingCost substring: " , parseFloat(transaction.orderShippingCost.substring(1)));
+
   transaction.orderTotal.substring(1);
   transaction.orderSubtotalWithoutTax.substring(1);
   transaction.orderSubtotal.substring(1);
