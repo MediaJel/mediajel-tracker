@@ -59,12 +59,16 @@ export type LiquidmMacrosParams = {
 export type GoogleAdsParams = {
   conversionId: string;
   conversionLabel: string;
-}
+  value?: number;
+  currency?: string;
+  transactionId?: string;
+};
 
 export type QueryStringParams = Partial<TransactionParams> &
   Partial<SignupParams> &
   Partial<SnowplowPluginParams> &
   Partial<LiquidmMacrosParams> &
+  GoogleAdsParams &
   SnowplowParams;
 
 // Params available to the tag's query string
