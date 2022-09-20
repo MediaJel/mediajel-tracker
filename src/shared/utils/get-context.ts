@@ -8,7 +8,7 @@ const getContext = (): QueryStringContext => {
   const urlSearchParams: URLSearchParams = new URLSearchParams(substring);
   const { mediajelAppId, appId, version, ...params } = Object.fromEntries(
     urlSearchParams.entries()
-  ) as QueryStringParams;
+  ) as unknown as QueryStringParams;
 
   // Validations
   if (!appId && !mediajelAppId) throw new Error("appId is required");
