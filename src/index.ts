@@ -5,6 +5,11 @@ import { QueryStringContext } from "./shared/types";
   try {
     const context: QueryStringContext = getContext();
 
+    if (context.event === "googleAds") {
+      import("./google-ads").then(({ default: load }) => load(context));
+      return;
+    }
+
     switch (context.version) {
       case "1":
         import("./v1").then(({ default: load }) => load(context));

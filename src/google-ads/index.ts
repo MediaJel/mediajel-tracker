@@ -1,6 +1,6 @@
-import { GoogleAdsParams } from "../../shared/types";
+import { GoogleAdsParams, SnowplowParams } from "../shared/types";
 
-const createGoogleAds = (context: GoogleAdsParams) => {
+const createGoogleAds = (context: GoogleAdsParams & Pick<SnowplowParams, "environment">) => {
   // Fail fast if the required params are not present
   if (!context.conversionId || !context.conversionLabel) {
     console.error("Conversion ID and Conversion Label are required for Google Ads");
@@ -22,16 +22,11 @@ const createGoogleAds = (context: GoogleAdsParams) => {
   gtag("js", new Date());
   gtag("config", conversionId);
 
-  if (context.conversionLabel) {
-    gtag("event", "conversion", {
-      send_to: `${conversionId}/${context.conversionLabel}`,
-      value: context.value ?? 1.0,
-      currency: context.currency ?? "USD",
-      transaction_id: context.transactionId ?? "",
-    });
+  switch (context.environment) {
+    case "jane": {
+      import("./imports/carts/jane").then(({ default: load }) => load({ ...context, gtag }));
+    }
   }
-
-  console.log(window.dataLayer);
 };
 
 export default createGoogleAds;
