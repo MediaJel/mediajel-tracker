@@ -3,8 +3,7 @@ import { GoogleAdsParams, SnowplowParams } from "../shared/types";
 const createGoogleAds = (context: GoogleAdsParams & Pick<SnowplowParams, "environment">) => {
   // Fail fast if the required params are not present
   if (!context.conversionId || !context.conversionLabel) {
-    console.error("Conversion ID and Conversion Label are required for Google Ads");
-    return;
+    throw new Error("Conversion ID and Conversion Label are required for Google Ads");
   }
 
   let conversionId = context.conversionId;
