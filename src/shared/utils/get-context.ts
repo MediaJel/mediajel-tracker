@@ -10,9 +10,6 @@ const getContext = (): QueryStringContext => {
     urlSearchParams.entries()
   ) as unknown as QueryStringParams;
 
-  // Validations
-  if (!appId && !mediajelAppId) throw new Error("appId is required");
-
   return {
     appId: appId || mediajelAppId, // Legacy support for old universal tag
     version: version || "1",

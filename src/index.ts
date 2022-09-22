@@ -9,6 +9,8 @@ import { QueryStringContext } from "./shared/types";
       import("./google-ads").then(({ default: load }) => load(context));
       return;
     }
+    // Validations
+    if (!context.appId && !context.mediajelAppId) throw new Error("appId is required");
 
     switch (context.version) {
       case "1":
