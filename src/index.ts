@@ -5,6 +5,13 @@ import { QueryStringContext } from "./shared/types";
   try {
     const context: QueryStringContext = getContext();
 
+    if (context.event === "googleAds") {
+      import("./google-ads").then(({ default: load }) => load(context));
+      return;
+    }
+    // Validations
+    if (!context.appId && !context.mediajelAppId) throw new Error("appId is required");
+
     switch (context.version) {
       case "1":
         import("./v1").then(({ default: load }) => load(context));

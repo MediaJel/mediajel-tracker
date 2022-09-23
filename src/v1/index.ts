@@ -28,6 +28,7 @@ const applyV1 = (context: QueryStringContext): void => {
     case "signup":
       import("./snowplow/events/signup").then(({ default: load }): void => load(context));
       break;
+
     default:
       console.warn("No event specified, Only pageview is active");
   }

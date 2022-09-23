@@ -8,10 +8,7 @@ const getContext = (): QueryStringContext => {
   const urlSearchParams: URLSearchParams = new URLSearchParams(substring);
   const { mediajelAppId, appId, version, ...params } = Object.fromEntries(
     urlSearchParams.entries()
-  ) as QueryStringParams;
-
-  // Validations
-  if (!appId && !mediajelAppId) throw new Error("appId is required");
+  ) as unknown as QueryStringParams;
 
   return {
     appId: appId || mediajelAppId, // Legacy support for old universal tag
