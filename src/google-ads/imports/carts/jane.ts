@@ -15,16 +15,12 @@ const janeGoogleAds = (context: Context) => {
     }
 
     if (payload.name === "checkout" || payload.name === "purchase") {
-      const script = document.createElement("script");
-
-      script.addEventListener("load", () => {
-        console.log("Script created");
-        context.gtag("event", "conversion", {
-          send_to: `${context.conversionId}/${context.conversionLabel}`,
-          value: parseFloat(payload.properties.estimatedTotal) ?? 1.0,
-          currency: "USD",
-          // transaction_id: payload.properties.cartId.toString() ?? "",
-        });
+      console.log("Script created");
+      context.gtag("event", "conversion", {
+        send_to: `${context.conversionId}/${context.conversionLabel}`,
+        value: parseFloat(payload.properties.estimatedTotal) ?? 1.0,
+        currency: "USD",
+        // transaction_id: payload.properties.cartId.toString() ?? "",
       });
     }
   });
