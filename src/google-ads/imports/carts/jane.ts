@@ -14,7 +14,7 @@ const janeGoogleAds = (context: Context) => {
       return;
     }
 
-    if (payload.name === "checkout") {
+    if (payload.name === "checkout" || payload.name === "purchase") {
       context.gtag("event", "conversion", {
         send_to: `${context.conversionId}/${context.conversionLabel}`,
         value: parseFloat(payload.properties.estimatedTotal) ?? 1.0,
@@ -26,6 +26,3 @@ const janeGoogleAds = (context: Context) => {
 };
 
 export default janeGoogleAds;
-function gtag() {
-  throw new Error("Function not implemented.");
-}

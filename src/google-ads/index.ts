@@ -16,7 +16,7 @@ const createGoogleAds = (context: GoogleAdsParams & Pick<SnowplowParams, "enviro
 
   window.dataLayer = window.dataLayer || [];
 
-  const gtag = (...args) => window.dataLayer.push(args);
+  const gtag = (...args: any[]) => window.dataLayer.push(args);
 
   gtag("js", new Date());
   gtag("config", conversionId);
