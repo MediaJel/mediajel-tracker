@@ -14,13 +14,13 @@ const janeGoogleAds = (context: Context) => {
       return;
     }
 
-    if (payload.name === "checkout" || payload.name === "purchase") {
+    if (payload.name === "checkout") {
       console.log("Script created");
       context.gtag("event", "conversion", {
         send_to: `${context.conversionId}/${context.conversionLabel}`,
         value: parseFloat(payload.properties.estimatedTotal) ?? 1.0,
         currency: "USD",
-        transaction_id: payload.properties.cartId.toString() ?? "",
+        transaction_id: payload?.properties?.cartId?.toString() ?? "",
       });
     }
     window.dataLayer.push({
@@ -28,7 +28,7 @@ const janeGoogleAds = (context: Context) => {
       send_to: `${context.conversionId}/${context.conversionLabel}`,
       value: parseFloat(payload.properties.estimatedTotal) ?? 1.0,
       currency: "USD",
-      transaction_id: payload.properties.cartId.toString() ?? "",
+      transaction_id: payload?.properties?.cartId?.toString() ?? "",
     });
   });
 };
