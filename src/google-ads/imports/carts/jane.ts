@@ -17,6 +17,7 @@ const janeGoogleAds = (context: Context) => {
     if (payload.name === "checkout" || payload.name === "purchase") {
       const script = document.createElement("script");
 
+      console.log("Script created");
       script.addEventListener("load", () => {
         context.gtag("event", "conversion", {
           send_to: `${context.conversionId}/${context.conversionLabel}`,
