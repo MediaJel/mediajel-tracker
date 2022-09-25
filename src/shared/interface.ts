@@ -12,6 +12,6 @@ declare global {
     transactionOrder: any;
     transactionItems: any;
     transactionEmail: any;
-    dataLayer: any[];
+    dataLayer: any;
   }
 }
