@@ -11,13 +11,6 @@ const applyV1 = (context: QueryStringContext): void => {
   tapadCookieSyncPixel();
   tapadHashSyncPixel();
 
-  /**
-   * If no event is provided, By default import carts.
-   */
-  if (!context.event && context.environment) {
-    import("./imports/carts").then(({ default: load }): Promise<void> => load(context));
-  }
-
   switch (context.event) {
     case "transaction":
       import("./imports/carts").then(({ default: load }): Promise<void> => load(context));
@@ -28,8 +21,10 @@ const applyV1 = (context: QueryStringContext): void => {
     case "signup":
       import("./snowplow/events/signup").then(({ default: load }): void => load(context));
       break;
-
     default:
+      if (context.event) {
+        import("./imports/carts").then(({ default: load }): Promise<void> => load(context));
+      }
       console.warn("No event specified, Only pageview is active");
   }
 };

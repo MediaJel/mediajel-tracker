@@ -31,6 +31,10 @@ export type SnowplowPluginParams = {
   debugger: string;
 };
 
+export type PluginParams = {
+  plugin: "googleAds";
+};
+
 export type LiquidmMacrosParams = {
   advertiserId: string;
   insertionOrder: string;
@@ -68,6 +72,7 @@ export type QueryStringParams = Partial<TransactionParams> &
   Partial<SignupParams> &
   Partial<SnowplowPluginParams> &
   Partial<LiquidmMacrosParams> &
+  Partial<PluginParams> &
   GoogleAdsParams &
   SnowplowParams;
 
