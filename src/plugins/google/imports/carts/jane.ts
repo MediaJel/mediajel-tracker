@@ -1,9 +1,9 @@
-import { postMessageSource } from "../../../shared/sources/post-message-source";
-import { GoogleAdsParams, SnowplowParams } from "../../../shared/types";
+import { postMessageSource } from "../../../../shared/sources/post-message-source";
+import { GoogleAdsPluginParams, SnowplowParams } from "../../../../shared/types";
 
 type Context = {
   gtag: (...args: any[]) => any;
-} & GoogleAdsParams &
+} & GoogleAdsPluginParams &
   Pick<SnowplowParams, "environment">;
 
 const janeGoogleAds = (context: Context) => {

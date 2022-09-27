@@ -1,6 +1,6 @@
-import { GoogleAdsParams, SnowplowParams } from "../shared/types";
+import { GoogleAdsPluginParams } from "../../shared/types";
 
-const createGoogleAds = (context: GoogleAdsParams & Pick<SnowplowParams, "environment">) => {
+const createGoogleAds = (context: GoogleAdsPluginParams) => {
   // Fail fast if the required params are not present
   if (!context.conversionId || !context.conversionLabel) {
     throw new Error("Conversion ID and Conversion Label are required for Google Ads");

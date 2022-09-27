@@ -32,8 +32,16 @@ export type SnowplowPluginParams = {
 };
 
 export type PluginParams = {
-  plugin: "googleAds";
+  plugin?: "googleAds";
 };
+
+export type GoogleAdsPluginParams = {
+  conversionId: string;
+  conversionLabel: string;
+  value?: number;
+  currency?: string;
+  transactionId?: string;
+} & Pick<SnowplowParams, "environment">;
 
 export type LiquidmMacrosParams = {
   advertiserId: string;
@@ -60,20 +68,12 @@ export type LiquidmMacrosParams = {
   DEVICEID: string;
 };
 
-export type GoogleAdsParams = {
-  conversionId: string;
-  conversionLabel: string;
-  value?: number;
-  currency?: string;
-  transactionId?: string;
-};
-
 export type QueryStringParams = Partial<TransactionParams> &
   Partial<SignupParams> &
   Partial<SnowplowPluginParams> &
   Partial<LiquidmMacrosParams> &
   Partial<PluginParams> &
-  GoogleAdsParams &
+  GoogleAdsPluginParams &
   SnowplowParams;
 
 // Params available to the tag's query string
