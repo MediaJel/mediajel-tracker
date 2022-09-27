@@ -6,7 +6,7 @@ import { QueryStringContext } from "./shared/types";
     const context: QueryStringContext = getContext();
 
     if (context.event === "googleAds") {
-      import("./google-ads").then(({ default: load }) => load(context));
+      import("./google").then(({ default: load }) => load(context));
       return;
     }
     // Validations
