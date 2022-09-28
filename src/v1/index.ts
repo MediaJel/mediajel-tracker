@@ -22,8 +22,9 @@ const applyV1 = (context: QueryStringContext): void => {
       import("./snowplow/events/signup").then(({ default: load }): void => load(context));
       break;
     default:
-      if (context.event) {
+      if (context.environment) {
         import("./imports/carts").then(({ default: load }): Promise<void> => load(context));
+        console.warn(`No event specified, Loading ${context.environment} }`);
       }
       console.warn("No event specified, Only pageview is active");
   }
