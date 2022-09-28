@@ -16,14 +16,18 @@ const createGoogleAds = (context: GoogleAdsPluginParams) => {
 
   window.dataLayer = window.dataLayer || [];
 
-  const gtag = (...args: any) => window.dataLayer.push(...args);
-
+  function gtag() {
+    window.dataLayer.push(arguments);
+  }
+  /**Note: the @ts-ignore lines below are necessary to supress typescript warnings for the arguments object above */
+  // @ts-ignore
   gtag("js", new Date());
+  // @ts-ignore
   gtag("config", conversionId);
 
   switch (context.environment) {
     case "jane": {
-      import("./imports/carts/jane").then(({ default: load }) => load({ ...context, gtag }));
+      import("./imports/carts/jane").then(({ default: load }) => load(context));
     }
   }
 };
