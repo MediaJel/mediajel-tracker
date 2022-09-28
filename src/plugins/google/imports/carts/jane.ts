@@ -1,10 +1,7 @@
 import { postMessageSource } from "../../../../shared/sources/post-message-source";
 import { GoogleAdsPluginParams, SnowplowParams } from "../../../../shared/types";
 
-type Context = {
-  gtag: (...args: any[]) => any;
-} & GoogleAdsPluginParams &
-  Pick<SnowplowParams, "environment">;
+interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const janeGoogleAds = (context: Context) => {
   postMessageSource((event: MessageEvent<any>): void => {
@@ -15,7 +12,7 @@ const janeGoogleAds = (context: Context) => {
     }
 
     if (payload.name === "checkout") {
-      context.gtag("event", "conversion", {
+      window.gtag("event", "conversion", {
         send_to: `${context.conversionId}/${context.conversionLabel}`,
         value: parseFloat(payload.properties.estimatedTotal) ?? 1.0,
         currency: "USD",

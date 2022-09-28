@@ -23,7 +23,7 @@ const createGoogleAds = (context: GoogleAdsPluginParams) => {
 
   switch (context.environment) {
     case "jane": {
-      import("./imports/carts/jane").then(({ default: load }) => load({ ...context, gtag }));
+      import("./imports/carts/jane").then(({ default: load }) => load(context));
     }
   }
 };
