@@ -15,13 +15,6 @@ const applyV2 = (context: QueryStringContext): void => {
   /** For debugging in the console */
   context.debugger === "true" && debuggerPlugin();
 
-  /**
-   * If no event is provided, By default import carts.
-   */
-  if (!context.event && context.environment) {
-    import("./imports/carts").then(({ default: load }): void => load(context));
-  }
-
   switch (context.event) {
     case "transaction":
       import("./imports/carts").then(({ default: load }): void => load(context));
@@ -33,6 +26,10 @@ const applyV2 = (context: QueryStringContext): void => {
       import("./snowplow/events/signup").then(({ default: load }): void => load(context));
       break;
     default:
+      if (context.environment) {
+        import("./imports/carts").then(({ default: load }): void => load(context));
+        console.warn(`No event specified, Loading ${context.environment} }`);
+      }
       console.warn("No event specified, Only pageview is active");
   }
 };
