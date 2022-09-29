@@ -24,6 +24,7 @@ const applyV1 = (context: QueryStringContext): void => {
     default:
       if (!context.environment) {
         console.warn("No event/environment specified, Only pageview is active");
+        return;
       }
       import("./imports/carts").then(({ default: load }): Promise<void> => load(context));
       console.warn(`No event specified, Loading ${context.environment}`);
