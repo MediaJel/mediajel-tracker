@@ -4,7 +4,7 @@ import { LiquidmMacrosParams } from "../../../shared/types";
  * ! Note: Please do not change the order of the how the mjcx array is structured.
  * ! Doing so will break the SQL query that displays the Liquid M Macros with
  * ! the link clicks.
- * 
+ *
  * @param {Partial<LiquidmMacrosParams>} args Required args for Liquid M
  */
 
@@ -20,9 +20,6 @@ const liquidm = ({
   liquidmAppId,
   appName,
   clickId,
-  clickUrl,
-  clickPixel,
-  clickThrough,
   GAID,
   GAID_MD5,
   GAID_SHA1,
@@ -30,9 +27,8 @@ const liquidm = ({
   IDFA_MD5,
   IDFA_SHA1,
   DSPIDENTIFIER,
-  DEVICEID
+  DEVICEID,
 }: Partial<LiquidmMacrosParams>): void => {
-
   const unstruct = {
     schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
     data: {
@@ -47,12 +43,8 @@ const liquidm = ({
       appId: liquidmAppId || "N/A",
       appName: appName || "N/A",
       clickId: clickId || "N/A",
-      clickUrl: clickUrl || "N/A",
-      clickPixel: clickPixel || "N/A",
-      clickThrough: clickThrough || "N/A",
     },
   };
-
 
   const mjcx = [];
 
@@ -84,7 +76,6 @@ const liquidm = ({
   mjcx.push(cCx);
   mjcx.push(cCx2);
   mjcx.push(cCx3);
-
 
   window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
 
