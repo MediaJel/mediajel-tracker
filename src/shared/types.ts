@@ -55,9 +55,6 @@ export type LiquidmMacrosParams = {
   liquidmAppId: string;
   appName: string;
   clickId: string;
-  clickUrl: string;
-  clickPixel: string;
-  clickThrough: string;
   GAID: string;
   GAID_MD5: string;
   GAID_SHA1: string;
