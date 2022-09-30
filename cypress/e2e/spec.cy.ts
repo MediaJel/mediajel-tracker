@@ -18,7 +18,6 @@ describe("Ensure locally compiled universal tag is sending events to Snowplow co
     cy.visit("http://localhost:1234");
 
     cy.wait("@production").then((intercept) => {
-      console.log(intercept.request.body);
       expect(intercept.response.statusCode).to.equal(200);
       expect(intercept.request.body.data[0].aid).to.equal("universal-tag-staging-test");
     });
