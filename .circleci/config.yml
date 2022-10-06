@@ -25,6 +25,9 @@ jobs:
           name: type checking
           command: npm run check
       - run:
+          name: cypress tests
+          command: npm run test
+      - run:
           name: Build
           command: npm run deploy
       - aws-s3/sync:
@@ -34,7 +37,7 @@ jobs:
       - aws-cloudfront/invalidate:
           distribution_id: E1ZEPT1NM5152K
           paths: /*
-  
+
   build-main:
     executor: the-executor
     steps:
@@ -46,6 +49,9 @@ jobs:
           name: type checking
           command: npm run check
       - run:
+          name: cypress tests
+          command: npm run test
+      - run:
           name: Build
           command: npm run deploy
       - aws-s3/sync:
@@ -55,7 +61,7 @@ jobs:
       - aws-cloudfront/invalidate:
           distribution_id: E3NZWAOF5B6J2O
           paths: /*
-  
+
 workflows:
   version: 2
   build:
