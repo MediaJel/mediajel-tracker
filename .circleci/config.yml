@@ -7,7 +7,7 @@ version: 2.1
 executors:
   the-executor:
     docker:
-      - image: cimg/node:17.0.1
+      - image: cypress/browsers:node16.17.0-chrome106
     working_directory: ~/mediajel-tracker
 
 orbs:
@@ -24,9 +24,6 @@ jobs:
       - run:
           name: type checking
           command: npm run check
-      - run:
-          name: Cypress Install
-          command: sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
       - run:
           name: cypress tests
           command: npm run test
