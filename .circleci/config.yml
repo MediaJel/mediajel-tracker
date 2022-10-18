@@ -25,6 +25,12 @@ jobs:
           name: type checking
           command: npm run check
       - run:
+          name: Cypress Install
+          command: sudo apt-get update && sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+      - run:
+          name: cypress tests
+          command: npm run test
+      - run:
           name: Build
           command: npm run deploy
       - aws-s3/sync:
@@ -34,7 +40,7 @@ jobs:
       - aws-cloudfront/invalidate:
           distribution_id: E1ZEPT1NM5152K
           paths: /*
-  
+
   build-main:
     executor: the-executor
     steps:
@@ -46,6 +52,12 @@ jobs:
           name: type checking
           command: npm run check
       - run:
+          name: Cypress Install
+          command: sudo apt-get update && sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+      - run:
+          name: cypress tests
+          command: npm run test
+      - run:
           name: Build
           command: npm run deploy
       - aws-s3/sync:
@@ -55,7 +67,7 @@ jobs:
       - aws-cloudfront/invalidate:
           distribution_id: E3NZWAOF5B6J2O
           paths: /*
-  
+
 workflows:
   version: 2
   build:
