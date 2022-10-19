@@ -1,20 +1,17 @@
-import { xhrSource } from "../../../shared/sources/xhr-source";
+import { datalayerSource } from "../../../shared/sources/google-datalayer-source";
 import { QueryStringContext } from "../../../shared/types";
 
 const wefunderTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  xhrSource((xhr) => {
-    if (xhr.responseURL.includes("confirmation")) {
-      const data = JSON.parse(xhr?.responseText);
-
-      window.tracker("setUserId", data?.current_user?.email || data?.investment?.investor?.name);
-
+  datalayerSource((data) => {
+    if (data?.event === "conversion") {
       window.tracker(
         "addTrans",
-        data?.investment?.id.toString(),
+        data?.eventModel?.transaction_id,
         retailId ?? appId,
-        parseFloat(data?.investment?.amount),
+        parseFloat(data?.eventModel?.value),
         0,
-        0
+        0,
+        "USD"
       );
 
       window.tracker("trackTrans");
