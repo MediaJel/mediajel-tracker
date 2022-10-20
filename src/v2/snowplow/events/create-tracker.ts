@@ -15,7 +15,7 @@ const createTracker = ({ appId, collector, event }: QueryStringContext): void =>
       c.src = t;
       i.parentNode.insertBefore(c, i);
     }
-  })(window, document, "script", "//mj-snowplow-static-js.s3.amazonaws.com/cnna.js", "tracker");
+  })(window, document, "script", "https://mj-snowplow-static-js.s3.amazonaws.com/cnna.js", "tracker");
   window.tracker("newTracker", "cf", "https:" + collector, {
     appId,
     discoverRootDomain: true,
