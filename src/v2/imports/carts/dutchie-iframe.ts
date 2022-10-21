@@ -1,10 +1,11 @@
+import { errorTrackingSource } from "../../../shared/sources/error-tracking-source";
 import { postMessageSource } from "../../../shared/sources/post-message-source";
 import { QueryStringContext } from "../../../shared/types";
 import { tryParseJSONObject } from "../../../shared/utils/try-parse-json";
 
 const dutchieIframeTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
   postMessageSource((event: MessageEvent<any>): void => {
-    try {
+    errorTrackingSource(() => {
       const rawData = tryParseJSONObject(event.data);
       const payload = rawData?.payload?.payload || null;
 
@@ -70,9 +71,7 @@ const dutchieIframeTracker = ({ appId, retailId }: Pick<QueryStringContext, "app
 
         window.tracker("trackTrans");
       }
-    } catch (e) {
-      throw e;
-    }
+    });
   });
 };
 
