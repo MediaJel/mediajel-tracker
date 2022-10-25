@@ -8,18 +8,17 @@ const wefunderTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" |
 
       window.tracker("setUserId", data?.investment?.user_id || data?.investment?.investor_name);
 
-      window.tracker(
-        "addTrans",
-        data?.investment?.id.toString(),
-        retailId ?? appId,
-        parseFloat(data?.investment?.amount),
-        0,
-        0,
-        "N/A",
-        "N/A",
-        "N/A",
-        "USD"
-      );
+      window.tracker("addTrans", {
+        orderId: data?.investment?.id.toString(),
+        affiliation: retailId ?? appId,
+        total: parseFloat(data?.investment?.amount),
+        tax: 0,
+        shippping: 0,
+        city: "N/A",
+        state: "N/A",
+        country: "N/A",
+        currency: "USD",
+      });
 
       window.tracker("trackTrans");
     }

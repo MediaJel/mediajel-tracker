@@ -51,13 +51,13 @@ export default async (context: QueryStringContext): Promise<void> => {
     case "grassdoor":
       import("./grassdoor").then(({ default: load }): void => load({ appId, retailId }));
       break;
+    //* STABLE
+    case "wefunder":
+      import("./wefunder").then(({ default: load }): void => load({ appId, retailId }));
+      break;
     //* UNSTABLE
     case "ecwid":
       import("./ecwid").then(({ default: load }): void => load({ appId, retailId }));
-      break;
-    //* UNSTABLE
-    case "wefunder":
-      import("./wefunder").then(({ default: load }): void => load({ appId, retailId }));
       break;
     default:
       throw new Error("Undefined environment");
