@@ -4,12 +4,10 @@ import { QueryStringContext } from "../../../shared/types";
 
 const wefunderTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   xhrSource((xhr) => {
-    console.log("XHR" + xhr.responseURL);
-    console.log(xhr?.responseText);
-    if (xhr.responseURL.includes("confirmation")) {
+    if (xhr.responseURL.includes("investments") && typeof xhr.response === "string") {
       const data = JSON.parse(xhr?.responseText);
 
-      window.tracker("setUserId", data?.current_user?.email || data?.investment?.investor?.name);
+      window.tracker("setUserId", data?.investment?.user_id || data?.investment?.investor_name);
 
       window.tracker(
         "addTrans",
@@ -17,11 +15,19 @@ const wefunderTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" |
         retailId ?? appId,
         parseFloat(data?.investment?.amount),
         0,
-        0
+        0,
+        "N/A",
+        "N/A",
+        "N/A",
+        "USD"
       );
 
       window.tracker("trackTrans");
     }
+  });
+
+  datalayerSource((data) => {
+    console.log("DATALAYER", data);
   });
 };
 
