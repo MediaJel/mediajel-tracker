@@ -1,3 +1,4 @@
+import { datalayerSource } from "../../../shared/sources/google-datalayer-source";
 import { xhrSource } from "../../../shared/sources/xhr-source";
 import { QueryStringContext } from "../../../shared/types";
 
@@ -23,6 +24,10 @@ const wefunderTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" |
 
       window.tracker("trackTrans");
     }
+  });
+
+  datalayerSource((data) => {
+    console.log("DATALAYER", data);
   });
 };
 
