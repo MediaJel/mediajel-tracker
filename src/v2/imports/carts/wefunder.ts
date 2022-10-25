@@ -3,7 +3,7 @@ import { QueryStringContext } from "../../../shared/types";
 
 const wefunderTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   xhrSource((xhr) => {
-    if (xhr.responseURL.includes("investments") && typeof xhr.response === "string") {
+    if (xhr.responseURL.includes("investments") && typeof xhr.responseText === "string") {
       const data = JSON.parse(xhr?.responseText);
 
       window.tracker("setUserId", data?.investment?.user_id || data?.investment?.investor_name);
