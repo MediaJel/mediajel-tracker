@@ -1,8 +1,6 @@
 import { QueryStringContext } from "../../../shared/types";
 
 const createTracker = ({ appId, collector, event }: QueryStringContext): void => {
-
-
   // Loading tracker with the snowplow tag by fetching our sp.js file
   // Creates a global function called "tracker" which we use to access the Snowplow Tracker
   (function (e, o, n, t, a, c, i) {
@@ -19,10 +17,10 @@ const createTracker = ({ appId, collector, event }: QueryStringContext): void =>
       c.src = t;
       i.parentNode.insertBefore(c, i);
     }
-  })(window, document, "script", "https://dm2q9qfzyjfox.cloudfront.net/sp.js", "tracker");
+  })(window, document, "script", "//dm2q9qfzyjfox.cloudfront.net/sp.js", "tracker");
 
   // Creates the tracker with the appId and sends events to collector url
-  window.tracker("newTracker", "cnna", `https:${collector}`, {
+  window.tracker("newTracker", "cnna", `${collector}`, {
     appId: appId,
     discoverRootDomain: true,
     stateStorageStrategy: "cookieAndLocalStorage",
@@ -36,10 +34,10 @@ const createTracker = ({ appId, collector, event }: QueryStringContext): void =>
   window.tracker("enableFormTracking");
 
   /**
- * !IMPORTANT: We are disabling this as to not override Link click config for the impression pixel.
- * Enabling this for impressions will cause click tracking to break
- */
-  if (event !== 'impression') {
+   * !IMPORTANT: We are disabling this as to not override Link click config for the impression pixel.
+   * Enabling this for impressions will cause click tracking to break
+   */
+  if (event !== "impression") {
     window.tracker("enableLinkClickTracking");
   }
 };
