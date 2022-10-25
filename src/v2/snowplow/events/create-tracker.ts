@@ -30,6 +30,9 @@ const createTracker = ({ appId, collector, event }: QueryStringContext): void =>
   });
   window.tracker("trackPageView");
   window.tracker("enableFormTracking");
+  window.tracker("enableErrorTracking", {
+    filter: (errorEvent: ErrorEvent) => errorEvent.hasOwnProperty("message"),
+  });
 
   /**
    * !IMPORTANT: We are disabling this as to not override Link click config for the impression pixel.
