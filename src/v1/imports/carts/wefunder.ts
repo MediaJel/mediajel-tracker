@@ -5,7 +5,7 @@ import { QueryStringContext } from "../../../shared/types";
 const wefunderTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   xhrSource((xhr) => {
     console.log("XHR" + xhr.responseURL);
-    console.log(xhr);
+    console.log(xhr?.responseText);
     if (xhr.responseURL.includes("confirmation")) {
       const data = JSON.parse(xhr?.responseText);
 
