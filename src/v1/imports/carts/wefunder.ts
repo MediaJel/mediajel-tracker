@@ -3,6 +3,7 @@ import { QueryStringContext } from "../../../shared/types";
 
 const wefunderTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   datalayerSource((data) => {
+    console.log(data.event);
     if (data?.event === "conversion") {
       window.tracker(
         "addTrans",
