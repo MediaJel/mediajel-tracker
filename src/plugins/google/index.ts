@@ -28,6 +28,14 @@ const createGoogleAds = (context: GoogleAdsPluginParams) => {
   switch (context.environment) {
     case "jane": {
       import("./imports/carts/jane").then(({ default: load }) => load(context));
+      break;
+    }
+    case "dutchie-iframe": {
+      import("./imports/carts/dutchie-iframe").then(({ default: load }) => load(context));
+      break;
+    }
+    default: {
+      console.warn("Google Ads plugin does not support this environment");
     }
   }
 };
