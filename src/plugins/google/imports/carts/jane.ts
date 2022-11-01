@@ -7,6 +7,7 @@ interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environme
 const janeGoogleAds = (context: Context) => {
   janeEvents({
     transactionEvent(transactionData) {
+      console.log("🚀🚀🚀 Jane Transaction Event ", { transactionData });
       window.gtag("event", "conversion", {
         send_to: `${context.conversionId}/${context.conversionLabel}`,
         value: transactionData.total,
