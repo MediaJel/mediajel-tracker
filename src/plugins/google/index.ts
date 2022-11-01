@@ -19,6 +19,8 @@ const createGoogleAds = (context: GoogleAdsPluginParams) => {
   function gtag() {
     window.dataLayer.push(arguments);
   }
+
+  window.gtag = gtag;
   /**Note: the @ts-ignore lines below are necessary to supress typescript warnings for the arguments object above */
   // @ts-ignore
   gtag("js", new Date());
