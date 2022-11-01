@@ -31,6 +31,15 @@ NOTE: CI/CD pipeline not yet in place for deployment.
 <script src="http://tags.mediajel.ninja/?appId=APP_ID_HERE&retailId=RETAIL_ID_HERE&environment=CART_PLATFORM_HERE&test=true"></script>
 ```
 
+### Google Ads (Plugin)
+
+`conversionId` is the Google Ads conversion ID, usually in the format `AW-XXXXXXXXXX`
+`conversionLabel` is the Google Ads conversion label, This is found in the Google Ads "Conversions" tab after you've created a conversion
+
+```javascript
+<script src="https://tags.cnna.io/?appId=APP_ID_HERE&plugin=googleAds&conversionId=AW-11111111111&conversionLabel=CONVERSION_LABEL_HERE&environment=CART_PLATFORM_HERE"></script>
+```
+
 ### Arguments
 
 ### `@REQUIRED | AppId={STRING}`
