@@ -6,6 +6,7 @@ interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environme
 const dutchieIframeGoogleAds = (context: Context) => {
   dutchieIframeEvents({
     transactionEvent(transactionData) {
+      
       window.gtag("event", "conversion", {
         send_to: `${context.conversionId}/${context.conversionLabel}`,
         value: transactionData.total,

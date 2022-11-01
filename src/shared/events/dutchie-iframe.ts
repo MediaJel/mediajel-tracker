@@ -51,9 +51,8 @@ const dutchieIframeEvents = ({ addToCartEvent, removeFromCartEvent, transactionE
         currency: "USD",
         items: products.map((product) => {
           const { item_id, item_name, item_category, price, quantity } = product;
-
           return {
-            transaction_id: transaction_id.toString(),
+            orderId: transaction_id.toString(),
             sku: item_id.toString(),
             name: (item_name || "N/A").toString(),
             category: (item_category || "N/A").toString(),
