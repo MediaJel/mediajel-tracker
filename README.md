@@ -37,6 +37,8 @@ NOTE: CI/CD pipeline not yet in place for deployment.
 
 `conversionLabel` is the Google Ads conversion label, This is found in the Google Ads "Conversions" tab after you've created a conversion
 
+This will also track transactions and send it to our snowplow collectors all in one tag.
+
 ```javascript
 <script src="https://tags.cnna.io/?appId=APP_ID_HERE&plugin=googleAds&conversionId=AW-11111111111&conversionLabel=CONVERSION_LABEL_HERE&environment=CART_PLATFORM_HERE"></script>
 ```
