@@ -1,3 +1,34 @@
+export interface CartEvent {
+  sku: string;
+  name: string;
+  category: string;
+  unitPrice: number;
+  quantity: number;
+  currency: string;
+}
+
+export interface TransactionCartItem extends CartEvent {
+  productId: string;
+}
+
+export interface TransactionEvent {
+  id: string;
+  total: number;
+  tax: number;
+  shipping: number;
+  city: string;
+  state: string;
+  country: string;
+  currency: string;
+  items: TransactionCartItem[];
+}
+
+export interface PlatformEvents {
+  addToCartEvent: (cartData: CartEvent) => void;
+  removeFromCartEvent: (cartData: CartEvent) => void;
+  transactionEvent: (transactionData: TransactionEvent) => void;
+}
+
 // Data structure of the tag after parsing
 export type TransactionParams = {
   environment: string;

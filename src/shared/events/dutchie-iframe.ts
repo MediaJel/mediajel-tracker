@@ -1,34 +1,6 @@
-import { errorTrackingSource } from "../sources/error-tracking-source";
 import { postMessageSource } from "../sources/post-message-source";
-import { QueryStringContext } from "../types";
+import { PlatformEvents } from "../types";
 import { tryParseJSONObject } from "../utils/try-parse-json";
-
-interface CartEvent {
-  sku: string;
-  name: string;
-  category: string;
-  unitPrice: number;
-  quantity: number;
-  currency: string;
-}
-
-interface TransactionEvent {
-  id: string;
-  total: number;
-  tax: number;
-  shipping: number;
-  city: string;
-  state: string;
-  country: string;
-  currency: string;
-  items: CartEvent[] & { transaction_id: string }[];
-}
-
-interface PlatformEvents {
-  addToCartEvent: (cartEvent: CartEvent) => void;
-  removeFromCartEvent: (cartEvent: CartEvent) => void;
-  transactionEvent: (transactionEvent: TransactionEvent) => void;
-}
 
 const dutchieIframeEvents = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<PlatformEvents>) => {
   postMessageSource((event: MessageEvent<any>) => {
