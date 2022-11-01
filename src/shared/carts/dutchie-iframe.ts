@@ -30,7 +30,7 @@ interface PlatformEvents {
   transactionEvent: (transactionEvent: TransactionEvent) => void;
 }
 
-const dutchieIframeEvents = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: PlatformEvents) => {
+const dutchieIframeEvents = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<PlatformEvents>) => {
   postMessageSource((event: MessageEvent<any>) => {
     const rawData = tryParseJSONObject(event.data);
     const payload = rawData?.payload?.payload || null;
