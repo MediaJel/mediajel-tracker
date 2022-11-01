@@ -1,9 +1,10 @@
+import { errorTrackingSource } from "../../../shared/sources/error-tracking-source";
 import { xhrSource } from "../../../shared/sources/xhr-source";
 import { QueryStringContext } from "../../../shared/types";
 
 const buddiTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
   xhrSource((xhr: XMLHttpRequest): void => {
-    try {
+    errorTrackingSource(() => {
       const response = JSON.parse(xhr.responseText);
       const cartList = []; // Creates an empty array to store cart items for comparison with removeFromCart array
 
@@ -83,9 +84,7 @@ const buddiTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
         window.tracker("trackTrans");
         cartList.length = 0; // This clears the cartList array
       }
-    } catch {
-      return;
-    }
+    });
   });
 };
 
