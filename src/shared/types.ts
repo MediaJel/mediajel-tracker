@@ -5,6 +5,7 @@ export interface CartEvent {
   unitPrice: number;
   quantity: number;
   currency: string;
+  userId?: string;
 }
 
 export interface TransactionCartItem extends CartEvent {
@@ -20,6 +21,7 @@ export interface TransactionEvent {
   state: string;
   country: string;
   currency: string;
+  userId?: string;
   items: TransactionCartItem[];
 }
 
