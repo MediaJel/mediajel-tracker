@@ -36,6 +36,9 @@ const createGoogleAds = (context: GoogleAdsPluginParams) => {
       import("./imports/carts/dutchie-iframe").then(({ default: load }) => load(context));
       break;
     }
+    case "woocommerce": {
+      import("./imports/carts/woocommerce").then(({ default: load }) => load(context));
+    }
     default: {
       console.warn("Google Ads plugin does not support this environment");
     }
