@@ -7,7 +7,7 @@ const createGoogleAds = (context: GoogleAdsPluginParams) => {
   }
 
   console.log(`🚀🚀🚀 Google Ads Plugin loaded for ${context.environment}`);
-  console.log(`🚀🚀🚀 Google Ads Plugin params: ${(JSON.stringify(context), null, 2)}`);
+  console.log(`🚀🚀🚀 Google Ads Plugin params: ${JSON.stringify(context, null, 2)}`);
 
   let conversionId = context.conversionId;
 
