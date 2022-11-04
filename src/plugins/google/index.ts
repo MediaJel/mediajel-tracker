@@ -41,6 +41,7 @@ const createGoogleAds = (context: GoogleAdsPluginParams) => {
     }
     case "woocommerce": {
       import("./imports/carts/woocommerce").then(({ default: load }) => load(context));
+      break;
     }
     default: {
       console.warn("Google Ads plugin does not support this environment");
