@@ -3,8 +3,11 @@ import { GoogleAdsPluginParams } from "../../shared/types";
 const createGoogleAds = (context: GoogleAdsPluginParams) => {
   // Fail fast if the required params are not present
   if (!context.conversionId || !context.conversionLabel) {
-    throw new Error("Conversion ID and Conversion Label are required for Google Ads");
+    console.warn("Conversion ID and Conversion Label are required for Google Ads");
   }
+
+  console.log(`🚀🚀🚀 Google Ads Plugin loaded for ${context.environment}`);
+  console.log(`🚀🚀🚀 Google Ads Plugin params: ${JSON.stringify(context)}`);
 
   let conversionId = context.conversionId;
 
