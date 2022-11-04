@@ -1,7 +1,7 @@
 import { PlatformEvents } from "../types";
 import { tryParseJSONObject } from "../utils/try-parse-json";
 
-const woocommerceEvents = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<PlatformEvents>) => {
+const woocommerceEvents = ({ transactionEvent }: Pick<PlatformEvents, "transactionEvent">) => {
   if (!window.transactionOrder && !window.transactionItems) {
     return;
   }

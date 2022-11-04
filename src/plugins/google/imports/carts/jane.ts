@@ -1,5 +1,4 @@
 import janeEvents from "../../../../shared/events/jane";
-import { postMessageSource } from "../../../../shared/sources/post-message-source";
 import { GoogleAdsPluginParams, SnowplowParams } from "../../../../shared/types";
 
 interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environment"> {}
