@@ -1,8 +1,12 @@
 import { postMessageSource } from "../sources/post-message-source";
-import { PlatformEvents } from "../types";
+import { EnvironmentEvents } from "../types";
 import { tryParseJSONObject } from "../utils/try-parse-json";
 
-const dutchieIframeEvents = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<PlatformEvents>) => {
+const dutchieIframeDataSource = ({
+  addToCartEvent,
+  removeFromCartEvent,
+  transactionEvent,
+}: Partial<EnvironmentEvents>) => {
   postMessageSource((event: MessageEvent<any>) => {
     const rawData = tryParseJSONObject(event.data);
     const payload = rawData?.payload?.payload || null;
@@ -66,4 +70,4 @@ const dutchieIframeEvents = ({ addToCartEvent, removeFromCartEvent, transactionE
   });
 };
 
-export default dutchieIframeEvents;
+export default dutchieIframeDataSource;

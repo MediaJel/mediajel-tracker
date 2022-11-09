@@ -1,10 +1,10 @@
-import janeEvents from "../../../../shared/events/jane";
+import janeDataSource from "../../../../shared/environment-data-sources/jane";
 import { GoogleAdsPluginParams, SnowplowParams } from "../../../../shared/types";
 
 interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const janeGoogleAds = (context: Context) => {
-  janeEvents({
+  janeDataSource({
     transactionEvent(transactionData) {
       console.log("🚀🚀🚀 Jane Transaction Event ", { transactionData });
       window.gtag("event", "conversion", {

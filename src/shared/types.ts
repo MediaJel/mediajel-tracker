@@ -25,7 +25,7 @@ export interface TransactionEvent {
   items: TransactionCartItem[];
 }
 
-export interface PlatformEvents {
+export interface EnvironmentEvents {
   addToCartEvent: (cartData: CartEvent) => void;
   removeFromCartEvent: (cartData: CartEvent) => void;
   transactionEvent: (transactionData: TransactionEvent) => void;

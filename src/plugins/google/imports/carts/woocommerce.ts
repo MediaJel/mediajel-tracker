@@ -1,10 +1,10 @@
-import woocommerceEvents from "../../../../shared/events/woocommerce";
+import woocommerceDataSource from "../../../../shared/environment-data-sources/woocommerce";
 import { GoogleAdsPluginParams, SnowplowParams } from "../../../../shared/types";
 
 interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const woocommerceGoogleAds = (context: Context) => {
-  woocommerceEvents({
+  woocommerceDataSource({
     transactionEvent(transactionData) {
       console.log("🚀🚀🚀 Woocommerce Transaction Event ", { transactionData });
       window.gtag("event", "conversion", {

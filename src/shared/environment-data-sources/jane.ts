@@ -1,7 +1,7 @@
 import { postMessageSource } from "../sources/post-message-source";
-import { PlatformEvents, TransactionCartItem } from "../types";
+import { EnvironmentEvents } from "../types";
 
-const janeEvents = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<PlatformEvents>) => {
+const janeDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   postMessageSource((event: MessageEvent<any>) => {
     const { payload, messageType } = event.data;
 
@@ -72,4 +72,4 @@ const janeEvents = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: P
   });
 };
 
-export default janeEvents;
+export default janeDataSource;

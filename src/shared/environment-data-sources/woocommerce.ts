@@ -1,7 +1,7 @@
-import { PlatformEvents } from "../types";
+import { EnvironmentEvents } from "../types";
 import { tryParseJSONObject } from "../utils/try-parse-json";
 
-const woocommerceEvents = ({ transactionEvent }: Pick<PlatformEvents, "transactionEvent">) => {
+const woocommerceDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
   if (!window.transactionOrder && !window.transactionItems) {
     return;
   }
@@ -34,4 +34,4 @@ const woocommerceEvents = ({ transactionEvent }: Pick<PlatformEvents, "transacti
   });
 };
 
-export default woocommerceEvents;
+export default woocommerceDataSource;

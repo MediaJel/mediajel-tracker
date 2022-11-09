@@ -1,10 +1,10 @@
-import dutchieIframeEvents from "../../../../shared/events/dutchie-iframe";
+import dutchieIframeDataSource from "../../../../shared/environment-data-sources/dutchie-iframe";
 import { GoogleAdsPluginParams, SnowplowParams } from "../../../../shared/types";
 
 interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const dutchieIframeGoogleAds = (context: Context) => {
-  dutchieIframeEvents({
+  dutchieIframeDataSource({
     transactionEvent(transactionData) {
       console.log("🚀🚀🚀 Dutchie Transaction Event ", { transactionData });
       window.gtag("event", "conversion", {
