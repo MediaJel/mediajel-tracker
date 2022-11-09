@@ -1,5 +1,5 @@
 import { postMessageSource } from "../sources/post-message-source";
-import { EnvironmentEvents } from "../types";
+import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const janeDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   postMessageSource((event: MessageEvent<any>) => {
@@ -47,6 +47,7 @@ const janeDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent 
       } = payload.properties;
 
       transactionEvent({
+        userId: customerEmail,
         id: cartId.toString(),
         total: parseFloat(estimatedTotal),
         tax: parseFloat(salesTax + storeTax || 0),
@@ -58,14 +59,14 @@ const janeDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent 
         items: products.map((product) => {
           const { product_id, name, category, unit_price, count } = product;
           return {
-            orderId: cartId.toString(),
+            productId: cartId.toString(),
             sku: product_id.toString(),
             name: (name || "N/A").toString(),
             category: (category || "N/A").toString(),
             unitPrice: parseFloat(unit_price || 0),
             quantity: parseInt(count || 1),
             currency: "USD",
-          };
+          } as TransactionCartItem;
         }),
       });
     }

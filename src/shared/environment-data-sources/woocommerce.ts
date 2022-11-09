@@ -1,4 +1,4 @@
-import { EnvironmentEvents } from "../types";
+import { EnvironmentEvents, TransactionCartItem } from "../types";
 import { tryParseJSONObject } from "../utils/try-parse-json";
 
 const woocommerceDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
@@ -22,14 +22,14 @@ const woocommerceDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "tr
     items: products.map((product) => {
       const { order_id, name, product_id, total, quantity } = product;
       return {
-        orderId: (transaction.id || order_id).toString(),
+        productId: (transaction.id || order_id).toString(),
         sku: product_id.toString(),
         name: (name || "N/A").toString(),
         category: "N/A", // No Category Field for WooCommerce in transactionItems
         unitPrice: parseFloat(total),
         quantity: parseInt(quantity || 1),
         currency: (transaction.currency || "USD").toString(),
-      };
+      } as TransactionCartItem;
     }),
   });
 };
