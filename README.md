@@ -42,7 +42,12 @@ NOTE: CI/CD pipeline not yet in place for deployment.
 This will also track transactions and send it to our snowplow collectors all in one tag.
 
 ```javascript
-<script src="https://tags.cnna.io/?appId=APP_ID_HERE&plugin=googleAds&conversionId=AW-11111111111&conversionLabel=CONVERSION_LABEL_HERE&environment=CART_PLATFORM_HERE&crossDomainSites=google.com,example.com"></script>
+<script src="https://tags.cnna.io/?appId=APP_ID_HERE
+&plugin=googleAds
+&conversionId=AW-11111111111
+&conversionLabel=CONVERSION_LABEL_HERE
+&environment=CART_PLATFORM_HERE&
+crossDomainSites=google.com,example.com"></script>
 ```
 
 ### Arguments
