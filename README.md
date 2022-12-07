@@ -36,11 +36,12 @@ NOTE: CI/CD pipeline not yet in place for deployment.
 `conversionId` is the Google Ads conversion ID, usually in the format `AW-XXXXXXXXXX`
 
 `conversionLabel` is the Google Ads conversion label, This is found in the Google Ads "Conversions" tab after you've created a conversion
+`crossDomainSites` is a comma separated list of domains that you want to track cross domain conversions for. This is optional.
 
 This will also track transactions and send it to our snowplow collectors all in one tag.
 
 ```javascript
-<script src="https://tags.cnna.io/?appId=APP_ID_HERE&plugin=googleAds&conversionId=AW-11111111111&conversionLabel=CONVERSION_LABEL_HERE&environment=CART_PLATFORM_HERE"></script>
+<script src="https://tags.cnna.io/?appId=APP_ID_HERE&plugin=googleAds&conversionId=AW-11111111111&conversionLabel=CONVERSION_LABEL_HERE&environment=CART_PLATFORM_HERE&crossDomainSites=google.com,example.com"></script>
 ```
 
 ### Arguments

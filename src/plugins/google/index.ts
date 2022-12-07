@@ -30,6 +30,14 @@ const createGoogleAds = (context: GoogleAdsPluginParams) => {
   // @ts-ignore
   gtag("config", conversionId);
 
+  // Cross domain tracking
+  if (context.crossDomainSites) {
+    const crossDomainSites = context.crossDomainSites.split(",");
+    const sites = crossDomainSites.map((site) => site.trim());
+    // @ts-ignore
+    gtag("set", "linker", { domains: sites });
+  }
+
   switch (context.environment) {
     case "jane": {
       import("./imports/carts/jane").then(({ default: load }) => load(context));

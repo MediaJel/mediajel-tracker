@@ -74,6 +74,7 @@ export type GoogleAdsPluginParams = {
   value?: number;
   currency?: string;
   transactionId?: string;
+  crossDomainSites?: string; // Must be a comma separated string (I.E. "www.example.com,www.example2.com")
 } & Pick<SnowplowParams, "environment">;
 
 export type LiquidmMacrosParams = {
