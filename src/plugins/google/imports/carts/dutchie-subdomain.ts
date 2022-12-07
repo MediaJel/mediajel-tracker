@@ -6,7 +6,7 @@ interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environme
 const dutchieSubdomainGoogleAds = (context: Context) => {
   dutchieSubdomainDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 Dutchie Transaction Event ", { transactionData });
+      console.log("🚀🚀🚀 Dutchie Subdomain Transaction Event ", { transactionData });
       window.gtag("event", "conversion", {
         send_to: `${context.conversionId}/${context.conversionLabel}`,
         value: transactionData.total,

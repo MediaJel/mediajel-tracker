@@ -39,6 +39,10 @@ const createGoogleAds = (context: GoogleAdsPluginParams) => {
       import("./imports/carts/dutchie-iframe").then(({ default: load }) => load(context));
       break;
     }
+    case "dutchie-subdomain": {
+      import("./imports/carts/dutchie-subdomain").then(({ default: load }) => load(context));
+      break;
+    }
     case "woocommerce": {
       import("./imports/carts/woocommerce").then(({ default: load }) => load(context));
       break;
