@@ -22,7 +22,7 @@ const woocommerceDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "tr
     items: products.map((product) => {
       const { order_id, name, product_id, total, quantity } = product;
       return {
-        productId: (transaction.id || order_id).toString(),
+        orderId: (transaction.id || order_id).toString(),
         sku: product_id.toString(),
         name: (name || "N/A").toString(),
         category: "N/A", // No Category Field for WooCommerce in transactionItems

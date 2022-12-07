@@ -59,7 +59,7 @@ const janeDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent 
         items: products.map((product) => {
           const { product_id, name, category, unit_price, count } = product;
           return {
-            productId: cartId.toString(),
+            orderId: cartId.toString(),
             sku: product_id.toString(),
             name: (name || "N/A").toString(),
             category: (category || "N/A").toString(),

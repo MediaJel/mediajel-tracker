@@ -1,5 +1,5 @@
 import { postMessageSource } from "../sources/post-message-source";
-import { EnvironmentEvents } from "../types";
+import { EnvironmentEvents, TransactionCartItem } from "../types";
 import { tryParseJSONObject } from "../utils/try-parse-json";
 
 const dutchieIframeDataSource = ({
@@ -57,13 +57,14 @@ const dutchieIframeDataSource = ({
           const { item_id, item_name, item_category, price, quantity } = product;
           return {
             orderId: transaction_id.toString(),
+            productId: item_id.toString(),
             sku: item_id.toString(),
             name: (item_name || "N/A").toString(),
             category: (item_category || "N/A").toString(),
             unitPrice: parseFloat(price || 0),
             quantity: parseInt(quantity || 1),
             currency: "USD",
-          };
+          } as TransactionCartItem;
         }),
       });
     }

@@ -9,7 +9,7 @@ export interface CartEvent {
 }
 
 export interface TransactionCartItem extends CartEvent {
-  productId: string;
+  orderId: string;
 }
 
 export interface TransactionEvent {
