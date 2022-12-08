@@ -7,6 +7,9 @@ const applyPlugins = (context: ApplyPluginParams) => {
     case "googleAds":
       import("./google").then(({ default: load }) => load(context));
       break;
+    case "bingAds":
+      import("./bing").then(({ default: load }) => load(context));
+      break;
     default:
       console.log("Plugin not found");
   }

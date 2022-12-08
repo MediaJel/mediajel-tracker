@@ -1,6 +1,6 @@
 import { GoogleAdsPluginParams } from "../../shared/types";
 
-const createGoogleAds = (context: GoogleAdsPluginParams) => {
+const createGoogleAdsPlugin = (context: GoogleAdsPluginParams) => {
   // Fail fast if the required params are not present
   if (!context.conversionId || !context.conversionLabel) {
     console.warn("Conversion ID and Conversion Label are required for Google Ads");
@@ -65,4 +65,4 @@ const createGoogleAds = (context: GoogleAdsPluginParams) => {
   }
 };
 
-export default createGoogleAds;
+export default createGoogleAdsPlugin;

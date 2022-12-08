@@ -65,7 +65,7 @@ export type SnowplowPluginParams = {
 };
 
 export type PluginParams = {
-  plugin?: "googleAds";
+  plugin?: "googleAds" | "bingAds";
 };
 
 export type GoogleAdsPluginParams = {
