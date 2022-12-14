@@ -1,6 +1,6 @@
-import { GoogleAdsPluginParams, PluginParams } from "../shared/types";
+import { BingAdsPluginParams, GoogleAdsPluginParams, PluginParams } from "../shared/types";
 
-interface ApplyPluginParams extends PluginParams, GoogleAdsPluginParams {}
+interface ApplyPluginParams extends PluginParams, GoogleAdsPluginParams, BingAdsPluginParams {}
 
 const applyPlugins = (context: ApplyPluginParams) => {
   switch (context.plugin) {

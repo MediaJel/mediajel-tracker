@@ -14,5 +14,6 @@ declare global {
     transactionEmail: any;
     dataLayer: any;
     gtag: any;
+    uetq: any;
   }
 }

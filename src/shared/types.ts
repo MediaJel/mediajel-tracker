@@ -77,6 +77,10 @@ export type GoogleAdsPluginParams = {
   crossDomainSites?: string; // Must be a comma separated string (I.E. "www.example.com,www.example2.com")
 } & Pick<SnowplowParams, "environment">;
 
+export type BingAdsPluginParams = {
+  tagId: string;
+} & Pick<SnowplowParams, "environment">;
+
 export type LiquidmMacrosParams = {
   advertiserId: string;
   insertionOrder: string;
@@ -105,6 +109,7 @@ export type QueryStringParams = Partial<TransactionParams> &
   Partial<LiquidmMacrosParams> &
   Partial<PluginParams> &
   GoogleAdsPluginParams &
+  BingAdsPluginParams &
   SnowplowParams;
 
 // Params available to the tag's query string
