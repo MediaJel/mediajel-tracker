@@ -39,15 +39,32 @@ NOTE: CI/CD pipeline not yet in place for deployment.
 
 `crossDomainSites` is a comma separated list of domains that you want to track cross domain conversions for. This is optional.
 
-This will also track transactions and send it to our snowplow collectors all in one tag.
+This will also track transactions and send it to our snowplow collectors and google ads all in one tag.
 
 ```javascript
-<script src="https://tags.cnna.io/?appId=APP_ID_HERE
+<script
+  src="https://tags.cnna.io/?appId=APP_ID_HERE
 &plugin=googleAds
 &conversionId=AW-11111111111
 &conversionLabel=CONVERSION_LABEL_HERE
-&environment=CART_PLATFORM_HERE&
-crossDomainSites=google.com,example.com"></script>
+&environment=CART_PLATFORM_HERE
+&crossDomainSites=google.com,example.com"
+></script>
+```
+
+### Bing Ads (Plugin)
+
+This will also track transactions and send it to our snowplow collectors and bing ads all in one tag.
+
+`tagId` is the Bing Ads tag ID, usually in the format `11111111`
+
+```javascript
+<script
+  src="https://tags.cnna.io/?appId=APP_ID_HERE
+&plugin=bingAds
+&tagId=11111111
+&environment=CART_PLATFORM_HERE"
+></script>
 ```
 
 ### Arguments
