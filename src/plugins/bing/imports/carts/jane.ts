@@ -1,12 +1,12 @@
-import dutchieIframeDataSource from "../../../../shared/environment-data-sources/dutchie-iframe";
+import janeDataSource from "../../../../shared/environment-data-sources/jane";
 import { BingAdsPluginParams, SnowplowParams } from "../../../../shared/types";
 
 interface Context extends BingAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
-const dutchieIframeBingAds = (context: Context) => {
-  dutchieIframeDataSource({
+const janeBingAds = (context: Context) => {
+  janeDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 Dutchie Transaction Event ", { transactionData });
+      console.log("🚀🚀🚀 Jane Transaction Event ", { transactionData });
 
       window.uetq.push("event", "PRODUCT_PURCHASE", {
         ecomm_prodid: transactionData.id,
@@ -18,4 +18,4 @@ const dutchieIframeBingAds = (context: Context) => {
   });
 };
 
-export default dutchieIframeBingAds;
+export default janeBingAds;

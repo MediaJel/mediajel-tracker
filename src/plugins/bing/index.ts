@@ -18,6 +18,10 @@ const createBingAdsPlugin = (context: BingAdsPluginParams) => {
       import("./imports/carts/dutchie-iframe").then(({ default: load }) => load(context));
       break;
     }
+    case "jane": {
+      import("./imports/carts/jane").then(({ default: load }) => load(context));
+      break;
+    }
     default: {
       console.warn("Bing Ads does not support this environment");
     }
