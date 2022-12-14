@@ -65,7 +65,7 @@ export type SnowplowPluginParams = {
 };
 
 export type PluginParams = {
-  plugin?: "googleAds";
+  plugin?: "googleAds" | "bingAds";
 };
 
 export type GoogleAdsPluginParams = {
@@ -75,6 +75,10 @@ export type GoogleAdsPluginParams = {
   currency?: string;
   transactionId?: string;
   crossDomainSites?: string; // Must be a comma separated string (I.E. "www.example.com,www.example2.com")
+} & Pick<SnowplowParams, "environment">;
+
+export type BingAdsPluginParams = {
+  tagId: string;
 } & Pick<SnowplowParams, "environment">;
 
 export type LiquidmMacrosParams = {
@@ -105,6 +109,7 @@ export type QueryStringParams = Partial<TransactionParams> &
   Partial<LiquidmMacrosParams> &
   Partial<PluginParams> &
   GoogleAdsPluginParams &
+  BingAdsPluginParams &
   SnowplowParams;
 
 // Params available to the tag's query string
