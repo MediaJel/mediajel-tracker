@@ -43,7 +43,7 @@
     "express": "^4.17.3",
     "global": "^4.4.0",
     "husky": "^8.0.0",
-    "jsdoc": "^4.0.0",
+    "jsdoc": "^3.6.11",
     "parcel": "2.0.0",
     "prettier": "^2.3.1",
     "start-server-and-test": "^1.14.0",
