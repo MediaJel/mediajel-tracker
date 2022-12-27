@@ -12,6 +12,6 @@
   "source": {
     "include": ["./src"],
     "includePattern": "\\.(jsx|js|ts|tsx)$",
-    "excludePatter": "(node_modules/|docs)"
+    "excludePattern": "(node_modules/|docs)"
   }
 }
