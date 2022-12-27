@@ -2,7 +2,8 @@ import { BingAdsPluginParams } from "../../shared/types";
 
 const createBingScript = (context: BingAdsPluginParams) => {
   const script = document.createElement("script");
-  script.innerHTML = `!function(e,a,t,n,o){var r,c,s;e[o]=e[o]||[],r=function(){var a={ti:${context.tagId}};a.q=e[o],e[o]=new UET(a),e[o].push("pageLoad")},(c=a.createElement(t)).src=n,c.async=1,c.onload=c.onreadystatechange=function(){var e=this.readyState;e&&"loaded"!==e&&"complete"!==e||(r(),c.onload=c.onreadystatechange=null)},(s=a.getElementsByTagName(t)[0]).parentNode.insertBefore(c,s)}(window,document,"script","//bat.bing.com/bat.js","uetq"); `;
+  script.type = "text/javascript";
+  script.innerHTML = `(function(w,d,t,r,u){var f,n,i;w[u]=w[u]||[],f=function(){var o={ti:${context.tagId}};o.q=w[u],w[u]=new UET(o),w[u].push("pageLoad")},n=d.createElement(t),n.src=r,n.async=1,n.onload=n.onreadystatechange=function(){var s=this.readyState;s&&s!=="loaded"&&s!=="complete"||(f(),n.onload=n.onreadystatechange=null)},i=d.getElementsByTagName(t)[0],i.parentNode.insertBefore(n,i)})(window,document,"script","//bat.bing.com/bat.js","uetq");`;
   document.head.appendChild(script);
 };
 const createBingAdsPlugin = (context: BingAdsPluginParams) => {
