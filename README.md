@@ -150,7 +150,7 @@ npm run deploy
 <tr>
  <td width="160" height="160" align="center">
       <a target="_blank" href="https://parceljs.org/">
-        <img src="https://parceljs.org/avatar.733335a8.avif" />
+        <img src="https://parceljs.org/avatar.b1be591d.avif" />
         <br />
         <strong>Parcel JS</strong>
       </a>
