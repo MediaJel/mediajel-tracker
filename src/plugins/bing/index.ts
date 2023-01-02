@@ -23,6 +23,9 @@ const createBingAdsPlugin = (context: BingAdsPluginParams) => {
       import("./imports/carts/jane").then(({ default: load }) => load(context));
       break;
     }
+    case "tymber": {
+      import("./imports/carts/tymber").then(({ default: load }) => load(context));
+    }
     default: {
       console.warn("Bing Ads does not support this environment");
     }

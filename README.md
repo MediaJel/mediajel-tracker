@@ -1,8 +1,6 @@
 <h1 align="center"><strong>Mediajel universal tracker</strong></h1>
 
-![TypeScript](https://badges.frapsoft.com/typescript/awesome/typescript.png?v=101)
-
-<div align="center"><img src="public/logo.png "width="200" height="200" /></div>
+<div align="center"><img src="https://github.com/MediaJel/mediajel-tracker/raw/staging/public/logo.png"width="200" height="200" /></div>
 
 ## Features :rocket:
 
