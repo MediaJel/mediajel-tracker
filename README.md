@@ -1,8 +1,6 @@
 <h1 align="center"><strong>Mediajel universal tracker</strong></h1>
 
-![TypeScript](https://badges.frapsoft.com/typescript/awesome/typescript.png?v=101)
-
-<div align="center"><img src="public/logo.png "width="200" height="200" /></div>
+<div align="center"><img src="https://github.com/MediaJel/mediajel-tracker/raw/staging/public/logo.png"width="200" height="200" /></div>
 
 ## Features :rocket:
 
@@ -150,7 +148,7 @@ npm run deploy
 <tr>
  <td width="160" height="160" align="center">
       <a target="_blank" href="https://parceljs.org/">
-        <img src="https://parceljs.org/avatar.733335a8.avif" />
+        <img src="https://parceljs.org/avatar.b1be591d.avif" />
         <br />
         <strong>Parcel JS</strong>
       </a>

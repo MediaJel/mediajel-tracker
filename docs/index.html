@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> Home</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Global</h3><ul><li><a href="global.html#liquidm">liquidm</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p></p>
+                    <h1>Home</h1>
+                </header>
+                
+
+
+
+    
+
+
+    <h3> </h3>
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+    <section>
+        <article><h1 align="center"><strong>Mediajel universal tracker</strong></h1>
+<div align="center"><img src="https://github.com/MediaJel/mediajel-tracker/raw/staging/public/logo.png"width="200" height="200" /></div>
+<h2>Features :rocket:</h2>
+<ul>
+<li>:package: Out of the box, plug and play tracker that collects Page view &amp; Ecommerce data ... and possibly more?</li>
+<li>:chart_with_upwards_trend: Data collection &amp; integrations made easy.</li>
+<li>:computer: Multiple integration development environments all in one place.</li>
+<li>:open_file_folder: Deployment of trackers &amp; config all in one place.</li>
+<li>:wrench: Pass in <code>arguments</code> to the URL strings for easy configuration.</li>
+</ul>
+<p>The collector the script tag points to is currently the test collector as its default collector. We're going to enable an option in the query string to indicate the collector URL.</p>
+<h2>Usage</h2>
+<p>Import this script tag to the header/footer of a site. Append the <code>APP_ID_HERE</code> argument to contain the app id you would use for your site/app.
+NOTE: CI/CD pipeline not yet in place for deployment.</p>
+<h3>Production/Main</h3>
+<pre class="prettyprint source lang-javascript"><code>&lt;script src=&quot;https://tags.cnna.io/?appId=APP_ID_HERE&retailId=RETAIL_ID_HERE&environment=CART_PLATFORM_HERE&test=true&quot;>&lt;/script>
+</code></pre>
+<h3>Staging (for testing &amp; development)</h3>
+<pre class="prettyprint source lang-javascript"><code>&lt;script src=&quot;http://tags.mediajel.ninja/?appId=APP_ID_HERE&retailId=RETAIL_ID_HERE&environment=CART_PLATFORM_HERE&test=true&quot;>&lt;/script>
+</code></pre>
+<h3>Google Ads (Plugin)</h3>
+<p><code>conversionId</code> is the Google Ads conversion ID, usually in the format <code>AW-XXXXXXXXXX</code></p>
+<p><code>conversionLabel</code> is the Google Ads conversion label, This is found in the Google Ads &quot;Conversions&quot; tab after you've created a conversion</p>
+<p><code>crossDomainSites</code> is a comma separated list of domains that you want to track cross domain conversions for. This is optional.</p>
+<p>This will also track transactions and send it to our snowplow collectors and google ads all in one tag.</p>
+<pre class="prettyprint source lang-javascript"><code>&lt;script
+  src=&quot;https://tags.cnna.io/?appId=APP_ID_HERE
+&plugin=googleAds
+&conversionId=AW-11111111111
+&conversionLabel=CONVERSION_LABEL_HERE
+&environment=CART_PLATFORM_HERE
+&crossDomainSites=google.com,example.com&quot;
+>&lt;/script>
+</code></pre>
+<h3>Bing Ads (Plugin)</h3>
+<p>This will also track transactions and send it to our snowplow collectors and bing ads all in one tag.</p>
+<p><code>tagId</code> is the Bing Ads tag ID, usually in the format <code>11111111</code></p>
+<pre class="prettyprint source lang-javascript"><code>&lt;script
+  src=&quot;https://tags.cnna.io/?appId=APP_ID_HERE
+&plugin=bingAds
+&tagId=11111111
+&environment=CART_PLATFORM_HERE&quot;
+>&lt;/script>
+</code></pre>
+<h3>Arguments</h3>
+<h3><code>@REQUIRED | AppId={STRING}</code></h3>
+<p>Input the App Id for the collector on this argument. This will trigger a pageview event.</p>
+<h3><code>@OPTIONAL | retailId={STRING}</code></h3>
+<p>Append the Retail ID of the ecommerce site here. It is
+imperative that the Retail ID is persistent from initial
+visit up until cart checkout.</p>
+<h3><code>@OPTIONAL | environment={OPTIONS:ENUM}</code></h3>
+<p>Input the cart environment for the collector on this argument. This will trigger ecommerce tracking for the specific environment.</p>
+<p><strong>Options:</strong></p>
+<ul>
+<li>jane</li>
+<li>dutchie-iframe</li>
+<li>dutchie-subdomain</li>
+<li>greenrush</li>
+<li>lightspeed</li>
+<li>meadow</li>
+<li>olla</li>
+<li>shopify</li>
+<li>tymber</li>
+<li>woocommerce</li>
+</ul>
+<h3><code>@OPTIONAL | &amp;test={BOOLEAN}</code></h3>
+<p>Append <code>&amp;test=true</code> at then end of the URL if you want to switch to the test collector.</p>
+<h2>Pre-requisites</h2>
+<h3><code>Node &gt;= v10.13.0</code></h3>
+<p>First, you should have node, and ensure that the node version is 10.13 or above.</p>
+<pre class="prettyprint source"><code>$ node -v
+v10.13.0
+</code></pre>
+<h3><code>aws-cli &gt;= v2.2.10</code></h3>
+<p>You also need to install the aws-cli for deploying changes to the staging version.
+Reference to install <code>aws-cli v2.2.10</code> <a href="https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html">here</a>. You may check your <code>aws-cli</code> version by running the command below</p>
+<pre class="prettyprint source"><code>$ aws --version
+aws-cli/2.2.10 Python/3.8.8 Linux/5.8.0-55-generic exe/x86_64.zorin.16 prompt/off
+
+</code></pre>
+<h3><code>.env</code> files</h3>
+<p>If you want to test your tracker configuration is working and the environment is not available within this repository. You may want to deploy your current tracker config to <code>AWS cloudfront</code> or <code>AWS S3</code> so you may test it on a live environment. You will require the appropriate <code>.env</code> files that point to the appropriate <code>staging</code> Cloudfront CDN server (or AWS S3.) Please contact the team for the <code>.env</code> files.</p>
+<h2>Development</h2>
+<p>Run the development server through the following commands:</p>
+<pre class="prettyprint source lang-bash"><code>yarn install
+
+yarn start
+
+# Open http://localhost:1234
+</code></pre>
+<p>If you have the appropriate <code>.env</code> files. You may deploy your changes to AWS cloudfront staging or S3 via the <code>deploy</code> command. This will update the <code>staging</code> AWS S3 Bucket &amp; AWS Cloudfront CDN. Then you may take the Cloudfront or S3 URL and inject it to a website to test if the appropriate tracker configuration is tracking the correct events for the environment/platform you are working on.</p>
+<pre class="prettyprint source"><code>npm run deploy
+</code></pre>
+<h2>Dev Dependencies/Architecture</h2>
+<table>
+<tr>
+ <td width="160" height="160" align="center">
+      <a target="_blank" href="https://parceljs.org/">
+        <img src="https://parceljs.org/avatar.b1be591d.avif" />
+        <br />
+        <strong>Parcel JS</strong>
+      </a>
+    </td>
+    <td width="160" height="160"  align="center">
+      <a target="_blank" href="https://eslint.org/">
+        <img src="https://camo.githubusercontent.com/a5e575e94f48ea666506fe28bf0eaf475ef28b2ed8e5b829e48a21f9c6390d49/68747470733a2f2f63646e2e776f726c64766563746f726c6f676f2e636f6d2f6c6f676f732f65736c696e742e737667" />
+        <br />
+        <strong>ESLint</strong>
+      </a>
+    </td>
+    <td width="160" height="160"  align="center">
+      <a target="_blank" href="https://github.com/motdotla/dotenv#readme">
+        <img src="https://raw.githubusercontent.com/motdotla/dotenv/master/dotenv.png" />
+        <br />
+        <strong>dotenv</strong>
+      </a>
+    </td>
+    </tr>
+</table></article>
+    </section>
+
+
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.11</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>
