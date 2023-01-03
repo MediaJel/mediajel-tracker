@@ -6,14 +6,12 @@ const createGoogleAdsPlugin = (context: GoogleAdsPluginParams) => {
     console.warn("Conversion ID and Conversion Label are required for Google Ads");
   }
 
+  if (!context.conversionId.includes("AW-")) {
+    context.conversionId = `AW-${context.conversionId}`;
+  }
+
   console.log(`🚀🚀🚀 Google Ads Plugin loaded for ${context.environment}`);
   console.log(`🚀🚀🚀 Google Ads Plugin params: ${JSON.stringify(context, null, 2)}`);
-
-  let conversionId = context.conversionId;
-
-  if (!conversionId.includes("AW-")) {
-    conversionId = `AW-${conversionId}`;
-  }
 
   document.createElement("script").src = `https://www.googletagmanager.com/gtag/js?id=${context.conversionId}`;
 
