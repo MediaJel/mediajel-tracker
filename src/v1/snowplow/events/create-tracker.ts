@@ -17,7 +17,7 @@ const createTracker = ({ appId, collector, event }: QueryStringContext): void =>
       c.src = t;
       i.parentNode.insertBefore(c, i);
     }
-  })(window, document, "script", "//dm2q9qfzyjfox.cloudfront.net/sp.js", "tracker");
+  })(window, document, "script", "//mj-snowplow-static-js.s3.amazonaws.com/sp.js", "tracker");
 
   // Creates the tracker with the appId and sends events to collector url
   window.tracker("newTracker", "cnna", `${collector}`, {
