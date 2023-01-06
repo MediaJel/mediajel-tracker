@@ -61,6 +61,10 @@ const createGoogleAdsPlugin = (context: GoogleAdsPluginParams) => {
       import("./imports/carts/tymber").then(({ default: load }) => load(context));
       break;
     }
+    case "greenrush": {
+      import("./imports/carts/greenrush").then(({ default: load }) => load(context));
+      break;
+    }
     default: {
       console.warn("Google Ads plugin does not support this environment");
     }
