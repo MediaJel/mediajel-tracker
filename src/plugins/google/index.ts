@@ -26,7 +26,7 @@ const createGoogleAdsPlugin = (context: GoogleAdsPluginParams) => {
   // @ts-ignore
   gtag("js", new Date());
   // @ts-ignore
-  gtag("config", conversionId);
+  gtag("config", context.conversionId);
 
   // Cross domain tracking
   if (context.crossDomainSites) {
