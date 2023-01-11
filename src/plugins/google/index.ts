@@ -65,6 +65,10 @@ const createGoogleAdsPlugin = (context: GoogleAdsPluginParams) => {
       import("./imports/carts/greenrush").then(({ default: load }) => load(context));
       break;
     }
+    case "buddi": {
+      import("./imports/carts/buddi").then(({ default: load }) => load(context));
+      break;
+    }
     default: {
       console.warn("Google Ads plugin does not support this environment");
     }

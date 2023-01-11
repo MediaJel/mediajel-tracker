@@ -31,6 +31,10 @@ const createBingAdsPlugin = (context: BingAdsPluginParams) => {
       import("./imports/carts/greenrush").then(({ default: load }) => load(context));
       break;
     }
+    case "buddi": {
+      import("./imports/carts/buddi").then(({ default: load }) => load(context));
+      break;
+    }
     default: {
       console.warn("Bing Ads does not support this environment");
     }
