@@ -73,6 +73,10 @@ const createGoogleAdsPlugin = (context: GoogleAdsPluginParams) => {
       import("./imports/carts/ecwid").then(({ default: load }) => load(context));
       break;
     }
+    case "grassdoor": {
+      import("./imports/carts/grassdoor").then(({ default: load }) => load(context));
+      break;
+    }
     default: {
       console.warn("Google Ads plugin does not support this environment");
     }
