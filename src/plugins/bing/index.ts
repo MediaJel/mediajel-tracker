@@ -63,6 +63,10 @@ const createBingAdsPlugin = (context: BingAdsPluginParams) => {
       import("./imports/carts/woocommerce").then(({ default: load }) => load(context));
       break;
     }
+    case "wefunder": {
+      import("./imports/carts/wefunder").then(({ default: load }) => load(context));
+      break;
+    }
     default: {
       console.warn("Bing Ads does not support this environment");
     }
