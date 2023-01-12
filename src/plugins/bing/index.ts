@@ -55,6 +55,14 @@ const createBingAdsPlugin = (context: BingAdsPluginParams) => {
       import("./imports/carts/olla").then(({ default: load }) => load(context));
       break;
     }
+    case "shopify": {
+      import("./imports/carts/shopify").then(({ default: load }) => load(context));
+      break;
+    }
+    case "woocommerce": {
+      import("./imports/carts/woocommerce").then(({ default: load }) => load(context));
+      break;
+    }
     default: {
       console.warn("Bing Ads does not support this environment");
     }
