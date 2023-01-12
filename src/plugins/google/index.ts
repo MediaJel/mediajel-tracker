@@ -81,6 +81,10 @@ const createGoogleAdsPlugin = (context: GoogleAdsPluginParams) => {
       import("./imports/carts/lightspeed").then(({ default: load }) => load(context));
       break;
     }
+    case "meadow": {
+      import("./imports/carts/meadow").then(({ default: load }) => load(context));
+      break;
+    }
     default: {
       console.warn("Google Ads plugin does not support this environment");
     }
