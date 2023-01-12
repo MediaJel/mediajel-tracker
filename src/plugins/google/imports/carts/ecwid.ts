@@ -1,12 +1,12 @@
-import buddiDataSource from "../../../../shared/environment-data-sources/buddi";
+import ecwidDataSource from "../../../../shared/environment-data-sources/ecwid";
 import { GoogleAdsPluginParams, SnowplowParams } from "../../../../shared/types";
 
 interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
-const buddiGoogleAds = (context: Context) => {
-  buddiDataSource({
+const ecwidGoogleAds = (context: Context) => {
+  ecwidDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 Buddi Transaction Event ", { transactionData });
+      console.log("🚀🚀🚀 Ecwid Transaction Event ", { transactionData });
       window.gtag("event", "conversion", {
         send_to: `${context.conversionId}/${context.conversionLabel}`,
         value: transactionData.total,
@@ -17,4 +17,4 @@ const buddiGoogleAds = (context: Context) => {
   });
 };
 
-export default buddiGoogleAds;
+export default ecwidGoogleAds;

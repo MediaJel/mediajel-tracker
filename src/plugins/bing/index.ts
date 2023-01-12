@@ -35,6 +35,10 @@ const createBingAdsPlugin = (context: BingAdsPluginParams) => {
       import("./imports/carts/buddi").then(({ default: load }) => load(context));
       break;
     }
+    case "ecwid": {
+      import("./imports/carts/ecwid").then(({ default: load }) => load(context));
+      break;
+    }
     default: {
       console.warn("Bing Ads does not support this environment");
     }
