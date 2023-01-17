@@ -3,15 +3,18 @@ import { BingAdsPluginParams, GoogleAdsPluginParams, PluginParams } from "../sha
 interface ApplyPluginParams extends PluginParams, GoogleAdsPluginParams, BingAdsPluginParams {}
 
 const applyPlugins = (context: ApplyPluginParams) => {
-  switch (context.plugin) {
-    case "googleAds":
-      import("./google").then(({ default: load }) => load(context));
-      break;
-    case "bingAds":
-      import("./bing").then(({ default: load }) => load(context));
-      break;
-    default:
-      console.log("Plugin not found");
+  const plugins = context.plugin.split(",");
+  for (const plugin of plugins) {
+    switch (plugin) {
+      case "googleAds":
+        import("./google").then(({ default: load }) => load(context));
+        break;
+      case "bingAds":
+        import("./bing").then(({ default: load }) => load(context));
+        break;
+      default:
+        console.log("Plugin not found");
+    }
   }
 };
 

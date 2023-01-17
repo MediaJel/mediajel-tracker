@@ -29,6 +29,15 @@ NOTE: CI/CD pipeline not yet in place for deployment.
 <script src="http://tags.mediajel.ninja/?appId=APP_ID_HERE&retailId=RETAIL_ID_HERE&environment=CART_PLATFORM_HERE&test=true"></script>
 ```
 
+### Multiple Plugin Support
+
+The universal tag supports the implementation of multiple plugins in 1 tag via a comma seperated list
+Please see the documentation below for the different plugins that are supported.
+
+```html
+<script src="https://tags.cnna.io/?appId=universal-tag-staging&plugin=googleAds,bingAds&conversionId=10963714894&conversionLabel=vdmmCNLemOADEM6G9Oso&tagId=187009645&environment=jane"></script>
+```
+
 ### Google Ads (Plugin)
 
 `conversionId` is the Google Ads conversion ID, usually in the format `AW-XXXXXXXXXX`
@@ -39,15 +48,13 @@ NOTE: CI/CD pipeline not yet in place for deployment.
 
 This will also track transactions and send it to our snowplow collectors and google ads all in one tag.
 
-```javascript
-<script
-  src="https://tags.cnna.io/?appId=APP_ID_HERE
+```html
+<script src="https://tags.cnna.io/?appId=APP_ID_HERE
 &plugin=googleAds
 &conversionId=AW-11111111111
 &conversionLabel=CONVERSION_LABEL_HERE
 &environment=CART_PLATFORM_HERE
-&crossDomainSites=google.com,example.com"
-></script>
+&crossDomainSites=google.com,example.com"></script>
 ```
 
 ### Bing Ads (Plugin)
@@ -56,13 +63,11 @@ This will also track transactions and send it to our snowplow collectors and bin
 
 `tagId` is the Bing Ads tag ID, usually in the format `11111111`
 
-```javascript
-<script
-  src="https://tags.cnna.io/?appId=APP_ID_HERE
+```html
+<script src="https://tags.cnna.io/?appId=APP_ID_HERE
 &plugin=bingAds
 &tagId=11111111
-&environment=CART_PLATFORM_HERE"
-></script>
+&environment=CART_PLATFORM_HERE"></script>
 ```
 
 ### Arguments
