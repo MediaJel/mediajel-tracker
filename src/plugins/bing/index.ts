@@ -27,6 +27,46 @@ const createBingAdsPlugin = (context: BingAdsPluginParams) => {
       import("./imports/carts/tymber").then(({ default: load }) => load(context));
       break;
     }
+    case "greenrush": {
+      import("./imports/carts/greenrush").then(({ default: load }) => load(context));
+      break;
+    }
+    case "buddi": {
+      import("./imports/carts/buddi").then(({ default: load }) => load(context));
+      break;
+    }
+    case "ecwid": {
+      import("./imports/carts/ecwid").then(({ default: load }) => load(context));
+      break;
+    }
+    case "grassdoor": {
+      import("./imports/carts/grassdoor").then(({ default: load }) => load(context));
+      break;
+    }
+    case "lightspeed": {
+      import("./imports/carts/lightspeed").then(({ default: load }) => load(context));
+      break;
+    }
+    case "meadow": {
+      import("./imports/carts/meadow").then(({ default: load }) => load(context));
+      break;
+    }
+    case "olla": {
+      import("./imports/carts/olla").then(({ default: load }) => load(context));
+      break;
+    }
+    case "shopify": {
+      import("./imports/carts/shopify").then(({ default: load }) => load(context));
+      break;
+    }
+    case "woocommerce": {
+      import("./imports/carts/woocommerce").then(({ default: load }) => load(context));
+      break;
+    }
+    case "wefunder": {
+      import("./imports/carts/wefunder").then(({ default: load }) => load(context));
+      break;
+    }
     default: {
       console.warn("Bing Ads does not support this environment");
     }
