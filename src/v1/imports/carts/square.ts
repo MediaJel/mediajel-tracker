@@ -1,4 +1,4 @@
-import { datalayerSource } from "../../../shared/sources/google-datalayer-source";
+import squareDataSource from "../../../shared/environment-data-sources/square";
 import { QueryStringContext } from "../../../shared/types";
 
 /**
@@ -7,8 +7,34 @@ import { QueryStringContext } from "../../../shared/types";
  * to the window object.
  */
 const squareTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  datalayerSource((data) => {
-    console.log(data);
+  squareDataSource({
+    transactionEvent(transactionData) {
+      window.tracker(
+        "addTrans",
+        transactionData.id,
+        retailId ?? appId,
+        transactionData.total,
+        transactionData.tax,
+        transactionData.shipping,
+        transactionData.city,
+        transactionData.state,
+        transactionData.country
+      );
+
+      transactionData.items.forEach((item) => {
+        window.tracker(
+          "addItem",
+          transactionData.id,
+          item.sku,
+          item.name,
+          item.category,
+          item.unitPrice,
+          item.quantity,
+          transactionData.currency
+        );
+      });
+      window.tracker("trackTrans");
+    },
   });
 };
 
