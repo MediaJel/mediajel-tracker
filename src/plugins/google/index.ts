@@ -93,6 +93,10 @@ const createGoogleAdsPlugin = (context: GoogleAdsPluginParams) => {
       import("./imports/carts/wefunder").then(({ default: load }) => load(context));
       break;
     }
+    case "square": {
+      import("./imports/carts/square").then(({ default: load }) => load(context));
+      break;
+    }
     default: {
       console.warn("Google Ads plugin does not support this environment");
     }
