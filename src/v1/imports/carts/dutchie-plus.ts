@@ -19,19 +19,6 @@ const dutchiePlusTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
         "USD"
       );
 
-      for (let i = 0; i < items.length; ++i) {
-        window.tracker(
-          "addItem",
-          items[i].item_id,
-          items[i].item_id,
-          items[i].item_brand,
-          items[i].item_category,
-          items[i].price,
-          items[i].quantity,
-          "USD"
-        );
-      }
-
       items.forEach((item) => {
         const { item_id, item_brand, item_category, price, quantity } = item;
 
