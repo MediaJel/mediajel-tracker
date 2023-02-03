@@ -1,8 +1,8 @@
-import { xhrSource } from "../../../shared/sources/xhr-source";
+import { xhrResponseSource } from "../../../shared/sources/xhr-response-source";
 import { QueryStringContext } from "../../../shared/types";
 
 const wefunderTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  xhrSource((xhr) => {
+  xhrResponseSource((xhr) => {
     if (xhr.responseURL.includes("investments") && typeof xhr.responseText === "string") {
       const data = JSON.parse(xhr?.responseText);
 

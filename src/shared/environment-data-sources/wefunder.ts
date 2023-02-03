@@ -1,8 +1,8 @@
 import { EnvironmentEvents, TransactionCartItem } from "../types";
-import { xhrSource } from "../sources/xhr-source";
+import { xhrResponseSource } from "../sources/xhr-response-source";
 
 const wefunderTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
-  xhrSource((xhr) => {
+  xhrResponseSource((xhr) => {
     if (xhr.responseURL.includes("investments") && typeof xhr.responseText === "string") {
       const response = JSON.parse(xhr.responseText);
       const transaction = response;
