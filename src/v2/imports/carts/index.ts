@@ -59,6 +59,10 @@ export default (context: QueryStringContext): void => {
     case "ecwid":
       import("./ecwid").then(({ default: load }): void => load({ appId, retailId }));
       break;
+    //* UNSTABLE
+    case "dutchie-plus":
+      import("./dutchie-plus").then(({ default: load }): void => load({ appId, retailId }));
+      break;
     default:
       throw new Error("Undefined environment");
   }
