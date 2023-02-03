@@ -1,8 +1,8 @@
 import { EnvironmentEvents, TransactionCartItem } from "../types";
-import { xhrSource } from "../sources/xhr-source";
+import { xhrResponseSource } from "../sources/xhr-response-source";
 
 const buddiTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>): void => {
-  xhrSource((xhr: XMLHttpRequest): void => {
+  xhrResponseSource((xhr: XMLHttpRequest): void => {
     const response = JSON.parse(xhr.responseText);
     const cartList = [];
 
