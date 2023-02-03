@@ -97,6 +97,10 @@ const createGoogleAdsPlugin = (context: GoogleAdsPluginParams) => {
       import("./imports/carts/square").then(({ default: load }) => load(context));
       break;
     }
+    case "dutchie-plus": {
+      import("./imports/carts/dutchie-plus").then(({ default: load }) => load(context));
+      break;
+    }
     default: {
       console.warn("Google Ads plugin does not support this environment");
     }

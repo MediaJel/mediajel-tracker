@@ -6,7 +6,6 @@ const dutchiePlusTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
     if (data.event === "purchase") {
       const { transaction_id, affiliation, value, items } = data.ecommerce;
 
-      // Hardcoded because most fields are empty
       window.tracker("addTrans", {
         orderId: transaction_id.toString(),
         affiliation: affiliation.toString(),

@@ -37,7 +37,7 @@ const dutchiePlusTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
 
         window.tracker(
           "addItem",
-          item_id.toString(),
+          transaction_id.toString(),
           item_id.toString(),
           item_brand,
           item_category,
