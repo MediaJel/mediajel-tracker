@@ -63,6 +63,10 @@ export default async (context: QueryStringContext): Promise<void> => {
     case "square":
       import("./square").then(({ default: load }): void => load({ appId, retailId }));
       break;
+    //* UNSTABLE
+    case "dutchie-plus":
+      import("./dutchie-plus").then(({ default: load }): void => load({ appId, retailId }));
+      break;
     default:
       throw new Error("Undefined environment");
   }
