@@ -1,3 +1,12 @@
+/**
+ * ! Be very careful when using the fetch data source.
+ * ! As poorly implementing it can cause a lot of issues on
+ * ! the client side if errors are not handled correctly.
+ *
+ * @param requestCallback
+ * @param responseCallback
+ */
+
 export const fetchSource = (
   requestCallback: (input: RequestInfo | URL, init?: RequestInit) => void,
   responseCallback: (response: Response) => void
