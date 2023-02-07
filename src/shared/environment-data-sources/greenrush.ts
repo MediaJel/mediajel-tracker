@@ -1,8 +1,8 @@
-import { xhrSource } from "../sources/xhr-source";
+import { xhrResponseSource } from "../sources/xhr-response-source";
 import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const greenrushDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
-  xhrSource((xhr: XMLHttpRequest) => {
+  xhrResponseSource((xhr: XMLHttpRequest) => {
     const response = xhr.responseText;
 
     if (xhr.responseURL.includes("cart") && xhr.response.includes("pending")) {

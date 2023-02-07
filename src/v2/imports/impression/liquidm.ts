@@ -28,6 +28,9 @@ const liquidm = ({
   IDFA_SHA1,
   DSPIDENTIFIER,
   DEVICEID,
+  MAXMIND_CON_TYPE_NAME,
+  MAXMIND_GEO_IDS,
+  MAXMIND_ISP_ID,
 }: Partial<LiquidmMacrosParams>): void => {
   const unstruct = {
     schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
@@ -43,6 +46,9 @@ const liquidm = ({
       appId: liquidmAppId || "N/A",
       appName: appName || "N/A",
       clickId: clickId || "N/A",
+      maxmindConnectionType: MAXMIND_CON_TYPE_NAME || "N/A",
+      maxmindGeoIds: MAXMIND_GEO_IDS || "N/A",
+      maxmindIspId: MAXMIND_ISP_ID || "N/A",
     },
   };
 

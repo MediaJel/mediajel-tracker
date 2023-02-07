@@ -1,9 +1,9 @@
 import { errorTrackingSource } from "../../../shared/sources/error-tracking-source";
-import { xhrSource } from "../../../shared/sources/xhr-source";
+import { xhrResponseSource } from "../../../shared/sources/xhr-response-source";
 import { QueryStringContext } from "../../../shared/types";
 
 const greenrushTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  xhrSource((xhr: XMLHttpRequest) => {
+  xhrResponseSource((xhr: XMLHttpRequest) => {
     errorTrackingSource(() => {
       const response = xhr.responseText;
       if (xhr.responseURL.includes("cart") && xhr.response.includes("pending")) {

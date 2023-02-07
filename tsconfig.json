@@ -6,5 +6,6 @@
     },
     "typeRoots": ["node_modules/@types"]
   },
-  "include": ["src/**/*", "server/**/*", "cypress/**/*"]
+  "include": ["src/**/*", "server/**/*", "cypress/**/*"],
+  "exclude": ["node_modules"]
 }
