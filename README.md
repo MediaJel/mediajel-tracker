@@ -17,6 +17,14 @@ The collector the script tag points to is currently the test collector as its de
 Import this script tag to the header/footer of a site. Append the `APP_ID_HERE` argument to contain the app id you would use for your site/app.
 NOTE: CI/CD pipeline not yet in place for deployment.
 
+### Impressions tag
+
+Impressions tag we serve to our DSPs
+
+```html
+<script src="https://tags.cnna.io/?appId=LiquidM&event=impression&environment=liquidm&advertiserId={CUSTOMER_ID}&insertionOrder={CAMPAIGN_ID}&lineItemId=LiquidM_Main&creativeId={AD_NAME}&publisherId={PUBLISHER_ID}&publisherName={PUBLISHER_NAME}&siteId={APP_DOMAIN}&siteName={SITE_NAME}&liquidmAppId={APP_STOREURL}&appName={APP_NAME}&clickId={CLICK_ID}&GAID={GAID}&GAID_MD5={GAID_MD5}&GAID_SHA1={GAID_SHA1}&IDFA={IDFA}&IDFA_MD5={IDFA_MD5}&IDFA_SHA1={IDFA_SHA1}&MAXMIND_CON_TYPE_NAME={MAXMIND_CON_TYPE_NAME}&MAXMIND_GEO_IDS={MAXMIND_GEO_IDS}&MAXMIND_ISP_IDS={MAXMIND_ISP_IDS}"></script>
+```
+
 ### Production/Main
 
 ```javascript
@@ -174,3 +182,4 @@ npm run deploy
     </td>
     </tr>
 </table>
+````

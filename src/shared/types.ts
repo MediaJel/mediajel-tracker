@@ -101,6 +101,9 @@ export type LiquidmMacrosParams = {
   IDFA_SHA1: string;
   DSPIDENTIFIER: string;
   DEVICEID: string;
+  MAXMIND_CON_TYPE_NAME: string;
+  MAXMIND_GEO_IDS: string;
+  MAXMIND_ISP_ID: string;
 };
 
 export type QueryStringParams = Partial<TransactionParams> &
