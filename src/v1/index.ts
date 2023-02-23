@@ -4,12 +4,14 @@ import recordIntegration from "./snowplow/events/record-integration";
 import { tapadCookieSyncPixel } from "../shared/partners/tapad/cookie-sync-pixel";
 import { tapadHashSyncPixel } from "../shared/partners/tapad/hash-sync-pixel";
 import { QueryStringContext } from "../shared/types";
+import { liquidmSegmentPixel } from "../shared/partners/liquidm/liquidm-segment-pixel";
 
 const applyV1 = (context: QueryStringContext): void => {
   createTracker(context);
   recordIntegration(context);
   tapadCookieSyncPixel();
   tapadHashSyncPixel();
+  liquidmSegmentPixel(context);
 
   switch (context.event) {
     case "transaction":

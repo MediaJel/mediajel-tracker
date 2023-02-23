@@ -106,6 +106,10 @@ export type LiquidmMacrosParams = {
   MAXMIND_ISP_ID: string;
 };
 
+export type LiquidmSegmentParams = {
+  segmentId: string;
+};
+
 export type QueryStringParams = Partial<TransactionParams> &
   Partial<SignupParams> &
   Partial<SnowplowPluginParams> &
@@ -113,7 +117,8 @@ export type QueryStringParams = Partial<TransactionParams> &
   Partial<PluginParams> &
   GoogleAdsPluginParams &
   BingAdsPluginParams &
-  SnowplowParams;
+  SnowplowParams &
+  LiquidmSegmentParams;
 
 // Params available to the tag's query string
 export type QueryStringContext = QueryStringParams & { collector: string };
