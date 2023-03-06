@@ -81,7 +81,7 @@ export type BingAdsPluginParams = {
   tagId: string;
 } & Pick<SnowplowParams, "environment">;
 
-export type LiquidmMacrosParams = {
+export type ImpressionsMacrosParams = {
   advertiserId: string;
   insertionOrder: string;
   lineItemId: string;
@@ -110,10 +110,12 @@ export type LiquidmSegmentParams = {
   segmentId: string;
 };
 
+
+
 export type QueryStringParams = Partial<TransactionParams> &
   Partial<SignupParams> &
   Partial<SnowplowPluginParams> &
-  Partial<LiquidmMacrosParams> &
+  Partial<ImpressionsMacrosParams> &
   Partial<PluginParams> &
   GoogleAdsPluginParams &
   BingAdsPluginParams &

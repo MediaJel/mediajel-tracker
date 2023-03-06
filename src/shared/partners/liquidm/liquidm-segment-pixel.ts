@@ -1,6 +1,6 @@
-import { QueryStringContext } from "../../types";
+import { LiquidmSegmentParams } from "../../types";
 
-export const liquidmSegmentPixel = (context: QueryStringContext) => {
+export const liquidmSegmentPixel = (context: LiquidmSegmentParams) => {
   (function (c, d) {
     var a = document.createElement("script");
     a.type = "text/javascript";
