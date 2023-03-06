@@ -1,11 +1,11 @@
-import { LiquidmMacrosParams } from "../../../shared/types";
+import { ImpressionsMacrosParams } from "../../../shared/types";
 
 /**
  * ! Note: Please do not change the order of the how the mjcx array is structured.
  * ! Doing so will break the SQL query that displays the Liquid M Macros with
  * ! the link clicks.
  *
- * @param {Partial<LiquidmMacrosParams>} args Required args for Liquid M
+ * @param {Partial<ImpressionsMacrosParams>} args Required args for Liquid M
  */
 
 const liquidm = ({
@@ -31,7 +31,7 @@ const liquidm = ({
   MAXMIND_CON_TYPE_NAME,
   MAXMIND_GEO_IDS,
   MAXMIND_ISP_ID,
-}: Partial<LiquidmMacrosParams>): void => {
+}: Partial<ImpressionsMacrosParams>): void => {
   const unstruct = {
     schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
     data: {
