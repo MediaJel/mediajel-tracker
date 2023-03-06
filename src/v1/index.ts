@@ -11,7 +11,7 @@ const applyV1 = (context: QueryStringContext): void => {
   recordIntegration(context);
   tapadCookieSyncPixel();
   tapadHashSyncPixel();
-  liquidmSegmentPixel(context);
+  if (context.segmentId) liquidmSegmentPixel(context);
 
   switch (context.event) {
     case "transaction":
