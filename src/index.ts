@@ -5,6 +5,8 @@ import { QueryStringContext } from "./shared/types";
   try {
     const context: QueryStringContext = getContext();
 
+    console.log("MJ Tag Context", context)
+
     // Load plugin
     if (context.plugin) {
       import("./plugins").then(({ default: load }): void => load(context));

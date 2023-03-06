@@ -10,6 +10,8 @@ const mantis = ({
     lineItemId,
     publisherName,
 }: Partial<ImpressionsMacrosParams>) => {
+
+    console.log("Loading Mantis")
     const unstruct = {
         schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
         data: {
@@ -22,9 +24,7 @@ const mantis = ({
         },
     };
 
-
-
-
+    window.tracker("trackSelfDescribingEvent", unstruct);
 
     window.tracker("enableLinkClickTracking", null, false, false, [unstruct]); // Do not change the order of the array
 
