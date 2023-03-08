@@ -1,8 +1,8 @@
 import { QueryStringContext } from "@/shared/types";
 
+
+
 const initializeTracker = ({ appId, collector, event }: QueryStringContext): void => {
-    // Loading tracker with the snowplow tag by fetching our sp.js file
-    // Creates a global function called "tracker" which we use to access the Snowplow Tracker
     (function (e, o, n, t, a, c, i) {
         if (!e[a]) {
             e.GlobalSnowplowNamespace = e.GlobalSnowplowNamespace || [];
@@ -17,21 +17,24 @@ const initializeTracker = ({ appId, collector, event }: QueryStringContext): voi
             c.src = t;
             i.parentNode.insertBefore(c, i);
         }
-    })(window, document, "script", "//mj-snowplow-static-js.s3.amazonaws.com/sp.js", "tracker");
-
-    // Creates the tracker with the appId and sends events to collector url
-    window.tracker("newTracker", "cnna", `${collector}`, {
-        appId: appId,
+    })(window, document, "script", "//mj-snowplow-static-js.s3.amazonaws.com/cnna.js", "tracker");
+    window.tracker("newTracker", "cf", collector, {
+        appId,
         discoverRootDomain: true,
         stateStorageStrategy: "cookieAndLocalStorage",
         cookieSameSite: "Lax",
         respectDoNotTrack: false,
         eventMethod: "post",
     });
-
-    window.tracker("enableActivityTracking", 30, 10);
+    window.tracker("enableActivityTracking", {
+        minimumVisitLength: 30,
+        heartbeatDelay: 10,
+    });
     window.tracker("trackPageView");
     window.tracker("enableFormTracking");
+    window.tracker("enableErrorTracking", {
+        filter: (errorEvent: ErrorEvent) => errorEvent.hasOwnProperty("message"),
+    });
 
     /**
      * !IMPORTANT: We are disabling this as to not override Link click config for the impression pixel.
