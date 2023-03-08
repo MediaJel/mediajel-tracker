@@ -39,8 +39,8 @@ const meadowTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }
 
       transactionEvent({
         id: transaction.id.toString(),
-        total: parseFloat(transaction.total),
-        tax: parseFloat(transaction.tax) || 0,
+        total: parseFloat(transaction.netPrice) / 100,
+        tax: parseFloat(transaction.taxesTotal || 0) / 100,
         shipping: parseFloat(transaction.delivery_fee) || 0,
         city: "N/A",
         state: "N/A",
@@ -48,7 +48,6 @@ const meadowTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }
         currency: "USD",
         items: products.map((items) => {
           const { product, quantity } = items;
-          
           return {
             orderId: transaction.id.toString(),
             productId: product.id.toString(),
