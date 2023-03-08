@@ -1,23 +1,23 @@
 import { QueryStringContext } from "@/shared/types";
 
-
-
 const initializeTracker = ({ appId, collector, event }: QueryStringContext): void => {
-    (function (e, o, n, t, a, c, i) {
-        if (!e[a]) {
-            e.GlobalSnowplowNamespace = e.GlobalSnowplowNamespace || [];
-            e.GlobalSnowplowNamespace.push(a);
-            e[a] = function () {
-                (e[a].q = e[a].q || []).push(arguments);
+
+    (function (p, l, o, w, i, n, g) {
+        if (!p[i]) {
+            p.GlobalSnowplowNamespace = p.GlobalSnowplowNamespace || [];
+            p.GlobalSnowplowNamespace.push(i);
+            p[i] = function () {
+                (p[i].q = p[i].q || []).push(arguments);
             };
-            e[a].q = e[a].q || [];
-            c = o.createElement(n);
-            i = o.getElementsByTagName(n)[0];
-            c.async = 1;
-            c.src = t;
-            i.parentNode.insertBefore(c, i);
+            p[i].q = p[i].q || [];
+            n = l.createElement(o);
+            g = l.getElementsByTagName(o)[0];
+            n.async = 1;
+            n.src = w;
+            g.parentNode.insertBefore(n, g);
         }
     })(window, document, "script", "//mj-snowplow-static-js.s3.amazonaws.com/cnna.js", "tracker");
+
     window.tracker("newTracker", "cf", collector, {
         appId,
         discoverRootDomain: true,
@@ -45,4 +45,4 @@ const initializeTracker = ({ appId, collector, event }: QueryStringContext): voi
     }
 };
 
-export default initializeTracker
+export default initializeTracker;
