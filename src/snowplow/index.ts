@@ -1,5 +1,5 @@
-import createSnowplowV1Tracker from "./v1"
-import createSnowplowV2Tracker from './v2'
+import createSnowplowV1Tracker from "@/snowplow/v1"
+import createSnowplowV2Tracker from '@/snowplow/v2'
 
 
 const createSnowplowTracker = () => {

@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
     "lib": ["es5", "es6", "dom"],
+    "baseUrl": "./src",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["*"]
     }
   },
   "include": ["src/**/*", "server/**/*", "cypress/**/*"],
