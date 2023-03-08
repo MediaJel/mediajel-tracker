@@ -8,7 +8,7 @@
     "check": "tsc --noEmit",
     "deploy": "parcel build src/index.ts",
     "postdeploy": "node -r dotenv/config deploy/postdeploy.js",
-    "build": "parcel build src/index.ts",
+    "build": "export NODE_OPTIONS=--no-experimental-fetch && parcel build src/index.ts",
     "cy:open": "cypress open",
     "cy:run": "cypress run --spec 'cypress/e2e/spec.cy.ts'",
     "bootstrap-test-server": "rimraf dist && rimraf .parcel-cache && concurrently --kill-others \"parcel watch --port 1235 src/index.ts\" \"ts-node ./server/index.ts\" \"tsc --noEmit --watch\" \"parcel --no-cache ./public/index.test.html\" ",
