@@ -46,15 +46,16 @@ const meadowTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }
         state: "N/A",
         country: "USA",
         currency: "USD",
-        items: products.map((product) => {
-          const { item_id, item_name, item_category, price, quantity } = product;
+        items: products.map((items) => {
+          const { product, quantity } = items;
+          
           return {
             orderId: transaction.id.toString(),
-            productId: item_id.toString(),
-            sku: item_id.toString(),
-            name: (item_name || "N/A").toString(),
-            category: (item_category || "N/A").toString(),
-            unitPrice: parseFloat(price || 0),
+            productId: product.id.toString(),
+            sku: product.id.toString(),
+            name: (product.name || "N/A").toString(),
+            category: (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
+            unitPrice: parseFloat(product.option.price || 0) / 100,
             quantity: parseInt(quantity || 1),
             currency: "USD",
           } as TransactionCartItem;
