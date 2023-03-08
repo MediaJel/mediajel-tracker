@@ -19,13 +19,13 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.TOKEN_REPO}}
 
       - name: Build
-        run: npm run build-demo
+        run: npm run build
 
       - name: Upload base stats.json
         uses: actions/upload-artifact@v2
         with:
           name: base
-          path: ./demo/demo-dist/stats.json
+          path: ./stats/stats.json
           retention-days: 1
   build-pr:
     name: Build PR
@@ -40,13 +40,13 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.TOKEN_REPO}}
 
       - name: Build
-        run: npm run build-demo
+        run: npm run build
 
       - name: Upload base stats.json
         uses: actions/upload-artifact@v2
         with:
           name: pr
-          path: ./demo/demo-dist/stats.json
+          path: ./stats/stats.json
           retention-days: 1
 
   report:
