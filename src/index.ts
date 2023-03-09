@@ -1,11 +1,10 @@
 import getContext from "./shared/utils/get-context";
-import { QueryStringContext } from "./shared/types";
+import { QueryStringContext, SnowplowTrackerInput } from "/src/shared/types";
 import createSnowplowTracker from "/src/snowplow";
 
 (async (): Promise<void> => {
   try {
     const context: QueryStringContext = getContext();
-    console.log("MJ Tag Context", context)
 
     // Load plugin
     if (context.plugin) {
@@ -18,21 +17,23 @@ import createSnowplowTracker from "/src/snowplow";
     // Validations
     if (!context.appId) throw new Error("appId is required");
 
-    const tracker = createSnowplowTracker()
+    const tracker = createSnowplowTracker();
 
-    switch (context.version) {
-      case "1":
-      case "legacy":
-        await tracker.legacy(context)
-        break;
-      case "standard":
-      case "2":
-        await tracker.standard(context)
-        break;
-      default:
-        await tracker.standard(context)
-        break;
-    }
+    const snowplowTrackerInput: SnowplowTrackerInput = {
+      appId: context.appId,
+      collector: context.collector,
+      event: context.event,
+    };
+
+    const versionHandlers = {
+      "1": () => tracker.legacy(snowplowTrackerInput),
+      legacy: () => tracker.legacy(snowplowTrackerInput),
+      standard: () => tracker.standard(snowplowTrackerInput),
+      "2": () => tracker.standard(snowplowTrackerInput),
+      default: () => tracker.standard(snowplowTrackerInput),
+    };
+
+    versionHandlers[context.version ?? "default"]();
   } catch (err) {
     const clientError = `An error has occured, please contact your pixel provider: `;
     console.error(clientError + err.message);

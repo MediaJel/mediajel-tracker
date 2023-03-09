@@ -1,9 +1,44 @@
+/**
+ * @description General function to represent the snowplow tracker that gets imported
+ * to the window
+ */
 export type SnowplowBrowserTracker = (...args: any[]) => void;
 
+/**
+ * @description The input for the snowplow function factories
+ * @param appId The unique identifier for the client that is sending the event
+ * @param collector The collector url
+ * @param event The event that is being sent
+ */
+export interface SnowplowTrackerInput {
+  appId: string;
+  collector: string;
+  event: string;
+}
+
+/**
+ * @description Methods that represents a snowplow tracker
+ * @param trackTransaction Tracks a transaction event
+ * @param trackAddToCart Tracks an add to cart event
+ * @param trackRemoveFromCart Tracks a remove from cart event
+ */
 export interface SnowplowTracker {
   trackTransaction: (transaction: TransactionEvent) => void;
   trackAddToCart: (item: CartEvent) => void;
   trackRemoveFromCart: (item: CartEvent) => void;
+}
+
+/**
+ * @description The input for the snowplow `init` function
+ *
+ * @param appId The app id of the app that is sending the event
+ * @param collector The collector url
+ * @param event The event that is being sent
+ */
+export interface SnowplowInitInput {
+  appId: string;
+  collector: string;
+  event: string;
 }
 
 export interface CartEvent {

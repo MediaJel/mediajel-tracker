@@ -2,9 +2,9 @@ import init from "/src/snowplow/legacy/init";
 
 import {
   CartEvent,
-  QueryStringContext,
   SnowplowBrowserTracker,
   SnowplowTracker,
+  SnowplowTrackerInput,
   TransactionEvent,
 } from "/src/shared/types";
 
@@ -49,8 +49,8 @@ const trackTransaction = (tracker: SnowplowBrowserTracker) => {
   };
 };
 
-// TODO: Add setUserId implementation 
-const createSnowplowLegacyTracker = (context: QueryStringContext): SnowplowTracker => {
+// TODO: Add setUserId implementation
+const createSnowplowLegacyTracker = (context: SnowplowTrackerInput): SnowplowTracker => {
   const tracker = init(context);
   return {
     ...trackTransaction(tracker),

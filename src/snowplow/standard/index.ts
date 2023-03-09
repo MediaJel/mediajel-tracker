@@ -1,8 +1,8 @@
 import {
   CartEvent,
-  QueryStringContext,
   SnowplowBrowserTracker,
   SnowplowTracker,
+  SnowplowTrackerInput,
   TransactionEvent,
 } from "/src/shared/types";
 import init from "/src/snowplow/standard/init";
@@ -70,7 +70,7 @@ const trackTransaction = (tracker: SnowplowBrowserTracker) => {
 };
 
 // TODO: Add setUserId implementation
-const createSnowplowStandardTracker = (context: QueryStringContext): SnowplowTracker => {
+const createSnowplowStandardTracker = (context: SnowplowTrackerInput): SnowplowTracker => {
   const tracker = init(context);
   return {
     ...trackTransaction(tracker),
