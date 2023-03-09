@@ -1,10 +1,20 @@
-import { QueryStringContext } from "/src/shared/types"
+import { QueryStringContext, SnowplowBrowserTracker, SnowplowTracker, TransactionEvent } from "/src/shared/types"
 import init from "/src/snowplow/standard/init"
 
-const createSnowplowStandardTracker = (context: QueryStringContext) => {
-    console.log("Create Snowplow Standard Tracker")
+
+const trackTransaction = (tracker: SnowplowBrowserTracker) => {
+    return {
+        trackTransaction(transaction: TransactionEvent) {
+            
+        }
+    }
+}
+
+const createSnowplowStandardTracker = (context: QueryStringContext): SnowplowTracker => {
     const tracker = init(context)
-    return {}
+    return {
+        ...trackTransaction(tracker),
+    }
 }
 
 export default createSnowplowStandardTracker

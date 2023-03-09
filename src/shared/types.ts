@@ -1,3 +1,10 @@
+export type SnowplowBrowserTracker = (...args: any[]) => void;
+
+export interface SnowplowTracker {
+  trackTransaction: (transaction: TransactionEvent) => void
+}
+
+
 export interface CartEvent {
   sku: string;
   name: string;

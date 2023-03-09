@@ -1,6 +1,6 @@
-import { QueryStringContext } from "/src/shared/types";
+import { QueryStringContext, SnowplowBrowserTracker } from "/src/shared/types";
 
-const init = ({ appId, collector, event }: QueryStringContext): void => {
+const init = ({ appId, collector, event }: QueryStringContext): SnowplowBrowserTracker => {
     // Loading tracker with the snowplow tag by fetching our sp.js file
     // Creates a global function called "tracker" which we use to access the Snowplow Tracker
     (function (e, o, n, t, a, c, i) {
@@ -40,6 +40,8 @@ const init = ({ appId, collector, event }: QueryStringContext): void => {
     if (event !== "impression") {
         window.tracker("enableLinkClickTracking");
     }
+
+    return window.tracker as SnowplowBrowserTracker
 };
 
 export default init

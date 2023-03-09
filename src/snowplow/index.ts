@@ -1,7 +1,6 @@
 import { QueryStringContext } from "/src/shared/types"
 
 
-
 const createSnowplowTracker = () => {
     return {
         legacy: async (ctx: QueryStringContext) => await import("/src/snowplow/legacy").then(({ default: legacy }) => legacy(ctx)),

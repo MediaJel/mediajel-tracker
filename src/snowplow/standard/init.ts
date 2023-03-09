@@ -1,6 +1,6 @@
-import { QueryStringContext } from "/src/shared/types";
+import { QueryStringContext, SnowplowBrowserTracker } from "/src/shared/types";
 
-const init = ({ appId, collector, event }: QueryStringContext): void => {
+const init = ({ appId, collector, event }: QueryStringContext): SnowplowBrowserTracker => {
 
     (function (p, l, o, w, i, n, g) {
         if (!p[i]) {
@@ -43,6 +43,8 @@ const init = ({ appId, collector, event }: QueryStringContext): void => {
     if (event !== "impression") {
         window.tracker("enableLinkClickTracking");
     }
+
+    return window.tracker as SnowplowBrowserTracker;
 };
 
 export default init
