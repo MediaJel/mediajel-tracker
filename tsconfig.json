@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "skipLibCheck": true,
     "lib": ["es5", "es6", "dom"],
     "baseUrl": "./src",
     "paths": {

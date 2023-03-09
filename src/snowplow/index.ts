@@ -1,11 +1,9 @@
-import createSnowplowV1Tracker from "@/snowplow/v1"
-import createSnowplowV2Tracker from '@/snowplow/v2'
-
-
-const createSnowplowTracker = () => {
+const createSnowplowTracker = async () => {
+    const legacy = await import("@/snowplow/legacy")
+    const standard = await import("@/snowplow/standard")
     return {
-        v1: createSnowplowV1Tracker(),
-        v2: createSnowplowV2Tracker()
+        legacy,
+        standard,
     }
 }
 

@@ -25,6 +25,8 @@ import { QueryStringContext } from "./shared/types";
       case "2":
         import("./v2").then(({ default: load }) => load(context));
         break;
+      case "new":
+        const tracker = await import("@/snowplow");
     }
   } catch (err) {
     const clientError = `An error has occured, please contact your pixel provider: `;
