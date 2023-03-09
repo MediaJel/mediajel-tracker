@@ -1,10 +1,10 @@
 import getContext from "./shared/utils/get-context";
 import { QueryStringContext } from "./shared/types";
+import createSnowplowTracker from "/src/snowplow";
 
 (async (): Promise<void> => {
   try {
     const context: QueryStringContext = getContext();
-
     console.log("MJ Tag Context", context)
 
     // Load plugin
@@ -18,9 +18,7 @@ import { QueryStringContext } from "./shared/types";
     // Validations
     if (!context.appId) throw new Error("appId is required");
 
-    const { default: createSnowplowTracker } = await import("/src/snowplow")
-
-    const tracker = await createSnowplowTracker()
+    const tracker = createSnowplowTracker()
 
     switch (context.version) {
       case "1":
@@ -29,6 +27,9 @@ import { QueryStringContext } from "./shared/types";
         break;
       case "standard":
       case "2":
+        await tracker.standard(context)
+        break;
+      default:
         await tracker.standard(context)
         break;
     }
