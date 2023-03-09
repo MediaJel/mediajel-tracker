@@ -1,9 +1,10 @@
 export type SnowplowBrowserTracker = (...args: any[]) => void;
 
 export interface SnowplowTracker {
-  trackTransaction: (transaction: TransactionEvent) => void
+  trackTransaction: (transaction: TransactionEvent) => void;
+  trackAddToCart: (item: CartEvent) => void;
+  trackRemoveFromCart: (item: CartEvent) => void;
 }
-
 
 export interface CartEvent {
   sku: string;
@@ -116,8 +117,6 @@ export type ImpressionsMacrosParams = {
 export type LiquidmSegmentParams = {
   segmentId: string;
 };
-
-
 
 export type QueryStringParams = Partial<TransactionParams> &
   Partial<SignupParams> &

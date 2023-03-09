@@ -1,3 +1,5 @@
+import init from "/src/snowplow/legacy/init";
+
 import {
   CartEvent,
   QueryStringContext,
@@ -5,12 +7,19 @@ import {
   SnowplowTracker,
   TransactionEvent,
 } from "/src/shared/types";
-import init from "/src/snowplow/legacy/init";
 
 const trackAddToCart = (tracker: SnowplowBrowserTracker) => {
   return {
     trackAddToCart(item: CartEvent) {
-      tracker("trackAddToCart", item.sku, item.name); // Todo: Finish this
+      tracker("trackAddToCart", item.sku, item.name, item.category, item.unitPrice, item.quantity, item.currency);
+    },
+  };
+};
+
+const trackRemoveFromCart = (tracker: SnowplowBrowserTracker) => {
+  return {
+    trackRemoveFromCart(item: CartEvent) {
+      tracker("trackRemoveFromCart", item.sku, item.name, item.category, item.unitPrice, item.quantity, item.currency);
     },
   };
 };
@@ -45,6 +54,8 @@ const createSnowplowLegacyTracker = (context: QueryStringContext): SnowplowTrack
 
   return {
     ...trackTransaction(tracker),
+    ...trackAddToCart(tracker),
+    ...trackRemoveFromCart(tracker),
   };
 };
 
