@@ -10,6 +10,7 @@ import init from "/src/snowplow/standard/init";
 const trackAddToCart = (tracker: SnowplowBrowserTracker) => {
   return {
     trackAddToCart(item: CartEvent) {
+      // TODO: Add setUserId implementation
       tracker("trackAddToCart", {
         sku: item.sku,
         name: item.name,
@@ -25,6 +26,7 @@ const trackAddToCart = (tracker: SnowplowBrowserTracker) => {
 const trackRemoveFromCart = (tracker: SnowplowBrowserTracker) => {
   return {
     trackRemoveFromCart(item: CartEvent) {
+      // TODO: Add setUserId implementation
       tracker("trackRemoveFromCart", {
         sku: item.sku,
         name: item.name,
@@ -40,6 +42,7 @@ const trackRemoveFromCart = (tracker: SnowplowBrowserTracker) => {
 const trackTransaction = (tracker: SnowplowBrowserTracker) => {
   return {
     trackTransaction(transaction: TransactionEvent) {
+      // TODO: Add setUserId implementation
       tracker("addTrans", {
         orderId: transaction.id,
         affiliation: "N/A",
@@ -69,7 +72,6 @@ const trackTransaction = (tracker: SnowplowBrowserTracker) => {
   };
 };
 
-// TODO: Add setUserId implementation
 const createSnowplowStandardTracker = (context: SnowplowTrackerInput): SnowplowTracker => {
   const tracker = init(context);
   return {
