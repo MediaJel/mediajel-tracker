@@ -51,7 +51,6 @@ const trackTransaction = (tracker: SnowplowBrowserTracker) => {
 
 const createSnowplowLegacyTracker = (context: QueryStringContext): SnowplowTracker => {
   const tracker = init(context);
-
   return {
     ...trackTransaction(tracker),
     ...trackAddToCart(tracker),
