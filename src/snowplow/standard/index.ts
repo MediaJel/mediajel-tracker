@@ -69,6 +69,7 @@ const trackTransaction = (tracker: SnowplowBrowserTracker) => {
   };
 };
 
+// TODO: Add setUserId implementation
 const createSnowplowStandardTracker = (context: QueryStringContext): SnowplowTracker => {
   const tracker = init(context);
   return {
