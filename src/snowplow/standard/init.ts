@@ -1,4 +1,4 @@
-import { QueryStringContext } from "@/shared/types";
+import { QueryStringContext } from "~/shared/types";
 
 const initializeTracker = ({ appId, collector, event }: QueryStringContext): void => {
 
