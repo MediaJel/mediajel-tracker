@@ -1,9 +1,9 @@
-const createSnowplowTracker = async () => {
-    const legacy = await import("~/snowplow/legacy")
-    const standard = await import("~/snowplow/standard")
+import { QueryStringContext } from "/src/shared/types"
+
+const createSnowplowTracker = () => {
     return {
-        legacy,
-        standard,
+        legacy: async (context: QueryStringContext) => await import("/src/snowplow/legacy"),
+        standard: async (context: QueryStringContext) => await import("/src/snowplow/standard"),
     }
 }
 

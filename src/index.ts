@@ -18,15 +18,19 @@ import { QueryStringContext } from "./shared/types";
     // Validations
     if (!context.appId) throw new Error("appId is required");
 
+    const { default: createSnowplowTracker } = await import("/src/snowplow")
+
+    const tracker = await createSnowplowTracker()
+
     switch (context.version) {
       case "1":
-        import("./v1").then(({ default: load }) => load(context));
+      case "legacy":
+        await tracker.legacy(context)
         break;
+      case "standard":
       case "2":
-        import("./v2").then(({ default: load }) => load(context));
+        await tracker.standard(context)
         break;
-      case "new":
-        const tracker = await import("~/snowplow");
     }
   } catch (err) {
     const clientError = `An error has occured, please contact your pixel provider: `;

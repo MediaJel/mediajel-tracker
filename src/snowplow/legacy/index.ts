@@ -1,7 +1,9 @@
+import { QueryStringContext } from "/src/shared/types"
+import init from "/src/snowplow/legacy/init"
 
-
-const createSnowplowV1Tracker = () => {
+const createSnowplowLegacyTracker = (context: QueryStringContext) => {
+    const tracker = init(context)    
     return {}
 }
 
-export default createSnowplowV1Tracker
+export default createSnowplowLegacyTracker

@@ -1,6 +1,6 @@
-import { QueryStringContext } from "~/shared/types";
+import { QueryStringContext } from "/src/shared/types";
 
-const initializeTracker = ({ appId, collector, event }: QueryStringContext): void => {
+const init = ({ appId, collector, event }: QueryStringContext): void => {
 
     (function (p, l, o, w, i, n, g) {
         if (!p[i]) {
@@ -45,4 +45,4 @@ const initializeTracker = ({ appId, collector, event }: QueryStringContext): voi
     }
 };
 
-export default initializeTracker;
+export default init

@@ -2,9 +2,9 @@
   "compilerOptions": {
     "skipLibCheck": true,
     "lib": ["es5", "es6", "dom"],
-    "baseUrl": "./src",
+    "baseUrl": ".",
     "paths": {
-      "~/*": ["*"] // Must follow ParcelJS dep resolution @{link https://parceljs.org/features/dependency-resolution/}
+      "/*": ["*"] // Must follow ParcelJS dep resolution @{link https://parceljs.org/features/dependency-resolution/}
     }
   },
   "include": ["src/**/*", "server/**/*", "cypress/**/*"],
