@@ -1,16 +1,27 @@
 import { SnowplowTrackerInput } from "/src/shared/types";
 
-const createSnowplowTracker = () => {
+const createLegacySnowplowTracker = (input: SnowplowTrackerInput) => {
   return {
-    legacy: async (ctx: SnowplowTrackerInput) => {
+    legacy: async () => {
       const { default: legacy } = await import("/src/snowplow/legacy");
-      return legacy(ctx);
+      return legacy(input);
     },
+  };
+};
 
-    standard: async (ctx: SnowplowTrackerInput) => {
+const createStandardSnowplowTracker = (input: SnowplowTrackerInput) => {
+  return {
+    standard: async () => {
       const { default: standard } = await import("/src/snowplow/standard");
-      return standard(ctx);
+      return standard(input);
     },
+  };
+};
+
+const createSnowplowTracker = (input: SnowplowTrackerInput) => {
+  return {
+    ...createLegacySnowplowTracker(input),
+    ...createStandardSnowplowTracker(input),
   };
 };
 

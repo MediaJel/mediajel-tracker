@@ -5,24 +5,17 @@ import { QueryStringContext, SnowplowTracker, SnowplowTrackerInput } from "/src/
 
 const logger = createLogger("main");
 
-const createTracker = (input: QueryStringContext): Promise<SnowplowTracker> => {
-  const tracker = createSnowplowTracker();
-
-  const snowplowTrackerInput: SnowplowTrackerInput = {
-    appId: input.appId,
-    collector: input.collector,
-    event: input.event,
-  };
-
+const selectTrackerVersion = (input: SnowplowTrackerInput): Promise<SnowplowTracker> => {
+  const tracker = createSnowplowTracker(input);
   switch (input.version) {
     case "1":
     case "legacy":
-      return tracker.legacy(snowplowTrackerInput);
+      return tracker.legacy();
     case "2":
     case "standard":
-      return tracker.standard(snowplowTrackerInput);
+      return tracker.standard();
     default:
-      return tracker.legacy(snowplowTrackerInput);
+      return tracker.legacy();
   }
 };
 
@@ -47,7 +40,15 @@ const main = async (): Promise<void> => {
     return;
   }
 
-  const tracker = await createTracker(context);
+  const tracker = await selectTrackerVersion({
+    appId: context.appId,
+    version: context.version,
+    collector: context.collector,
+    environment: context.environment,
+    event: context.event,
+  });
+
+  
 };
 
 main().catch((error) => logger.error("Error in main", error));

@@ -72,8 +72,24 @@ const trackTransaction = (tracker: SnowplowBrowserTracker) => {
   };
 };
 
+const recordWith = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput) => {
+  const schema = {
+    event: {
+      schema: "iglu:com.mediajel.events/record/jsonschema/1-0-2",
+      data: {
+        appId: input.appId,
+        cart: input.environment,
+        version: input.version,
+      },
+    },
+  };
+
+  tracker("trackSelfDescribingEvent", schema);
+};
+
 const createSnowplowStandardTracker = (context: SnowplowTrackerInput): SnowplowTracker => {
   const tracker = init(context);
+  recordWith(tracker, context);
   return {
     ...trackTransaction(tracker),
     ...trackAddToCart(tracker),

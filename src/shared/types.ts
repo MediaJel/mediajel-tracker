@@ -9,11 +9,15 @@ export type SnowplowBrowserTracker = (...args: any[]) => void;
  * @param appId The unique identifier for the client that is sending the event
  * @param collector The collector url
  * @param event The event that is being sent
+ * @param environment The environment template
+ * @param version The version of the tracker
  */
 export interface SnowplowTrackerInput {
   appId: string;
   collector: string;
   event: string;
+  environment: string;
+  version: string;
 }
 
 /**
