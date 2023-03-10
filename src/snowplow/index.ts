@@ -6,6 +6,12 @@ import { SnowplowTracker, SnowplowTrackerInput } from "/src/shared/types";
  * javascript tracker. This is dynamically imported to reduce the bundle size of the tag.
  *
  * @param {SnowplowTrackerInput} input Input object for the Snowplow tracker
+ * @param {SnowplowTrackerInput} input Input object for standard Snowplow
+ * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event
+ * @param {SnowplowTrackerInput.collector} input.collector A snowplow collector url
+ * @param {SnowplowTrackerInput.event} input.event The event that the tracker is configured for
+ * @param {SnowplowTrackerInput.environment} input.environment The environment template selected
+ * @param {SnowplowTrackerInput.version} input.version The version of the tracker
  * @returns {Promise<SnowplowTracker>} Snowplow tracker
  *
  */
@@ -19,7 +25,12 @@ const importLegacySnowplowTracker = async (input: SnowplowTrackerInput): Promise
  * @description  Imports the Snowplow tracker instance using the standard and supported
  * javascript tracker. This is dynamically imported to reduce the bundle size of the tag.
  *
- * @param {SnowplowTrackerInput} input Input object for standard Snowplow tracker
+ * @param {SnowplowTrackerInput} input Input object for standard Snowplow
+ * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event
+ * @param {SnowplowTrackerInput.collector} input.collector A snowplow collector url
+ * @param {SnowplowTrackerInput.event} input.event The event that the tracker is configured for
+ * @param {SnowplowTrackerInput.environment} input.environment The environment template selected
+ * @param {SnowplowTrackerInput.version} input.version The version of the tracker
  * @returns {Promise<SnowplowTracker>} Snowplow tracker
  *
  */
@@ -43,6 +54,12 @@ const importStandardSnowplowTracker = async (input: SnowplowTrackerInput): Promi
  *  });
  *
  * @param {SnowplowTrackerInput} input  Input object for the Snowplow tracker
+ * @param {SnowplowTrackerInput} input Input object for standard Snowplow
+ * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event
+ * @param {SnowplowTrackerInput.collector} input.collector A snowplow collector url
+ * @param {SnowplowTrackerInput.event} input.event The event that the tracker is configured for
+ * @param {SnowplowTrackerInput.environment} input.environment The environment template selected
+ * @param {SnowplowTrackerInput.version} input.version The version of the tracker
  * @returns {Promise<SnowplowTracker>} Snowplow tracker
  *
  */
