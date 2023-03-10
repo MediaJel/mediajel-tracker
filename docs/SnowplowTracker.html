@@ -1,82 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title> SnowplowTracker</title>
-
-  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="./build/entry.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-  <![endif]-->
-  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
-  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
-  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
-  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
-  <link type="text/css" rel="stylesheet" href="">
-  <script async defer src="https://buttons.github.io/buttons.js"></script>
-
-  
+    
+    <meta charset="utf-8">
+    <title>SnowplowTracker - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
+<body>
 
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
 
+<label for="nav-trigger" class="overlay"></label>
 
-<body class="layout small-header">
-    <div id="stickyNavbarOverlay"></div>
+<nav >
+    
+    
+    <h2><a href="index.html">Home</a></h2><h3>Interfaces</h3><ul><li><a href="SnowplowInitInput.html">SnowplowInitInput</a></li><li><a href="SnowplowTracker.html">SnowplowTracker</a></li><li><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></li></ul><h3>Global</h3><ul><li><a href="global.html#createSnowplowLegacyTracker">createSnowplowLegacyTracker</a></li><li><a href="global.html#createSnowplowStandardTracker">createSnowplowStandardTracker</a></li><li><a href="global.html#createSnowplowTracker">createSnowplowTracker</a></li><li><a href="global.html#fetchSource">fetchSource</a></li><li><a href="global.html#importLegacySnowplowTracker">importLegacySnowplowTracker</a></li><li><a href="global.html#importStandardSnowplowTracker">importStandardSnowplowTracker</a></li><li><a href="global.html#liquidm">liquidm</a></li><li><a href="global.html#squareTracker">squareTracker</a></li><li><a href="global.html#trackTransaction">trackTransaction</a></li></ul>
+    
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">SnowplowTracker</h1>
     
 
-<div class="top-nav">
-    <div class="inner">
-        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-        </a>
-        <div class="logo">
-            
-            
-        </div>
-        <div class="menu">
-            
-            <div class="navigation">
-                <a
-                    href="index.html"
-                    class="link"
-                >
-                    Documentation
-                </a>
-                
-                
-                
-            </div>
-        </div>
-    </div>
-</div>
-    <div id="main">
-        <div
-            class="sidebar "
-            id="sidebarNav"
-        >
-            
-            <nav>
-                
-                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Interfaces</h3><ul><li><a href="SnowplowInitInput.html">SnowplowInitInput</a></li><li><a href="SnowplowTracker.html">SnowplowTracker</a></li><li><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetchSource">fetchSource</a></li><li><a href="global.html#liquidm">liquidm</a></li><li><a href="global.html#squareTracker">squareTracker</a></li></ul></div><div class="category"><h2>Snowplow</h2><h3>Global</h3><ul><li><a href="global.html#createSnowplowLegacyTracker">createSnowplowLegacyTracker</a></li><li><a href="global.html#createSnowplowStandardTracker">createSnowplowStandardTracker</a></li><li><a href="global.html#createSnowplowTracker">createSnowplowTracker</a></li><li><a href="global.html#importLegacySnowplowTracker">importLegacySnowplowTracker</a></li><li><a href="global.html#importStandardSnowplowTracker">importStandardSnowplowTracker</a></li><li><a href="global.html#trackTransaction">trackTransaction</a></li></ul></div>
-                
-            </nav>
-        </div>
-        <div class="core" id="main-content-wrapper">
-            <div class="content">
-                <header class="page-title">
-                    <p>Interface</p>
-                    <h1>SnowplowTracker</h1>
-                </header>
-                
+    
 
 
 
@@ -85,22 +47,33 @@
 
 <header>
     
-        <h2>SnowplowTracker</h2>
+        <h2>
+        
+            SnowplowTracker
+        
+        </h2>
         
     
 </header>
 
 <article>
-    <div class="container-overview">
     
+        <div class="container-overview">
         
-            <div class="description">Method interfaces that represents a snowplow tracker</div>
-        
-
-        
-
+            
 
 <dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Method interfaces that represents a snowplow tracker</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line39">line 39</a>
+    </li></ul></dd>
+    
 
     
 
@@ -125,75 +98,139 @@
     
 
     
-    
 
     
 
     
 
-    
-        <p class="tag-source">
-            <a href="shared_types.ts.html" class="button">View Source</a>
-            <span>
-                <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line39">line 39</a>
-            </span>
-        </p>
     
 </dl>
 
 
-        
-    
-    </div>
-    
-    
 
-    
 
-    
-
-    
-
-    
-
-    
-
-    
-        <div class='vertical-section'>
-            <h1>Members</h1>
-            <div class="members">
             
-                <div class="member">
+                <div class="description usertext">Method interfaces that represents a snowplow tracker</div>
+            
 
-    <span class="method-parameter is-pulled-right">
-        <label>Type:</label>
+            
         
-<code class="param-type">function</code>
-
-
-    </span>
-
-<h4 class="name" id="trackAddToCart">
-    <a class="href-link" href="#trackAddToCart">#</a>
+        </div>
     
-    <span class="code-name">
-        trackAddToCart
-    </span>
+
     
-</h4>
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="trackAddToCart"><span class="type-signature"></span>trackAddToCart<span class="type-signature"> :function</span></h4>
 
 
 
 
-<div class="description">
+
+<dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Tracks an add to cart event</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line48">line 48</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
     Tracks an add to cart event
 </div>
 
 
 
+    <h5 class="h5-types">Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">function</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="trackRemoveFromCart"><span class="type-signature"></span>trackRemoveFromCart<span class="type-signature"> :function</span></h4>
+
+
+
 
 
 <dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Tracks a remove from cart event</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line53">line 53</a>
+    </li></ul></dd>
+    
 
     
 
@@ -218,19 +255,11 @@
     
 
     
-    
 
     
 
     
 
-    
-        <p class="tag-source">
-            <a href="shared_types.ts.html" class="button">View Source</a>
-            <span>
-                <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line48">line 48</a>
-            </span>
-        </p>
     
 </dl>
 
@@ -238,39 +267,48 @@
 
 
 
-</div>
-            
-                <div class="member">
-
-    <span class="method-parameter is-pulled-right">
-        <label>Type:</label>
-        
-<code class="param-type">function</code>
-
-
-    </span>
-
-<h4 class="name" id="trackRemoveFromCart">
-    <a class="href-link" href="#trackRemoveFromCart">#</a>
-    
-    <span class="code-name">
-        trackRemoveFromCart
-    </span>
-    
-</h4>
-
-
-
-
-<div class="description">
+<div class="description usertext">
     Tracks a remove from cart event
 </div>
 
 
 
+    <h5 class="h5-types">Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">function</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="trackTransaction"><span class="type-signature"></span>trackTransaction<span class="type-signature"> :function</span></h4>
+
+
+
 
 
 <dl class="details">
+    
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li>Tracks a transaction event</li></ul></dd>
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line43">line 43</a>
+    </li></ul></dd>
+    
 
     
 
@@ -295,19 +333,11 @@
     
 
     
-    
 
     
 
     
 
-    
-        <p class="tag-source">
-            <a href="shared_types.ts.html" class="button">View Source</a>
-            <span>
-                <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line53">line 53</a>
-            </span>
-        </p>
     
 </dl>
 
@@ -315,87 +345,29 @@
 
 
 
-</div>
-            
-                <div class="member">
-
-    <span class="method-parameter is-pulled-right">
-        <label>Type:</label>
-        
-<code class="param-type">function</code>
-
-
-    </span>
-
-<h4 class="name" id="trackTransaction">
-    <a class="href-link" href="#trackTransaction">#</a>
-    
-    <span class="code-name">
-        trackTransaction
-    </span>
-    
-</h4>
-
-
-
-
-<div class="description">
+<div class="description usertext">
     Tracks a transaction event
 </div>
 
 
 
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    
-
-    
-
-    
-
-    
-        <p class="tag-source">
-            <a href="shared_types.ts.html" class="button">View Source</a>
-            <span>
-                <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line43">line 43</a>
-            </span>
-        </p>
-    
-</dl>
-
-
-
-
-
-</div>
+    <h5 class="h5-types">Type:</h5>
+    <ul>
+        <li>
             
-            </div>
-        </div>
+<span class="param-type">function</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
     
 
     
@@ -410,25 +382,20 @@
 
 
 
-            </div>
-            
-            <footer class="footer">
-                <div class="content has-text-centered">
-                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.11</a></p>
-                    <p class="sidebar-created-by">
-                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
-                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
-                    </p>
-                </div>
-            </footer>
-            
-        </div>
-        <div id="side-nav" class="side-nav">
-        </div>
-    </div>
-<script src="scripts/app.min.js"></script>
-<script>PR.prettyPrint();</script>
-<script src="scripts/linenumber.js"> </script>
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 4.0.2</a> on Sat Mar 11 2023 01:16:54 GMT+0800 (Philippine Standard Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
 
 
 </body>
