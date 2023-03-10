@@ -39,9 +39,18 @@ const trackRemoveFromCart = (tracker: SnowplowBrowserTracker) => {
   };
 };
 
+/**
+ * @category Snowplow
+ * @description Tracks a transaction event
+ * @function trackTransaction
+ *
+ * @param {tracker} tracker Snowplow tracker instance
+ * @returns {void} A function that tracks a transaction event
+ *
+ */
 const trackTransaction = (tracker: SnowplowBrowserTracker) => {
   return {
-    trackTransaction(transaction: TransactionEvent) {
+    trackTransaction(transaction: TransactionEvent): void {
       // TODO: Add setUserId implementation
       tracker("addTrans", {
         orderId: transaction.id,
