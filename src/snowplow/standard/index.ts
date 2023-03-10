@@ -95,7 +95,6 @@ const record = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput) =>
  *
  * @see {@link https://docs.snowplow.io/docs/collecting-data/collecting-from-own-applications/javascript-trackers/javascript-tracker/javascript-tracker-v3/tracking-events/ Snowplow v3 documentation}
  * @param {SnowplowTrackerInput} input Input object for the Snowplow tracker
- * @param {SnowplowTrackerInput} input Input object for standard Snowplow
  * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event
  * @param {SnowplowTrackerInput.collector} input.collector A snowplow collector url
  * @param {SnowplowTrackerInput.event} input.event The event that the tracker is configured for
