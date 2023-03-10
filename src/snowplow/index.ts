@@ -1,28 +1,47 @@
-import { SnowplowTrackerInput } from "/src/shared/types";
+import { SnowplowTracker, SnowplowTrackerInput } from "/src/shared/types";
 
-const createLegacySnowplowTracker = (input: SnowplowTrackerInput) => {
-  return {
-    legacy: async () => {
-      const { default: legacy } = await import("/src/snowplow/legacy");
-      return legacy(input);
-    },
-  };
+/**
+ * @description  Creates a Snowplow tracker instance using the legacy sp.js
+ * javascript tracker. Commonly known in the Snowplow docs as "v2"
+ *
+ * @see {@link https://docs.snowplow.io/docs/collecting-data/collecting-from-own-applications/javascript-trackers/javascript-tracker/javascript-tracker-v2/tracking-specific-events/}
+ *
+ * @param {SnowplowTrackerInput} input Input object for the Snowplow tracker
+ * @returns {Promise<SnowplowTracker>} Snowplow tracker
+ *
+ */
+
+const createLegacySnowplowTracker = async (input: SnowplowTrackerInput): Promise<SnowplowTracker> => {
+  const { default: legacy } = await import("/src/snowplow/legacy");
+  return legacy(input);
 };
 
-const createStandardSnowplowTracker = (input: SnowplowTrackerInput) => {
-  return {
-    standard: async () => {
-      const { default: standard } = await import("/src/snowplow/standard");
-      return standard(input);
-    },
-  };
+/**
+ * @description  Creates a Snowplow tracker instance using the standard and supported cnna.js
+ * javascript tracker. Commonly known in the Snowplow docs as "v3"
+ *
+ * @see {@link https://docs.snowplow.io/docs/collecting-data/collecting-from-own-applications/javascript-trackers/javascript-tracker/javascript-tracker-v3/tracking-events/}
+ * @param {SnowplowTrackerInput} input Input object for the Snowplow tracker
+ * @returns {Promise<SnowplowTracker>} Snowplow tracker
+ * @see
+ */
+
+const createStandardSnowplowTracker = async (input: SnowplowTrackerInput): Promise<SnowplowTracker> => {
+  const { default: standard } = await import("/src/snowplow/standard");
+  return standard(input);
 };
 
-const createSnowplowTracker = (input: SnowplowTrackerInput) => {
-  return {
-    ...createLegacySnowplowTracker(input),
-    ...createStandardSnowplowTracker(input),
-  };
+const createSnowplowTracker = async (input: SnowplowTrackerInput): Promise<SnowplowTracker> => {
+  switch (input.version) {
+    case "1":
+    case "legacy":
+      return await createLegacySnowplowTracker(input);
+    case "2":
+    case "standard":
+      return await createStandardSnowplowTracker(input);
+    default:
+      return await createLegacySnowplowTracker(input);
+  }
 };
 
 export default createSnowplowTracker;
