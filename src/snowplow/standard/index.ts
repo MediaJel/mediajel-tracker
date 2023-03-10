@@ -88,6 +88,7 @@ const record = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput) =>
 };
 
 /**
+ * @category Snowplow
  * @description Function factory that creates a Snowplow Standard tracker instance.
  * The methods included in the tracker are specific to the Snowplow Standard tracker
  * also known as "v3" in the snowplow docs

@@ -31,7 +31,7 @@ export interface SnowplowTrackerInput {
 }
 
 /**
- * Methods that represents a snowplow tracker
+ * Method interfaces that represents a snowplow tracker
  */
 export interface SnowplowTracker {
   /**

@@ -2,10 +2,9 @@ import { SnowplowTracker, SnowplowTrackerInput } from "/src/shared/types";
 import createSnowplowLegacySnowplowTracker from "/src/snowplow/legacy";
 
 /**
+ * @category Snowplow
  * @description  Imports the Snowplow tracker instance using the legacy
  * javascript tracker. This is dynamically imported to reduce the bundle size of the tag.
- *
- * @see {@link createSnowplowLegacySnowplowTracker}
  *
  * @param {SnowplowTrackerInput} input Input object for the Snowplow tracker
  * @returns {Promise<SnowplowTracker>} Snowplow tracker
@@ -17,10 +16,10 @@ const importLegacySnowplowTracker = async (input: SnowplowTrackerInput): Promise
 };
 
 /**
+ * @category Snowplow
  * @description  Imports the Snowplow tracker instance using the standard and supported
  * javascript tracker. This is dynamically imported to reduce the bundle size of the tag.
  *
- * @see {@link createStandardSnowplowTracker}
  * @param {SnowplowTrackerInput} input Input object for the Snowplow tracker
  * @returns {Promise<SnowplowTracker>} Snowplow tracker
  *
@@ -31,8 +30,18 @@ const importStandardSnowplowTracker = async (input: SnowplowTrackerInput): Promi
 };
 
 /**
+ *  @category Snowplow
  *  @description  Function factory that abstracts the version selection and
  *  returns the appropriate Snowplow tracker instance.
+ *
+ *  @example <caption> Creating a snowplow tracker </caption>
+ *    const tracker = await createSnowplowTracker({
+ *    appId: "my-app-id",
+ *    collector: "https://my-collector.com",
+ *    event: "transaction",
+ *    environment: "iheartjane",
+ *    version: "standard",
+ *  });
  *
  * @param {SnowplowTrackerInput} input  Input object for the Snowplow tracker
  * @returns {Promise<SnowplowTracker>} Snowplow tracker

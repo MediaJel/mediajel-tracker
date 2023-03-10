@@ -68,7 +68,7 @@
             
             <nav>
                 
-                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Interfaces</h3><ul><li><a href="SnowplowInitInput.html">SnowplowInitInput</a></li><li><a href="SnowplowTracker.html">SnowplowTracker</a></li><li><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></li></ul><h3>Global</h3><ul><li><a href="global.html#createSnowplowLegacyTracker">createSnowplowLegacyTracker</a></li><li><a href="global.html#createSnowplowStandardTracker">createSnowplowStandardTracker</a></li><li><a href="global.html#createSnowplowTracker">createSnowplowTracker</a></li><li><a href="global.html#fetchSource">fetchSource</a></li><li><a href="global.html#importLegacySnowplowTracker">importLegacySnowplowTracker</a></li><li><a href="global.html#importStandardSnowplowTracker">importStandardSnowplowTracker</a></li><li><a href="global.html#liquidm">liquidm</a></li><li><a href="global.html#squareTracker">squareTracker</a></li></ul></div>
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Interfaces</h3><ul><li><a href="SnowplowInitInput.html">SnowplowInitInput</a></li><li><a href="SnowplowTracker.html">SnowplowTracker</a></li><li><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetchSource">fetchSource</a></li><li><a href="global.html#liquidm">liquidm</a></li><li><a href="global.html#squareTracker">squareTracker</a></li></ul></div><div class="category"><h2>Snowplow</h2><h3>Global</h3><ul><li><a href="global.html#createSnowplowLegacyTracker">createSnowplowLegacyTracker</a></li><li><a href="global.html#createSnowplowStandardTracker">createSnowplowStandardTracker</a></li><li><a href="global.html#createSnowplowTracker">createSnowplowTracker</a></li><li><a href="global.html#importLegacySnowplowTracker">importLegacySnowplowTracker</a></li><li><a href="global.html#importStandardSnowplowTracker">importStandardSnowplowTracker</a></li></ul></div>
                 
             </nav>
         </div>
@@ -89,10 +89,9 @@
 import createSnowplowLegacySnowplowTracker from "/src/snowplow/legacy";
 
 /**
+ * @category Snowplow
  * @description  Imports the Snowplow tracker instance using the legacy
  * javascript tracker. This is dynamically imported to reduce the bundle size of the tag.
- *
- * @see {@link createSnowplowLegacySnowplowTracker}
  *
  * @param {SnowplowTrackerInput} input Input object for the Snowplow tracker
  * @returns {Promise&lt;SnowplowTracker>} Snowplow tracker
@@ -104,10 +103,10 @@ const importLegacySnowplowTracker = async (input: SnowplowTrackerInput): Promise
 };
 
 /**
+ * @category Snowplow
  * @description  Imports the Snowplow tracker instance using the standard and supported
  * javascript tracker. This is dynamically imported to reduce the bundle size of the tag.
  *
- * @see {@link createStandardSnowplowTracker}
  * @param {SnowplowTrackerInput} input Input object for the Snowplow tracker
  * @returns {Promise&lt;SnowplowTracker>} Snowplow tracker
  *
@@ -118,8 +117,18 @@ const importStandardSnowplowTracker = async (input: SnowplowTrackerInput): Promi
 };
 
 /**
+ *  @category Snowplow
  *  @description  Function factory that abstracts the version selection and
  *  returns the appropriate Snowplow tracker instance.
+ *
+ *  @example &lt;caption> Creating a snowplow tracker &lt;/caption>
+ *    const tracker = await createSnowplowTracker({
+ *    appId: "my-app-id",
+ *    collector: "https://my-collector.com",
+ *    event: "transaction",
+ *    environment: "iheartjane",
+ *    version: "standard",
+ *  });
  *
  * @param {SnowplowTrackerInput} input  Input object for the Snowplow tracker
  * @returns {Promise&lt;SnowplowTracker>} Snowplow tracker

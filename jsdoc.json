@@ -7,9 +7,9 @@
     "recurse": true
   },
   "tags": {
-    "allowUnknownTags": ["optional"]
+    "allowUnknownTags": true
   },
-  "plugins": ["node_modules/better-docs/typescript"],
+  "plugins": ["node_modules/better-docs/typescript", "node_modules/better-docs/category"],
   "source": {
     "include": ["./src"],
     "includePattern": "\\.(jsx|js|ts|tsx)$",

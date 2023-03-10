@@ -66,9 +66,11 @@ const record = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput) =>
 };
 
 /**
+ * @category Snowplow
  * @description Function factory that creates a Snowplow Legacy tracker instance.
  * The methods included in the tracker are specific to the Snowplow Legacy tracker
  * also known as "v2" in the snowplow docs
+ *
  *
  * @see {@link https://docs.snowplow.io/docs/collecting-data/collecting-from-own-applications/javascript-trackers/javascript-tracker/javascript-tracker-v2/tracking-specific-events/ Snowplow v2 documentation}
  * @param {SnowplowTrackerInput} input Input object for the Snowplow Legacy tracker
