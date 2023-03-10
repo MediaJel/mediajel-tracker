@@ -20,7 +20,7 @@ const importLegacySnowplowTracker = async (input: SnowplowTrackerInput): Promise
  * @description  Imports the Snowplow tracker instance using the standard and supported
  * javascript tracker. This is dynamically imported to reduce the bundle size of the tag.
  *
- * @param {SnowplowTrackerInput} input Input object for the Snowplow tracker
+ * @param {SnowplowTrackerInput} input Input object for standard Snowplow tracker
  * @returns {Promise<SnowplowTracker>} Snowplow tracker
  *
  */
