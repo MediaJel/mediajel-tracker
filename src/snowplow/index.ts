@@ -2,7 +2,8 @@ import { SnowplowTracker, SnowplowTrackerInput } from "/src/shared/types";
 
 /**
  * @description  Creates a Snowplow tracker instance using the legacy sp.js
- * javascript tracker. Commonly known in the Snowplow docs as "v2"
+ * javascript tracker. Commonly known in the Snowplow docs as "v2". This is dynamically
+ * imported to reduce the bundle size of the tag.
  *
  * @see {@link https://docs.snowplow.io/docs/collecting-data/collecting-from-own-applications/javascript-trackers/javascript-tracker/javascript-tracker-v2/tracking-specific-events/}
  *
@@ -18,7 +19,8 @@ const createLegacySnowplowTracker = async (input: SnowplowTrackerInput): Promise
 
 /**
  * @description  Creates a Snowplow tracker instance using the standard and supported cnna.js
- * javascript tracker. Commonly known in the Snowplow docs as "v3"
+ * javascript tracker. Commonly known in the Snowplow docs as "v3". This is dynamically imported
+ * to reduce the bundle size of the tag.
  *
  * @see {@link https://docs.snowplow.io/docs/collecting-data/collecting-from-own-applications/javascript-trackers/javascript-tracker/javascript-tracker-v3/tracking-events/}
  * @param {SnowplowTrackerInput} input Input object for the Snowplow tracker
@@ -30,6 +32,14 @@ const createStandardSnowplowTracker = async (input: SnowplowTrackerInput): Promi
   const { default: standard } = await import("/src/snowplow/standard");
   return standard(input);
 };
+
+/**
+ *  @description  Function factory that abstracts the version selection and
+ *  returns the appropriate Snowplow tracker instance.
+ *
+ * @param {SnowplowTrackerInput} input  Input object for the Snowplow tracker
+ * @returns {Promise<SnowplowTracker>} Snowplow tracker
+ */
 
 const createSnowplowTracker = async (input: SnowplowTrackerInput): Promise<SnowplowTracker> => {
   switch (input.version) {
