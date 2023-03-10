@@ -5,7 +5,15 @@ import { SnowplowTracker, SnowplowTrackerInput } from "/src/shared/types";
  * @description  Imports the Snowplow tracker instance using the legacy
  * javascript tracker. This is dynamically imported to reduce the bundle size of the tag.
  *
- * @param {SnowplowTrackerInput} input Input object for the Snowplow tracker
+ * @example <caption> Creating a snowplow Legacy tracker</caption>
+ * const legacyTracker = await importLegacySnowplowTracker({
+ *   appId: "my-app-id",
+ *   collector: "https://my-collector.com",
+ *   event: "transaction",
+ *   environment: "iheartjane",
+ *   version: "legacy",
+ * });
+ *
  * @param {SnowplowTrackerInput} input Input object for standard Snowplow
  * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event
  * @param {SnowplowTrackerInput.collector} input.collector A snowplow collector url
@@ -24,6 +32,15 @@ const importLegacySnowplowTracker = async (input: SnowplowTrackerInput): Promise
  * @category Snowplow
  * @description  Imports the Snowplow tracker instance using the standard and supported
  * javascript tracker. This is dynamically imported to reduce the bundle size of the tag.
+ *
+ * @example <caption> Creating a snowplow Standard tracker</caption>
+ * const standardTracker = await importStandardSnowplowTracker({
+ *   appId: "my-app-id",
+ *   collector: "https://my-collector.com",
+ *   event: "transaction",
+ *   environment: "iheartjane",
+ *   version: "standard",
+ * });
  *
  * @param {SnowplowTrackerInput} input Input object for standard Snowplow
  * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event
@@ -44,8 +61,8 @@ const importStandardSnowplowTracker = async (input: SnowplowTrackerInput): Promi
  *  @description  Function factory that abstracts the version selection and
  *  returns the appropriate Snowplow tracker instance.
  *
- *  @example <caption> Creating a snowplow tracker </caption>
- *    const tracker = await createSnowplowTracker({
+ *  @example <caption> Creating a snowplow tracker. The correct version is inferred from the "version" parameter passed in </caption>
+ *  const tracker = await createSnowplowTracker({
  *    appId: "my-app-id",
  *    collector: "https://my-collector.com",
  *    event: "transaction",

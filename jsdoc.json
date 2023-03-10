@@ -1,6 +1,6 @@
 {
   "opts": {
-    "template": "./node_modules/docdash",
+    "template": "./node_modules/better-docs",
     "encoding": "utf8",
     "readme": "./README.md",
     "destination": "docs/",
@@ -14,6 +14,7 @@
     "includePattern": "\\.(jsx|js|ts|tsx)$",
     "excludePattern": "(node_modules/|docs)"
   },
+  "plugins": ["node_modules/better-docs/typescript", "node_modules/better-docs/category"],
   "docdash": {
     "static": true,
     "sort": true,
@@ -28,6 +29,19 @@
         "target": "_blank",
         "class": "menu-item"
       }
+    }
+  },
+  "templates": {
+    "search": true,
+    "better-docs": {
+      "name": "Mediajel Tracker",
+      "title": "Mediajel Tracker",
+      "navLinks": [
+        {
+          "label": "Mediajel",
+          "href": "https://mediajel.com"
+        }
+      ]
     }
   }
 }
