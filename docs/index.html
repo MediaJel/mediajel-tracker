@@ -66,7 +66,7 @@
             
             <nav>
                 
-                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Global</h3><ul><li><a href="global.html#liquidm">liquidm</a></li></ul></div>
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Interfaces</h3><ul><li><a href="SnowplowInitInput.html">SnowplowInitInput</a></li><li><a href="SnowplowTracker.html">SnowplowTracker</a></li><li><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></li></ul><h3>Global</h3><ul><li><a href="global.html#createSnowplowLegacyTracker">createSnowplowLegacyTracker</a></li><li><a href="global.html#createSnowplowStandardTracker">createSnowplowStandardTracker</a></li><li><a href="global.html#createSnowplowTracker">createSnowplowTracker</a></li><li><a href="global.html#fetchSource">fetchSource</a></li><li><a href="global.html#importLegacySnowplowTracker">importLegacySnowplowTracker</a></li><li><a href="global.html#importStandardSnowplowTracker">importStandardSnowplowTracker</a></li><li><a href="global.html#liquidm">liquidm</a></li><li><a href="global.html#squareTracker">squareTracker</a></li></ul></div>
                 
             </nav>
         </div>
@@ -114,35 +114,40 @@
 <h2>Usage</h2>
 <p>Import this script tag to the header/footer of a site. Append the <code>APP_ID_HERE</code> argument to contain the app id you would use for your site/app.
 NOTE: CI/CD pipeline not yet in place for deployment.</p>
+<h3>Impressions tag</h3>
+<p>Impressions tag we serve to our DSPs</p>
+<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://tags.cnna.io/?appId=LiquidM&event=impression&environment=liquidm&advertiserId={CUSTOMER_ID}&insertionOrder={CAMPAIGN_ID}&lineItemId=LiquidM_Main&creativeId={AD_NAME}&publisherId={PUBLISHER_ID}&publisherName={PUBLISHER_NAME}&siteId={APP_DOMAIN}&siteName={SITE_NAME}&liquidmAppId={APP_STOREURL}&appName={APP_NAME}&clickId={CLICK_ID}&GAID={GAID}&GAID_MD5={GAID_MD5}&GAID_SHA1={GAID_SHA1}&IDFA={IDFA}&IDFA_MD5={IDFA_MD5}&IDFA_SHA1={IDFA_SHA1}&MAXMIND_CON_TYPE_NAME={MAXMIND_CON_TYPE_NAME}&MAXMIND_GEO_IDS={MAXMIND_GEO_IDS}&MAXMIND_ISP_IDS={MAXMIND_ISP_IDS}&quot;>&lt;/script>
+</code></pre>
 <h3>Production/Main</h3>
 <pre class="prettyprint source lang-javascript"><code>&lt;script src=&quot;https://tags.cnna.io/?appId=APP_ID_HERE&retailId=RETAIL_ID_HERE&environment=CART_PLATFORM_HERE&test=true&quot;>&lt;/script>
 </code></pre>
 <h3>Staging (for testing &amp; development)</h3>
 <pre class="prettyprint source lang-javascript"><code>&lt;script src=&quot;http://tags.mediajel.ninja/?appId=APP_ID_HERE&retailId=RETAIL_ID_HERE&environment=CART_PLATFORM_HERE&test=true&quot;>&lt;/script>
 </code></pre>
+<h3>Multiple Plugin Support</h3>
+<p>The universal tag supports the implementation of multiple plugins in 1 tag via a comma seperated list
+Please see the documentation below for the different plugins that are supported.</p>
+<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://tags.cnna.io/?appId=universal-tag-staging&plugin=googleAds,bingAds&conversionId=10963714894&conversionLabel=vdmmCNLemOADEM6G9Oso&tagId=187009645&environment=jane&quot;>&lt;/script>
+</code></pre>
 <h3>Google Ads (Plugin)</h3>
 <p><code>conversionId</code> is the Google Ads conversion ID, usually in the format <code>AW-XXXXXXXXXX</code></p>
 <p><code>conversionLabel</code> is the Google Ads conversion label, This is found in the Google Ads &quot;Conversions&quot; tab after you've created a conversion</p>
 <p><code>crossDomainSites</code> is a comma separated list of domains that you want to track cross domain conversions for. This is optional.</p>
 <p>This will also track transactions and send it to our snowplow collectors and google ads all in one tag.</p>
-<pre class="prettyprint source lang-javascript"><code>&lt;script
-  src=&quot;https://tags.cnna.io/?appId=APP_ID_HERE
+<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://tags.cnna.io/?appId=APP_ID_HERE
 &plugin=googleAds
 &conversionId=AW-11111111111
 &conversionLabel=CONVERSION_LABEL_HERE
 &environment=CART_PLATFORM_HERE
-&crossDomainSites=google.com,example.com&quot;
->&lt;/script>
+&crossDomainSites=google.com,example.com&quot;>&lt;/script>
 </code></pre>
 <h3>Bing Ads (Plugin)</h3>
 <p>This will also track transactions and send it to our snowplow collectors and bing ads all in one tag.</p>
 <p><code>tagId</code> is the Bing Ads tag ID, usually in the format <code>11111111</code></p>
-<pre class="prettyprint source lang-javascript"><code>&lt;script
-  src=&quot;https://tags.cnna.io/?appId=APP_ID_HERE
+<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://tags.cnna.io/?appId=APP_ID_HERE
 &plugin=bingAds
 &tagId=11111111
-&environment=CART_PLATFORM_HERE&quot;
->&lt;/script>
+&environment=CART_PLATFORM_HERE&quot;>&lt;/script>
 </code></pre>
 <h3>Arguments</h3>
 <h3><code>@REQUIRED | AppId={STRING}</code></h3>
@@ -219,7 +224,8 @@ yarn start
       </a>
     </td>
     </tr>
-</table></article>
+</table>
+````</article>
     </section>
 
 

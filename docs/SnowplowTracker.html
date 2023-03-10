@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,7 +5,7 @@
   
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title> v1/imports/impression/liquidm.ts</title>
+  <title> SnowplowTracker</title>
 
   <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -75,110 +73,339 @@
         <div class="core" id="main-content-wrapper">
             <div class="content">
                 <header class="page-title">
-                    <p>Source</p>
-                    <h1>v1/imports/impression/liquidm.ts</h1>
+                    <p>Interface</p>
+                    <h1>SnowplowTracker</h1>
                 </header>
                 
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>import { ImpressionsMacrosParams } from "../../../shared/types";
+        <h2>SnowplowTracker</h2>
+        
+    
+</header>
 
-/**
- * ! Note: Please do not change the order of the how the mjcx array is structured.
- * ! Doing so will break the SQL query that displays the Liquid M Macros with
- * ! the link clicks.
- *
- * @param {Partial&lt;ImpressionsMacrosParams>} args Required args for Liquid M
- */
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description">Methods that represents a snowplow tracker</div>
+        
 
-const liquidm = ({
-  advertiserId,
-  insertionOrder,
-  lineItemId,
-  creativeId,
-  publisherId,
-  publisherName,
-  siteId,
-  siteName,
-  liquidmAppId,
-  appName,
-  clickId,
-  GAID,
-  GAID_MD5,
-  GAID_SHA1,
-  IDFA,
-  IDFA_MD5,
-  IDFA_SHA1,
-  DSPIDENTIFIER,
-  DEVICEID,
-  MAXMIND_CON_TYPE_NAME,
-  MAXMIND_GEO_IDS,
-  MAXMIND_ISP_ID,
-}: Partial&lt;ImpressionsMacrosParams>): void => {
-  const unstruct = {
-    schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
-    data: {
-      advertiserId: advertiserId || "N/A",
-      insertionOrder: insertionOrder || "N/A",
-      lineItemId: lineItemId || "LiquidM_MAIN",
-      creativeId: creativeId || "N/A",
-      publisherId: publisherId || "N/A",
-      publisherName: publisherName || "N/A",
-      siteId: siteId || "N/A",
-      siteName: siteName || "N/A",
-      appId: liquidmAppId || "N/A",
-      appName: appName || "N/A",
-      clickId: clickId || "N/A",
-      maxmindConnectionType: MAXMIND_CON_TYPE_NAME || "N/A",
-      maxmindGeoIds: MAXMIND_GEO_IDS || "N/A",
-      maxmindIspId: MAXMIND_ISP_ID || "N/A",
-    },
-  };
+        
 
-  const mjcx = [];
 
-  const cCx = {
-    schema: "iglu:com.mediajel.contexts/client/jsonschema/1-0-0",
-    data: { clientId: "loggedinorg-lanchedby" },
-  };
+<dl class="details">
 
-  const cCx2 = {
-    schema: "iglu:com.mediajel.contexts/campaign/jsonschema/1-0-0",
-    data: { campaignOrderId: "LiquidM_campaign_orders" },
-  };
+    
 
-  const cCx3 = {
-    schema: "iglu:com.mediajel.contexts/identities/jsonschema/1-0-0",
-    data: {
-      DSP: "LiquidM",
-      GAID: GAID || "N/A",
-      GAID_MD5: GAID_MD5 || "N/A",
-      GAID_SHA1: GAID_SHA1 || "N/A",
-      IDFA: IDFA || "N/A",
-      IDFA_MD5: IDFA_MD5 || "N/A",
-      IDFA_SHA1: IDFA_SHA1 || "N/A",
-      DSPIDENTIFIER: DSPIDENTIFIER || "N/A",
-      DEVICEID: DEVICEID || "N/A",
-    },
-  };
+    
 
-  mjcx.push(cCx);
-  mjcx.push(cCx2);
-  mjcx.push(cCx3);
+    
 
-  window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
+    
 
-  window.tracker("enableLinkClickTracking", null, false, false, [unstruct, ...mjcx]); // Do not change the order of the array
-};
+    
 
-export default liquidm;
-</code></pre>
-        </article>
-    </section>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="shared_types.ts.html" class="button">View Source</a>
+            <span>
+                <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line39">line 39</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+        
+    
+    </div>
+    
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <div class='vertical-section'>
+            <h1>Members</h1>
+            <div class="members">
+            
+                <div class="member">
+
+    <span class="method-parameter is-pulled-right">
+        <label>Type:</label>
+        
+<code class="param-type">function</code>
+
+
+    </span>
+
+<h4 class="name" id="trackAddToCart">
+    <a class="href-link" href="#trackAddToCart">#</a>
+    
+    <span class="code-name">
+        trackAddToCart
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    Tracks an add to cart event
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="shared_types.ts.html" class="button">View Source</a>
+            <span>
+                <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line49">line 49</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+    <span class="method-parameter is-pulled-right">
+        <label>Type:</label>
+        
+<code class="param-type">function</code>
+
+
+    </span>
+
+<h4 class="name" id="trackRemoveFromCart">
+    <a class="href-link" href="#trackRemoveFromCart">#</a>
+    
+    <span class="code-name">
+        trackRemoveFromCart
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    Tracks a remove from cart event
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="shared_types.ts.html" class="button">View Source</a>
+            <span>
+                <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line55">line 55</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+    <span class="method-parameter is-pulled-right">
+        <label>Type:</label>
+        
+<code class="param-type">function</code>
+
+
+    </span>
+
+<h4 class="name" id="trackTransaction">
+    <a class="href-link" href="#trackTransaction">#</a>
+    
+    <span class="code-name">
+        trackTransaction
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    Tracks a transaction event
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="shared_types.ts.html" class="button">View Source</a>
+            <span>
+                <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line43">line 43</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
+            
+            </div>
+        </div>
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 

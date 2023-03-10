@@ -1,0 +1,316 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> shared/types.ts</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Interfaces</h3><ul><li><a href="SnowplowInitInput.html">SnowplowInitInput</a></li><li><a href="SnowplowTracker.html">SnowplowTracker</a></li><li><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></li></ul><h3>Global</h3><ul><li><a href="global.html#createSnowplowLegacyTracker">createSnowplowLegacyTracker</a></li><li><a href="global.html#createSnowplowStandardTracker">createSnowplowStandardTracker</a></li><li><a href="global.html#createSnowplowTracker">createSnowplowTracker</a></li><li><a href="global.html#fetchSource">fetchSource</a></li><li><a href="global.html#importLegacySnowplowTracker">importLegacySnowplowTracker</a></li><li><a href="global.html#importStandardSnowplowTracker">importStandardSnowplowTracker</a></li><li><a href="global.html#liquidm">liquidm</a></li><li><a href="global.html#squareTracker">squareTracker</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Source</p>
+                    <h1>shared/types.ts</h1>
+                </header>
+                
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @description General function to represent the snowplow tracker that gets imported
+ * to the window
+ */
+export type SnowplowBrowserTracker = (...args: any[]) => void;
+
+/**
+ * @description The input for the snowplow function factories
+ */
+export interface SnowplowTrackerInput {
+  /**
+   * The unique identifier for the client that is sending the event
+   */
+  appId: string;
+  /**
+   * A snowplow collector url
+   */
+  collector: string;
+  /**
+   * The event that the tracker
+   */
+  event: "impression" | "transaction" | "signup";
+  /**
+   * The environment template selected
+   */
+  environment: string;
+  /**
+   * The version of the tracker
+   */
+  version: string;
+}
+
+/**
+ * @description Methods that represents a snowplow tracker
+ */
+export interface SnowplowTracker {
+  /**
+   * @description Tracks a transaction event
+   * @param transaction The transaction that is being tracked
+   */
+  trackTransaction: (transaction: TransactionEvent) => void;
+  /**
+   * @description Tracks an add to cart event
+   * @param item The item that is being added to the cart
+   */
+  trackAddToCart: (item: CartEvent) => void;
+  /**
+   * @description Tracks a remove from cart event
+   * @param item The item that is being removed from the cart
+   */
+  trackRemoveFromCart: (item: CartEvent) => void;
+}
+
+/**
+ * @description The input for the snowplow `init` function
+ *
+ * @param appId The app id of the app that is sending the event
+ * @param collector The collector url
+ * @param event The event that is being sent
+ */
+export interface SnowplowInitInput {
+  /**
+   * The unique identifier for the client that is sending the event
+   */
+  appId: string;
+  /**
+   * A snowplow collector url
+   */
+  collector: string;
+  /**
+   * The event that the tracker is configured for
+   */
+  event: string;
+}
+
+export interface CartEvent {
+  sku: string;
+  name: string;
+  category: string;
+  unitPrice: number;
+  quantity: number;
+  currency: string;
+  userId?: string;
+}
+
+export interface TransactionCartItem extends CartEvent {
+  orderId: string;
+}
+
+export interface TransactionEvent {
+  id: string;
+  total: number;
+  tax: number;
+  shipping: number;
+  city: string;
+  state: string;
+  country: string;
+  currency: string;
+  userId?: string;
+  items: TransactionCartItem[];
+}
+
+export interface EnvironmentEvents {
+  addToCartEvent: (cartData: CartEvent) => void;
+  removeFromCartEvent: (cartData: CartEvent) => void;
+  transactionEvent: (transactionData: TransactionEvent) => void;
+}
+
+// Data structure of the tag after parsing
+export type TransactionParams = {
+  environment: string;
+  retailId: string;
+};
+
+export type SignupParams = {
+  uuid: string;
+  firstName: string;
+  lastName: string;
+  gender: string;
+  emailAddress: string;
+  hashedEmailAddress: string;
+  address: string;
+  city: string;
+  state: string;
+  phoneNumber: string;
+  advertiser: string;
+};
+
+export type SnowplowParams = {
+  appId?: string;
+  mediajelAppId?: string;
+  environment: string;
+  event: "impression" | "transaction" | "signup";
+  test: string;
+  version: string;
+};
+
+export type SnowplowPluginParams = {
+  debugger: string;
+};
+
+export type PluginParams = {
+  plugin?: "googleAds" | "bingAds";
+};
+
+export type GoogleAdsPluginParams = {
+  conversionId: string;
+  conversionLabel: string;
+  value?: number;
+  currency?: string;
+  transactionId?: string;
+  crossDomainSites?: string; // Must be a comma separated string (I.E. "www.example.com,www.example2.com")
+} &amp; Pick&lt;SnowplowParams, "environment">;
+
+export type BingAdsPluginParams = {
+  tagId: string;
+} &amp; Pick&lt;SnowplowParams, "environment">;
+
+export type ImpressionsMacrosParams = {
+  advertiserId: string;
+  insertionOrder: string;
+  lineItemId: string;
+  creativeId: string;
+  publisherId: string;
+  publisherName: string;
+  siteId: string;
+  siteName: string;
+  liquidmAppId: string;
+  appName: string;
+  clickId: string;
+  GAID: string;
+  GAID_MD5: string;
+  GAID_SHA1: string;
+  IDFA: string;
+  IDFA_MD5: string;
+  IDFA_SHA1: string;
+  DSPIDENTIFIER: string;
+  DEVICEID: string;
+  MAXMIND_CON_TYPE_NAME: string;
+  MAXMIND_GEO_IDS: string;
+  MAXMIND_ISP_ID: string;
+};
+
+export type LiquidmSegmentParams = {
+  segmentId: string;
+};
+
+export type QueryStringParams = Partial&lt;TransactionParams> &amp;
+  Partial&lt;SignupParams> &amp;
+  Partial&lt;SnowplowPluginParams> &amp;
+  Partial&lt;ImpressionsMacrosParams> &amp;
+  Partial&lt;PluginParams> &amp;
+  GoogleAdsPluginParams &amp;
+  BingAdsPluginParams &amp;
+  SnowplowParams &amp;
+  LiquidmSegmentParams;
+
+// Params available to the tag's query string
+export type QueryStringContext = QueryStringParams &amp; { collector: string };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.11</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+
+</body>
+</html>

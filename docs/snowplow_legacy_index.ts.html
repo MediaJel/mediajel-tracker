@@ -7,7 +7,7 @@
   
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title> v1/imports/impression/liquidm.ts</title>
+  <title> snowplow/legacy/index.ts</title>
 
   <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -76,7 +76,7 @@
             <div class="content">
                 <header class="page-title">
                     <p>Source</p>
-                    <h1>v1/imports/impression/liquidm.ts</h1>
+                    <h1>snowplow/legacy/index.ts</h1>
                 </header>
                 
 
@@ -85,97 +85,95 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import { ImpressionsMacrosParams } from "../../../shared/types";
+            <pre class="prettyprint source linenums"><code>import init from "/src/snowplow/legacy/init";
 
-/**
- * ! Note: Please do not change the order of the how the mjcx array is structured.
- * ! Doing so will break the SQL query that displays the Liquid M Macros with
- * ! the link clicks.
- *
- * @param {Partial&lt;ImpressionsMacrosParams>} args Required args for Liquid M
- */
+import {
+  CartEvent,
+  SnowplowBrowserTracker,
+  SnowplowTracker,
+  SnowplowTrackerInput,
+  TransactionEvent,
+} from "/src/shared/types";
 
-const liquidm = ({
-  advertiserId,
-  insertionOrder,
-  lineItemId,
-  creativeId,
-  publisherId,
-  publisherName,
-  siteId,
-  siteName,
-  liquidmAppId,
-  appName,
-  clickId,
-  GAID,
-  GAID_MD5,
-  GAID_SHA1,
-  IDFA,
-  IDFA_MD5,
-  IDFA_SHA1,
-  DSPIDENTIFIER,
-  DEVICEID,
-  MAXMIND_CON_TYPE_NAME,
-  MAXMIND_GEO_IDS,
-  MAXMIND_ISP_ID,
-}: Partial&lt;ImpressionsMacrosParams>): void => {
-  const unstruct = {
-    schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
-    data: {
-      advertiserId: advertiserId || "N/A",
-      insertionOrder: insertionOrder || "N/A",
-      lineItemId: lineItemId || "LiquidM_MAIN",
-      creativeId: creativeId || "N/A",
-      publisherId: publisherId || "N/A",
-      publisherName: publisherName || "N/A",
-      siteId: siteId || "N/A",
-      siteName: siteName || "N/A",
-      appId: liquidmAppId || "N/A",
-      appName: appName || "N/A",
-      clickId: clickId || "N/A",
-      maxmindConnectionType: MAXMIND_CON_TYPE_NAME || "N/A",
-      maxmindGeoIds: MAXMIND_GEO_IDS || "N/A",
-      maxmindIspId: MAXMIND_ISP_ID || "N/A",
+const trackAddToCart = (tracker: SnowplowBrowserTracker) => {
+  return {
+    trackAddToCart(item: CartEvent) {
+      // TODO: Add setUserId implementation
+      tracker("trackAddToCart", item.sku, item.name, item.category, item.unitPrice, item.quantity, item.currency);
     },
   };
-
-  const mjcx = [];
-
-  const cCx = {
-    schema: "iglu:com.mediajel.contexts/client/jsonschema/1-0-0",
-    data: { clientId: "loggedinorg-lanchedby" },
-  };
-
-  const cCx2 = {
-    schema: "iglu:com.mediajel.contexts/campaign/jsonschema/1-0-0",
-    data: { campaignOrderId: "LiquidM_campaign_orders" },
-  };
-
-  const cCx3 = {
-    schema: "iglu:com.mediajel.contexts/identities/jsonschema/1-0-0",
-    data: {
-      DSP: "LiquidM",
-      GAID: GAID || "N/A",
-      GAID_MD5: GAID_MD5 || "N/A",
-      GAID_SHA1: GAID_SHA1 || "N/A",
-      IDFA: IDFA || "N/A",
-      IDFA_MD5: IDFA_MD5 || "N/A",
-      IDFA_SHA1: IDFA_SHA1 || "N/A",
-      DSPIDENTIFIER: DSPIDENTIFIER || "N/A",
-      DEVICEID: DEVICEID || "N/A",
-    },
-  };
-
-  mjcx.push(cCx);
-  mjcx.push(cCx2);
-  mjcx.push(cCx3);
-
-  window.tracker("trackSelfDescribingEvent", unstruct, mjcx);
-
-  window.tracker("enableLinkClickTracking", null, false, false, [unstruct, ...mjcx]); // Do not change the order of the array
 };
 
-export default liquidm;
+const trackRemoveFromCart = (tracker: SnowplowBrowserTracker) => {
+  return {
+    trackRemoveFromCart(item: CartEvent) {
+      // TODO: Add setUserId implementation
+      tracker("trackRemoveFromCart", item.sku, item.name, item.category, item.unitPrice, item.quantity, item.currency);
+    },
+  };
+};
+
+const trackTransaction = (tracker: SnowplowBrowserTracker) => {
+  return {
+    trackTransaction(transaction: TransactionEvent) {
+      // TODO: Add setUserId implementation
+      tracker(
+        "addTrans",
+        transaction.id,
+        "N/A",
+        transaction.total,
+        transaction.tax,
+        transaction.shipping,
+        transaction.city,
+        transaction.state,
+        transaction.country,
+        transaction.currency
+      );
+      transaction.items.forEach((item) => {
+        const { name, category, currency, orderId, quantity, sku, unitPrice } = item;
+        tracker("addItem", orderId, sku, name, category, unitPrice, quantity, currency);
+      });
+
+      tracker("trackTrans");
+    },
+  };
+};
+
+const record = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput) => {
+  const schema = {
+    schema: "iglu:com.mediajel.events/record/jsonschema/1-0-2",
+    data: {
+      appId: input.appId,
+      cart: input.environment,
+      version: input.version,
+    },
+  };
+
+  tracker("trackSelfDescribingEvent", schema);
+};
+
+/**
+ * @description Function factory that creates a Snowplow Legacy tracker instance.
+ * The methods included in the tracker are specific to the Snowplow Legacy tracker
+ * also known as "v2" in the snowplow docs
+ *
+ * @see {@link https://docs.snowplow.io/docs/collecting-data/collecting-from-own-applications/javascript-trackers/javascript-tracker/javascript-tracker-v2/tracking-specific-events/ Snowplow v2 documentation}
+ * @param {SnowplowTrackerInput} input Input object for the Snowplow Legacy tracker
+ * @returns {SnowplowTracker} Snowplow Legacy tracker
+ *
+ */
+const createSnowplowLegacyTracker = (input: SnowplowTrackerInput): SnowplowTracker => {
+  const tracker = init(input);
+  record(tracker, input);
+
+  return {
+    ...trackTransaction(tracker),
+    ...trackAddToCart(tracker),
+    ...trackRemoveFromCart(tracker),
+  };
+};
+
+export default createSnowplowLegacyTracker;
 </code></pre>
         </article>
     </section>

@@ -6,42 +6,63 @@ export type SnowplowBrowserTracker = (...args: any[]) => void;
 
 /**
  * @description The input for the snowplow function factories
- * @param appId The unique identifier for the client that is sending the event
- * @param collector The collector url
- * @param event The event that is being sent
- * @param environment The environment template
- * @param version The version of the tracker
  */
 export interface SnowplowTrackerInput {
+  /**
+   * The unique identifier for the client that is sending the event
+   */
   appId: string;
+  /**
+   * A snowplow collector url
+   */
   collector: string;
-  event: string;
+  /**
+   * The event that the tracker
+   */
+  event: "impression" | "transaction" | "signup";
+  /**
+   * The environment template selected
+   */
   environment: string;
+  /**
+   * The version of the tracker
+   */
   version: string;
 }
 
 /**
- * @description Methods that represents a snowplow tracker
- * @param trackTransaction Tracks a transaction event
- * @param trackAddToCart Tracks an add to cart event
- * @param trackRemoveFromCart Tracks a remove from cart event
+ * Methods that represents a snowplow tracker
  */
 export interface SnowplowTracker {
+  /**
+   * Tracks a transaction event
+   */
   trackTransaction: (transaction: TransactionEvent) => void;
+  /**
+   * Tracks an add to cart event
+   */
   trackAddToCart: (item: CartEvent) => void;
+  /**
+   * Tracks a remove from cart event
+   */
   trackRemoveFromCart: (item: CartEvent) => void;
 }
 
 /**
- * @description The input for the snowplow `init` function
- *
- * @param appId The app id of the app that is sending the event
- * @param collector The collector url
- * @param event The event that is being sent
+ * The input for the snowplow `init` function
  */
 export interface SnowplowInitInput {
+  /**
+   * The unique identifier for the client that is sending the event
+   */
   appId: string;
+  /**
+   * A snowplow collector url
+   */
   collector: string;
+  /**
+   * The event that the tracker is configured for
+   */
   event: string;
 }
 
@@ -102,7 +123,7 @@ export type SnowplowParams = {
   appId?: string;
   mediajelAppId?: string;
   environment: string;
-  event: "impression" | "transaction" | "signup" | "googleAds";
+  event: "impression" | "transaction" | "signup";
   test: string;
   version: string;
 };

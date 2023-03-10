@@ -68,7 +68,7 @@
             
             <nav>
                 
-                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Global</h3><ul><li><a href="global.html#liquidm">liquidm</a></li></ul></div>
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Interfaces</h3><ul><li><a href="SnowplowInitInput.html">SnowplowInitInput</a></li><li><a href="SnowplowTracker.html">SnowplowTracker</a></li><li><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></li></ul><h3>Global</h3><ul><li><a href="global.html#createSnowplowLegacyTracker">createSnowplowLegacyTracker</a></li><li><a href="global.html#createSnowplowStandardTracker">createSnowplowStandardTracker</a></li><li><a href="global.html#createSnowplowTracker">createSnowplowTracker</a></li><li><a href="global.html#fetchSource">fetchSource</a></li><li><a href="global.html#importLegacySnowplowTracker">importLegacySnowplowTracker</a></li><li><a href="global.html#importStandardSnowplowTracker">importStandardSnowplowTracker</a></li><li><a href="global.html#liquidm">liquidm</a></li><li><a href="global.html#squareTracker">squareTracker</a></li></ul></div>
                 
             </nav>
         </div>
@@ -85,7 +85,7 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>import { LiquidmMacrosParams } from "../../../shared/types";
+            <pre class="prettyprint source linenums"><code>import { ImpressionsMacrosParams } from "../../../shared/types";
 
 /**
  * ! Note: Please do not change the order of the how the mjcx array is structured.
@@ -115,7 +115,10 @@ const liquidm = ({
   IDFA_SHA1,
   DSPIDENTIFIER,
   DEVICEID,
-}: Partial&lt;LiquidmMacrosParams>): void => {
+  MAXMIND_CON_TYPE_NAME,
+  MAXMIND_GEO_IDS,
+  MAXMIND_ISP_ID,
+}: Partial&lt;ImpressionsMacrosParams>): void => {
   const unstruct = {
     schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
     data: {
@@ -130,6 +133,9 @@ const liquidm = ({
       appId: liquidmAppId || "N/A",
       appName: appName || "N/A",
       clickId: clickId || "N/A",
+      maxmindConnectionType: MAXMIND_CON_TYPE_NAME || "N/A",
+      maxmindGeoIds: MAXMIND_GEO_IDS || "N/A",
+      maxmindIspId: MAXMIND_ISP_ID || "N/A",
     },
   };
 
