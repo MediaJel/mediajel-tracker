@@ -72,7 +72,7 @@ const trackTransaction = (tracker: SnowplowBrowserTracker) => {
   };
 };
 
-const recordWith = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput) => {
+const record = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput) => {
   const schema = {
     event: {
       schema: "iglu:com.mediajel.events/record/jsonschema/1-0-2",
@@ -87,9 +87,19 @@ const recordWith = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput
   tracker("trackSelfDescribingEvent", schema);
 };
 
-const createSnowplowStandardTracker = (context: SnowplowTrackerInput): SnowplowTracker => {
-  const tracker = init(context);
-  recordWith(tracker, context);
+/**
+ * @description Function factory that creates a Snowplow Standard tracker instance.
+ * The methods included in the tracker are specific to the Snowplow Standard tracker
+ * also known as "v3" in the snowplow docs
+ *
+ * @see {@link https://docs.snowplow.io/docs/collecting-data/collecting-from-own-applications/javascript-trackers/javascript-tracker/javascript-tracker-v3/tracking-events/ Snowplow v3 documentation}
+ * @param {SnowplowTrackerInput} input Input object for the Snowplow tracker
+ * @returns {SnowplowTracker} Snowplow tracker instance
+ *
+ */
+const createSnowplowStandardTracker = (input: SnowplowTrackerInput): SnowplowTracker => {
+  const tracker = init(input);
+  record(tracker, input);
   return {
     ...trackTransaction(tracker),
     ...trackAddToCart(tracker),

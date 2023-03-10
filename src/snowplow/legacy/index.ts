@@ -65,9 +65,19 @@ const record = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput) =>
   tracker("trackSelfDescribingEvent", schema);
 };
 
-const createSnowplowLegacyTracker = (context: SnowplowTrackerInput): SnowplowTracker => {
-  const tracker = init(context);
-  record(tracker, context);
+/**
+ * @description Function factory that creates a Snowplow Legacy tracker instance.
+ * The methods included in the tracker are specific to the Snowplow Legacy tracker
+ * also known as "v2" in the snowplow docs
+ *
+ * @see {@link https://docs.snowplow.io/docs/collecting-data/collecting-from-own-applications/javascript-trackers/javascript-tracker/javascript-tracker-v2/tracking-specific-events/ Snowplow v2 documentation}
+ * @param {SnowplowTrackerInput} input Input object for the Snowplow Legacy tracker
+ * @returns {SnowplowTracker} Snowplow Legacy tracker
+ *
+ */
+const createSnowplowLegacyTracker = (input: SnowplowTrackerInput): SnowplowTracker => {
+  const tracker = init(input);
+  record(tracker, input);
 
   return {
     ...trackTransaction(tracker),
