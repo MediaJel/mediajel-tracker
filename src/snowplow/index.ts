@@ -1,5 +1,4 @@
 import { SnowplowTracker, SnowplowTrackerInput } from "/src/shared/types";
-import createSnowplowLegacySnowplowTracker from "/src/snowplow/legacy";
 
 /**
  * @category Snowplow
