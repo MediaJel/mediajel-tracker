@@ -4,30 +4,7 @@
     "encoding": "utf8",
     "readme": "./README.md",
     "destination": "docs/",
-    "recurse": true,
-    "theme_opts": {
-      "sections": [
-        "Modules",
-        "Classes",
-        "Externals",
-        "Events",
-        "Namespaces",
-        "Mixins",
-        "Tutorials",
-        "Interfaces",
-        "Global"
-      ],
-      "menu": [
-        {
-          "title": "Mediajel",
-          "link": "https://mediajel.com",
-          "target": "_blank"
-        }
-      ],
-      "default_theme": "dark",
-      "homepageTitle": "Mediajel Tracker",
-      "title": "Mediajel Tracker"
-    }
+    "recurse": true
   },
   "tags": {
     "allowUnknownTags": true
