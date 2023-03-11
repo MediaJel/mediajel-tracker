@@ -14,7 +14,8 @@
     "bootstrap-test-server": "rimraf dist && rimraf .parcel-cache && concurrently --kill-others \"parcel watch --port 1235 src/index.ts\" \"ts-node ./server/index.ts\" \"tsc --noEmit --watch\" \"parcel --no-cache ./public/index.test.html\" ",
     "test": "start-server-and-test bootstrap-test-server http://localhost:1234 cy:run",
     "prepare": "husky install",
-    "docs": "jsdoc -c jsdoc.json"
+    "docs": "jsdoc -c jsdoc.json",
+    "docs:serve": "jsdoc -c jsdoc.json && ts-node ./server/docs.ts "
   },
   "repository": {
     "type": "git",
