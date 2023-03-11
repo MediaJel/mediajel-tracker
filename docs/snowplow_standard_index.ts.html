@@ -85,7 +85,7 @@
             
             <nav>
                 
-                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Namespaces</h3><ul><li><a href="Snowplow.html">Snowplow</a></li><li><a href="Snowplow.Legacy.html">Legacy</a></li><li><a href="Snowplow.Standard.html">Standard</a></li></ul><h3>Classes</h3><ul><li><a href="Snowplow.Legacy.createSnowplowLegacyTracker.html">createSnowplowLegacyTracker</a></li><li><a href="Snowplow.Standard.createSnowplowStandardTracker.html">createSnowplowStandardTracker</a></li></ul><h3>Interfaces</h3><ul><li><a href="SnowplowInitInput.html">SnowplowInitInput</a></li><li><a href="SnowplowTracker.html">SnowplowTracker</a></li><li><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetchSource">fetchSource</a></li><li><a href="global.html#liquidm">liquidm</a></li><li><a href="global.html#squareTracker">squareTracker</a></li></ul></div>
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Namespaces</h3><ul><li><a href="Snowplow.html">Snowplow</a></li><li><a href="Snowplow.Legacy.html">Legacy</a></li><li><a href="Snowplow.Standard.html">Standard</a></li></ul><h3>Classes</h3><ul><li><a href="Snowplow.Legacy.createSnowplowLegacyTracker.html">createSnowplowLegacyTracker</a></li><li><a href="Snowplow.Standard.createSnowplowStandardTracker.html">createSnowplowStandardTracker</a></li></ul><h3>Interfaces</h3><ul><li><a href="SnowplowInitInput.html">SnowplowInitInput</a></li><li><a href="SnowplowTracker.html">SnowplowTracker</a></li><li><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetchSource">fetchSource</a></li><li><a href="global.html#liquidm">liquidm</a></li><li><a href="global.html#record">record</a></li><li><a href="global.html#squareTracker">squareTracker</a></li></ul></div>
                 
             </nav>
         </div>
@@ -104,6 +104,7 @@
         <article>
             <pre class="prettyprint source linenums"><code>import {
   CartEvent,
+  Event,
   SnowplowBrowserTracker,
   SnowplowTracker,
   SnowplowTrackerInput,
@@ -237,11 +238,11 @@ const record = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput) =>
  * });,
  * @see {@link https://docs.snowplow.io/docs/collecting-data/collecting-from-own-applications/javascript-trackers/javascript-tracker/javascript-tracker-v3/tracking-events/ Snowplow v3 documentation}
  * @param {SnowplowTrackerInput} input Input object for the Snowplow tracker
- * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event
- * @param {SnowplowTrackerInput.collector} input.collector A snowplow collector url
- * @param {SnowplowTrackerInput.event} input.event The event that the tracker is configured for
- * @param {SnowplowTrackerInput.environment} input.environment The environment template selected
- * @param {SnowplowTrackerInput.version} input.version The version of the tracker
+ * @param {string} input.appId The unique identifier for the client that is sending the event
+ * @param {string} input.collector A snowplow collector url
+ * @param {Event} input.event The event that the tracker is configured for
+ * @param {string} input.environment The environment template selected
+ * @param {string} input.version The version of the tracker
  * @returns {SnowplowTracker} Snowplow tracker instance
  */
 const createSnowplowStandardTracker = (input: SnowplowTrackerInput): SnowplowTracker => {

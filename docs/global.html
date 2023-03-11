@@ -83,7 +83,7 @@
             
             <nav>
                 
-                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Namespaces</h3><ul><li><a href="Snowplow.html">Snowplow</a></li><li><a href="Snowplow.Legacy.html">Legacy</a></li><li><a href="Snowplow.Standard.html">Standard</a></li></ul><h3>Classes</h3><ul><li><a href="Snowplow.Legacy.createSnowplowLegacyTracker.html">createSnowplowLegacyTracker</a></li><li><a href="Snowplow.Standard.createSnowplowStandardTracker.html">createSnowplowStandardTracker</a></li></ul><h3>Interfaces</h3><ul><li><a href="SnowplowInitInput.html">SnowplowInitInput</a></li><li><a href="SnowplowTracker.html">SnowplowTracker</a></li><li><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetchSource">fetchSource</a></li><li><a href="global.html#liquidm">liquidm</a></li><li><a href="global.html#squareTracker">squareTracker</a></li></ul></div>
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Namespaces</h3><ul><li><a href="Snowplow.html">Snowplow</a></li><li><a href="Snowplow.Legacy.html">Legacy</a></li><li><a href="Snowplow.Standard.html">Standard</a></li></ul><h3>Classes</h3><ul><li><a href="Snowplow.Legacy.createSnowplowLegacyTracker.html">createSnowplowLegacyTracker</a></li><li><a href="Snowplow.Standard.createSnowplowStandardTracker.html">createSnowplowStandardTracker</a></li></ul><h3>Interfaces</h3><ul><li><a href="SnowplowInitInput.html">SnowplowInitInput</a></li><li><a href="SnowplowTracker.html">SnowplowTracker</a></li><li><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetchSource">fetchSource</a></li><li><a href="global.html#liquidm">liquidm</a></li><li><a href="global.html#record">record</a></li><li><a href="global.html#squareTracker">squareTracker</a></li></ul></div>
                 
             </nav>
         </div>
@@ -409,6 +409,195 @@
 
 
     
+    <h4 class="name" id="record">
+        <a class="href-link" href="#record">#</a>
+        
+        <span class="code-name">
+            
+                record<span class="signature">(tracker, input)</span><span class="type-signature"></span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>tracker</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type"><a href="global.html#SnowplowBrowserTracker">SnowplowBrowserTracker</a></code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">A Snowplow Legacy tracker</td>
+</tr>
+
+
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>input</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type"><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">Input object for the Snowplow Legacy tracker</td>
+</tr>
+
+
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code></code></td>
+  
+
+  <td class="type">
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last"></td>
+</tr>
+
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="snowplow_legacy_index.ts.html" class="button">View Source</a>
+            <span>
+                <a href="snowplow_legacy_index.ts.html">snowplow/legacy/index.ts</a>, <a href="snowplow_legacy_index.ts.html#line63">line 63</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+            
+                <div class="member">
+
+
+    
     <h4 class="name" id="squareTracker">
         <a class="href-link" href="#squareTracker">#</a>
         
@@ -512,6 +701,89 @@ to the window object.
         <div class='vertical-section'>
             <h1>Type Definitions</h1>
             <div class="members">
+            
+                <div class="member">
+
+    <span class="method-parameter is-pulled-right">
+        <label>Type:</label>
+        
+<code class="param-type">"impression"</code>
+|
+
+<code class="param-type">"transaction"</code>
+|
+
+<code class="param-type">"signup"</code>
+
+
+    </span>
+
+<h4 class="name" id="Event">
+    <a class="href-link" href="#Event">#</a>
+    
+    <span class="code-name">
+        Event
+    </span>
+    
+</h4>
+
+
+
+
+<div class="description">
+    Enumerated event types for the tracker
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="shared_types.ts.html" class="button">View Source</a>
+            <span>
+                <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line39">line 39</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+</div>
             
                 <div class="member">
 

@@ -1,5 +1,6 @@
 import {
   CartEvent,
+  Event,
   SnowplowBrowserTracker,
   SnowplowTracker,
   SnowplowTrackerInput,
@@ -133,11 +134,11 @@ const record = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput) =>
  * });,
  * @see {@link https://docs.snowplow.io/docs/collecting-data/collecting-from-own-applications/javascript-trackers/javascript-tracker/javascript-tracker-v3/tracking-events/ Snowplow v3 documentation}
  * @param {SnowplowTrackerInput} input Input object for the Snowplow tracker
- * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event
- * @param {SnowplowTrackerInput.collector} input.collector A snowplow collector url
- * @param {SnowplowTrackerInput.event} input.event The event that the tracker is configured for
- * @param {SnowplowTrackerInput.environment} input.environment The environment template selected
- * @param {SnowplowTrackerInput.version} input.version The version of the tracker
+ * @param {string} input.appId The unique identifier for the client that is sending the event
+ * @param {string} input.collector A snowplow collector url
+ * @param {Event} input.event The event that the tracker is configured for
+ * @param {string} input.environment The environment template selected
+ * @param {string} input.version The version of the tracker
  * @returns {SnowplowTracker} Snowplow tracker instance
  */
 const createSnowplowStandardTracker = (input: SnowplowTrackerInput): SnowplowTracker => {

@@ -19,7 +19,7 @@ export interface SnowplowTrackerInput {
   /**
    * The event that the tracker
    */
-  event: "impression" | "transaction" | "signup";
+  event: Event;
   /**
    * The environment template selected
    */
@@ -29,6 +29,9 @@ export interface SnowplowTrackerInput {
    */
   version: string;
 }
+
+/** Enumerated event types for the tracker */
+export type Event = "impression" | "transaction" | "signup";
 
 /**
  * Method interfaces that represents a snowplow tracker
