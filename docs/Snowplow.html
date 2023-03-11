@@ -83,7 +83,7 @@
             
             <nav>
                 
-                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-Snowplow_Legacy.html">Snowplow/Legacy</a></li></ul><h3>Namespaces</h3><ul><li><a href="Snowplow.html">Snowplow</a></li><li><a href="Snowplow.Standard.html">Standard</a></li></ul><h3>Classes</h3><ul><li><a href="Snowplow.createSnowplowTracker.html">createSnowplowTracker</a></li><li><a href="Snowplow.Standard.createSnowplowStandardTracker.html">createSnowplowStandardTracker</a></li></ul><h3>Interfaces</h3><ul><li><a href="SnowplowInitInput.html">SnowplowInitInput</a></li><li><a href="SnowplowTracker.html">SnowplowTracker</a></li><li><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetchSource">fetchSource</a></li><li><a href="global.html#liquidm">liquidm</a></li><li><a href="global.html#squareTracker">squareTracker</a></li></ul></div>
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Namespaces</h3><ul><li><a href="Snowplow.html">Snowplow</a></li><li><a href="Snowplow.Legacy.html">Legacy</a></li><li><a href="Snowplow.Standard.html">Standard</a></li></ul><h3>Classes</h3><ul><li><a href="Snowplow.Legacy.createSnowplowLegacyTracker.html">createSnowplowLegacyTracker</a></li><li><a href="Snowplow.Standard.createSnowplowStandardTracker.html">createSnowplowStandardTracker</a></li></ul><h3>Interfaces</h3><ul><li><a href="SnowplowInitInput.html">SnowplowInitInput</a></li><li><a href="SnowplowTracker.html">SnowplowTracker</a></li><li><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetchSource">fetchSource</a></li><li><a href="global.html#liquidm">liquidm</a></li><li><a href="global.html#squareTracker">squareTracker</a></li></ul></div>
                 
             </nav>
         </div>
@@ -166,13 +166,6 @@
     
 
     
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="Snowplow.createSnowplowTracker.html">createSnowplowTracker</a></dt>
-            <dd></dd>
-        </dl>
-    
 
     
 
@@ -182,6 +175,9 @@
         <h3 class="subsection-title">Namespaces</h3>
 
         <dl>
+            <dt><a href="Snowplow.Legacy.html">Legacy</a></dt>
+            <dd></dd>
+        
             <dt><a href="Snowplow.Standard.html">Standard</a></dt>
             <dd></dd>
         </dl>
@@ -193,6 +189,319 @@
         <div class='vertical-section'>
             <h1>Methods</h1>
             <div class="members">
+            
+                <div class="member">
+
+
+    
+    <h4 class="name" id=".createSnowplowTracker">
+        <a class="href-link" href="#.createSnowplowTracker">#</a>
+        
+            
+                <span class='tag'>async</span>
+            
+                <span class='tag'>static</span>
+            
+        
+        <span class="code-name">
+            
+                createSnowplowTracker<span class="signature">(input)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="SnowplowTracker.html">SnowplowTracker</a>>}</span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Function factory that abstracts the version selection and
+ returns the appropriate Snowplow tracker instance.
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>input</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type"><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">Input object for standard Snowplow</td>
+</tr>
+
+  
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>appId</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.appId</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The unique identifier for the client that is sending the event</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>collector</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.collector</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">A snowplow collector url</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>event</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.event</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The event that the tracker is configured for</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>environment</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.environment</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The environment template selected</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>version</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.version</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The version of the tracker</td>
+</tr>
+
+  
+
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="snowplow_index.ts.html" class="button">View Source</a>
+            <span>
+                <a href="snowplow_index.ts.html">snowplow/index.ts</a>, <a href="snowplow_index.ts.html#line79">line 79</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    <div class='param-desc column is-7'>Snowplow Standard tracker</div>
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<code class="param-type">Promise.&lt;<a href="SnowplowTracker.html">SnowplowTracker</a>></code>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+    <h5>Example</h5>
+    
+        <p class="code-caption"> Creating a snowplow tracker. The correct version is inferred from the "version" parameter passed in </p>
+    
+    
+        <pre class="prettyprint"><code> const tracker = await createSnowplowTracker({
+   appId: "my-app-id",
+   collector: "https://my-collector.com",
+   event: "transaction",
+   environment: "iheartjane",
+   version: "standard",
+ });</code></pre>
+    
+
+
+</div>
             
                 <div class="member">
 

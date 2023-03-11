@@ -3,13 +3,24 @@ import {
   SnowplowBrowserTracker,
   SnowplowTracker,
   SnowplowTrackerInput,
+  TrackAddToCart,
+  TrackRemoveFromCart,
+  TrackTransaction,
   TransactionEvent,
 } from "/src/shared/types";
 import init from "/src/snowplow/legacy/init";
 
-/** @module Snowplow/Legacy */
+/** @namespace Snowplow.Legacy */
 
-const trackAddToCart = (tracker: SnowplowBrowserTracker) => {
+/**
+ * A curried function that returns a method to track an add to cart event with the Snowplow Legacy tracker
+ *
+ * @memberof Snowplow.Legacy
+ * @name createSnowplowLegacyTracker#setupTrackAddToCart
+ * @param {SnowplowBrowserTracker} tracker A Snowplow Legacy tracker
+ * @returns {TrackAddToCart} A method that tracks an add to cart event with the Snowplow Legacy tracker
+ */
+const setupTrackAddToCart = (tracker: SnowplowBrowserTracker): TrackAddToCart => {
   return {
     trackAddToCart(item: CartEvent) {
       // TODO: Add setUserId implementation
@@ -18,7 +29,15 @@ const trackAddToCart = (tracker: SnowplowBrowserTracker) => {
   };
 };
 
-const trackRemoveFromCart = (tracker: SnowplowBrowserTracker) => {
+/**
+ * A curried function that returns a method to track a remove from cart event with the Snowplow Legacy tracker
+ *
+ * @memberof Snowplow.Legacy
+ * @name createSnowplowLegacyTracker#setupTrackRemoveFromCart
+ * @param {SnowplowBrowserTracker} tracker A Snowplow Legacy tracker
+ * @returns {TrackRemoveFromCart} A method that tracks a remove from cart event with the Snowplow Legacy tracker
+ */
+const setupTrackRemoveFromCart = (tracker: SnowplowBrowserTracker): TrackRemoveFromCart => {
   return {
     trackRemoveFromCart(item: CartEvent) {
       // TODO: Add setUserId implementation
@@ -27,7 +46,15 @@ const trackRemoveFromCart = (tracker: SnowplowBrowserTracker) => {
   };
 };
 
-const trackTransaction = (tracker: SnowplowBrowserTracker) => {
+/**
+ * A curried function that returns a method to track a transaction event with the Snowplow Legacy tracker
+ *
+ * @memberof Snowplow.Legacy
+ * @name createSnowplowLegacyTracker#setupTrackTransaction
+ * @param {SnowplowBrowserTracker} tracker A Snowplow Legacy tracker
+ * @returns {TrackTransaction} A method that tracks a transaction event with the Snowplow Legacy tracker
+ */
+const setupTrackTransaction = (tracker: SnowplowBrowserTracker): TrackTransaction => {
   return {
     trackTransaction(transaction: TransactionEvent) {
       // TODO: Add setUserId implementation
@@ -71,7 +98,8 @@ const record = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput) =>
  * The methods included in the tracker are specific to the Snowplow Legacy tracker
  * also known as "v2" in the snowplow docs
  *
- *
+ * @class
+ * @memberof Snowplow.Legacy
  * @see {@link https://docs.snowplow.io/docs/collecting-data/collecting-from-own-applications/javascript-trackers/javascript-tracker/javascript-tracker-v2/tracking-specific-events/ Snowplow v2 documentation}
  * @param {SnowplowTrackerInput} input Input object for the Snowplow Legacy tracker
  * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event
@@ -86,9 +114,9 @@ const createSnowplowLegacyTracker = (input: SnowplowTrackerInput): SnowplowTrack
   const tracker = init(input);
   record(tracker, input);
   return {
-    ...trackTransaction(tracker),
-    ...trackAddToCart(tracker),
-    ...trackRemoveFromCart(tracker),
+    ...setupTrackTransaction(tracker),
+    ...setupTrackAddToCart(tracker),
+    ...setupTrackRemoveFromCart(tracker),
   };
 };
 

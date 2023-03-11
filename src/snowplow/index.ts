@@ -71,7 +71,6 @@ const importStandardSnowplowTracker = async (input: SnowplowTrackerInput): Promi
  *  });
  *
  * @memberof Snowplow
- * @class
  * @param {SnowplowTrackerInput} input Input object for standard Snowplow
  * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event
  * @param {SnowplowTrackerInput.collector} input.collector A snowplow collector url

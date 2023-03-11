@@ -13,7 +13,7 @@ import init from "/src/snowplow/standard/init";
 /** @namespace Snowplow.Standard */
 
 /**
- * A curried function that returns a method to track adding items to a cart
+ * A curried function that returns a method to track adding items to a cart with the Snowplow Standard tracker
  *
  * @memberof Snowplow.Standard
  * @name createSnowplowStandardTracker#setupTrackAddToCart
@@ -37,7 +37,7 @@ const setupTrackAddToCart = (tracker: SnowplowBrowserTracker): TrackAddToCart =>
 };
 
 /**
- * A curried function that contains a method to track removing items from a cart
+ * A curried function that contains a method to track removing items from a cart with the Snowplow Standard tracker
  *
  * @memberof Snowplow.Standard
  * @name createSnowplowStandardTracker#setupTrackRemoveFromCart
@@ -61,11 +61,11 @@ const setupTrackRemoveFromCart = (tracker: SnowplowBrowserTracker): TrackRemoveF
 };
 
 /**
- * A curried function that returns a method to track a transaction event
+ * A curried function that returns a method to track a transaction event with the Snowplow Standard tracker
  *
  * @memberof Snowplow.Standard
  * @name createSnowplowStandardTracker#setupTrackTransaction
- * @param {tracker} tracker Snowplow tracker instance
+ * @param {SnowplowBrowserTracker} tracker Snowplow tracker instance
  * @returns {TrackTransaction} A method that tracks a transaction event
  */
 const setupTrackTransaction = (tracker: SnowplowBrowserTracker): TrackTransaction => {
@@ -123,6 +123,14 @@ const record = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput) =>
  *
  * @class
  * @memberof Snowplow.Standard
+ * @example <caption> Creating a Snowplow Standard tracker </caption>
+ * const tracker = createSnowplowStandardTracker({
+ *   appId: "my-app",
+ *   collector: "https://my-collector.com",
+ *   event: "transaction",
+ *   environment: "dutchie-iframe",
+ *   version: "standard"
+ * });,
  * @see {@link https://docs.snowplow.io/docs/collecting-data/collecting-from-own-applications/javascript-trackers/javascript-tracker/javascript-tracker-v3/tracking-events/ Snowplow v3 documentation}
  * @param {SnowplowTrackerInput} input Input object for the Snowplow tracker
  * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event

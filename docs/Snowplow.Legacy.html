@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,7 +5,7 @@
   
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mediajel Tracker v2/imports/impression/liquidm.ts</title>
+  <title>Mediajel Tracker Legacy</title>
 
   <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -92,115 +90,107 @@
         <div class="core" id="main-content-wrapper">
             <div class="content">
                 <header class="page-title">
-                    <p>Source</p>
-                    <h1>v2/imports/impression/liquidm.ts</h1>
+                    <p>Namespace</p>
+                    <h1>Legacy</h1>
                 </header>
                 
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>import { ImpressionsMacrosParams } from "../../../shared/types";
+        <h2>
+            <span class="ancestors"><a href="Snowplow.html">Snowplow</a>.</span>Legacy</h2>
+        
+    
+</header>
 
-/**
- * ! Note: Please do not change the order of the how the mjcx array is structured.
- * ! Doing so will break the SQL query that displays the Liquid M Macros with
- * ! the link clicks.
- *
- * @param {Partial&lt;LiquidmMacrosParams>} args Required args for Liquid M
- */
+<article>
+    <div class="container-overview">
+    
+        
 
-const liquidm = ({
-  advertiserId,
-  insertionOrder,
-  lineItemId,
-  creativeId,
-  publisherId,
-  publisherName,
-  siteId,
-  siteName,
-  liquidmAppId,
-  appName,
-  clickId,
-  GAID,
-  GAID_MD5,
-  GAID_SHA1,
-  IDFA,
-  IDFA_MD5,
-  IDFA_SHA1,
-  DSPIDENTIFIER,
-  DEVICEID,
-  MAXMIND_CON_TYPE_NAME,
-  MAXMIND_GEO_IDS,
-  MAXMIND_ISP_ID,
-}: Partial&lt;ImpressionsMacrosParams>): void => {
-  const unstruct = {
-    schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
-    data: {
-      advertiserId: advertiserId || "N/A",
-      insertionOrder: insertionOrder || "N/A",
-      lineItemId: lineItemId || "LiquidM_MAIN",
-      creativeId: creativeId || "N/A",
-      publisherId: publisherId || "N/A",
-      publisherName: publisherName || "N/A",
-      siteId: siteId || "N/A",
-      siteName: siteName || "N/A",
-      appId: liquidmAppId || "N/A",
-      appName: appName || "N/A",
-      clickId: clickId || "N/A",
-      maxmindConnectionType: MAXMIND_CON_TYPE_NAME || "N/A",
-      maxmindGeoIds: MAXMIND_GEO_IDS || "N/A",
-      maxmindIspId: MAXMIND_ISP_ID || "N/A",
-    },
-  };
+        
 
-  const mjcx = [];
 
-  const cCx = {
-    schema: "iglu:com.mediajel.contexts/client/jsonschema/1-0-0",
-    data: { clientId: "loggedinorg-lanchedby" },
-  };
+<dl class="details">
 
-  const cCx2 = {
-    schema: "iglu:com.mediajel.contexts/campaign/jsonschema/1-0-0",
-    data: { campaignOrderId: "LiquidM_campaign_orders" },
-  };
+    
 
-  const cCx3 = {
-    schema: "iglu:com.mediajel.contexts/identities/jsonschema/1-0-0",
-    data: {
-      DSP: "LiquidM",
-      GAID: GAID || "N/A",
-      GAID_MD5: GAID_MD5 || "N/A",
-      GAID_SHA1: GAID_SHA1 || "N/A",
-      IDFA: IDFA || "N/A",
-      IDFA_MD5: IDFA_MD5 || "N/A",
-      IDFA_SHA1: IDFA_SHA1 || "N/A",
-      DSPIDENTIFIER: DSPIDENTIFIER || "N/A",
-      DEVICEID: DEVICEID || "N/A",
-    },
-  };
+    
 
-  mjcx.push(cCx);
-  mjcx.push(cCx2);
-  mjcx.push(cCx3);
+    
 
-  window.tracker("trackSelfDescribingEvent", {
-    event: unstruct,
-    context: mjcx,
-  });
+    
 
-  window.tracker("enableLinkClickTracking", {
-    context: [unstruct, ...mjcx], // Do not change the order of the array
-  });
-};
+    
 
-export default liquidm;
-</code></pre>
-        </article>
-    </section>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="snowplow_legacy_index.ts.html" class="button">View Source</a>
+            <span>
+                <a href="snowplow_legacy_index.ts.html">snowplow/legacy/index.ts</a>, <a href="snowplow_legacy_index.ts.html#line3">line 3</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+        
+    
+    </div>
+    
+    
+
+    
+
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="Snowplow.Legacy.createSnowplowLegacyTracker.html">createSnowplowLegacyTracker</a></dt>
+            <dd></dd>
+        </dl>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 
