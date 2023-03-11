@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,7 +5,7 @@
   
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mediajel Tracker snowplow/index.ts</title>
+  <title>Mediajel Tracker Snowplow/Legacy</title>
 
   <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -92,116 +90,364 @@
         <div class="core" id="main-content-wrapper">
             <div class="content">
                 <header class="page-title">
-                    <p>Source</p>
-                    <h1>snowplow/index.ts</h1>
+                    <p>Module</p>
+                    <h1>Snowplow/Legacy</h1>
                 </header>
                 
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>import { SnowplowTracker, SnowplowTrackerInput } from "/src/shared/types";
+        
+    
+</header>
 
-/**@namespace Snowplow */
+<article>
+    <div class="container-overview">
+    
+        
 
-/**
- * @description  Imports the Snowplow tracker instance using the legacy
- * javascript tracker. This is dynamically imported to reduce the bundle size of the tag.
- *
- * @example &lt;caption> Dynamically importing legacy snowplow tracker &lt;/caption>
- * const legacyTracker = await importLegacySnowplowTracker({
- *   appId: "my-app-id",
- *   collector: "https://my-collector.com",
- *   event: "transaction",
- *   environment: "iheartjane",
- *   version: "legacy",
- * });
- * @memberof Snowplow
- * @param {SnowplowTrackerInput} input Input object for standard Snowplow
- * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event
- * @param {SnowplowTrackerInput.collector} input.collector A snowplow collector url
- * @param {SnowplowTrackerInput.event} input.event The event that the tracker is configured for
- * @param {SnowplowTrackerInput.environment} input.environment The environment template selected
- * @param {SnowplowTrackerInput.version} input.version The version of the tracker
- * @returns {Promise&lt;SnowplowTracker>} Snowplow Legacy tracker instance
- *
- */
-const importLegacySnowplowTracker = async (input: SnowplowTrackerInput): Promise&lt;SnowplowTracker> => {
-  const { default: legacy } = await import("/src/snowplow/legacy");
-  return legacy(input);
-};
+        
+    
+    </div>
+    
+    
 
-/**
- * Imports the Snowplow tracker instance using the standard and supported
- * javascript tracker. This is dynamically imported to reduce the bundle size of the tag.
- *
- * @example &lt;caption> Dynamically import standard snowplow tracker &lt;/caption>
- * const standardTracker = await importStandardSnowplowTracker({
- *   appId: "my-app-id",
- *   collector: "https://my-collector.com",
- *   event: "transaction",
- *   environment: "iheartjane",
- *   version: "standard",
- * });
- *
- * @memberof Snowplow
- * @param {SnowplowTrackerInput} input Input object for standard Snowplow
- * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event
- * @param {SnowplowTrackerInput.collector} input.collector A snowplow collector url
- * @param {SnowplowTrackerInput.event} input.event The event that the tracker is configured for
- * @param {SnowplowTrackerInput.environment} input.environment The environment template selected
- * @param {SnowplowTrackerInput.version} input.version The version of the tracker
- * @returns {Promise&lt;SnowplowTracker>} Snowplow tracker
- *
- */
-const importStandardSnowplowTracker = async (input: SnowplowTrackerInput): Promise&lt;SnowplowTracker> => {
-  const { default: standard } = await import("/src/snowplow/standard");
-  return standard(input);
-};
+    
 
-/**
- *  Function factory that abstracts the version selection and
- *  returns the appropriate Snowplow tracker instance.
- *
- *  @example &lt;caption> Creating a snowplow tracker. The correct version is inferred from the "version" parameter passed in &lt;/caption>
- *  const tracker = await createSnowplowTracker({
- *    appId: "my-app-id",
- *    collector: "https://my-collector.com",
- *    event: "transaction",
- *    environment: "iheartjane",
- *    version: "standard",
- *  });
- *
- * @memberof Snowplow
- * @class
- * @param {SnowplowTrackerInput} input Input object for standard Snowplow
- * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event
- * @param {SnowplowTrackerInput.collector} input.collector A snowplow collector url
- * @param {SnowplowTrackerInput.event} input.event The event that the tracker is configured for
- * @param {SnowplowTrackerInput.environment} input.environment The environment template selected
- * @param {SnowplowTrackerInput.version} input.version The version of the tracker
- * @returns {Promise&lt;SnowplowTracker>} Snowplow Standard tracker
- *
- */
-const createSnowplowTracker = async (input: SnowplowTrackerInput): Promise&lt;SnowplowTracker> => {
-  switch (input.version) {
-    case "1":
-    case "legacy":
-      return await importLegacySnowplowTracker(input);
-    case "2":
-    case "standard":
-      return await importStandardSnowplowTracker(input);
-    default:
-      return await importLegacySnowplowTracker(input);
-  }
-};
+    
 
-export default createSnowplowTracker;
-</code></pre>
-        </article>
-    </section>
+    
+
+    
+
+    
+
+    
+
+    
+        <div class='vertical-section'>
+            <h1>Methods</h1>
+            <div class="members">
+            
+                <div class="member">
+
+
+    
+    <h4 class="name" id="~createSnowplowLegacyTracker">
+        <a class="href-link" href="#~createSnowplowLegacyTracker">#</a>
+        
+            
+                <span class='tag'>inner</span>
+            
+        
+        <span class="code-name">
+            
+                createSnowplowLegacyTracker<span class="signature">(input)</span><span class="type-signature"> &rarr; {<a href="SnowplowTracker.html">SnowplowTracker</a>}</span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Function factory that creates a Snowplow Legacy tracker instance.
+The methods included in the tracker are specific to the Snowplow Legacy tracker
+also known as "v2" in the snowplow docs
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>input</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type"><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">Input object for the Snowplow Legacy tracker</td>
+</tr>
+
+  
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>appId</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.appId</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The unique identifier for the client that is sending the event</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>collector</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.collector</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">A snowplow collector url</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>event</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.event</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The event that the tracker is configured for</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>environment</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.environment</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The environment template selected</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>version</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.version</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The version of the tracker</td>
+</tr>
+
+  
+
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="https://docs.snowplow.io/docs/collecting-data/collecting-from-own-applications/javascript-trackers/javascript-tracker/javascript-tracker-v2/tracking-specific-events/">Snowplow v2 documentation</a></li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="snowplow_legacy_index.ts.html" class="button">View Source</a>
+            <span>
+                <a href="snowplow_legacy_index.ts.html">snowplow/legacy/index.ts</a>, <a href="snowplow_legacy_index.ts.html#line60">line 60</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    <div class='param-desc column is-7'>Snowplow Legacy tracker</div>
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<code class="param-type"><a href="SnowplowTracker.html">SnowplowTracker</a></code>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+</div>
+            
+            </div>
+        </div>
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 

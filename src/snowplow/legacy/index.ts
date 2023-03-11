@@ -1,5 +1,3 @@
-import init from "/src/snowplow/legacy/init";
-
 import {
   CartEvent,
   SnowplowBrowserTracker,
@@ -7,6 +5,9 @@ import {
   SnowplowTrackerInput,
   TransactionEvent,
 } from "/src/shared/types";
+import init from "/src/snowplow/legacy/init";
+
+/** @module Snowplow/Legacy */
 
 const trackAddToCart = (tracker: SnowplowBrowserTracker) => {
   return {
@@ -66,7 +67,6 @@ const record = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput) =>
 };
 
 /**
- * @category Snowplow
  * @description Function factory that creates a Snowplow Legacy tracker instance.
  * The methods included in the tracker are specific to the Snowplow Legacy tracker
  * also known as "v2" in the snowplow docs
@@ -85,7 +85,6 @@ const record = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput) =>
 const createSnowplowLegacyTracker = (input: SnowplowTrackerInput): SnowplowTracker => {
   const tracker = init(input);
   record(tracker, input);
-
   return {
     ...trackTransaction(tracker),
     ...trackAddToCart(tracker),

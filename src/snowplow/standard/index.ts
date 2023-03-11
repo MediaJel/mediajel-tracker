@@ -3,11 +3,24 @@ import {
   SnowplowBrowserTracker,
   SnowplowTracker,
   SnowplowTrackerInput,
+  TrackAddToCart,
+  TrackRemoveFromCart,
+  TrackTransaction,
   TransactionEvent,
 } from "/src/shared/types";
 import init from "/src/snowplow/standard/init";
 
-const trackAddToCart = (tracker: SnowplowBrowserTracker) => {
+/** @namespace Snowplow.Standard */
+
+/**
+ * A curried function that returns a method to track adding items to a cart
+ *
+ * @memberof Snowplow.Standard
+ * @name createSnowplowStandardTracker#setupTrackAddToCart
+ * @param {SnowplowBrowserTracker} tracker - The Snowplow tracker instance
+ * @returns {TrackAddToCart} A method to track adding items to a cart
+ */
+const setupTrackAddToCart = (tracker: SnowplowBrowserTracker): TrackAddToCart => {
   return {
     trackAddToCart(item: CartEvent) {
       // TODO: Add setUserId implementation
@@ -23,9 +36,17 @@ const trackAddToCart = (tracker: SnowplowBrowserTracker) => {
   };
 };
 
-const trackRemoveFromCart = (tracker: SnowplowBrowserTracker) => {
+/**
+ * A curried function that contains a method to track removing items from a cart
+ *
+ * @memberof Snowplow.Standard
+ * @name createSnowplowStandardTracker#setupTrackRemoveFromCart
+ * @param {SnowplowBrowserTracker} tracker - The Snowplow tracker instance
+ * @returns {TrackRemoveFromCart} A method to track removing items from a cart
+ */
+const setupTrackRemoveFromCart = (tracker: SnowplowBrowserTracker): TrackRemoveFromCart => {
   return {
-    trackRemoveFromCart(item: CartEvent) {
+    trackRemoveFromCart(item: CartEvent): void {
       // TODO: Add setUserId implementation
       tracker("trackRemoveFromCart", {
         sku: item.sku,
@@ -40,15 +61,14 @@ const trackRemoveFromCart = (tracker: SnowplowBrowserTracker) => {
 };
 
 /**
- * @category Snowplow
- * @description Tracks a transaction event
- * @function trackTransaction
+ * A curried function that returns a method to track a transaction event
  *
+ * @memberof Snowplow.Standard
+ * @name createSnowplowStandardTracker#setupTrackTransaction
  * @param {tracker} tracker Snowplow tracker instance
- * @returns {void} A function that tracks a transaction event
- *
+ * @returns {TrackTransaction} A method that tracks a transaction event
  */
-const trackTransaction = (tracker: SnowplowBrowserTracker) => {
+const setupTrackTransaction = (tracker: SnowplowBrowserTracker): TrackTransaction => {
   return {
     trackTransaction(transaction: TransactionEvent): void {
       // TODO: Add setUserId implementation
@@ -97,11 +117,12 @@ const record = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput) =>
 };
 
 /**
- * @category Snowplow
- * @description Function factory that creates a Snowplow Standard tracker instance.
+ * Function factory that creates a Snowplow Standard tracker instance.
  * The methods included in the tracker are specific to the Snowplow Standard tracker
  * also known as "v3" in the snowplow docs
  *
+ * @class
+ * @memberof Snowplow.Standard
  * @see {@link https://docs.snowplow.io/docs/collecting-data/collecting-from-own-applications/javascript-trackers/javascript-tracker/javascript-tracker-v3/tracking-events/ Snowplow v3 documentation}
  * @param {SnowplowTrackerInput} input Input object for the Snowplow tracker
  * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event
@@ -110,15 +131,14 @@ const record = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput) =>
  * @param {SnowplowTrackerInput.environment} input.environment The environment template selected
  * @param {SnowplowTrackerInput.version} input.version The version of the tracker
  * @returns {SnowplowTracker} Snowplow tracker instance
- *
  */
 const createSnowplowStandardTracker = (input: SnowplowTrackerInput): SnowplowTracker => {
   const tracker = init(input);
   record(tracker, input);
   return {
-    ...trackTransaction(tracker),
-    ...trackAddToCart(tracker),
-    ...trackRemoveFromCart(tracker),
+    ...setupTrackTransaction(tracker),
+    ...setupTrackAddToCart(tracker),
+    ...setupTrackRemoveFromCart(tracker),
   };
 };
 

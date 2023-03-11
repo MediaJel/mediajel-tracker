@@ -5,7 +5,7 @@
   
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mediajel Tracker SnowplowTracker</title>
+  <title>Mediajel Tracker createSnowplowStandardTracker</title>
 
   <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -90,8 +90,8 @@
         <div class="core" id="main-content-wrapper">
             <div class="content">
                 <header class="page-title">
-                    <p>Interface</p>
-                    <h1>SnowplowTracker</h1>
+                    <p>Class</p>
+                    <h1>createSnowplowStandardTracker</h1>
                 </header>
                 
 
@@ -102,7 +102,8 @@
 
 <header>
     
-        <h2>SnowplowTracker</h2>
+        <h2><span class="attribs"><span class="type-signature"></span></span>
+            <span class="ancestors"><a href="Snowplow.html">Snowplow</a><a href="Snowplow.Standard.html">.Standard</a>.</span>createSnowplowStandardTracker<span class="signature">(input)</span><span class="type-signature"> &rarr; {<a href="SnowplowTracker.html">SnowplowTracker</a>}</span></h2>
         
     
 </header>
@@ -111,10 +112,215 @@
     <div class="container-overview">
     
         
-            <div class="description">Method interfaces that represents a snowplow tracker</div>
+            <div class='vertical-section'>
+                <div class="members">
+                    <div class="member">
+                        <div class=name>
+                            <span class="tag">Constructor</span>
+                        </div>
+                        
+
+
+    
+    <h4 class="name" id="createSnowplowStandardTracker">
+        <a class="href-link" href="#createSnowplowStandardTracker">#</a>
+        
+        <span class="code-name">
+            
+                new createSnowplowStandardTracker<span class="signature">(input)</span><span class="type-signature"> &rarr; {<a href="SnowplowTracker.html">SnowplowTracker</a>}</span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Function factory that creates a Snowplow Standard tracker instance.
+The methods included in the tracker are specific to the Snowplow Standard tracker
+also known as "v3" in the snowplow docs
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
         
 
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>input</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type"><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">Input object for the Snowplow tracker</td>
+</tr>
+
+  
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>appId</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.appId</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The unique identifier for the client that is sending the event</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>collector</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.collector</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">A snowplow collector url</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>event</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.event</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The event that the tracker is configured for</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>environment</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.environment</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The environment template selected</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>version</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.version</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The version of the tracker</td>
+</tr>
+
+  
+
+
         
+        </tbody>
+    </table>
+</div>
+
+
+
 
 
 <dl class="details">
@@ -145,20 +351,75 @@
     
 
     
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="https://docs.snowplow.io/docs/collecting-data/collecting-from-own-applications/javascript-trackers/javascript-tracker/javascript-tracker-v3/tracking-events/">Snowplow v3 documentation</a></li>
+        </ul>
+    </dd>
+    
 
     
 
     
         <p class="tag-source">
-            <a href="shared_types.ts.html" class="button">View Source</a>
+            <a href="snowplow_standard_index.ts.html" class="button">View Source</a>
             <span>
-                <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line39">line 39</a>
+                <a href="snowplow_standard_index.ts.html">snowplow/standard/index.ts</a>, <a href="snowplow_standard_index.ts.html#line117">line 117</a>
             </span>
         </p>
     
 </dl>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    <div class='param-desc column is-7'>Snowplow tracker instance</div>
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<code class="param-type"><a href="SnowplowTracker.html">SnowplowTracker</a></code>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+
+                    </div>
+                </div>
+            </div>
         
     
     </div>
@@ -182,19 +443,11 @@
             
                 <div class="member">
 
-    <span class="method-parameter is-pulled-right">
-        <label>Type:</label>
-        
-<code class="param-type">function</code>
-
-
-    </span>
-
-<h4 class="name" id="trackAddToCart">
-    <a class="href-link" href="#trackAddToCart">#</a>
+<h4 class="name" id="setupTrackAddToCart">
+    <a class="href-link" href="#setupTrackAddToCart">#</a>
     
     <span class="code-name">
-        trackAddToCart
+        setupTrackAddToCart
     </span>
     
 </h4>
@@ -203,7 +456,7 @@
 
 
 <div class="description">
-    Tracks an add to cart event
+    A curried function that returns a method to track adding items to a cart
 </div>
 
 
@@ -243,9 +496,9 @@
 
     
         <p class="tag-source">
-            <a href="shared_types.ts.html" class="button">View Source</a>
+            <a href="snowplow_standard_index.ts.html" class="button">View Source</a>
             <span>
-                <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line48">line 48</a>
+                <a href="snowplow_standard_index.ts.html">snowplow/standard/index.ts</a>, <a href="snowplow_standard_index.ts.html#line4">line 4</a>
             </span>
         </p>
     
@@ -259,19 +512,11 @@
             
                 <div class="member">
 
-    <span class="method-parameter is-pulled-right">
-        <label>Type:</label>
-        
-<code class="param-type">function</code>
-
-
-    </span>
-
-<h4 class="name" id="trackRemoveFromCart">
-    <a class="href-link" href="#trackRemoveFromCart">#</a>
+<h4 class="name" id="setupTrackRemoveFromCart">
+    <a class="href-link" href="#setupTrackRemoveFromCart">#</a>
     
     <span class="code-name">
-        trackRemoveFromCart
+        setupTrackRemoveFromCart
     </span>
     
 </h4>
@@ -280,7 +525,7 @@
 
 
 <div class="description">
-    Tracks a remove from cart event
+    A curried function that contains a method to track removing items from a cart
 </div>
 
 
@@ -320,9 +565,9 @@
 
     
         <p class="tag-source">
-            <a href="shared_types.ts.html" class="button">View Source</a>
+            <a href="snowplow_standard_index.ts.html" class="button">View Source</a>
             <span>
-                <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line53">line 53</a>
+                <a href="snowplow_standard_index.ts.html">snowplow/standard/index.ts</a>, <a href="snowplow_standard_index.ts.html#line27">line 27</a>
             </span>
         </p>
     
@@ -336,19 +581,11 @@
             
                 <div class="member">
 
-    <span class="method-parameter is-pulled-right">
-        <label>Type:</label>
-        
-<code class="param-type">function</code>
-
-
-    </span>
-
-<h4 class="name" id="trackTransaction">
-    <a class="href-link" href="#trackTransaction">#</a>
+<h4 class="name" id="setupTrackTransaction">
+    <a class="href-link" href="#setupTrackTransaction">#</a>
     
     <span class="code-name">
-        trackTransaction
+        setupTrackTransaction
     </span>
     
 </h4>
@@ -357,7 +594,7 @@
 
 
 <div class="description">
-    Tracks a transaction event
+    A curried function that returns a method to track a transaction event
 </div>
 
 
@@ -397,9 +634,9 @@
 
     
         <p class="tag-source">
-            <a href="shared_types.ts.html" class="button">View Source</a>
+            <a href="snowplow_standard_index.ts.html" class="button">View Source</a>
             <span>
-                <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line43">line 43</a>
+                <a href="snowplow_standard_index.ts.html">snowplow/standard/index.ts</a>, <a href="snowplow_standard_index.ts.html#line50">line 50</a>
             </span>
         </p>
     

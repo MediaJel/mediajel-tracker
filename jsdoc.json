@@ -14,7 +14,11 @@
     "includePattern": "\\.(jsx|js|ts|tsx)$",
     "excludePattern": "(node_modules/|docs)"
   },
-  "plugins": ["node_modules/better-docs/typescript", "node_modules/better-docs/category"],
+  "plugins": [
+    "node_modules/better-docs/typescript",
+    "node_modules/better-docs/category",
+    "node_modules/better-docs/typedef-import"
+  ],
   "docdash": {
     "static": true,
     "sort": true,

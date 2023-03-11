@@ -49,6 +49,24 @@ export interface SnowplowTracker {
 }
 
 /**
+ * Represents the implementation of the `trackAddToCart` method from the `SnowplowTracker` interface
+ * @memberof SnowplowTracker
+ */
+export type TrackAddToCart = Pick<SnowplowTracker, "trackAddToCart">;
+
+/**
+ * Represents the implementation of the `trackRemoveFromCart` method from the `SnowplowTracker` interface
+ * @memberof SnowplowTracker
+ */
+export type TrackRemoveFromCart = Pick<SnowplowTracker, "trackRemoveFromCart">;
+
+/**
+ * Represents the implementation of the `trackTransaction` method of the `SnowplowTracker` interface
+ * @memberof SnowplowTracker
+ */
+export type TrackTransaction = Pick<SnowplowTracker, "trackTransaction">;
+
+/**
  * The input for the snowplow `init` function
  */
 export interface SnowplowInitInput {

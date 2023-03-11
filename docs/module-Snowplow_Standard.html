@@ -5,7 +5,7 @@
   
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mediajel Tracker Global</title>
+  <title>Mediajel Tracker Snowplow/Standard</title>
 
   <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -83,15 +83,15 @@
             
             <nav>
                 
-                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-Snowplow_Legacy.html">Snowplow/Legacy</a></li></ul><h3>Namespaces</h3><ul><li><a href="Snowplow.html">Snowplow</a></li><li><a href="Snowplow.Standard.html">Standard</a></li></ul><h3>Classes</h3><ul><li><a href="Snowplow.createSnowplowTracker.html">createSnowplowTracker</a></li><li><a href="Snowplow.Standard.createSnowplowStandardTracker.html">createSnowplowStandardTracker</a></li></ul><h3>Interfaces</h3><ul><li><a href="SnowplowInitInput.html">SnowplowInitInput</a></li><li><a href="SnowplowTracker.html">SnowplowTracker</a></li><li><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetchSource">fetchSource</a></li><li><a href="global.html#liquidm">liquidm</a></li><li><a href="global.html#squareTracker">squareTracker</a></li></ul></div>
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-Snowplow_Legacy.html">Snowplow/Legacy</a></li><li><a href="module-Snowplow_Standard.html">Snowplow/Standard</a></li></ul><h3>Namespaces</h3><ul><li><a href="Snowplow.html">Snowplow</a></li></ul><h3>Classes</h3><ul><li><a href="module-Snowplow_Standard-createSnowplowStandardTracker.html">createSnowplowStandardTracker</a></li></ul><h3>Interfaces</h3><ul><li><a href="SnowplowInitInput.html">SnowplowInitInput</a></li><li><a href="SnowplowTracker.html">SnowplowTracker</a></li><li><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetchSource">fetchSource</a></li><li><a href="global.html#liquidm">liquidm</a></li><li><a href="global.html#squareTracker">squareTracker</a></li></ul></div>
                 
             </nav>
         </div>
         <div class="core" id="main-content-wrapper">
             <div class="content">
                 <header class="page-title">
-                    <p></p>
-                    <h1>Global</h1>
+                    <p>Module</p>
+                    <h1>Snowplow/Standard</h1>
                 </header>
                 
 
@@ -102,7 +102,6 @@
 
 <header>
     
-        <h2></h2>
         
     
 </header>
@@ -113,44 +112,6 @@
         
 
         
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-        
     
     </div>
     
@@ -159,48 +120,12 @@
     
 
     
+        <h3 class="subsection-title">Classes</h3>
 
-    
-
-    
-
-    
-
-    
-        <div class='vertical-section'>
-            <h1>Members</h1>
-            <div class="members">
-            
-                <div class="member">
-
-<h4 class="name" id="fetchSource">
-    <a class="href-link" href="#fetchSource">#</a>
-    
-        
-            <span class='tag'>constant</span>
-        
-    
-    <span class="code-name">
-        fetchSource
-    </span>
-    
-</h4>
-
-
-
-
-<div class="description">
-    ! Be very careful when using the fetch data source.
-! As poorly implementing it can cause a lot of issues on
-! the client side if errors are not handled correctly.
-</div>
-
-
-
-
-
-<dl class="details">
-
+        <dl>
+            <dt><a href="module-Snowplow_Standard-createSnowplowStandardTracker.html">createSnowplowStandardTracker</a></dt>
+            <dd></dd>
+        </dl>
     
 
     
@@ -209,45 +134,6 @@
 
     
 
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    
-
-    
-
-    
-
-    
-        <p class="tag-source">
-            <a href="shared_sources_fetch-source.ts.html" class="button">View Source</a>
-            <span>
-                <a href="shared_sources_fetch-source.ts.html">shared/sources/fetch-source.ts</a>, <a href="shared_sources_fetch-source.ts.html#line10">line 10</a>
-            </span>
-        </p>
-    
-</dl>
-
-
-
-
-
-</div>
-            
-            </div>
-        </div>
     
 
     
@@ -259,12 +145,16 @@
 
 
     
-    <h4 class="name" id="liquidm">
-        <a class="href-link" href="#liquidm">#</a>
+    <h4 class="name" id="~setupTrackAddToCart">
+        <a class="href-link" href="#~setupTrackAddToCart">#</a>
+        
+            
+                <span class='tag'>inner</span>
+            
         
         <span class="code-name">
             
-                liquidm<span class="signature">(args)</span><span class="type-signature"></span>
+                setupTrackAddToCart<span class="signature">(tracker)</span><span class="type-signature"> &rarr; {TrackAddToCart}</span>
             
         </span>
     </h4>
@@ -273,9 +163,7 @@
     
     
     <div class="description">
-        ! Note: Please do not change the order of the how the mjcx array is structured.
-! Doing so will break the SQL query that displays the Liquid M Macros with
-! the link clicks.
+        A curried function that returns a method to track adding items to a cart
     </div>
     
 
@@ -313,13 +201,13 @@
             
 <tr class="deep-level-0">
   
-      <td class="name"><code>args</code></td>
+      <td class="name"><code>tracker</code></td>
   
 
   <td class="type">
   
       
-<code class="param-type">Partial.&lt;LiquidmMacrosParams></code>
+<code class="param-type"><a href="global.html#SnowplowBrowserTracker">SnowplowBrowserTracker</a></code>
 
 
   
@@ -329,7 +217,7 @@
 
   
 
-  <td class="description last">Required args for Liquid M</td>
+  <td class="description last">The Snowplow tracker instance</td>
 </tr>
 
 
@@ -375,9 +263,9 @@
 
     
         <p class="tag-source">
-            <a href="v2_imports_impression_liquidm.ts.html" class="button">View Source</a>
+            <a href="snowplow_standard_index.ts.html" class="button">View Source</a>
             <span>
-                <a href="v2_imports_impression_liquidm.ts.html">v2/imports/impression/liquidm.ts</a>, <a href="v2_imports_impression_liquidm.ts.html#line9">line 9</a>
+                <a href="snowplow_standard_index.ts.html">snowplow/standard/index.ts</a>, <a href="snowplow_standard_index.ts.html#line10">line 10</a>
             </span>
         </p>
     
@@ -400,129 +288,50 @@
 
 
 
-
-
-
-</div>
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
             
-                <div class="member">
+                    
 
-
+<div class="columns">
     
-    <h4 class="name" id="squareTracker">
-        <a class="href-link" href="#squareTracker">#</a>
+    <div class='param-desc column is-7'>A method to track adding items to a cart</div>
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
         
-        <span class="code-name">
-            
-                squareTracker<span class="signature">()</span><span class="type-signature"></span>
-            
-        </span>
-    </h4>
-    
+<code class="param-type">TrackAddToCart</code>
 
-    
-    
-    <div class="description">
-        The Square Tracker relies on the Google Datalayer Source to track events.
-There is documentation to improve this more since Square exports variables
-to the window object.
+
     </div>
     
+</div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    
-
-    
-
-    
-
-    
-        <p class="tag-source">
-            <a href="v1_imports_carts_square.ts.html" class="button">View Source</a>
-            <span>
-                <a href="v1_imports_carts_square.ts.html">v1/imports/carts/square.ts</a>, <a href="v1_imports_carts_square.ts.html#line8">line 8</a>
-            </span>
-        </p>
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                
+        </div>
+    </div>
 
 
 
 
 </div>
             
-            </div>
-        </div>
-    
-
-    
-        <div class='vertical-section'>
-            <h1>Type Definitions</h1>
-            <div class="members">
-            
                 <div class="member">
 
 
     
-    <h4 class="name" id="SnowplowBrowserTracker">
-        <a class="href-link" href="#SnowplowBrowserTracker">#</a>
+    <h4 class="name" id="~setupTrackRemoveFromCart">
+        <a class="href-link" href="#~setupTrackRemoveFromCart">#</a>
+        
+            
+                <span class='tag'>inner</span>
+            
         
         <span class="code-name">
             
-                SnowplowBrowserTracker<span class="signature">(args)</span><span class="type-signature"></span>
+                setupTrackRemoveFromCart<span class="signature">(tracker)</span><span class="type-signature"> &rarr; {TrackRemoveFromCart}</span>
             
         </span>
     </h4>
@@ -531,8 +340,7 @@ to the window object.
     
     
     <div class="description">
-        General function to represent the snowplow tracker that gets imported
-to the window
+        A curried function that contains a method to track removing items from a cart
     </div>
     
 
@@ -570,13 +378,13 @@ to the window
             
 <tr class="deep-level-0">
   
-      <td class="name"><code>args</code></td>
+      <td class="name"><code>tracker</code></td>
   
 
   <td class="type">
   
       
-<code class="param-type">Array</code>
+<code class="param-type"><a href="global.html#SnowplowBrowserTracker">SnowplowBrowserTracker</a></code>
 
 
   
@@ -586,7 +394,7 @@ to the window
 
   
 
-  <td class="description last"></td>
+  <td class="description last">The Snowplow tracker instance</td>
 </tr>
 
 
@@ -632,9 +440,9 @@ to the window
 
     
         <p class="tag-source">
-            <a href="shared_types.ts.html" class="button">View Source</a>
+            <a href="snowplow_standard_index.ts.html" class="button">View Source</a>
             <span>
-                <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line4">line 4</a>
+                <a href="snowplow_standard_index.ts.html">snowplow/standard/index.ts</a>, <a href="snowplow_standard_index.ts.html#line31">line 31</a>
             </span>
         </p>
     
@@ -657,6 +465,208 @@ to the window
 
 
 
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    <div class='param-desc column is-7'>A method to track removing items from a cart</div>
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<code class="param-type">TrackRemoveFromCart</code>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+</div>
+            
+                <div class="member">
+
+
+    
+    <h4 class="name" id="~setupTrackTransaction">
+        <a class="href-link" href="#~setupTrackTransaction">#</a>
+        
+            
+                <span class='tag'>inner</span>
+            
+        
+        <span class="code-name">
+            
+                setupTrackTransaction<span class="signature">(tracker)</span><span class="type-signature"> &rarr; {TrackTransaction}</span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        A curried function that returns a method to track a transaction event
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>tracker</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">tracker</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">Snowplow tracker instance</td>
+</tr>
+
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="snowplow_standard_index.ts.html" class="button">View Source</a>
+            <span>
+                <a href="snowplow_standard_index.ts.html">snowplow/standard/index.ts</a>, <a href="snowplow_standard_index.ts.html#line52">line 52</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    <div class='param-desc column is-7'>A method that tracks a transaction event</div>
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<code class="param-type">TrackTransaction</code>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
 
 
 
@@ -664,6 +674,8 @@ to the window
             
             </div>
         </div>
+    
+
     
 
     

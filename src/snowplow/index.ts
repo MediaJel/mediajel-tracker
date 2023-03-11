@@ -1,11 +1,12 @@
 import { SnowplowTracker, SnowplowTrackerInput } from "/src/shared/types";
 
+/**@namespace Snowplow */
+
 /**
- * @category Snowplow
  * @description  Imports the Snowplow tracker instance using the legacy
  * javascript tracker. This is dynamically imported to reduce the bundle size of the tag.
  *
- * @example <caption> Creating a snowplow Legacy tracker</caption>
+ * @example <caption> Dynamically importing legacy snowplow tracker </caption>
  * const legacyTracker = await importLegacySnowplowTracker({
  *   appId: "my-app-id",
  *   collector: "https://my-collector.com",
@@ -13,14 +14,14 @@ import { SnowplowTracker, SnowplowTrackerInput } from "/src/shared/types";
  *   environment: "iheartjane",
  *   version: "legacy",
  * });
- *
+ * @memberof Snowplow
  * @param {SnowplowTrackerInput} input Input object for standard Snowplow
  * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event
  * @param {SnowplowTrackerInput.collector} input.collector A snowplow collector url
  * @param {SnowplowTrackerInput.event} input.event The event that the tracker is configured for
  * @param {SnowplowTrackerInput.environment} input.environment The environment template selected
  * @param {SnowplowTrackerInput.version} input.version The version of the tracker
- * @returns {Promise<SnowplowTracker>} Snowplow tracker
+ * @returns {Promise<SnowplowTracker>} Snowplow Legacy tracker instance
  *
  */
 const importLegacySnowplowTracker = async (input: SnowplowTrackerInput): Promise<SnowplowTracker> => {
@@ -29,11 +30,10 @@ const importLegacySnowplowTracker = async (input: SnowplowTrackerInput): Promise
 };
 
 /**
- * @category Snowplow
- * @description  Imports the Snowplow tracker instance using the standard and supported
+ * Imports the Snowplow tracker instance using the standard and supported
  * javascript tracker. This is dynamically imported to reduce the bundle size of the tag.
  *
- * @example <caption> Creating a snowplow Standard tracker</caption>
+ * @example <caption> Dynamically import standard snowplow tracker </caption>
  * const standardTracker = await importStandardSnowplowTracker({
  *   appId: "my-app-id",
  *   collector: "https://my-collector.com",
@@ -42,6 +42,7 @@ const importLegacySnowplowTracker = async (input: SnowplowTrackerInput): Promise
  *   version: "standard",
  * });
  *
+ * @memberof Snowplow
  * @param {SnowplowTrackerInput} input Input object for standard Snowplow
  * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event
  * @param {SnowplowTrackerInput.collector} input.collector A snowplow collector url
@@ -57,8 +58,7 @@ const importStandardSnowplowTracker = async (input: SnowplowTrackerInput): Promi
 };
 
 /**
- *  @category Snowplow
- *  @description  Function factory that abstracts the version selection and
+ *  Function factory that abstracts the version selection and
  *  returns the appropriate Snowplow tracker instance.
  *
  *  @example <caption> Creating a snowplow tracker. The correct version is inferred from the "version" parameter passed in </caption>
@@ -70,13 +70,15 @@ const importStandardSnowplowTracker = async (input: SnowplowTrackerInput): Promi
  *    version: "standard",
  *  });
  *
+ * @memberof Snowplow
+ * @class
  * @param {SnowplowTrackerInput} input Input object for standard Snowplow
  * @param {SnowplowTrackerInput.appId} input.appId The unique identifier for the client that is sending the event
  * @param {SnowplowTrackerInput.collector} input.collector A snowplow collector url
  * @param {SnowplowTrackerInput.event} input.event The event that the tracker is configured for
  * @param {SnowplowTrackerInput.environment} input.environment The environment template selected
  * @param {SnowplowTrackerInput.version} input.version The version of the tracker
- * @returns {Promise<SnowplowTracker>} Snowplow tracker
+ * @returns {Promise<SnowplowTracker>} Snowplow Standard tracker
  *
  */
 const createSnowplowTracker = async (input: SnowplowTrackerInput): Promise<SnowplowTracker> => {

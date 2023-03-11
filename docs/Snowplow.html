@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mediajel Tracker Snowplow</title>
+
+  <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="./build/entry.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,400,700|Inconsolata,700" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+  <link type="text/css" rel="stylesheet" href="https://jmblog.github.io/color-themes-for-google-code-prettify/themes/tomorrow-night.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/app.min.css">
+  <link type="text/css" rel="stylesheet" href="styles/iframe.css">
+  <link type="text/css" rel="stylesheet" href="">
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+  
+</head>
+
+
+
+<body class="layout small-header">
+    <div id="stickyNavbarOverlay"></div>
+    
+
+<div class="top-nav">
+    <div class="inner">
+        <a id="hamburger" role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </a>
+        <div class="logo">
+            
+             
+                <a href="index.html">
+                    <h1 class="navbar-item">Mediajel Tracker</h1>
+                </a>
+            
+        </div>
+        <div class="menu">
+            
+            <div class="navigation">
+                <a
+                    href="index.html"
+                    class="link"
+                >
+                    Documentation
+                </a>
+                
+                 
+                    
+                        <a
+                            class="link user-link "
+                            href="https://mediajel.com"
+                        >
+                            Mediajel
+                        </a>
+                    
+                
+                
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="main">
+        <div
+            class="sidebar "
+            id="sidebarNav"
+        >
+            
+                <div class="search-wrapper">
+                    <input id="search" type="text" placeholder="Search docs..." class="input">
+                </div>
+            
+            <nav>
+                
+                    <h2><a href="index.html">Documentation</a></h2><div class="category"><h3>Modules</h3><ul><li><a href="module-Snowplow_Legacy.html">Snowplow/Legacy</a></li></ul><h3>Namespaces</h3><ul><li><a href="Snowplow.html">Snowplow</a></li><li><a href="Snowplow.Standard.html">Standard</a></li></ul><h3>Classes</h3><ul><li><a href="Snowplow.createSnowplowTracker.html">createSnowplowTracker</a></li><li><a href="Snowplow.Standard.createSnowplowStandardTracker.html">createSnowplowStandardTracker</a></li></ul><h3>Interfaces</h3><ul><li><a href="SnowplowInitInput.html">SnowplowInitInput</a></li><li><a href="SnowplowTracker.html">SnowplowTracker</a></li><li><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></li></ul><h3>Global</h3><ul><li><a href="global.html#fetchSource">fetchSource</a></li><li><a href="global.html#liquidm">liquidm</a></li><li><a href="global.html#squareTracker">squareTracker</a></li></ul></div>
+                
+            </nav>
+        </div>
+        <div class="core" id="main-content-wrapper">
+            <div class="content">
+                <header class="page-title">
+                    <p>Namespace</p>
+                    <h1>Snowplow</h1>
+                </header>
+                
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>Snowplow</h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+        
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="snowplow_index.ts.html" class="button">View Source</a>
+            <span>
+                <a href="snowplow_index.ts.html">snowplow/index.ts</a>, <a href="snowplow_index.ts.html#line2">line 2</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+        
+    
+    </div>
+    
+    
+
+    
+
+    
+        <h3 class="subsection-title">Classes</h3>
+
+        <dl>
+            <dt><a href="Snowplow.createSnowplowTracker.html">createSnowplowTracker</a></dt>
+            <dd></dd>
+        </dl>
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Namespaces</h3>
+
+        <dl>
+            <dt><a href="Snowplow.Standard.html">Standard</a></dt>
+            <dd></dd>
+        </dl>
+    
+
+    
+
+    
+        <div class='vertical-section'>
+            <h1>Methods</h1>
+            <div class="members">
+            
+                <div class="member">
+
+
+    
+    <h4 class="name" id=".importLegacySnowplowTracker">
+        <a class="href-link" href="#.importLegacySnowplowTracker">#</a>
+        
+            
+                <span class='tag'>async</span>
+            
+                <span class='tag'>static</span>
+            
+        
+        <span class="code-name">
+            
+                importLegacySnowplowTracker<span class="signature">(input)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="SnowplowTracker.html">SnowplowTracker</a>>}</span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Imports the Snowplow tracker instance using the legacy
+javascript tracker. This is dynamically imported to reduce the bundle size of the tag.
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>input</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type"><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">Input object for standard Snowplow</td>
+</tr>
+
+  
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>appId</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.appId</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The unique identifier for the client that is sending the event</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>collector</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.collector</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">A snowplow collector url</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>event</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.event</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The event that the tracker is configured for</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>environment</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.environment</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The environment template selected</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>version</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.version</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The version of the tracker</td>
+</tr>
+
+  
+
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="snowplow_index.ts.html" class="button">View Source</a>
+            <span>
+                <a href="snowplow_index.ts.html">snowplow/index.ts</a>, <a href="snowplow_index.ts.html#line25">line 25</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    <div class='param-desc column is-7'>Snowplow Legacy tracker instance</div>
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<code class="param-type">Promise.&lt;<a href="SnowplowTracker.html">SnowplowTracker</a>></code>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+    <h5>Example</h5>
+    
+        <p class="code-caption"> Dynamically importing legacy snowplow tracker </p>
+    
+    
+        <pre class="prettyprint"><code>const legacyTracker = await importLegacySnowplowTracker({
+  appId: "my-app-id",
+  collector: "https://my-collector.com",
+  event: "transaction",
+  environment: "iheartjane",
+  version: "legacy",
+});</code></pre>
+    
+
+
+</div>
+            
+                <div class="member">
+
+
+    
+    <h4 class="name" id=".importStandardSnowplowTracker">
+        <a class="href-link" href="#.importStandardSnowplowTracker">#</a>
+        
+            
+                <span class='tag'>async</span>
+            
+                <span class='tag'>static</span>
+            
+        
+        <span class="code-name">
+            
+                importStandardSnowplowTracker<span class="signature">(input)</span><span class="type-signature"> &rarr; {Promise.&lt;<a href="SnowplowTracker.html">SnowplowTracker</a>>}</span>
+            
+        </span>
+    </h4>
+    
+
+    
+    
+    <div class="description">
+        Imports the Snowplow tracker instance using the standard and supported
+javascript tracker. This is dynamically imported to reduce the bundle size of the tag.
+    </div>
+    
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+<div class="table-container">
+    <table class="params table">
+        <thead>
+        <tr>
+            
+            <th>Name</th>
+            
+
+            <th>Type</th>
+
+            
+
+            
+
+            <th class="last">Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        
+
+            
+<tr class="deep-level-0">
+  
+      <td class="name"><code>input</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type"><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">Input object for standard Snowplow</td>
+</tr>
+
+  
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>appId</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.appId</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The unique identifier for the client that is sending the event</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>collector</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.collector</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">A snowplow collector url</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>event</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.event</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The event that the tracker is configured for</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>environment</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.environment</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The environment template selected</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>version</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">SnowplowTrackerInput.version</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The version of the tracker</td>
+</tr>
+
+  
+
+
+        
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="snowplow_index.ts.html" class="button">View Source</a>
+            <span>
+                <a href="snowplow_index.ts.html">snowplow/index.ts</a>, <a href="snowplow_index.ts.html#line52">line 52</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    <div class='param-desc column is-7'>Snowplow tracker</div>
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<code class="param-type">Promise.&lt;<a href="SnowplowTracker.html">SnowplowTracker</a>></code>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
+
+
+
+
+    <h5>Example</h5>
+    
+        <p class="code-caption"> Dynamically import standard snowplow tracker </p>
+    
+    
+        <pre class="prettyprint"><code>const standardTracker = await importStandardSnowplowTracker({
+  appId: "my-app-id",
+  collector: "https://my-collector.com",
+  event: "transaction",
+  environment: "iheartjane",
+  version: "standard",
+});</code></pre>
+    
+
+
+</div>
+            
+            </div>
+        </div>
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+            </div>
+            
+            <footer class="footer">
+                <div class="content has-text-centered">
+                    <p>Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.11</a></p>
+                    <p class="sidebar-created-by">
+                        <a href="https://github.com/SoftwareBrothers/better-docs" target="_blank">BetterDocs theme</a> provided with <i class="fas fa-heart"></i> by
+                        <a href="http://softwarebrothers.co" target="_blank">SoftwareBrothers - JavaScript Development Agency</a>
+                    </p>
+                </div>
+            </footer>
+            
+        </div>
+        <div id="side-nav" class="side-nav">
+        </div>
+    </div>
+<script src="scripts/app.min.js"></script>
+<script>PR.prettyPrint();</script>
+<script src="scripts/linenumber.js"> </script>
+
+<script src="scripts/search.js"> </script>
+
+
+</body>
+</html>
