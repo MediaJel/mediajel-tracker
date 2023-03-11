@@ -5,7 +5,9 @@
 export type SnowplowBrowserTracker = (...args: any[]) => void;
 
 /**
- * @description The input for the snowplow function factories
+ * The input for the snowplow function factories
+ * @memberof Snowplow
+ * @see {@link Snowplow.createSnowplowTracker createSnowplowTracker}
  */
 export interface SnowplowTrackerInput {
   /**
@@ -30,6 +32,13 @@ export interface SnowplowTrackerInput {
   version: string;
 }
 
+/**
+ * The input for the snowplow <code>trackRecord</code> function
+ *
+ * @memberof Snowplow
+ * @see {@link Snowplow.Legacy.record  Legacy tracker record event}
+ * @see {@link Snowplow.Standard.record  Standard tracker record event}
+ */
 export interface TrackRecordInput {
   /**
    * The unique identifier for the client that is sending the event

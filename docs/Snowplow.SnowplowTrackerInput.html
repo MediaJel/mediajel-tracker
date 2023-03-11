@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,7 +5,7 @@
   
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mediajel Tracker v1/imports/carts/square.ts</title>
+  <title>Mediajel Tracker SnowplowTrackerInput</title>
 
   <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -92,60 +90,109 @@
         <div class="core" id="main-content-wrapper">
             <div class="content">
                 <header class="page-title">
-                    <p>Source</p>
-                    <h1>v1/imports/carts/square.ts</h1>
+                    <p>Interface</p>
+                    <h1>SnowplowTrackerInput</h1>
                 </header>
                 
 
 
 
+
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>import squareDataSource from "../../../shared/environment-data-sources/square";
-import { QueryStringContext } from "../../../shared/types";
+        <h2>
+            <span class="ancestors"><a href="Snowplow.html">Snowplow</a>.</span>SnowplowTrackerInput</h2>
+        
+    
+</header>
 
-/**
- * The Square Tracker relies on the Google Datalayer Source to track events.
- * There is documentation to improve this more since Square exports variables
- * to the window object.
- */
-const squareTracker = ({ appId, retailId }: Pick&lt;QueryStringContext, "appId" | "retailId">) => {
-  squareDataSource({
-    transactionEvent(transactionData) {
-      window.tracker(
-        "addTrans",
-        transactionData.id,
-        retailId ?? appId,
-        transactionData.total,
-        transactionData.tax,
-        transactionData.shipping,
-        transactionData.city,
-        transactionData.state,
-        transactionData.country
-      );
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description">The input for the snowplow function factories</div>
+        
 
-      transactionData.items.forEach((item) => {
-        window.tracker(
-          "addItem",
-          transactionData.id,
-          item.sku,
-          item.name,
-          item.category,
-          item.unitPrice,
-          item.quantity,
-          transactionData.currency
-        );
-      });
-      window.tracker("trackTrans");
-    },
-  });
-};
+        
 
-export default squareTracker;
-</code></pre>
-        </article>
-    </section>
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="Snowplow.html#.createSnowplowTracker">createSnowplowTracker</a></li>
+        </ul>
+    </dd>
+    
+
+    
+
+    
+        <p class="tag-source">
+            <a href="shared_types.ts.html" class="button">View Source</a>
+            <span>
+                <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line10">line 10</a>
+            </span>
+        </p>
+    
+</dl>
+
+
+        
+    
+    </div>
+    
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
 
 
 

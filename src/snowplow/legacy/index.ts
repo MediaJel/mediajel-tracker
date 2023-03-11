@@ -85,6 +85,8 @@ const setupTrackTransaction = (tracker: SnowplowBrowserTracker): TrackTransactio
  * Tracks a "record" event with the Snowplow Legacy tracker. This event is mainly used
  * for internal analytics (I.E. to monitor how many environments are being used, etc.)
  *
+ * @memberof Snowplow.Legacy
+ * @name record
  * @param {SnowplowBrowserTracker} tracker A Snowplow Legacy tracker
  * @param {TrackRecordInput} input Input for tracking a record event
  * @param {string} input.appId The application id
