@@ -414,13 +414,18 @@
         
         <span class="code-name">
             
-                record<span class="signature">(tracker, input)</span><span class="type-signature"></span>
+                record<span class="signature">(tracker, input)</span><span class="type-signature"> &rarr; {void}</span>
             
         </span>
     </h4>
     
 
     
+    
+    <div class="description">
+        Tracks a "record" event with the Snowplow Standard tracker. This event is mainly used
+for internal analytics (I.E. to monitor how many environments are being used, etc.)
+    </div>
     
 
 
@@ -473,7 +478,7 @@
 
   
 
-  <td class="description last">A Snowplow Legacy tracker</td>
+  <td class="description last">A Snowplow Standard tracker</td>
 </tr>
 
 
@@ -488,7 +493,7 @@
   <td class="type">
   
       
-<code class="param-type"><a href="SnowplowTrackerInput.html">SnowplowTrackerInput</a></code>
+<code class="param-type">TrackRecordInput</code>
 
 
   
@@ -498,28 +503,80 @@
 
   
 
-  <td class="description last">Input object for the Snowplow Legacy tracker</td>
+  <td class="description last">Input for tracking a record event</td>
 </tr>
 
-
-        
-
-            
-<tr class="deep-level-0">
   
-      <td class="name"><code></code></td>
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>appId</code></td>
   
 
   <td class="type">
   
+      
+<code class="param-type">string</code>
+
+
+  
   </td>
 
   
 
   
 
-  <td class="description last"></td>
+  <td class="description last">The application id</td>
 </tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>environment</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">string</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The environment</td>
+</tr>
+
+  
+    
+<tr class="deep-level-1">
+  
+      <td class="name"><code>version</code></td>
+  
+
+  <td class="type">
+  
+      
+<code class="param-type">string</code>
+
+
+  
+  </td>
+
+  
+
+  
+
+  <td class="description last">The version</td>
+</tr>
+
+  
 
 
         
@@ -564,9 +621,9 @@
 
     
         <p class="tag-source">
-            <a href="snowplow_legacy_index.ts.html" class="button">View Source</a>
+            <a href="snowplow_standard_index.ts.html" class="button">View Source</a>
             <span>
-                <a href="snowplow_legacy_index.ts.html">snowplow/legacy/index.ts</a>, <a href="snowplow_legacy_index.ts.html#line63">line 63</a>
+                <a href="snowplow_standard_index.ts.html">snowplow/standard/index.ts</a>, <a href="snowplow_standard_index.ts.html#line99">line 99</a>
             </span>
         </p>
     
@@ -588,6 +645,31 @@
 
 
 
+
+    <div class='columns method-parameter'>
+        <div class="column is-2"><label>Returns:</label></div>
+        <div class="column is-10">
+            
+                    
+
+<div class="columns">
+    
+    <div class='param-desc column is-7'>No return value</div>
+    
+    
+    <div class='column is-5 has-text-left'>
+        <label>Type: </label>
+        
+<code class="param-type">void</code>
+
+
+    </div>
+    
+</div>
+
+                
+        </div>
+    </div>
 
 
 
@@ -773,7 +855,7 @@ to the window object.
         <p class="tag-source">
             <a href="shared_types.ts.html" class="button">View Source</a>
             <span>
-                <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line39">line 39</a>
+                <a href="shared_types.ts.html">shared/types.ts</a>, <a href="shared_types.ts.html#line40">line 40</a>
             </span>
         </p>
     

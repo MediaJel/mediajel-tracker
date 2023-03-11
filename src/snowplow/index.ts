@@ -58,7 +58,7 @@ const importStandardSnowplowTracker = async (input: SnowplowTrackerInput): Promi
 };
 
 /**
- *  Function factory that abstracts the version selection and
+ *  Function that abstracts the version selection and
  *  returns the appropriate Snowplow tracker instance.
  *
  *  @example <caption> Creating a snowplow tracker. The correct version is inferred from the "version" parameter passed in </caption>

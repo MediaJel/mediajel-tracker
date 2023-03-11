@@ -4,6 +4,7 @@ import {
   SnowplowTracker,
   SnowplowTrackerInput,
   TrackAddToCart,
+  TrackRecordInput,
   TrackRemoveFromCart,
   TrackTransaction,
   TransactionEvent,
@@ -81,13 +82,17 @@ const setupTrackTransaction = (tracker: SnowplowBrowserTracker): TrackTransactio
 };
 
 /**
+ * Tracks a "record" event with the Snowplow Legacy tracker. This event is mainly used
+ * for internal analytics (I.E. to monitor how many environments are being used, etc.)
  *
  * @param {SnowplowBrowserTracker} tracker A Snowplow Legacy tracker
- * @param {SnowplowTrackerInput} input Input object for the Snowplow Legacy tracker
- * @param {}
+ * @param {TrackRecordInput} input Input for tracking a record event
+ * @param {string} input.appId The application id
+ * @param {string} input.environment The environment
+ * @param {string} input.version The version
+ * @returns {void} No return value
  */
-
-const record = (tracker: SnowplowBrowserTracker, input: SnowplowTrackerInput) => {
+const record = (tracker: SnowplowBrowserTracker, input: TrackRecordInput): void => {
   const schema = {
     schema: "iglu:com.mediajel.events/record/jsonschema/1-0-2",
     data: {

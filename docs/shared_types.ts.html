@@ -134,6 +134,21 @@ export interface SnowplowTrackerInput {
   version: string;
 }
 
+export interface TrackRecordInput {
+  /**
+   * The unique identifier for the client that is sending the event
+   */
+  appId: string;
+  /**
+   * The environment template selected
+   */
+  environment: string;
+  /**
+   * The version of the tracker
+   */
+  version: string;
+}
+
 /** Enumerated event types for the tracker */
 export type Event = "impression" | "transaction" | "signup";
 
