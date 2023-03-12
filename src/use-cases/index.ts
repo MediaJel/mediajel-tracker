@@ -1,4 +1,5 @@
-import { QueryStringContext, SnowplowTracker } from "/src/shared/types";
+import { QueryStringContext } from "/src/shared/types";
+import { SnowplowTracker } from "/src/snowplow";
 
 interface UseCaseInput {
   tracker: SnowplowTracker;

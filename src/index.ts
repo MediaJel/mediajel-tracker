@@ -2,7 +2,8 @@ import getContext from "./shared/utils/get-context";
 import { createSnowplowTracker } from "/src/snowplow";
 import createLogger from "/src/shared/logger";
 import setUseCase from "/src/use-cases";
-import { QueryStringContext, SnowplowTracker, SnowplowTrackerInput } from "/src/shared/types";
+import { QueryStringContext } from "/src/shared/types";
+import { SnowplowTracker, SnowplowTrackerInput } from "/src/snowplow";
 
 const logger = createLogger("main");
 

@@ -1,4 +1,4 @@
-import { SnowplowTracker, SnowplowTrackerInput, Event } from "/src/shared/types";
+import { SnowplowTracker, SnowplowTrackerInput } from "/src/snowplow/common/types";
 
 /**@namespace Snowplow */
 
@@ -25,7 +25,7 @@ import { SnowplowTracker, SnowplowTrackerInput, Event } from "/src/shared/types"
  *
  */
 const importLegacySnowplowTracker = async (input: SnowplowTrackerInput): Promise<SnowplowTracker> => {
-  const { default: legacy } = await import("/src/snowplow/legacy");
+  const { default: legacy } = await import("./legacy/legacy");
   return legacy(input);
 };
 
@@ -53,7 +53,7 @@ const importLegacySnowplowTracker = async (input: SnowplowTrackerInput): Promise
  *
  */
 const importStandardSnowplowTracker = async (input: SnowplowTrackerInput): Promise<SnowplowTracker> => {
-  const { default: standard } = await import("/src/snowplow/standard");
+  const { default: standard } = await import("./standard/standard");
   return standard(input);
 };
 

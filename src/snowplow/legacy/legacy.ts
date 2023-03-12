@@ -8,7 +8,7 @@ import {
   TrackRemoveFromCart,
   TrackTransaction,
   TransactionEvent,
-} from "/src/shared/types";
+} from "/src/snowplow/common/types";
 import init from "/src/snowplow/legacy/init";
 
 /** @namespace Snowplow.Legacy */

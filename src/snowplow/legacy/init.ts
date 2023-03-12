@@ -1,4 +1,4 @@
-import { SnowplowBrowserTracker, SnowplowInitInput } from "/src/shared/types";
+import { SnowplowBrowserTracker, SnowplowInitInput } from "/src/snowplow/common/types";
 
 const init = ({ appId, collector, event }: SnowplowInitInput): SnowplowBrowserTracker => {
   // Loading tracker with the snowplow tag by fetching our sp.js file
