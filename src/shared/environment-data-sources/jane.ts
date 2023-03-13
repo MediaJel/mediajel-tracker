@@ -1,5 +1,6 @@
 import { postMessageSource } from "../sources/post-message-source";
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import { EnvironmentEvents } from "../types";
+import { TransactionCartItem } from "/src/snowplow";
 
 const janeDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   postMessageSource((event: MessageEvent<any>) => {

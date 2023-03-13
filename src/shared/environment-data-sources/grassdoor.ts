@@ -1,5 +1,7 @@
 import { datalayerSource } from "../sources/google-datalayer-source";
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import { EnvironmentEvents } from "../types";
+import { TransactionCartItem } from "/src/snowplow";
+
 const grassDoorTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   datalayerSource((data: any): void => {
     if (data.event === "Product Added") {

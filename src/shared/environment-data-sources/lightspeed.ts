@@ -1,4 +1,6 @@
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import { EnvironmentEvents } from "../types";
+import { TransactionCartItem } from "/src/snowplow";
+
 const lightspeedTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   if (!window.lightspeedTransaction) return;
   else {

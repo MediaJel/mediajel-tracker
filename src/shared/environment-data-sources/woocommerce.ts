@@ -1,4 +1,5 @@
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import { EnvironmentEvents } from "../types";
+import { TransactionCartItem } from "/src/snowplow";
 import { tryParseJSONObject } from "../utils/try-parse-json";
 
 const woocommerceDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {

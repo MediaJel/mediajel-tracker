@@ -1,4 +1,5 @@
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import { EnvironmentEvents } from "../types";
+import { TransactionCartItem } from "/src/snowplow";
 import { xhrResponseSource } from "../sources/xhr-response-source";
 
 const buddiTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>): void => {
