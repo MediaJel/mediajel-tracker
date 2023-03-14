@@ -1,9 +1,9 @@
 import getContext from "./shared/utils/get-context";
 import { createSnowplowTracker } from "/src/snowplow";
 import createLogger from "/src/shared/logger";
-import setUseCase from "/src/use-cases";
+import setUseCase from "/src/use-cases/set-use-case";
 import { QueryStringContext } from "/src/shared/types";
-import { SnowplowTracker, SnowplowTrackerInput } from "/src/snowplow";
+import { SnowplowTracker } from "/src/snowplow";
 
 const logger = createLogger("main");
 
@@ -28,7 +28,7 @@ const main = async (): Promise<void> => {
     return;
   }
 
-  const tracker = await createSnowplowTracker({
+  const tracker: SnowplowTracker = await createSnowplowTracker({
     appId: context.appId,
     version: context.version,
     collector: context.collector,
@@ -36,7 +36,7 @@ const main = async (): Promise<void> => {
     event: context.event,
   });
 
-  setUseCase({ tracker, ctx: context });
+  const useCase = setUseCase({ tracker, ctx: context });
 };
 
 main().catch((error) => logger.error("Error in main", error));

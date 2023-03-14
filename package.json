@@ -49,6 +49,10 @@
     "typescript": "^4.3.5"
   },
   "browserslist": [
-    "since 2017-06"
+    "since 2017-06",
+    "last 2 version",
+    "> 0.5%",
+    "maintained node versions",
+    "not dead"
   ]
 }
