@@ -82,6 +82,7 @@ const setupTrackTransaction = (tracker: SnowplowBrowserTracker): TrackTransactio
 };
 
 /**
+ * !TODO: Update Docs
  * Tracks a "record" event with the Snowplow Legacy tracker. This event is mainly used
  * for internal analytics (I.E. to monitor how many environments are being used, etc.)
  *
@@ -94,17 +95,21 @@ const setupTrackTransaction = (tracker: SnowplowBrowserTracker): TrackTransactio
  * @param {string} input.version The version
  * @returns {void} No return value
  */
-const record = (tracker: SnowplowBrowserTracker, input: TrackRecordInput): void => {
-  const schema = {
-    schema: "iglu:com.mediajel.events/record/jsonschema/1-0-2",
-    data: {
-      appId: input.appId,
-      cart: input.environment,
-      version: input.version,
+const setupTrackRecord = (tracker: SnowplowBrowserTracker) => {
+  return {
+    trackRecord: (input: TrackRecordInput) => {
+      const schema = {
+        schema: "iglu:com.mediajel.events/record/jsonschema/1-0-2",
+        data: {
+          appId: input.appId,
+          cart: input.environment,
+          version: input.version,
+        },
+      };
+
+      tracker("trackSelfDescribingEvent", schema);
     },
   };
-
-  tracker("trackSelfDescribingEvent", schema);
 };
 
 /**
@@ -112,6 +117,7 @@ const record = (tracker: SnowplowBrowserTracker, input: TrackRecordInput): void 
  * The methods included in the tracker are specific to the Snowplow Legacy tracker
  * also known as "v2" in the snowplow docs
  *
+ *  This function should not be called directly. Instead, use the {@link Snowplow.createSnowplowTracker createSnowplowTracker } function.
  * @class
  * @memberof Snowplow.Legacy
  * @see {@link https://docs.snowplow.io/docs/collecting-data/collecting-from-own-applications/javascript-trackers/javascript-tracker/javascript-tracker-v2/tracking-specific-events/ Snowplow v2 documentation}
@@ -126,11 +132,11 @@ const record = (tracker: SnowplowBrowserTracker, input: TrackRecordInput): void 
  */
 const createSnowplowLegacyTracker = (input: SnowplowTrackerInput): SnowplowTracker => {
   const tracker = init(input);
-  record(tracker, input);
   return {
     ...setupTrackTransaction(tracker),
     ...setupTrackAddToCart(tracker),
     ...setupTrackRemoveFromCart(tracker),
+    ...setupTrackRecord(tracker),
   };
 };
 

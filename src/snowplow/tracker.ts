@@ -60,6 +60,8 @@ const importStandardSnowplowTracker = async (input: SnowplowTrackerInput): Promi
 /**
  *  Function that abstracts the version selection and
  *  returns the appropriate Snowplow tracker instance.
+ *  This would be the main and only function that needs to be called
+ *  to create an instance of the Snowplow tracker outside of the {@link Snowplow} namespace.
  *
  *  @example <caption> Creating a snowplow tracker. The correct version is inferred from the "version" parameter passed in </caption>
  *  const tracker = await createSnowplowTracker({

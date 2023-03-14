@@ -103,6 +103,7 @@ const setupTrackTransaction = (tracker: SnowplowBrowserTracker): TrackTransactio
 };
 
 /**
+ * !TODO: Update Docs
  * Tracks a "record" event with the Snowplow Standard tracker. This event is mainly used
  * for internal analytics (I.E. to monitor how many environments are being used, etc.)
  *
@@ -115,25 +116,29 @@ const setupTrackTransaction = (tracker: SnowplowBrowserTracker): TrackTransactio
  * @param {string} input.version The version
  * @returns {void} No return value
  */
-const record = (tracker: SnowplowBrowserTracker, input: TrackRecordInput): void => {
-  const schema = {
-    event: {
-      schema: "iglu:com.mediajel.events/record/jsonschema/1-0-2",
-      data: {
-        appId: input.appId,
-        cart: input.environment,
-        version: input.version,
-      },
+const setupTrackRecord = (tracker: SnowplowBrowserTracker) => {
+  return {
+    trackRecord: (input: TrackRecordInput) => {
+      tracker("trackSelfDescribingEvent", {
+        event: {
+          schema: "iglu:com.mediajel.events/record/jsonschema/1-0-2",
+          data: {
+            appId: input.appId,
+            cart: input.environment,
+            version: input.version,
+          },
+        },
+      });
     },
   };
-
-  tracker("trackSelfDescribingEvent", schema);
 };
 
 /**
  * Function factory that creates a Snowplow Standard tracker instance.
  * The methods included in the tracker are specific to the Snowplow Standard tracker
- * also known as "v3" in the snowplow docs
+ * also known as "v3" in the snowplow docs.
+ *
+ * This function should not be called directly. Instead, use the {@link Snowplow.createSnowplowTracker createSnowplowTracker } function.
  *
  * @class
  * @memberof Snowplow.Standard
@@ -156,11 +161,11 @@ const record = (tracker: SnowplowBrowserTracker, input: TrackRecordInput): void 
  */
 const createSnowplowStandardTracker = (input: SnowplowTrackerInput): SnowplowTracker => {
   const tracker = init(input);
-  record(tracker, input);
   return {
     ...setupTrackTransaction(tracker),
     ...setupTrackAddToCart(tracker),
     ...setupTrackRemoveFromCart(tracker),
+    ...setupTrackRecord(tracker),
   };
 };
 

@@ -73,6 +73,10 @@ export interface SnowplowTracker {
    * Tracks a remove from cart event
    */
   trackRemoveFromCart: (item: CartEvent) => void;
+  /**
+   * Tracks a record event, mainly used to do internal analytics on already deployed trackers
+   */
+  trackRecord: (input: TrackRecordInput) => void;
 }
 
 /**
@@ -92,6 +96,8 @@ export type TrackRemoveFromCart = Pick<SnowplowTracker, "trackRemoveFromCart">;
  * @memberof SnowplowTracker
  */
 export type TrackTransaction = Pick<SnowplowTracker, "trackTransaction">;
+
+/** */
 
 /**
  * The input for the snowplow `init` function
