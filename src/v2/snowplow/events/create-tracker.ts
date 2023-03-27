@@ -21,7 +21,7 @@ const createTracker = ({ appId, collector, event }: QueryStringContext): void =>
     discoverRootDomain: true,
     stateStorageStrategy: "cookieAndLocalStorage",
     cookieSameSite: "Lax",
-    respectDoNotTrack: true,
+    respectDoNotTrack: false,
     eventMethod: "post",
   });
   window.tracker("enableActivityTracking", {
