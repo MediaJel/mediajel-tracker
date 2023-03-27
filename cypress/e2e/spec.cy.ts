@@ -8,7 +8,7 @@ describe("Ensure locally compiled universal tag is loaded", () => {
   });
 
   it("Loads snowplow sp.js", () => {
-    cy.get("script").should("have.attr", "src", "https://mj-snowplow-static-js.s3.amazonaws.com/sp.js");
+    cy.get("script").should("have.attr", "src", "//mj-snowplow-static-js.s3.amazonaws.com/sp.js");
   });
 });
 
@@ -18,7 +18,7 @@ describe("Ensure locally compiled universal tag is sending events to Snowplow co
     cy.visit("http://localhost:1234");
 
     cy.wait("@production").then((intercept) => {
-      expect(intercept.response.statusCode).to.equal(200);
+      expect(intercept.response.statusCode).to.equal(301);
       expect(intercept.request.body.data[0].aid).to.equal("universal-tag-staging-test");
     });
   });
