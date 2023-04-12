@@ -1,5 +1,5 @@
-import { QueryStringContext } from "@/shared/types";
-import dispenseDataSource from "@/shared/environment-data-sources/dispense";
+import { QueryStringContext } from "../../../shared/types";
+import dispenseDataSource from "../../../shared/environment-data-sources/dispense";
 
 const dispenseTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
   dispenseDataSource({
