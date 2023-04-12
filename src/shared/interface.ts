@@ -15,5 +15,6 @@ declare global {
     dataLayer: any;
     gtag: any;
     uetq: any;
+    gtmDataLayer: any;
   }
 }
