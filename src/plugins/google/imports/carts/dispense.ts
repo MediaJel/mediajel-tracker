@@ -1,4 +1,4 @@
-import dispenseDataSource from "@/shared/environment-data-sources/dispense";
+import dispenseDataSource from "../../../../shared/environment-data-sources/dispense";
 import { GoogleAdsPluginParams, SnowplowParams } from "../../../../shared/types";
 
 interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environment"> {}
