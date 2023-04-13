@@ -16,11 +16,11 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
         country: "USA",
         currency: "USD",
         items: items.map((item) => {
-          const { item_id, item_name, item_category, price, quantity } = item;
+          const { item_name, item_category, price, quantity } = item;
 
           return {
             orderId: transaction_id.toString(),
-            sku: item_id.toString(),
+            sku: item_name.toString(),
             name: item_name?.toString() || "N/A",
             category: item_category?.toString() || "N/A",
             unitPrice: parseFloat(price || 0),
