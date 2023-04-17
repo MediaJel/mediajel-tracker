@@ -64,7 +64,7 @@ export default async (context: QueryStringContext): Promise<void> => {
       import("./square").then(({ default: load }): void => load({ appId, retailId }));
       break;
     //* UNSTABLE
-    case "dutchie-plus":
+    case "dutchieplus":  
       import("./dutchie-plus").then(({ default: load }): void => load({ appId, retailId }));
       break;
     //* STABLE
