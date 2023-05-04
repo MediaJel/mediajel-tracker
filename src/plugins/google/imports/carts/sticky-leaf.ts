@@ -1,4 +1,4 @@
-import stickyLeafDataSource from "@/shared/environment-data-sources/sticky-leaf";
+import stickyLeafDataSource from "../../../../shared/environment-data-sources/sticky-leaf";
 import { GoogleAdsPluginParams, SnowplowParams } from "../../../../shared/types";
 
 interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environment"> {}

@@ -1,5 +1,4 @@
-import { datalayerSource } from "../sources/google-datalayer-source";
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import { EnvironmentEvents } from "../types";
 
 const stickyLeafDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
   if (!window.location.pathname.includes("checkout")) {

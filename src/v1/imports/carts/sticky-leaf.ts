@@ -1,4 +1,4 @@
-import stickyLeafDataSource from "@/shared/environment-data-sources/sticky-leaf";
+import stickyLeafDataSource from "../../../shared/environment-data-sources/sticky-leaf";
 import { QueryStringContext } from "../../../shared/types";
 
 const stickyLeafTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
