@@ -1,8 +1,8 @@
-import dutchiePlusDataSource from "../../../shared/environment-data-sources/dutchie-plus";
 import { QueryStringContext } from "../../../shared/types";
+import dispenseDataSource from "../../../shared/environment-data-sources/dispense";
 
-const dutchiePlusTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
-  dutchiePlusDataSource({
+const dispenseTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
+  dispenseDataSource({
     transactionEvent(transactionData) {
       window.tracker(
         "addTrans",
@@ -33,4 +33,4 @@ const dutchiePlusTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
   });
 };
 
-export default dutchiePlusTracker;
+export default dispenseTracker;
