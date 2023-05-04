@@ -101,6 +101,9 @@ const createGoogleAdsPlugin = (context: GoogleAdsPluginParams) => {
       import("./imports/carts/dutchie-plus").then(({ default: load }) => load(context));
       break;
     }
+    case "sticky-leaf": {
+      import("./imports/carts/sticky-leaf").then(({ default: load }) => load(context));
+    }
     default: {
       console.warn("Google Ads plugin does not support this environment");
     }
