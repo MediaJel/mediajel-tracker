@@ -67,11 +67,14 @@ export default async (context: QueryStringContext): Promise<void> => {
     case "dutchieplus":  
       import("./dutchie-plus").then(({ default: load }): void => load({ appId, retailId }));
       break;
+    //* UNSTABLE
+    case "sticky-leaf":
+      import("./sticky-leaf").then(({ default: load }): void => load({ appId, retailId }));
+      break;
     //* STABLE
     case "dispense":
       import("./dispense").then(({ default: load }): void => load({ appId, retailId }));
       break;
-
     default:
       throw new Error("Undefined environment");
   }
