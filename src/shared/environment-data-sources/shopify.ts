@@ -7,7 +7,7 @@ const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transa
   const transaction = window.Shopify.checkout;
   const products = transaction.line_items;
   const email = transaction.email || "N/A";
-  // const orderNumber = document.getElementsByClassName('os-order-number')[0]['innerText'];
+  const orderNumber = document.getElementsByClassName("os-order-number")[0]["innerText"] || "";
 
   window.tracker("setUserId", email);
 
@@ -15,7 +15,7 @@ const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transa
 
   transactionEvent({
     userId: email,
-    id: (transaction.liquid_order_name || transaction.order_id).toString(),
+    id: `${(transaction.liquid_order_name || transaction.order_id).toString()} ${orderNumber && `- ${orderNumber}`}`,
     total: parseFloat(transaction.liquid_total_price || transaction.total_price),
     tax: parseFloat(transaction.total_tax || 0),
     shipping: parseFloat(transaction.shipping_rate.price || 0),
