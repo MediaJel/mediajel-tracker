@@ -15,7 +15,7 @@ const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transa
 
   transactionEvent({
     userId: email,
-    id: `${(transaction.liquid_order_name || transaction.order_id).toString()} -- ${orderNumber}`,
+    id: `${(transaction.liquid_order_name || transaction.order_id).toString()} - ${orderNumber}`,
     total: parseFloat(transaction.liquid_total_price || transaction.total_price),
     tax: parseFloat(transaction.total_tax || 0),
     shipping: parseFloat(transaction.shipping_rate.price || 0),
