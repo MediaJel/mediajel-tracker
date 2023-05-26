@@ -63,6 +63,10 @@ export default (context: QueryStringContext): void => {
     case "dutchieplus":
       import("./dutchie-plus").then(({ default: load }): void => load({ appId, retailId }));
       break;
+    //* UNSTABLE
+    case "webjoint":
+      import("./webjoint").then(({ default: load }): void => load({ appId, retailId }));
+      break;
     default:
       throw new Error("Undefined environment");
   }
