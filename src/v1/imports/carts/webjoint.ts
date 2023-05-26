@@ -19,7 +19,7 @@ const webjointTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" |
       transactionData.items.forEach((item) => {
         window.tracker(
           "addItem",
-          transactionData.id,
+          item.orderId,
           item.sku,
           item.name,
           item.category,
