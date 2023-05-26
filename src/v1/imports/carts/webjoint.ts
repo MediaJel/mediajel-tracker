@@ -28,7 +28,6 @@ const webjointTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" |
           transactionData.currency
         );
       });
-      window.tracker("trackTrans");
     },
   });
 };

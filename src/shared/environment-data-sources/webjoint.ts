@@ -3,22 +3,25 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const webjointDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
   xhrRequestSource((data: any): void => {
-    if (window.location.href.includes("confirmation")) {
-      const transaction = data.orders[0];
+    const parsedData = JSON.parse(data);
+    const isResultsURL = window.location.href.includes("confirmation");
 
+    var isTrackerSubmitted = false;
+
+    if (parsedData && Object.keys(parsedData).includes("orders")) {
       transactionEvent({
-        id: transaction.id,
-        total: parseFloat(transaction.total),
-        tax: parseFloat(transaction.taxes),
+        id: parsedData.orders[0].id,
+        total: parseFloat(parsedData.orders[0].total),
+        tax: parseFloat(parsedData.orders[0].taxes),
         city: "N/A",
         country: "USA",
         currency: "USD",
         shipping: 0,
         state: "N/A",
-        items: transaction.details.map((item: any) => {
+        items: parsedData.orders[0].details.map((item: any) => {
           const { name, quantity } = item;
           return {
-            orderId: transaction["_id"],
+            orderId: parsedData.orders[0]["_id"],
             category: "N/A",
             currency: "USD",
             name,
@@ -30,43 +33,11 @@ const webjointDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "trans
       });
     }
 
-
-    // (function () {
-    //   var send = XMLHttpRequest.prototype.send;
-    //   XMLHttpRequest.prototype.send = function (data) {
-    //     this.addEventListener("readystatechange", function () {
-    //       var parsedData = JSON.parse(data);
-    //       console.log(parsedData)
-    //       var transaction = {}
-    //       if (parsedData && Object.keys(parsedData).includes('orders')) {
-    //         transaction.id = parsedData.orders[0].id
-    //         transaction.total = parsedData.orders[0].total
-    //         transaction.tax = parsedData.orders[0].tax
-    //       } 
-    
-    //       var isResultsURL = window.location.href.includes("confirmation")
-    //       if (isResultsURL) {
-    //         console.log('submitting transaction')
-    //         console.log(transaction.id)
-    //         console.log(transaction.total)
-    //         console.log(transaction.tax)
-    //         window.tracker(
-    //           "addTrans",
-    //           transaction.id,
-    //           '6ce6f770-6a55-485d-b807-1cdb81e57aff',
-    //           transaction.total,
-    //           transaction.tax,
-    //           'N/A',
-    //           'N/A',
-    //           'N/A',
-    //           'USA'
-    //         );
-    //         window.tracker("trackTrans");
-    //       }
-    //     });
-    //     send.apply(this, arguments);
-    //   };
-    // })();
+    if (isResultsURL && !isTrackerSubmitted) {
+      console.log("submitting transaction...");
+      window.tracker("trackTrans");
+      isTrackerSubmitted = true;
+    }
   });
 };
 
