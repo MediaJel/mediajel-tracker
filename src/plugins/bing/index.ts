@@ -75,6 +75,10 @@ const createBingAdsPlugin = (context: BingAdsPluginParams) => {
       import("./imports/carts/dutchie-plus").then(({ default: load }) => load(context));
       break;
     }
+    case "sticky-leaf": {
+      import("./imports/carts/sticky-leaf").then(({ default: load }) => load(context));
+      break;
+    }
     default: {
       console.warn("Bing Ads does not support this environment");
     }

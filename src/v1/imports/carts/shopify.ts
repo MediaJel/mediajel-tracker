@@ -7,13 +7,14 @@ const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | 
   const transaction = window.Shopify.checkout;
   const products = transaction.line_items;
   const email = transaction.email || "N/A";
+  const orderNumber = document.getElementsByClassName("os-order-number")[0]["innerText"] || "";
 
   window.tracker("setUserId", email);
 
   // liquid_total_price is legacy support for old shopify integration
   window.tracker(
     "addTrans",
-    (transaction.liquid_order_name || transaction.order_id).toString(),
+    `${(transaction.liquid_order_name || transaction.order_id).toString()} ${orderNumber && `- ${orderNumber}`}`,
     retailId ?? appId,
     parseFloat(transaction.liquid_total_price || transaction.total_price),
     parseFloat(transaction.total_tax || 0),

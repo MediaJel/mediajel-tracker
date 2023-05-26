@@ -60,7 +60,7 @@ export default (context: QueryStringContext): void => {
       import("./ecwid").then(({ default: load }): void => load({ appId, retailId }));
       break;
     //* UNSTABLE
-    case "dutchie-plus":
+    case "dutchieplus":
       import("./dutchie-plus").then(({ default: load }): void => load({ appId, retailId }));
       break;
     //* UNSTABLE
