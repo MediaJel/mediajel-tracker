@@ -2,6 +2,8 @@ import webjointDataSource from "../../../shared/environment-data-sources/webjoin
 import { QueryStringContext } from "../../../shared/types";
 
 const webjointTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
+  var isTrackerSubmitted = false;
+
   webjointDataSource({
     transactionEvent(transactionData) {
       window.tracker("addTrans", {
@@ -29,7 +31,10 @@ const webjointTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" |
         });
       });
 
-      window.tracker("trackTrans");
+      if (!isTrackerSubmitted) {
+        window.tracker("trackTrans");
+        isTrackerSubmitted = true;
+      }
     },
   });
 };
