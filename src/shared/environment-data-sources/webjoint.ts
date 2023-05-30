@@ -4,9 +4,6 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 const webjointDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
   xhrRequestSource((data: any): void => {
     const parsedData = JSON.parse(data);
-    const isResultsURL = window.location.href.includes("confirmation");
-
-    var isTrackerSubmitted = false;
 
     if (parsedData && Object.keys(parsedData).includes("orders")) {
       transactionEvent({
@@ -31,12 +28,6 @@ const webjointDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "trans
           } as TransactionCartItem;
         }),
       });
-    }
-
-    if (isResultsURL && !isTrackerSubmitted) {
-      console.log("submitting transaction...");
-      window.tracker("trackTrans");
-      isTrackerSubmitted = true;
     }
   });
 };

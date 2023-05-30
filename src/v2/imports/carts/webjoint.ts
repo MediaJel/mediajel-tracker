@@ -4,30 +4,32 @@ import { QueryStringContext } from "../../../shared/types";
 const webjointTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   webjointDataSource({
     transactionEvent(transactionData) {
-      window.tracker(
-        "addTrans",
-        transactionData.id,
-        retailId ?? appId,
-        transactionData.total,
-        transactionData.tax,
-        transactionData.shipping,
-        transactionData.city,
-        transactionData.state,
-        transactionData.country
-      );
-
-      transactionData.items.forEach((item) => {
-        window.tracker(
-          "addItem",
-          item.orderId,
-          item.sku,
-          item.name,
-          item.category,
-          item.unitPrice,
-          item.quantity,
-          transactionData.currency
-        );
+      window.tracker("addTrans", {
+        orderId: transactionData.id,
+        affiliation: retailId ?? appId,
+        total: transactionData.total,
+        tax: 0,
+        shippping: 0,
+        city: "N/A",
+        state: "N/A",
+        country: "N/A",
+        currency: "USD",
       });
+
+      transactionData.items.forEach((items) => {
+        const { orderId, category, currency, name, quantity, sku, unitPrice } = items;
+        window.tracker("addItem", {
+          orderId,
+          sku,
+          name,
+          category,
+          unitPrice,
+          quantity,
+          currency,
+        });
+      });
+
+      window.tracker("trackTrans");
     },
   });
 };
