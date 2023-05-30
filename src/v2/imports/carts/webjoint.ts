@@ -23,7 +23,7 @@ const webjointTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" |
           sku,
           name,
           category,
-          unitPrice,
+          price: unitPrice,
           quantity,
           currency,
         });

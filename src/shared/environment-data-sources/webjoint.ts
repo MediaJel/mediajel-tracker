@@ -22,7 +22,7 @@ const webjointDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "trans
             category: "N/A".toString(),
             currency: "USD",
             name: (name || "N/A").toString(),
-            quantity: quantity || 1,
+            quantity: parseFloat(quantity) || 1,
             sku: "N/A",
             unitPrice: 0,
           } as TransactionCartItem;
