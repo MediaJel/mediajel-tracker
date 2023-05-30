@@ -8,12 +8,12 @@ const webjointTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" |
         orderId: transactionData.id,
         affiliation: retailId ?? appId,
         total: transactionData.total,
-        tax: 0,
-        shippping: 0,
-        city: "N/A",
-        state: "N/A",
-        country: "N/A",
-        currency: "USD",
+        tax: transactionData.tax,
+        shippping: transactionData.shipping,
+        city: transactionData.city,
+        state: transactionData.state,
+        country: transactionData.country,
+        currency: transactionData.currency,
       });
 
       transactionData.items.forEach((items) => {
