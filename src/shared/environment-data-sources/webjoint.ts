@@ -4,15 +4,12 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 const webjointDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
   xhrRequestSource((data: any): void => {
     const parsedData = JSON.parse(data);
-    const isResultsURL = window.location.href.includes("confirmation");
-
-    var isTrackerSubmitted = false;
 
     if (parsedData && Object.keys(parsedData).includes("orders")) {
       transactionEvent({
-        id: parsedData.orders[0].id,
-        total: parseFloat(parsedData.orders[0].total),
-        tax: parseFloat(parsedData.orders[0].taxes),
+        id: parsedData.orders[0].id || "N/A",
+        total: parseFloat(parsedData.orders[0].total) || 0,
+        tax: parseFloat(parsedData.orders[0].taxes) || 0,
         city: "N/A",
         country: "USA",
         currency: "USD",
@@ -21,22 +18,16 @@ const webjointDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "trans
         items: parsedData.orders[0].details.map((item: any) => {
           const { name, quantity } = item;
           return {
-            orderId: parsedData.orders[0]["_id"],
-            category: "N/A",
+            orderId: parsedData.orders[0]["_id"].toString() || parsedData.orders[0].id.toString() || "N/A",
+            category: "N/A".toString(),
             currency: "USD",
-            name,
-            quantity,
+            name: (name || "N/A").toString(),
+            quantity: parseFloat(quantity) || 1,
             sku: "N/A",
             unitPrice: 0,
           } as TransactionCartItem;
         }),
       });
-    }
-
-    if (isResultsURL && !isTrackerSubmitted) {
-      console.log("submitting transaction...");
-      window.tracker("trackTrans");
-      isTrackerSubmitted = true;
     }
   });
 };
