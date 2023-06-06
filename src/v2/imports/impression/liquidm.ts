@@ -33,7 +33,7 @@ const liquidm = ({
   MAXMIND_ISP_ID,
 }: Partial<ImpressionsMacrosParams>): void => {
   const unstruct = {
-    schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
+    schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-3",
     data: {
       advertiserId: advertiserId || "N/A",
       insertionOrder: insertionOrder || "N/A",

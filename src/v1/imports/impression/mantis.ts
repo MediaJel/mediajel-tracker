@@ -13,7 +13,7 @@ const mantis = ({
 
     console.log("Loading Mantis")
     const unstruct = {
-        schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-2",
+        schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-3",
         data: {
             insertionOrder: insertionOrder || "N/A",
             lineItemId: lineItemId || "Mantis_Main",
