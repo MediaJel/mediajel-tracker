@@ -18,6 +18,7 @@ const createTracker = ({ appId, collector, event }: QueryStringContext): void =>
   })(window, document, "script", "//mj-snowplow-static-js.s3.amazonaws.com/cnna.js", "tracker");
   window.tracker("newTracker", "cf", collector, {
     appId,
+    postPath: '/analytics/track',
     discoverRootDomain: true,
     stateStorageStrategy: "cookieAndLocalStorage",
     cookieSameSite: "Lax",
