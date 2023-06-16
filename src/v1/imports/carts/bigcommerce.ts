@@ -4,10 +4,14 @@ import { QueryStringContext } from "../../../shared/types";
 const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
     xhrResponseSource((xhr) => {
         try {
-            if (xhr.responseURL.includes('/checkout/order-confirmation')) {
+            console.log('xhr', xhr);
+            if (window.location.pathname.includes('/checkout/order-confirmation')) {
                 const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
                 const products = transaction.lineItems.physicalItems;
+                console.log('transaction', transaction);
+                console.log('orderId',transaction.hasOwnProperty("orderId"));
                 if (transaction.hasOwnProperty("orderId")) {
+                    console.log('products', products);
                     window.tracker("setUserId", transaction.billingAddress.email.toString());
                     window.tracker(
                         "addTrans",
