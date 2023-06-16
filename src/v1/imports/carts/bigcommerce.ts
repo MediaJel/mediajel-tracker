@@ -11,6 +11,7 @@ const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
                 console.log('transaction', transaction);
                 console.log('orderId',transaction.hasOwnProperty("orderId"));
                 if (transaction.hasOwnProperty("orderId")) {
+                    console.log('products', products);
                     window.tracker("setUserId", transaction.billingAddress.email.toString());
                     window.tracker(
                         "addTrans",
