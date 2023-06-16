@@ -4,7 +4,7 @@ import { QueryStringContext } from "../../../shared/types";
 const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
     xhrResponseSource((xhr) => {
         try {
-            if (window.location.pathname.includes('/checkout/order-confirmation')) {
+            if (xhr.responseURL.includes('/checkout/order-confirmation')) {
                 const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
                 const products = transaction.lineItems.physicalItems;
                 if (transaction.hasOwnProperty("orderId")) {

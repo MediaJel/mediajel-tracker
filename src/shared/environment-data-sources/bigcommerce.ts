@@ -4,7 +4,7 @@ import { xhrResponseSource } from "../sources/xhr-response-source";
 const bigcommerceTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
     xhrResponseSource((xhr) => {
         try {
-            if (window.location.pathname.includes('/checkout/order-confirmation')) {
+            if (xhr.responseURL.includes('/checkout/order-confirmation')) {
                 const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
                 const products = transaction.lineItems.physicalItems;
                 if (transaction.hasOwnProperty("orderId")) {
