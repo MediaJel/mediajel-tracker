@@ -5,7 +5,10 @@ const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
     xhrResponseSource((xhr) => {
         try {
             console.log('xhr', xhr);
-            if (window.location.pathname.includes('/checkout/order-confirmation')) {
+
+            console.log('window.location.pathname', window.location.pathname )
+            console.log('window.location.pathname includes', window.location.pathname.includes('/checkout/order-confirmation') )
+            //if (window.location.pathname.includes('/checkout/order-confirmation')) {
                 const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
                 const products = transaction.lineItems.physicalItems;
                 console.log('transaction', transaction);
@@ -39,7 +42,7 @@ const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
                     });
                     window.tracker("trackTrans");
                 }
-            }
+            //}
         } catch (e) {
         }
     });
