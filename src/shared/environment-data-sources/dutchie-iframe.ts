@@ -39,8 +39,8 @@ const dutchieIframeDataSource = ({
       });
     }
 
-    if (rawData.event === "analytics:dataLayer" && payload["0"].event == "purchase") {
-      const transaction = payload["2"];
+    if (rawData.event === "analytics:dataLayer" && rawData.payload.payload['1'] === "purchase") {
+      const transaction = rawData.payload.payload["2"];
       const products = transaction.items;
       const { transaction_id, value } = transaction;
       transactionEvent({
