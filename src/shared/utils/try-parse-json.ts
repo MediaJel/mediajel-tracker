@@ -1,9 +1,14 @@
-export const tryParseJSONObject = (e: string): string | any => {
+export const tryParseJSONObject = (event: string | object): string | object | any => {
   try {
-    if (e && typeof e === "object") {
-      return e;
+    if (typeof event === "object") {
+      return event;
     }
-  } catch (e) {}
+    if (typeof event === "string") {
+      return JSON.parse(event);
+    }
+  } catch (e) {
+    console.error("Error parsing event:", e);
+  }
 
-  return JSON.parse(e);
+  return event;
 };
