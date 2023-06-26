@@ -1,14 +1,9 @@
-
-
-
-export const tryParseJSONObject = (str: string): string | any => {
-    try {
-        const o: any = JSON.parse(str);
-        if (o && typeof o === "object") {
-            return o;
-        }
+export const tryParseJSONObject = (e: string): string | any => {
+  try {
+    if (e && typeof e === "object") {
+      return e;
     }
-    catch (e) { }
+  } catch (e) {}
 
-    return str;
+  return JSON.parse(e);
 };
