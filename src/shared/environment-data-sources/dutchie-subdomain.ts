@@ -7,6 +7,35 @@ const dutchieSubdomainDataSource = ({
   transactionEvent,
 }: Partial<EnvironmentEvents>) => {
   datalayerSource((data) => {
+    if (data['0'] === 'event' && data['1'] === 'purchase') {
+      const transaction = data['2'];
+      const products = transaction.items;
+      const { transaction_id, value } = transaction;
+
+      transactionEvent?.({
+        total: parseFloat(value),
+        id: transaction_id.toString(),
+        tax: 0,
+        shipping: 0,
+        city: "N/A",
+        state: "N/A",
+        country: "N/A",
+        currency: "USD",
+        items: products.map((product) => {
+          return {
+            orderId: transaction_id.toString(),
+            sku: product.item_id.toString(),
+            name: product.item_name?.toString() || "N/A",
+            category: product.item_category?.toString() || "N/A",
+            unitPrice: parseFloat(product.price || "0"),
+            quantity: parseInt(product.quantity || "1"),
+            currency: "USD",
+          } as TransactionCartItem;
+        }),
+      });
+    }
+
+
     if (data.event === "add_to_cart") {
       const products = data.ecommerce.items;
       const { item_id, item_name, item_category, price, quantity } = products[0];
