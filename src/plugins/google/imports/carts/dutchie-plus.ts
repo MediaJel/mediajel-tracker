@@ -1,4 +1,4 @@
-import dutchiePlusDataSource from "../../../../shared/environment-data-sources/dutchie-plus";
+// import dutchiePlusDataSource from "../../../../shared/environment-data-sources/dutchie-plus";
 import { GoogleAdsPluginParams, SnowplowParams, TransactionCartItem } from "../../../../shared/types";
 
 interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environment"> {}
@@ -18,17 +18,14 @@ const dutchiePlusGoogleAds = (context: Context) => {
 
     // if local storage: order id and current order id not the same then send transactionEvent
     if (data.event === "purchase") {
-      console.log("logging dataLayer event:");
-      console.log(data);
-
       const orderContent: HTMLDivElement | any = document.getElementsByClassName("order-content")[0];
       const text: string = orderContent?.innerText;
       const regex = /#(\d+)/;
       const orderNumber = text.match(regex)[1];
 
-      // if (localStorage.getItem("orderNumber") === orderNumber) {
-      //   return;
-      // }
+      if (localStorage.getItem("orderNumber") === orderNumber) {
+        return;
+      }
 
       // set order id to local storage to prevent duplicate events
       localStorage.setItem("orderNumber", orderNumber);

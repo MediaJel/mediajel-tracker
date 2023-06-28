@@ -97,7 +97,7 @@ const createGoogleAdsPlugin = (context: GoogleAdsPluginParams) => {
       import("./imports/carts/square").then(({ default: load }) => load(context));
       break;
     }
-    case "dutchie-plus": {
+    case "dutchieplus": {
       import("./imports/carts/dutchie-plus").then(({ default: load }) => load(context));
       break;
     }
