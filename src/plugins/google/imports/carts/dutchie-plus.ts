@@ -4,8 +4,8 @@ import { GoogleAdsPluginParams, SnowplowParams } from "../../../../shared/types"
 interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const dutchiePlusGoogleAds = (context: Context) => {
-  dutchiePlusDataSource({
-    transactionEvent(transactionData) {
+  dutchiePlusDataSource(
+    (transactionData) => {
       console.log("🚀🚀🚀 Dutchie Plus Transaction Event ", { transactionData });
       window.gtag("event", "conversion", {
         send_to: `${context.conversionId}/${context.conversionLabel}`,
@@ -14,7 +14,7 @@ const dutchiePlusGoogleAds = (context: Context) => {
         transaction_id: transactionData.id,
       });
     },
-  });
+  );
 };
 
 export default dutchiePlusGoogleAds;
