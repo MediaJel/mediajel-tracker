@@ -31,13 +31,17 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
         return;
       }
 
+      // set order id to local storage to prevent duplicate events
+      localStorage.setItem("orderNumber", orderNumber);
 
       console.log('tracking order...')
 
       const { id, revenue, tax } = data.ecommerce.purchase.actionField;
       const items = data.ecommerce.purchase.products;
 
-      transactionEvent({
+      console.log(transactionEvent)
+
+      transactionEvent?.({
         total: parseFloat(revenue),
         id: id.toString(),
         tax: parseFloat(tax || 0),
@@ -60,9 +64,6 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
           } as TransactionCartItem;
         }),
       });
-
-      // set order id to local storage to prevent duplicate events
-      localStorage.setItem("orderNumber", orderNumber);
     }
   }
 };
