@@ -31,6 +31,9 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
         return;
       }
 
+
+      console.log('tracking order...')
+
       const { id, revenue, tax } = data.ecommerce.purchase.actionField;
       const items = data.ecommerce.purchase.products;
 
