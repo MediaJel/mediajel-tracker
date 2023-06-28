@@ -25,6 +25,8 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
 
       console.log("orderNumber: ", orderNumber);
 
+      console.log(localStorage.getItem("orderNumber") === orderNumber)
+
       if (localStorage.getItem("orderNumber") === orderNumber) {
         return;
       }
