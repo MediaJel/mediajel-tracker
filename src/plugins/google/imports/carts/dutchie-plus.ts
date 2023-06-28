@@ -1,4 +1,4 @@
-import dutchiePlusDataSource from "../../../../shared/environment-data-sources/dutchie-subdomain";
+import dutchiePlusDataSource from "../../../../shared/environment-data-sources/dutchie-plus";
 import { GoogleAdsPluginParams, SnowplowParams } from "../../../../shared/types";
 
 interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environment"> {}
