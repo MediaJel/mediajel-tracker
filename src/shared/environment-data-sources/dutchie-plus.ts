@@ -1,6 +1,6 @@
 import { EnvironmentEvents, TransactionCartItem } from "../types";
 
-const dutchiePlusDataSource = (callback: Partial<EnvironmentEvents> | any) => {
+const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   // IMPORTANT NOTE: dutchieplus cart is for CURALEAF only
   window.dataLayer = window.dataLayer || [];
 
@@ -63,7 +63,7 @@ const dutchiePlusDataSource = (callback: Partial<EnvironmentEvents> | any) => {
         }),
       });
 
-      callback({
+      transactionEvent({
         total: parseFloat(revenue),
         id: id.toString(),
         tax: parseFloat(tax || 0),
