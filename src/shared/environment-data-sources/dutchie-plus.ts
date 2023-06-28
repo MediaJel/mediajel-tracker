@@ -25,7 +25,7 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
 
       console.log("orderNumber: ", orderNumber);
 
-      console.log(localStorage.getItem("orderNumber") === orderNumber)
+      console.log(localStorage.getItem("orderNumber") === orderNumber);
 
       if (localStorage.getItem("orderNumber") === orderNumber) {
         return;
@@ -34,14 +34,36 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
       // set order id to local storage to prevent duplicate events
       localStorage.setItem("orderNumber", orderNumber);
 
-      console.log('tracking order...')
+      console.log("tracking order...");
 
       const { id, revenue, tax } = data.ecommerce.purchase.actionField;
       const items = data.ecommerce.purchase.products;
 
-      console.log(transactionEvent)
+      console.log({
+        total: parseFloat(revenue),
+        id: id.toString(),
+        tax: parseFloat(tax || 0),
+        shipping: 0,
+        city: "N/A",
+        state: "N/A",
+        country: "N/A",
+        currency: "USD",
+        items: items.map((item) => {
+          const { id, name, category, price, quantity } = item;
 
-      transactionEvent?.({
+          return {
+            orderId: id.toString(),
+            sku: id.toString(),
+            name: name?.toString() || "N/A",
+            category: category?.toString() || "N/A",
+            unitPrice: parseFloat(price || 0),
+            quantity: parseInt(quantity || 1),
+            currency: "USD",
+          } as TransactionCartItem;
+        }),
+      });
+
+      transactionEvent({
         total: parseFloat(revenue),
         id: id.toString(),
         tax: parseFloat(tax || 0),
