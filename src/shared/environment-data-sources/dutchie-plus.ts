@@ -37,7 +37,7 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
       const { id, revenue, tax } = data.ecommerce.purchase.actionField;
       const items = data.ecommerce.purchase.products;
 
-      transactionEvent?.({
+      transactionEvent({
         total: parseFloat(revenue),
         id: id.toString(),
         tax: parseFloat(tax || 0),
