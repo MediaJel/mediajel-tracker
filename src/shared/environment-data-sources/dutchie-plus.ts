@@ -1,7 +1,7 @@
 import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
-  // important note: DUTCHIE-PLUS for curaleaf ONLY!!!
+  // IMPORTANT NOTE: dutchieplus cart is for CURALEAF only
   window.dataLayer = window.dataLayer || [];
 
   // if window.locatoin.href includes 'order-confirmation'
