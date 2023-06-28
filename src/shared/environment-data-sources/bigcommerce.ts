@@ -1,7 +1,7 @@
 import { EnvironmentEvents, TransactionCartItem } from "../types";
 import { xhrResponseSource } from "../sources/xhr-response-source";
 
-const bigcommerceTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
+const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
     xhrResponseSource((xhr) => {
         try {
             const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
@@ -36,4 +36,4 @@ const bigcommerceTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
     });
 };
 
-export default bigcommerceTracker;
+export default bigcommerceDataSource;
