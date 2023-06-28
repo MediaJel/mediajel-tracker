@@ -4,29 +4,31 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
   // important note: DUTCHIE-PLUS for curaleaf ONLY!!!
   window.dataLayer = window.dataLayer || [];
 
-   // if window.locatoin.href includes 'order-confirmation'
-   if (!window.location.href.includes('order-confirmation')){
+  // if window.locatoin.href includes 'order-confirmation'
+  if (!window.location.href.includes("order-confirmation")) {
     return;
-  }
-
-  const orderContent: HTMLDivElement | any = document.getElementsByClassName('order-content')[0];
-  const text: string = orderContent?.innerText
-  const regex = /#(\d+)/;
-  const orderNumber = text.match(regex)[1];
-
-  if (localStorage.getItem('orderNumber') !== orderNumber) {
-    localStorage.setItem('orderNumber', orderNumber);
-    console.log(orderNumber);
   }
 
   // loop through the dataLayer and find the purchase event
   for (let i = 0; i < window.dataLayer.length; i++) {
     const data = window.dataLayer[i];
-    console.log("logging dataLayer event:");
-    console.log(data);
-    
+
     // if local storage: order id and current order id not the same then send transactionEvent
-    if (data.event === "purchase" && localStorage.getItem('orderNumber') !== orderNumber) {
+    if (data.event === "purchase") {
+      console.log("logging dataLayer event:");
+      console.log(data);
+
+      const orderContent: HTMLDivElement | any = document.getElementsByClassName("order-content")[0];
+      const text: string = orderContent?.innerText;
+      const regex = /#(\d+)/;
+      const orderNumber = text.match(regex)[1];
+
+      console.log("orderNumber: ", orderNumber);
+
+      if (localStorage.getItem("orderNumber") === orderNumber) {
+        return;
+      }
+
       const { id, revenue, tax } = data.ecommerce.purchase.actionField;
       const items = data.ecommerce.purchase.products;
 
@@ -53,6 +55,9 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
           } as TransactionCartItem;
         }),
       });
+
+      // set order id to local storage to prevent duplicate events
+      localStorage.setItem("orderNumber", orderNumber);
     }
   }
 };
