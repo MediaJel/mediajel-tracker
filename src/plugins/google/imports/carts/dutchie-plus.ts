@@ -26,18 +26,12 @@ const dutchiePlusGoogleAds = (context: Context) => {
       const regex = /#(\d+)/;
       const orderNumber = text.match(regex)[1];
 
-      console.log("orderNumber: ", orderNumber);
-
-      console.log(localStorage.getItem("orderNumber") === orderNumber);
-
-      if (localStorage.getItem("orderNumber") === orderNumber) {
-        return;
-      }
+      // if (localStorage.getItem("orderNumber") === orderNumber) {
+      //   return;
+      // }
 
       // set order id to local storage to prevent duplicate events
       localStorage.setItem("orderNumber", orderNumber);
-
-      console.log("tracking order...");
 
       const { id, revenue, tax } = data.ecommerce.purchase.actionField;
       const items = data.ecommerce.purchase.products;
@@ -53,7 +47,6 @@ const dutchiePlusGoogleAds = (context: Context) => {
         currency: "USD",
         items: items.map((item) => {
           const { id, name, category, price, quantity } = item;
-
           return {
             orderId: id.toString(),
             sku: id.toString(),
@@ -65,6 +58,8 @@ const dutchiePlusGoogleAds = (context: Context) => {
           } as TransactionCartItem;
         }),
       };
+
+      console.log(context);
 
       console.log("🚀🚀🚀 Dutchie Plus Transaction Event ", { transactionData });
       window.gtag("event", "conversion", {
