@@ -33,6 +33,8 @@ const yotpoDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent
     //   });
     // }
 
+    console.log("data", data);
+
     if (data.event === "purchase") {
       const transaction = data.ecommerce;
       const products = data.ecommerce.items;
