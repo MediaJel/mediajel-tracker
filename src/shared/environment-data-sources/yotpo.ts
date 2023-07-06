@@ -3,6 +3,7 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const yotpoDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   datalayerSource((data: any) => {
+    // do not  remove commented code
     // if (data.event === "addToCart") {
     //   const products = data.ecommerce.add.products;
     //   const currency = data.ecommerce.currency;
@@ -32,8 +33,6 @@ const yotpoDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent
     //     currency: (currency || "USD").toString(),
     //   });
     // }
-
-    console.log("data", data);
 
     if (data.event === "purchase") {
       const transaction = data.ecommerce;
