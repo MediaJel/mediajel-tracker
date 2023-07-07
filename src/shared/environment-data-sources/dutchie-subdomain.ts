@@ -7,7 +7,6 @@ const dutchieSubdomainDataSource = ({
   transactionEvent,
 }: Partial<EnvironmentEvents>) => {
   datalayerSource((data) => {
-    console.log("data", data);
     if (data["0"] === "event" && data["1"] === "purchase") {
       const transaction = data["2"];
       const products = transaction.items;
