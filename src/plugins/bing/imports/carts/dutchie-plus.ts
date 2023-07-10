@@ -1,4 +1,4 @@
-import dutchiePlusDataSource from "../../../../shared/environment-data-sources/dutchie-iframe";
+import dutchiePlusDataSource from "../../../../shared/environment-data-sources/dutchie-plus";
 import { BingAdsPluginParams, SnowplowParams } from "../../../../shared/types";
 
 interface Context extends BingAdsPluginParams, Pick<SnowplowParams, "environment"> {}
