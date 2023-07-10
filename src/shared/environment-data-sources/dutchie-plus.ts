@@ -12,8 +12,6 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
   // loop through the dataLayer and find the purchase event
   for (let i = 0; i < window.dataLayer.length; i++) {
     const data = window.dataLayer[i];
-    console.log(data)
-    // if local storage: order id and current order id not the same then send transactionEvent
     if (data.event === "purchase") {
       // const orderContent: HTMLDivElement | any = document.getElementsByClassName("order-content")[0];
       // const text: string = orderContent?.innerText;
@@ -29,8 +27,6 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
 
       const { id, revenue, tax } = data.ecommerce.purchase.actionField;
       const items = data.ecommerce.purchase.products;
-
-      console.log({ id, revenue, tax, items })
 
       transactionEvent({
         total: parseFloat(revenue),
