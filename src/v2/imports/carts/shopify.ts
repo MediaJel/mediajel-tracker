@@ -32,7 +32,9 @@ const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | 
       const { id, product_id, title, variant_title, price, quantity } = items;
 
       window.tracker("addItem", {
-        orderId: (transaction.liquid_order_name || transaction.order_id).toString(),
+        orderId: `${(transaction.liquid_order_name || transaction.order_id).toString()} ${
+          orderNumber && `- ${orderNumber}`
+        }`,
         sku: (id || product_id).toString(),
         name: (title || "N/A").toString(),
         category: (variant_title || "N/A").toString(),
