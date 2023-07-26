@@ -34,7 +34,7 @@ Impressions tag we serve to our DSPs
 ### Staging (for testing & development)
 
 ```javascript
-<script src="http://tags.mediajel.ninja/?appId=APP_ID_HERE&retailId=RETAIL_ID_HERE&environment=CART_PLATFORM_HERE&test=true"></script>
+<script src="http://mj-tracker-static-js.s3.amazonaws.com/index.js/?appId=APP_ID_HERE&retailId=RETAIL_ID_HERE&environment=CART_PLATFORM_HERE&test=true"></script>
 ```
 
 ### Multiple Plugin Support
