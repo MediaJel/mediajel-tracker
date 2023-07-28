@@ -1,13 +1,13 @@
 import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
-  // IMPORTANT NOTE: dutchieplus cart is for CURALEAF only
+  // IMPORTANT NOTE: dutchieplus cart CURALEAF is Paid search only & greenvalleydispensary is display 
   window.dataLayer = window.dataLayer || [];
 
   // if window.locatoin.href includes 'order-confirmation'
-  if (!window.location.href.includes("order-confirmation")) {
-    return;
-  }
+  // if (!window.location.href.includes("order-confirmation")) {
+  //   return;
+  // }
 
   // loop through the dataLayer and find the purchase event
   for (let i = 0; i < window.dataLayer.length; i++) {
