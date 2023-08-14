@@ -3,6 +3,7 @@ import { QueryStringContext, QueryStringParams } from "../types";
 // Locates our tag
 const getContext = () => {
   const scriptContents: QueryStringContext[] = []; 
+  const scriptSrc: string[] = [];
   const scriptElements = document.querySelectorAll("script");
 
   scriptElements.forEach((scriptElement) => {
@@ -10,19 +11,25 @@ const getContext = () => {
 
     if (srcAttributeValue && srcAttributeValue.includes("appId=")) {
       const substring: string = srcAttributeValue.split('?')[1];
-      const urlSearchParams: URLSearchParams = new URLSearchParams(substring);
-      const { mediajelAppId, appId, version, ...params } = Object.fromEntries(
-        urlSearchParams.entries()
-      ) as unknown as QueryStringParams;
 
-      const context = {
-        appId: appId || mediajelAppId,
-        version: version || "1",
-        collector: params.test ? process.env.MJ_STAGING_COLLECTOR_URL : process.env.MJ_PRODUCTION_COLLECTOR_URL,
-        ...params,
-      } as  QueryStringContext ;
+      if(!scriptSrc.includes(substring)){ // check if appId is already implemented and exist then clean dups
+        scriptSrc.push(substring); // If appId doesn't exist on Array checker for dups then add new param string
 
-      scriptContents.push(context);
+        const urlSearchParams: URLSearchParams = new URLSearchParams(substring);
+        const { mediajelAppId, appId, version, ...params } = Object.fromEntries(
+          urlSearchParams.entries()
+        ) as unknown as QueryStringParams;
+  
+        const context = {
+          appId: appId || mediajelAppId,
+          version: version || "1",
+          collector: params.test ? process.env.MJ_STAGING_COLLECTOR_URL : process.env.MJ_PRODUCTION_COLLECTOR_URL,
+          ...params,
+        } as  QueryStringContext ;
+        
+        scriptContents.push(context);
+      }
+    
     }
   });
 
