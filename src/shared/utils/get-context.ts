@@ -6,6 +6,8 @@ const getContext = () => {
   const scriptSrc: string[] = [];
   const scriptElements = document.querySelectorAll("script");
 
+  console.log('scriptSrc', scriptSrc);
+
   scriptElements.forEach((scriptElement) => {
     const srcAttributeValue = scriptElement.getAttribute("src");
 
@@ -26,7 +28,7 @@ const getContext = () => {
           collector: params.test ? process.env.MJ_STAGING_COLLECTOR_URL : process.env.MJ_PRODUCTION_COLLECTOR_URL,
           ...params,
         } as  QueryStringContext ;
-        
+
         scriptContents.push(context);
       }
     
