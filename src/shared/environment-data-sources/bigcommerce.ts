@@ -5,10 +5,10 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
     xhrResponseSource((xhr) => {
         try {
             //let intervalId = window.setInterval(function () {
-            console.log("Running");
+            console.log("Running", xhr);
             const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
             if (transaction.hasOwnProperty("orderId")) {
-                if (window.location.pathname.includes('/checkout/order-confirmation')) {
+                //if (window.location.pathname.includes('/checkout/order-confirmation')) {
                     console.log('xhr', xhr);
 
                     console.log('transaction', transaction);
@@ -38,7 +38,7 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
                         }),
                     });
                     //clearInterval(intervalId); // This will stop the setInterval
-                }
+                //}
             }
             //}, 2000);
         } catch (e) {
