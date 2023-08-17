@@ -4,11 +4,14 @@ import { xhrResponseSource } from "../sources/xhr-response-source";
 const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
     xhrResponseSource((xhr) => {
         try {
-            let intervalId = window.setInterval(function () {
-                console.log("Running intervalss");
+            //let intervalId = window.setInterval(function () {
+                console.log("Running");
                 if (window.location.pathname.includes('/checkout/order-confirmation')) {
+                    console.log('xhr', xhr);
                     const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
+                    console.log('transaction', transaction);
                     const products = transaction?.lineItems?.physicalItems;
+                    
                         transactionEvent({
                             id: transaction.orderId.toString(),
                             total: parseFloat(transaction.orderAmount),
@@ -32,9 +35,9 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
                                 } as TransactionCartItem;
                             }),
                         });
-                        clearInterval(intervalId); // This will stop the setInterval
+                        //clearInterval(intervalId); // This will stop the setInterval
                 }
-            }, 2000);
+            //}, 2000);
         } catch (e) {
         }
     });
