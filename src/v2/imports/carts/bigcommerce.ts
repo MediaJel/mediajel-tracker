@@ -5,10 +5,11 @@ const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
     xhrResponseSource((xhr) => {
         try {
             //let intervalId = window.setInterval(function () {
-                console.log("Running");
+            console.log("Running");
+            const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
+            if (transaction.hasOwnProperty("orderId")) {
                 if (window.location.pathname.includes('/checkout/order-confirmation')) {
                     console.log('xhr', xhr);
-                    const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
                     console.log('transaction', transaction);
                     const products = transaction?.lineItems?.physicalItems;
 
@@ -39,8 +40,8 @@ const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
                     window.tracker("trackTrans");
 
                     //clearInterval(intervalId); // This will stop the setInterval
-
                 }
+            }
             //}, 2000);
         } catch (e) {
         }
