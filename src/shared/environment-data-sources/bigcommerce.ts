@@ -7,7 +7,7 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
             if (window.location.pathname.includes('/checkout')) {
                 const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
                 if (transaction.hasOwnProperty("orderId")) {
-                    if (transaction.orderId !== null) {
+                    if (transaction.isComplete === true) {
                         const products = transaction?.lineItems?.physicalItems;
                         transactionEvent({
                             id: transaction.orderId.toString(),
