@@ -8,10 +8,7 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
                 const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
                 if (transaction.hasOwnProperty("orderId")) {
                     if (transaction.orderId !== null) {
-                        console.log('xhr', xhr);
-                        console.log('transaction', transaction);
                         const products = transaction?.lineItems?.physicalItems;
-
                         transactionEvent({
                             id: transaction.orderId.toString(),
                             total: parseFloat(transaction.orderAmount),
