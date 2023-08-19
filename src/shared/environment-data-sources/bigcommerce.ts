@@ -10,8 +10,11 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
                 let latestOrder = null;
                 if (transaction.hasOwnProperty("orderId")) {
                     if (transaction.hasOwnProperty("isComplete")) {
+                        console.log('transaction.isComplete', transaction.isComplete);
                         if (transaction.isComplete === true) {
+                            console.log('goods')
                             if (latestOrder !== transaction.orderId.toString()) {
+                                console.log('final great')
                                 transactionEvent({
                                     id: transaction.orderId.toString(),
                                     total: parseFloat(transaction.orderAmount),
