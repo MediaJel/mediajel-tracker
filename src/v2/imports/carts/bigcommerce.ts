@@ -4,13 +4,13 @@ import { QueryStringContext } from "../../../shared/types";
 const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
     xhrResponseSource((xhr) => {
         try {
-            if (window.location.pathname.includes('/checkout')) {
+            //if (window.location.pathname.includes('/checkout')) {
                 const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
                 const products = transaction?.lineItems?.physicalItems;
                 let latestOrder = null;
                 if (transaction.hasOwnProperty("orderId")) {
-                    if (transaction.hasOwnProperty("isComplete")) {
-                        if (transaction.isComplete === true) {
+                    if (transaction.hasOwnProperty("status")) {
+                        if (transaction.status === "AWAITING_FULFILLMENT") {
                             if (latestOrder !== transaction.orderId.toString()) {
                                 window.tracker("setUserId", transaction.billingAddress.email.toString());
                                 window.tracker("addTrans", {
@@ -42,7 +42,7 @@ const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
                         }
                     }
                 }
-            }
+            //}
         } catch (e) {
         }
     });
