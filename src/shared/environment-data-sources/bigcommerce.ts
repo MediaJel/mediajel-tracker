@@ -4,17 +4,14 @@ import { xhrResponseSource } from "../sources/xhr-response-source";
 const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
     xhrResponseSource((xhr) => {
         try {
-            if (window.location.pathname.includes('/checkout')) {
+            //if (window.location.pathname.includes('/checkout')) {
                 const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
                 const products = transaction?.lineItems?.physicalItems;
                 let latestOrder = null;
                 if (transaction.hasOwnProperty("orderId")) {
-                    if (transaction.hasOwnProperty("isComplete")) {
-                        console.log('transaction.isComplete', transaction.isComplete);
-                        if (transaction.isComplete === true) {
-                            console.log('goods')
+                    if (transaction.hasOwnProperty("status")) {
+                        if (transaction.status === "AWAITING_FULFILLMENT") {
                             if (latestOrder !== transaction.orderId.toString()) {
-                                console.log('final great')
                                 transactionEvent({
                                     id: transaction.orderId.toString(),
                                     total: parseFloat(transaction.orderAmount),
@@ -43,7 +40,7 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
                         }
                     }
                 }
-            }
+            //}
         } catch (e) {
         }
     });
