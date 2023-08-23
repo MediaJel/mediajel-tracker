@@ -45,6 +45,7 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
                 }
             //}
         } catch (e) {
+            console.log("warning: ", e);
         }
     });
 };
