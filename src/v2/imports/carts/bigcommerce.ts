@@ -11,7 +11,7 @@ const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
             if (transaction.hasOwnProperty("orderId")) {
                 if (transaction.hasOwnProperty("status")) {
                     console.log('status v2', transaction.status);
-                    if (transaction.status === "AWAITING_FULFILLMENT") {
+                    if (transaction.status === "AWAITING_FULFILLMENT" || transaction.status === "INCOMPLETE") {
                         console.log("completed status validation")
                         if (latestOrder !== transaction.orderId.toString()) {
                             console.log("completed transaction validation");
