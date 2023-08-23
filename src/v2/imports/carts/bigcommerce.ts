@@ -18,7 +18,7 @@ const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
                             console.log('transactions in here: ', transaction);
                             window.tracker("addTrans", {
                                 id: transaction.orderId.toString(),
-                                affiliation: retailId ?? appId,
+                                affiliation: "N/A",
                                 total: parseFloat(transaction.orderAmount),
                                 tax: parseFloat(transaction.taxTotal) || 0,
                                 shipping: parseFloat(transaction.shippingCostTotal) || 0,

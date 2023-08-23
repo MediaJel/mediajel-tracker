@@ -8,7 +8,7 @@ const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
             window.tracker(
               "addTrans",
               transactionData.id,
-              retailId ?? appId,
+              "N/A",
               transactionData.total,
               transactionData.tax,
               transactionData.shipping,
