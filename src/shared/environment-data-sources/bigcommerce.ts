@@ -10,8 +10,11 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
                 let latestOrder = null;
                 if (transaction.hasOwnProperty("orderId")) {
                     if (transaction.hasOwnProperty("status")) {
+                        console.log('status', transaction.status);
                         if (transaction.status === "AWAITING_FULFILLMENT") {
+                            console.log("completed status validation")
                             if (latestOrder !== transaction.orderId.toString()) {
+                                console.log("completed transaction validation");
                                 transactionEvent({
                                     id: transaction.orderId.toString(),
                                     total: parseFloat(transaction.orderAmount),
@@ -20,7 +23,7 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
                                     city: (transaction.billingAddress.city || "N/A").toString(),
                                     state: (transaction.billingAddress.stateOrProvinceCode || "N/A").toString(),
                                     country: (transaction.billingAddress.countryCode || "N/A").toString(),
-                                    currency: (transaction.currency.code || "USD").toString(),
+                                    currency: "USD",
                                     items: products.map((product) => {
                                         const { productId, sku, name, listPrice, quantity } = product;
                                         return {
@@ -31,7 +34,7 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
                                             category: "N/A",
                                             unitPrice: parseFloat(listPrice || 0),
                                             quantity: parseInt(quantity || 1),
-                                            currency: (transaction.currency.code || "USD").toString(),
+                                            currency: "USD",
                                         } as TransactionCartItem;
                                     }),
                                 });
