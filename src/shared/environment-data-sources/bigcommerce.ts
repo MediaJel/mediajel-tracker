@@ -7,11 +7,11 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
             //if (window.location.pathname.includes('/checkout')) {
             const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
             const products = transaction?.lineItems?.physicalItems;
-            let latestOrder = null;
+            const getLatestOrder = localStorage.getItem("latestOrder");
             if (transaction.hasOwnProperty("orderId")) {
                 if (transaction.hasOwnProperty("status")) {
                     if (transaction.status === "AWAITING_FULFILLMENT") {
-                        if (latestOrder !== transaction.orderId.toString()) {
+                        if (getLatestOrder !== transaction.orderId.toString()) {
                             transactionEvent({
                                 id: transaction.orderId.toString(),
                                 total: parseFloat(transaction.orderAmount),
@@ -35,7 +35,7 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
                                     } as TransactionCartItem;
                                 }),
                             });
-                            latestOrder.push(transaction.orderId.toString())
+                            localStorage.setItem("latestOrder", transaction.orderId.toString());
                         }
                     }
                 }
