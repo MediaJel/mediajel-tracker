@@ -9,7 +9,7 @@ const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
             let latestOrder = null;
             if (transaction.hasOwnProperty("orderId")) {
                 if (transaction.hasOwnProperty("status")) {
-                    if (transaction.status === "INCOMPLETE") {
+                    if (transaction.status === "AWAITING_FULFILLMENT") {
                         if (latestOrder !== transaction.orderId.toString()) {
                             window.tracker("addTrans", {
                                 id: transaction.orderId.toString(),
