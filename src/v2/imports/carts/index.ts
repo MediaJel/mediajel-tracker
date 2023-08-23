@@ -67,6 +67,10 @@ export default (context: QueryStringContext): void => {
     case "webjoint":
       import("./webjoint").then(({ default: load }): void => load({ appId, retailId }));
       break;
+    //* STABLE
+    case "bigcommerce":
+      import("./bigcommerce").then(({ default: load }): void => load({ appId, retailId }));
+      break;
     default:
       throw new Error("Undefined environment");
   }
