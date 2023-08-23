@@ -4,18 +4,13 @@ import { QueryStringContext } from "../../../shared/types";
 const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
     xhrResponseSource((xhr) => {
         try {
-            console.log('v2', xhr);
             const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
             const products = transaction?.lineItems?.physicalItems;
             let latestOrder = null;
             if (transaction.hasOwnProperty("orderId")) {
                 if (transaction.hasOwnProperty("status")) {
-                    console.log('status v2', transaction.status);
-                    if (transaction.status === "AWAITING_FULFILLMENT" || transaction.status === "INCOMPLETE") {
-                        console.log("completed status validation")
+                    if (transaction.status === "INCOMPLETE") {
                         if (latestOrder !== transaction.orderId.toString()) {
-                            console.log("completed transaction validation");
-                            console.log('transactions in here: ', transaction);
                             window.tracker("addTrans", {
                                 id: transaction.orderId.toString(),
                                 affiliation: "N/A",
@@ -40,15 +35,12 @@ const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
                                 });
                             });
                             window.tracker("trackTrans");
-                            console.log('end');
                             latestOrder.push(transaction.orderId.toString())
                         }
                     }
                 }
             }
-
         } catch (e) {
-            console.log('warning: ', e);
         }
     });
 };
