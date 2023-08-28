@@ -3,29 +3,33 @@ import { QueryStringContext } from "./shared/types";
 
 (async (): Promise<void> => {
   try {
-    const context: QueryStringContext = getContext();
+    document.addEventListener("DOMContentLoaded", () => {
+      const context = getContext();
 
-    console.log("MJ Tag Context", context)
+      context.forEach((ctxt: QueryStringContext)  => {
+        console.log("MJ Tag Context", ctxt);
 
-    // Load plugin
-    if (context.plugin) {
-      import("./plugins").then(({ default: load }): void => load(context));
-    }
+        // Load plugin
+        if (ctxt.plugin) {
+          import("./plugins").then(({ default: load }): void => load(ctxt));
+        }
 
-    // Return early if the appId is not specified
-    if (context.plugin && !context.appId) return;
+        // Return early if the appId is not specified
+        if (ctxt.plugin && !ctxt.appId) return;
 
-    // Validations
-    if (!context.appId) throw new Error("appId is required");
+        // Validations
+        if (!ctxt.appId) throw new Error("appId is required");
 
-    switch (context.version) {
-      case "1":
-        import("./v1").then(({ default: load }) => load(context));
-        break;
-      case "2":
-        import("./v2").then(({ default: load }) => load(context));
-        break;
-    }
+        switch (ctxt.version) {
+          case "1":
+            import("./v1").then(({ default: load }) => load(ctxt));
+            break;
+          case "2":
+            import("./v2").then(({ default: load }) => load(ctxt));
+            break;
+        }
+      });
+    });
   } catch (err) {
     const clientError = `An error has occured, please contact your pixel provider: `;
     console.error(clientError + err.message);
