@@ -20,7 +20,7 @@ const createTracker = ({ appId, collector, event }: QueryStringContext): void =>
   })(window, document, "script", "//cmpgn.cmpgntrckr.com/api.js", "tracker");
 
   // Creates the tracker with the appId and sends events to collector url
-  window.tracker("newTracker", "cnna", `${collector}`, {
+  window.tracker("newTracker", "cnna", `https://collector-dojo-azsx401.dmp.cnna.io/analytics/track`, {
     appId: appId,
     postPath: '/analytics/track',
     discoverRootDomain: true,
