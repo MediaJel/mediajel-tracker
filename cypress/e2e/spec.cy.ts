@@ -8,7 +8,7 @@ describe("Ensure locally compiled universal tag is loaded", () => {
   });
 
   it("Loads snowplow sp.js", () => {
-    cy.get("script").should("have.attr", "src", "//cmpgn.cmpgntrckr.com/api.js");
+    cy.get("script").should("have.attr", "src", "//dm2q9qfzyjfox.cloudfront.net/sp.js");
   });
 });
 
