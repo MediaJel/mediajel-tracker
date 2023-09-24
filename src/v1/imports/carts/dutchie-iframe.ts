@@ -37,6 +37,43 @@ const dutchieIframeTracker = ({ appId, retailId }: Pick<QueryStringContext, "app
         );
       }
 
+      if (rawData.event === "analytics:dataLayer" && rawData.payload.payload['1'] === "purchase") {
+        const transaction = rawData.payload.payload["2"];
+        const products = transaction.items;
+        const { transaction_id, value } = transaction;
+
+        // Hardcoded because most fields are empty
+        window.tracker(
+          "addTrans",
+          transaction_id.toString(),
+          retailId ?? appId,
+          parseFloat(value),
+          0,
+          0,
+          "N/A",
+          "N/A",
+          "N/A",
+          "USD"
+        );
+
+        products.forEach((items) => {
+          const { item_id, item_name, item_category, price, quantity } = items;
+
+          window.tracker(
+            "addItem",
+            transaction_id.toString(),
+            item_id.toString(),
+            (item_name || "N/A").toString(),
+            (item_category || "N/A").toString(),
+            parseFloat(price || 0),
+            parseInt(quantity || 1),
+            "USD"
+          );
+        });
+
+        window.tracker("trackTrans");
+      }
+
       if (rawData.event == "analytics:dataLayer" && payload.event == "purchase") {
         const transaction = payload.ecommerce;
         const products = transaction.items;
