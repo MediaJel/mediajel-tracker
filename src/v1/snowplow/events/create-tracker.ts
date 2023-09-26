@@ -20,7 +20,7 @@ const createTracker = ({ appId, collector, event }: QueryStringContext): void =>
   })(window, document, "script", "//dm2q9qfzyjfox.cloudfront.net/sp.js", "tracker");
 
   // Creates the tracker with the appId and sends events to collector url
-  window.tracker("newTracker", appId, `${collector}`, {
+  window.tracker("newTracker", "cnna", `${collector}`, {
     appId: appId,
     postPath: "/analytics/track",
     discoverRootDomain: true,
