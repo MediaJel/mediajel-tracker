@@ -6,6 +6,7 @@ const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
         try {
             const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
             const products = transaction?.lineItems?.physicalItems;
+
             const getLatestOrder = localStorage.getItem("latestOrder");
             if (transaction.hasOwnProperty("orderId")) {
                 if (transaction.hasOwnProperty("status")) {
