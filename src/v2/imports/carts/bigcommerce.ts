@@ -6,19 +6,12 @@ const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
         try {
             const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
             const products = transaction?.lineItems?.physicalItems;
-<<<<<<< HEAD
-            let latestOrder = null;
-            if (transaction.hasOwnProperty("orderId")) {
-                if (transaction.hasOwnProperty("status")) {
-                    if (transaction.status === "INCOMPLETE") {
-                        if (latestOrder !== transaction.orderId.toString()) {
-=======
+
             const getLatestOrder = localStorage.getItem("latestOrder");
             if (transaction.hasOwnProperty("orderId")) {
                 if (transaction.hasOwnProperty("status")) {
                     if (transaction.status === "AWAITING_FULFILLMENT") {
                         if (getLatestOrder !== transaction.orderId.toString()) {
->>>>>>> main
                             window.tracker("addTrans", {
                                 id: transaction.orderId.toString(),
                                 affiliation:  retailId ?? appId,
@@ -43,11 +36,7 @@ const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
                                 });
                             });
                             window.tracker("trackTrans");
-<<<<<<< HEAD
-                            latestOrder.push(transaction.orderId.toString())
-=======
                             localStorage.setItem("latestOrder", transaction.orderId.toString());
->>>>>>> main
                         }
                     }
                 }
