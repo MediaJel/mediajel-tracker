@@ -3,13 +3,11 @@ import recordIntegration from "./snowplow/events/record";
 
 import { QueryStringContext } from "../shared/types";
 import { debuggerPlugin } from "./snowplow/plugins";
-import { tapadCookieSyncPixel } from "../shared/partners/tapad/cookie-sync-pixel";
 import { tapadHashSyncPixel } from "../shared/partners/tapad/hash-sync-pixel";
 
 const applyV2 = (context: QueryStringContext): void => {
   createTracker(context);
   recordIntegration(context);
-  tapadCookieSyncPixel();
   tapadHashSyncPixel();
 
   /** For debugging in the console */
