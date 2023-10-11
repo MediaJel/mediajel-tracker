@@ -54,8 +54,6 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
     }
 
     if (data[1] === "purchase") {
-      console.log("Dutchie plus transaction detected");
-      console.log(data[2]);
       const transactionData = data[2];
       const items = transactionData.items;
 
