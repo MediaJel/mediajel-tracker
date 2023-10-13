@@ -1,9 +1,13 @@
 import { QueryStringContext } from "../../../shared/types";
 
 const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
+  console.log("Shopify tracker called");
   if (!window.Shopify.checkout) {
     return;
   }
+
+  console.log("Window.Shopify.checkout", window.Shopify.checkout);
+
   const transaction = window.Shopify.checkout;
   const products = transaction.line_items;
   const email = transaction.email || "N/A";
