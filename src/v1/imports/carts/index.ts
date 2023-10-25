@@ -86,6 +86,10 @@ export default async (context: QueryStringContext): Promise<void> => {
     case "yotpo":
       import("./yotpo").then(({ default: load }): void => load({ appId, retailId }));
       break;
+    //* UNSTABLE
+    case "magento":
+      import("./magento").then(({ default: load }): void => load({ appId, retailId }));
+      break;
     default:
       throw new Error("Undefined environment");
   }
