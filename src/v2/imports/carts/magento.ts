@@ -4,7 +4,7 @@ import { QueryStringContext } from "../../../shared/types";
 const magentoTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   xhrResponseSource((xhr) => {
     try {
-      const getData = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
+      const getData = JSON.parse(xhr.responseText);
 
       const products = getData && getData.items;
 
@@ -25,30 +25,28 @@ const magentoTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | 
         const orderNumberElement = checkoutSuccessElement.querySelector("span");
         const orderNumber = orderNumberElement.textContent.trim();
 
-        window.tracker(
-          "addTrans",
-          orderNumber,
-          retailId ?? appId,
-          parseFloat(retrievedObject.base_grand_total),
-          parseFloat(retrievedObject.base_tax_amount) || 0,
-          parseFloat(retrievedObject.base_shipping_amount) || 0,
-          "N/A",
-          "N/A",
-          "N/A",
-          retrievedObject.quote_currency_code || "USD"
-        );
+        window.tracker("addTrans", {
+          orderId: orderNumber,
+          affiliation: retailId ?? appId,
+          total: parseFloat(retrievedObject.base_grand_total),
+          tax: parseFloat(retrievedObject.base_tax_amount) || 0,
+          shipping: parseFloat(retrievedObject.base_shipping_amount) || 0,
+          city: "N/A",
+          state: "N/A",
+          country: "N/A",
+          currency: retrievedObject.quote_currency_code || "USD",
+        });
 
         productsList.forEach((item) => {
-          window.tracker(
-            "addItem",
-            orderNumber,
-            item.item_id || "N/A",
-            item.name || "N/A",
-            "N/A",
-            parseFloat(item.price) || 0,
-            parseInt(item.qty) || 1,
-            retrievedObject.quote_currency_code || "USD"
-          );
+          window.tracker("addItem", {
+            orderId: orderNumber,
+            sku: item.item_id || "N/A",
+            name: (item.name || "N/A").toString(),
+            category: "N/A",
+            price: parseFloat(item.price || 0),
+            quantity: parseInt(item.qty || 1),
+            currency: retrievedObject.quote_currency_code || "USD",
+          });
         });
         window.tracker("trackTrans");
 
