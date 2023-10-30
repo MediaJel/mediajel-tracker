@@ -4,7 +4,7 @@ import { xhrResponseSource } from "../sources/xhr-response-source";
 const magentoDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   xhrResponseSource((xhr) => {
     try {
-      const getData = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
+      const getData = JSON.parse(xhr.responseText);
 
       const products = getData && getData.items;
 
