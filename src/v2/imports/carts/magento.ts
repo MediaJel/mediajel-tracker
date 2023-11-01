@@ -1,4 +1,4 @@
-import magentoDataSource from "@/shared/environment-data-sources/magento";
+import magentoDataSource from "src/shared/environment-data-sources/magento";
 import { QueryStringContext } from "../../../shared/types";
 
 const magentoTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
