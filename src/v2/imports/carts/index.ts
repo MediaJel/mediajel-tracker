@@ -71,6 +71,10 @@ export default (context: QueryStringContext): void => {
     case "bigcommerce":
       import("./bigcommerce").then(({ default: load }): void => load({ appId, retailId }));
       break;
+    //* UNSTABLE
+    case "magento":
+      import("./magento").then(({ default: load }): void => load({ appId, retailId }));
+      break;
     default:
       throw new Error("Undefined environment");
   }
