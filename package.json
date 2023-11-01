@@ -25,6 +25,9 @@
   "bugs": {
     "url": "https://github.com/MediaJel/mediajel-tracker/issues"
   },
+  "alias": {
+    "src": "./src"
+  },
   "homepage": "https://github.com/MediaJel/mediajel-tracker#readme",
   "devDependencies": {
     "@types/cypress": "^1.1.3",

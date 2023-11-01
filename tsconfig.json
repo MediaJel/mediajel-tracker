@@ -1,10 +1,23 @@
 {
   "compilerOptions": {
-    "lib": ["es5", "es6", "dom"],
+    "lib": [
+      "es5",
+      "es6",
+      "dom"
+    ],
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "src/*": [
+        "./src/*"
+      ]
     }
   },
-  "include": ["src/**/*", "server/**/*", "cypress/**/*"],
-  "exclude": ["node_modules/*"]
+  "include": [
+    "src/**/*",
+    "server/**/*",
+    "cypress/**/*"
+  ],
+  "exclude": [
+    "node_modules/*"
+  ]
 }
