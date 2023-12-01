@@ -4,6 +4,7 @@ const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transa
   if (!window.Shopify.checkout) {
     return;
   }
+
   const transaction = window.Shopify.checkout;
   const products = transaction.line_items;
   const email = transaction.email || "N/A";
