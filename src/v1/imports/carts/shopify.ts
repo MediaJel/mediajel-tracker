@@ -1,5 +1,11 @@
 import { QueryStringContext } from "../../../shared/types";
 
+interface CustomWindow extends Window {
+  analytics?: any;
+}
+
+const customWindow = window as CustomWindow;
+
 const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   console.log("Shopify tracker called");
   if (!window.Shopify.checkout) {
@@ -9,7 +15,7 @@ const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | 
   console.log("Window.Shopify.checkout", window.Shopify.checkout);
 
   try {
-    window.analytics.subscribe("checkout_completed", (event) => {
+    customWindow.analytics.subscribe("checkout_completed", (event) => {
       try {
         const products = event.data.checkout;
         const lineItems = products.lineItems;
