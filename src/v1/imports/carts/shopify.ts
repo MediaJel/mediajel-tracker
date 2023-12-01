@@ -9,7 +9,7 @@ const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | 
   console.log("Window.Shopify.checkout", window.Shopify.checkout);
 
   try {
-    analytics.subscribe("checkout_completed", (event) => {
+    window.analytics.subscribe("checkout_completed", (event) => {
       try {
         const products = event.data.checkout;
         const lineItems = products.lineItems;
