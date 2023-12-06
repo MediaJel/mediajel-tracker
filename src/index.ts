@@ -1,6 +1,9 @@
 import getContext from "./shared/utils/get-context";
 import { QueryStringContext } from "./shared/types";
 import { datalayerSource } from "./shared/sources/google-datalayer-source";
+import { xhrRequestSource } from "./shared/sources/xhr-request-source";
+import { xhrResponseSource } from "./shared/sources/xhr-response-source";
+import { postMessageSource } from "./shared/sources/post-message-source";
 
 interface Logger {
   info: (...message: unknown[]) => void;
@@ -8,8 +11,8 @@ interface Logger {
   error: (...message: unknown[]) => void;
 }
 
-const createLogger = (context: QueryStringContext): Logger => {
-  const logContext = `[${context.plugin ? context.plugin + " " : ""}${context.appId}]`;
+const createLogger = (name: String, label: String): Logger => {
+  const logContext = `[${name}${label ? " " + label : ""}]`;
 
   return {
     info: (...message: unknown[]) => {
@@ -30,19 +33,25 @@ const createLogger = (context: QueryStringContext): Logger => {
 
     console.log("MJ Tag Context", context);
 
-    console.log("Hello World");
-    const dataLogger = createLogger(context);
-    dataLogger.info("Received Data: ", context);
-    dataLogger.warn("Received Data: ", context);
-    dataLogger.error("Received Data: ", context);
-
     datalayerSource((data) => {
-      console.log("Hello World");
-      const dataLogger = createLogger(context);
+      const dataSourceLogger = createLogger(context.appId, "Data Layer Source");
 
-      dataLogger.info("Received Data: ", data);
-      dataLogger.warn("Received Data: ", data);
-      dataLogger.error("Received Data: ", data);
+      dataSourceLogger.info(data);
+    });
+
+    xhrRequestSource((data) => {
+      const xhrSourceLogger = createLogger(context.appId, "XHR Layer Source");
+      xhrSourceLogger.info(data);
+    });
+
+    xhrResponseSource((data) => {
+      const xhrResponseSource = createLogger(context.appId, "XHR Response Source");
+      xhrResponseSource.info(data);
+    });
+
+    postMessageSource((data) => {
+      const postMessageSource = createLogger(context.appId, "Post Message Source");
+      postMessageSource.info(data);
     });
 
     // Load plugin
