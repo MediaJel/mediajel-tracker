@@ -7,13 +7,12 @@ const tymberDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEven
       const products = data.ecommerce.add.products;
       const currency = data.ecommerce.currency;
       const { brand, category, id, name, price, quantity } = products[0];
-      const checkPrice = !isNaN(price) ? parseFloat(price) : 0;
-      
+
       addToCartEvent({
         sku: id.toString(),
         name: (name || "N/A").toString(),
         category: (category || "N/A").toString(),
-        unitPrice: checkPrice,
+        unitPrice: parseFloat(price || 0),
         quantity: parseInt(quantity || 1),
         currency: (currency || "USD").toString(),
       });

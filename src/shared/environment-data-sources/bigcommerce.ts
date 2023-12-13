@@ -10,7 +10,7 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
             const getLatestOrder = localStorage.getItem("latestOrder");
             if (transaction.hasOwnProperty("orderId")) {
                 if (transaction.hasOwnProperty("status")) {
-                    if (transaction.status === "AWAITING_FULFILLMENT" || "INCOMPLETE") {
+                    if (transaction.status === "AWAITING_FULFILLMENT") {
                         if (getLatestOrder !== transaction.orderId.toString()) {
                             transactionEvent({
                                 id: transaction.orderId.toString(),

@@ -91,7 +91,6 @@ export type ImpressionsMacrosParams = {
   siteId: string;
   siteName: string;
   liquidmAppId: string;
-  dspAppId: string; // For other DSPs other than Liquid M
   appName: string;
   clickId: string;
   GAID: string;
@@ -110,6 +109,8 @@ export type ImpressionsMacrosParams = {
 export type LiquidmSegmentParams = {
   segmentId: string;
 };
+
+
 
 export type QueryStringParams = Partial<TransactionParams> &
   Partial<SignupParams> &
