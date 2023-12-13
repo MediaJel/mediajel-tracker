@@ -52,9 +52,6 @@ const createLogger = (name: String, label: String): Logger => {
 
     console.log("MJ Tag Context", context);
 
-    const test = createLogger("TEST1", context.appId);
-    test.info(context);
-
     datalayerSource((data) => {
       const dataSourceLogger = createLogger(context.appId, "Data Layer Source");
 
