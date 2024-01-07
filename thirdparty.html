@@ -1,0 +1,28 @@
+<script type="text/javascript">
+    if (window.location.pathname.includes('/apply-for-a-job-confirmation')) {
+        addEventListener('submit', (event) => {
+
+            const formData = new FormData(event.target);
+
+            const fullNameBirthDate = formData.get('your-full name & birthdate *');
+            const email = formData.get('email');
+            const phone = formData.get('phone');
+            const driverLicense = formData.get("do-you have a driver's license? *");
+            const jobs = formData.get('2-recent jobs, including dates *');
+            const aboutYourself = document.getElementById('textarea_comp-kf6fh26b').value;
+            
+            window.tracker('trackSelfDescribingEvent', {
+                    schema: 'iglu:com.mediajel.events/sign_up/jsonschema/1-0-2',
+                    data: {
+                        fullNameBirthDate: fullNameBirthDate,
+                        email: email,
+                        phone: phone,
+                        driverLicense: driverLicense,
+                        jobs: jobs,
+                        aboutYourself: aboutYourself
+                    },
+                });
+
+        })
+    }
+</script>

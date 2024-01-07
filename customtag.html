@@ -1,0 +1,13 @@
+<script>
+    if(window.location.pathname.includes('/thank-you-page')) {
+        addEventListener("submit", (event) => {
+        const spanElement = document.querySelector('[data-hook="total-row-value"]');
+
+            if (spanElement) {
+                const textContent = spanElement.textContent;
+                const parsedValue = parseInt(textContent.replace('$', ''), 10);
+                console.log("TRANSACTION TEST: ", parsedValue);
+            }
+        });
+    }
+</script>
