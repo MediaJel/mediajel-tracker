@@ -1,80 +1,62 @@
 import { QueryStringContext } from "../../../shared/types";
+import meadowTrackerImport from "src/shared/environment-data-sources/meadow";
 
-const meadowTracker = ({
-  appId,
-  retailId,
-}: Pick<QueryStringContext, "appId" | "retailId">) => {
-  function receiveMessage(event: MessageEvent<any>) {
-    const rawData = event.data;
-
-    if (rawData.type === "ANALYTICS_CART_ADD") {
-      const cartData = rawData.payload;
-      const product = rawData.payload.product;
-
+const meadowTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
+  meadowTrackerImport({
+    addToCartEvent(cartData) {
       window.tracker(
         "trackAddToCart",
-        product.id.toString(),
-        (product.name || "N/A").toString(),
-        (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
-        parseFloat(product.option.price || 0) / 100,
-        parseInt(cartData.quantity || 1),
-        "USD"
+        cartData.sku,
+        cartData.name,
+        cartData.category,
+        cartData.unitPrice,
+        cartData.quantity,
+        cartData.currency
       );
-    }
+    },
 
-    if (rawData.type === "ANALYTICS_CART_REMOVE") {
-      const cartData = rawData.payload;
-      const product = rawData.payload.product;
-
+    removeFromCartEvent(cartData) {
       window.tracker(
         "trackRemoveFromCart",
-        product.id.toString(),
-        (product.name || "N/A").toString(),
-        (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
-        parseFloat(product.option.price || 0) / 100,
-        parseInt(cartData.quantity || 1),
-        "USD"
+        cartData.sku,
+        cartData.name,
+        cartData.category,
+        cartData.unitPrice,
+        cartData.quantity,
+        cartData.currency
       );
-    }
+    },
 
-    if (rawData.type === "ANALYTICS_PURCHASE") {
-      const transaction = rawData.payload.order;
-      const products = transaction.lineItems;
-
-      // Hardcoded because most fields are empty
+    transactionEvent(transactionData) {
       window.tracker(
         "addTrans",
-        transaction.id.toString(),
+        transactionData.id,
         retailId ?? appId,
-        parseFloat(transaction.netPrice) / 100,
-        parseFloat(transaction.taxesTotal || 0) / 100,
-        0,
-        "N/A",
-        "N/A",
-        "N/A",
-        "USD"
+        transactionData.total,
+        transactionData.tax,
+        transactionData.shipping,
+        transactionData.city,
+        transactionData.state,
+        transactionData.country,
+        transactionData.currency
       );
 
-      products.forEach(items => {
-        const { product, quantity } = items
-
+      transactionData.items.forEach((item) => {
         window.tracker(
           "addItem",
-          transaction.id.toString(),
-          product.id.toString(),
-          (product.name || "N/A").toString(),
-          (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
-          parseFloat(product.option.price || 0) / 100,
-          parseInt(quantity || 1),
-          "USD"
+          transactionData.id,
+          item.productId,
+          item.sku,
+          item.name,
+          item.category,
+          item.unitPrice,
+          item.quantity,
+          transactionData.currency
         );
-      })
-
+      });
       window.tracker("trackTrans");
-    }
-  }
-
-  window.addEventListener("message", receiveMessage, false);
+    },
+  });
 };
 
 export default meadowTracker;

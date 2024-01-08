@@ -6,6 +6,7 @@ export interface CartEvent {
   quantity: number;
   currency: string;
   userId?: string;
+  productId?: string;
 }
 
 export interface TransactionCartItem extends CartEvent {
@@ -109,8 +110,6 @@ export type ImpressionsMacrosParams = {
 export type LiquidmSegmentParams = {
   segmentId: string;
 };
-
-
 
 export type QueryStringParams = Partial<TransactionParams> &
   Partial<SignupParams> &

@@ -1,121 +1,62 @@
 import { QueryStringContext } from "../../../shared/types";
-import { tryParseJSONObject } from "../../../shared/utils/try-parse-json";
+import dutchieIframeDataSource from "src/shared/environment-data-sources/dutchie-iframe";
 
 const dutchieIframeTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  function receiveMessage(event: MessageEvent<any>) {
-    try {
-      const rawData = tryParseJSONObject(event.data);
-      const payload = rawData?.payload?.payload || null;
+  dutchieIframeDataSource({
+    addToCartEvent(addToCartData) {
+      window.tracker(
+        "trackAddToCart",
+        addToCartData.sku,
+        addToCartData.name,
+        addToCartData.category,
+        addToCartData.unitPrice,
+        addToCartData.quantity,
+        addToCartData.currency
+      );
+    },
 
-      if (rawData.event === "analytics:dataLayer" && payload.event === "add_to_cart") {
-        const products = payload.ecommerce.items;
-        const { item_id, item_name, item_category, price, quantity } = products[0];
+    removeFromCartEvent(removeFromCartData) {
+      window.tracker(
+        "trackRemoveFromCart",
+        removeFromCartData.sku,
+        removeFromCartData.name,
+        removeFromCartData.category,
+        removeFromCartData.unitPrice,
+        removeFromCartData.quantity,
+        removeFromCartData.currency
+      );
+    },
 
+    transactionEvent(transactionData) {
+      window.tracker(
+        "addTrans",
+        transactionData.id,
+        retailId ?? appId,
+        transactionData.total,
+        transactionData.tax,
+        transactionData.shipping,
+        transactionData.city,
+        transactionData.state,
+        transactionData.country,
+        transactionData.currency
+      );
+
+      transactionData.items.forEach((item) => {
         window.tracker(
-          "trackAddToCart",
-          item_id.toString(),
-          (item_name || "N/A").toString(),
-          (item_category || "N/A").toString(),
-          parseFloat(price || 0),
-          parseInt(quantity || 1),
-          "USD"
+          "addItem",
+          item.orderId,
+          item.productId,
+          item.sku,
+          item.name,
+          item.category,
+          item.unitPrice,
+          item.quantity,
+          item.currency
         );
-      }
-
-      if (rawData.event === "analytics:dataLayer" && payload.event === "remove_from_cart") {
-        const products = payload.ecommerce.items;
-        const { item_id, item_name, item_category, price, quantity } = products[0];
-
-        window.tracker(
-          "trackRemoveFromCart",
-          item_id.toString(),
-          (item_name || "N/A").toString(),
-          (item_category || "N/A").toString(),
-          parseFloat(price || 0),
-          parseInt(quantity || 1),
-          "USD"
-        );
-      }
-
-      if (rawData.event === "analytics:dataLayer" && rawData.payload.payload['1'] === "purchase") {
-        const transaction = rawData.payload.payload["2"];
-        const products = transaction.items;
-        const { transaction_id, value } = transaction;
-
-        // Hardcoded because most fields are empty
-        window.tracker(
-          "addTrans",
-          transaction_id.toString(),
-          retailId ?? appId,
-          parseFloat(value),
-          0,
-          0,
-          "N/A",
-          "N/A",
-          "N/A",
-          "USD"
-        );
-
-        products.forEach((items) => {
-          const { item_id, item_name, item_category, price, quantity } = items;
-
-          window.tracker(
-            "addItem",
-            transaction_id.toString(),
-            item_id.toString(),
-            (item_name || "N/A").toString(),
-            (item_category || "N/A").toString(),
-            parseFloat(price || 0),
-            parseInt(quantity || 1),
-            "USD"
-          );
-        });
-
-        window.tracker("trackTrans");
-      }
-
-      if (rawData.event == "analytics:dataLayer" && payload.event == "purchase") {
-        const transaction = payload.ecommerce;
-        const products = transaction.items;
-        const { transaction_id, value } = transaction;
-
-        // Hardcoded because most fields are empty
-        window.tracker(
-          "addTrans",
-          transaction_id.toString(),
-          retailId ?? appId,
-          parseFloat(value),
-          0,
-          0,
-          "N/A",
-          "N/A",
-          "N/A",
-          "USD"
-        );
-
-        products.forEach((items) => {
-          const { item_id, item_name, item_category, price, quantity } = items;
-
-          window.tracker(
-            "addItem",
-            transaction_id.toString(),
-            item_id.toString(),
-            (item_name || "N/A").toString(),
-            (item_category || "N/A").toString(),
-            parseFloat(price || 0),
-            parseInt(quantity || 1),
-            "USD"
-          );
-        });
-
-        window.tracker("trackTrans");
-      }
-    } catch (e) {
-      throw e;
-    }
-  }
-
-  window.addEventListener("message", receiveMessage, false);
+      });
+      window.tracker("trackTrans");
+    },
+  });
 };
 
 export default dutchieIframeTracker;

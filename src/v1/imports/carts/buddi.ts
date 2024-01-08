@@ -1,105 +1,62 @@
 import { QueryStringContext } from "../../../shared/types";
+import buddiTrackerImport from "../../../shared/environment-data-sources/buddi";
 
-const buddiTracker = ({
-  appId,
-  retailId,
-}: Pick<QueryStringContext, "appId" | "retailId">) => {
-  (function (): void {
-    const origOpen = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function () {
-      this.addEventListener("load", function () {
-        try {
-          const response = JSON.parse(this.responseText);
-          const cartList = []; // Creates an empty array to store cart items for comparison with removeFromCart array
+const buddiTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
+  buddiTrackerImport({
+    addToCartEvent(addToCartData) {
+      window.tracker(
+        "trackAddToCart",
+        addToCartData.sku,
+        addToCartData.name,
+        addToCartData.category,
+        addToCartData.unitPrice,
+        addToCartData.quantity,
+        addToCartData.currency
+      );
+    },
 
-          if (
-            this.responseURL.includes("cart") &&
-            !this.response.includes("delete")
-          ) {
-            const product = response;
+    removeFromCartEvent(removeFromCartData) {
+      window.tracker(
+        "trackRemoveFromCart",
+        removeFromCartData.sku,
+        removeFromCartData.name,
+        removeFromCartData.category,
+        removeFromCartData.unitPrice,
+        removeFromCartData.quantity,
+        removeFromCartData.currency
+      );
+    },
 
-            cartList.push(product);
-            console.log("cartList: " + cartList);
-            window.tracker(
-              "trackAddToCart",
-              product.id.toString(),
-              (product.name || "N/A").toString(),
-              "N/A",
-              parseFloat(product.price || 0),
-              parseInt(product.qty || 1),
-              "USD"
-            );
-          }
-          else if (this.responseURL.includes("delete-product-from-cart")) {
-            const product = response.items;
+    transactionEvent(transactionData) {
+      window.tracker(
+        "addTrans",
+        transactionData.id,
+        retailId ?? appId,
+        transactionData.total,
+        transactionData.tax,
+        transactionData.shipping,
+        transactionData.city,
+        transactionData.state,
+        transactionData.country,
+        transactionData.currency
+      );
 
-            // This filters out the items that are being removed from the cart
-            const removedItem = cartList.filter(x => {
-              !product.includes(x);
-            }).concat(product.filter(x => {
-              !cartList.includes(x);
-            }));
-
-            console.log("removedItem: " + JSON.stringify(removedItem));
-            try {
-              for (let i = removedItem.length; i > 0; i--) {
-                window.tracker(
-                  "trackRemoveFromCart",
-                  removedItem[i - 1].id.toString(),
-                  (removedItem[i - 1].name || "N/A").toString(),
-                  "N/A",
-                  parseFloat(removedItem[i - 1].price || 0),
-                  parseInt(removedItem[i - 1].qty || 1),
-                  "USD"
-                );
-                removedItem.length -= 1;
-              }
-              removedItem.length = 0;
-            }
-            catch { return; }
-          }
-          else if (this.responseURL.includes("orders")) {
-            const transaction = response;
-            const product = transaction.products;
-
-            window.tracker(
-              "addTrans",
-              transaction.id.toString(),
-              !retailId ? appId : retailId,
-              parseFloat(transaction.total),
-              parseFloat(transaction.tax || 0),
-              parseFloat(transaction.delivery_fee || 0),
-              "N/A",
-              "N/A",
-              "USA",
-              "US"
-            );
-
-            for (let i = 0; i < product.length; ++i) {
-              const item = product[i];
-
-              window.tracker(
-                "addItem",
-                transaction.id.toString(),
-                item.product_id.toString(),
-                (item.product.name || "N/A").toString(),
-                (item.product.strain_type || "N/A").toString(),
-                parseFloat(item.price || 0),
-                parseInt(item.qty || 1),
-                "USD"
-              );
-            }
-
-            window.tracker("trackTrans");
-            cartList.length = 0; // This clears the cartList array
-          }
-        }
-        catch { return; }
-
+      transactionData.items.forEach((item) => {
+        window.tracker(
+          "addItem",
+          item.orderId,
+          item.productId,
+          item.sku,
+          item.name,
+          item.category,
+          item.unitPrice,
+          item.quantity,
+          item.currency
+        );
       });
-      origOpen.apply(this, arguments);
-    };
-  })();
+      window.tracker("trackTrans");
+    },
+  });
 };
 
 export default buddiTracker;

@@ -26,26 +26,18 @@ const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transa
     currency: (transaction.currency || "N/A").toString(),
     items: products.map((product: any) => {
       const { id, product_id, title, variant_title, price, quantity } = product;
-      return {} as TransactionCartItem;
+      return {
+        orderId: (transaction.liquid_order_name || transaction.order_id).toString(),
+        productId: (id || product_id).toString(),
+        sku: (id || product_id).toString(),
+        name: (title || "N/A").toString(),
+        category: "N/A", // No Category Field for Shopify in transactionItems
+        unitPrice: parseFloat(price || 0),
+        quantity: parseInt(quantity || 1),
+        currency: (transaction.currency || "USD").toString(),
+      } as TransactionCartItem;
     }),
   });
-
-  products.forEach((items) => {
-    const { id, product_id, title, variant_title, price, quantity } = items;
-
-    window.tracker(
-      "addItem",
-      (transaction.liquid_order_name || transaction.order_id).toString(),
-      (id || product_id).toString(),
-      (title || "N/A").toString(),
-      (variant_title || "N/A").toString(),
-      parseFloat(price || 0),
-      parseInt(quantity || 1),
-      (transaction.currency || "USD").toString()
-    );
-  });
-
-  window.tracker("trackTrans");
 };
 
 export default shopifyDataSource;
