@@ -45,7 +45,6 @@ const dutchieIframeTracker = ({ appId, retailId }: Pick<QueryStringContext, "app
         window.tracker(
           "addItem",
           item.orderId,
-          item.productId,
           item.sku,
           item.name,
           item.category,

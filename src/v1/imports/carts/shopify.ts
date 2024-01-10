@@ -22,7 +22,6 @@ const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | 
         window.tracker(
           "addItem",
           item.orderId,
-          item.productId,
           item.sku,
           item.name,
           item.category,

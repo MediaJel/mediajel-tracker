@@ -21,7 +21,6 @@ const lightspeedTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId"
         window.tracker(
           "addItem",
           transactionData.id,
-          item.productId,
           item.sku,
           item.name,
           item.category,

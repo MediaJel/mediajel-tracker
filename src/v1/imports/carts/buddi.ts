@@ -45,7 +45,6 @@ const buddiTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
         window.tracker(
           "addItem",
           item.orderId,
-          item.productId,
           item.sku,
           item.name,
           item.category,

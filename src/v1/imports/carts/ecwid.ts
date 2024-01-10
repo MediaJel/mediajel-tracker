@@ -20,7 +20,6 @@ const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
         window.tracker(
           "addItem",
           transactionData.id,
-          item.productId,
           item.sku,
           item.name,
           item.category,

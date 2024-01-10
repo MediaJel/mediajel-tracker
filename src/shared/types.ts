@@ -6,7 +6,6 @@ export interface CartEvent {
   quantity: number;
   currency: string;
   userId?: string;
-  productId?: string;
 }
 
 export interface TransactionCartItem extends CartEvent {

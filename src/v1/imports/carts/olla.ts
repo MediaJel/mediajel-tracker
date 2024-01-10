@@ -45,7 +45,6 @@ const ollaTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "re
         window.tracker(
           "addItem",
           transactionData.id,
-          item.productId,
           item.sku,
           item.name,
           item.category,
