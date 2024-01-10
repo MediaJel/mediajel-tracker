@@ -1,13 +1,29 @@
+<script type="text/javascript" src="https://tags.cnna.io/?segmentId=4jcAggUof8XKgr8Ul82-RQ&appId=9501fcc0-8452-4168-948f-4d061b8d0ad7"></script>
 <script>
     if(window.location.pathname.includes('/thank-you-page')) {
-        addEventListener("submit", (event) => {
         const spanElement = document.querySelector('[data-hook="total-row-value"]');
+        const orderNumberElement = document.querySelector('[data-hook="HeaderDataHook.orderNumberLine"] .oBEELa');
 
-            if (spanElement) {
-                const textContent = spanElement.textContent;
-                const parsedValue = parseInt(textContent.replace('$', ''), 10);
-                console.log("TRANSACTION TEST: ", parsedValue);
-            }
-        });
+        const textContent = spanElement.textContent;
+        const parsedValue = parseFloat(textContent.replace('$', ''), 10);
+
+        const orderNumberText = orderNumberElement.textContent.trim();
+        const orderNumber = parseInt(orderNumberText, 10);
+
+        window.tracker(
+            "addTrans",
+            orderNumber,
+            "N/A",
+            parsedValue,
+            0,
+            0,
+            "N/A",
+            "N/A", 
+            "N/A", 
+            "USD"
+        );
+
+        window.tracker("trackTrans");
+
     }
 </script>
