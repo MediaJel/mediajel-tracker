@@ -110,8 +110,6 @@ export type LiquidmSegmentParams = {
   segmentId: string;
 };
 
-
-
 export type QueryStringParams = Partial<TransactionParams> &
   Partial<SignupParams> &
   Partial<SnowplowPluginParams> &
