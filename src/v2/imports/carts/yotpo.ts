@@ -1,8 +1,8 @@
-import shopifyDataSource from "src/shared/environment-data-sources/shopify";
+import yotpoDataSource from "../../../shared/environment-data-sources/yotpo";
 import { QueryStringContext } from "../../../shared/types";
 
-const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  shopifyDataSource({
+const yotpoTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
+  yotpoDataSource({
     transactionEvent(transactionData) {
       window.tracker("addTrans", {
         orderId: transactionData.id,
@@ -33,4 +33,4 @@ const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | 
   });
 };
 
-export default shopifyTracker;
+export default yotpoTracker;
