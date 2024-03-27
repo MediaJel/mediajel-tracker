@@ -1,54 +1,35 @@
-import { errorTrackingSource } from "../../../shared/sources/error-tracking-source";
 import { QueryStringContext } from "../../../shared/types";
-import { tryParseJSONObject } from "../../../shared/utils/try-parse-json";
+import ecwidTrackerImport from "src/shared/environment-data-sources/ecwid";
 
 const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  errorTrackingSource(() => {
-    if (!window.transactionOrder && !window.transactionItems) {
-      return;
-    }
-    const transaction = tryParseJSONObject(window.transactionOrder);
-    const products = tryParseJSONObject(window.transactionItems);
-
-    const orderTotal = transaction.orderTotal.substring(1);
-    const orderSubtotalWithoutTax = transaction.orderSubtotalWithoutTax.substring(1);
-    const orderSubtotal = transaction.orderSubtotal.substring(1); // just in case for future use
-    const orderShippingCost = transaction.orderShippingCost.substring(1);
-    const transactionTax = Math.abs(orderTotal - orderSubtotalWithoutTax);
-
-    if (window.transactionEmail) {
-      const email = window.transactionEmail || "N/A";
-      window.tracker("setUserId", email.toString());
-    }
-
-    window.tracker("addTrans", {
-      orderId: transaction.orderNumber.toString(),
-      affiliation: retailId || appId,
-      total: parseFloat(orderTotal),
-      tax: transactionTax,
-      shipping: parseFloat(orderShippingCost || 0),
-      city: "N/A", // TODO: GET BILLING/SHIPPING ADDRESSES FOR ECWID
-      state: "N/A",
-      country: "N/A",
-      currency: "USD",
-    });
-
-    products.forEach((items) => {
-      const { orderItemName, orderItemSku, orderItemPrice, orderItemQuantity } = items;
-      const itemPrice = orderItemPrice.substring(1);
-
-      window.tracker("addItem", {
-        orderId: transaction.orderNumber.toString(),
-        sku: orderItemSku.toString(),
-        name: (orderItemName || "N/A").toString(),
-        category: "N/A", // No Category Field for Ecwid in transactionItems
-        unitPrice: parseFloat(itemPrice || 0),
-        quantity: parseInt(orderItemQuantity || 1),
-        currency: "USD",
+  ecwidTrackerImport({
+    transactionEvent(transactionData) {
+      window.tracker("addTrans", {
+        orderId: transactionData.id,
+        affiliation: retailId ?? appId,
+        total: transactionData.total,
+        tax: transactionData.tax,
+        shipping: transactionData.shipping,
+        city: transactionData.city,
+        state: transactionData.state,
+        country: transactionData.country,
+        currency: transactionData.currency,
       });
-    });
 
-    window.tracker("trackTrans");
+      transactionData.items.forEach((item) => {
+        window.tracker("addItem", {
+          orderId: transactionData.id,
+          sku: item.sku,
+          name: item.name,
+          category: item.category,
+          unitPrice: item.unitPrice,
+          quantity: item.quantity,
+          currency: item.currency,
+        });
+      });
+
+      window.tracker("trackTrans");
+    },
   });
 };
 

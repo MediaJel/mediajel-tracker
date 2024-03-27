@@ -1,79 +1,57 @@
-import { errorTrackingSource } from "../../../shared/sources/error-tracking-source";
-import { datalayerSource } from "../../../shared/sources/google-datalayer-source";
+import tymberDataSource from "src/shared/environment-data-sources/tymber";
 import { QueryStringContext } from "../../../shared/types";
 
 const tymberTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  datalayerSource((data: any): void => {
-    errorTrackingSource(() => {
-      if (data.event === "addToCart") {
-        const products = data.ecommerce.add.products;
-        const currency = data.ecommerce.currency;
-        const { brand, category, id, name, price, quantity } = products[0];
+  tymberDataSource({
+    addToCartEvent(cartData) {
+      window.tracker("trackAddToCart", {
+        sku: cartData.sku,
+        name: cartData.name,
+        category: cartData.category,
+        unitPrice: cartData.unitPrice,
+        quantity: cartData.quantity,
+        currency: cartData.currency,
+      });
+    },
 
-        window.tracker("trackAddToCart", {
-          sku: id.toString(),
-          name: (name || "N/A").toString(),
-          category: (category || "N/A").toString(),
-          unitPrice: parseFloat(price || 0),
-          quantity: parseInt(quantity || 1),
-          currency: (currency || "USD").toString(),
+    removeFromCartEvent(cartData) {
+      window.tracker("trackRemoveFromCart", {
+        sku: cartData.sku,
+        name: cartData.name,
+        category: cartData.category,
+        unitPrice: cartData.unitPrice,
+        quantity: cartData.quantity,
+        currency: cartData.currency,
+      });
+    },
+
+    transactionEvent(transactionData) {
+      window.tracker("addTrans", {
+        orderId: transactionData.id,
+        affiliation: retailId ?? appId,
+        total: transactionData.total,
+        tax: transactionData.tax,
+        shipping: transactionData.shipping,
+        city: transactionData.city,
+        state: transactionData.state,
+        country: "N/A",
+        currency: transactionData.currency,
+      });
+
+      transactionData.items.forEach((item) => {
+        window.tracker("addItem", {
+          orderId: transactionData.id,
+          sku: item.sku,
+          name: item.name,
+          category: item.category,
+          price: item.unitPrice,
+          quantity: item.quantity,
+          currency: transactionData.currency,
         });
-      }
+      });
 
-      if (data.event === "removeFromCart") {
-        const products = data.ecommerce.remove.products;
-        const currency = data.ecommerce.currency;
-        const { brand, category, id, name, price, quantity } = products[0];
-
-        window.tracker("trackRemoveFromCart", {
-          sku: id.toString(),
-          name: (name || "N/A").toString(),
-          category: (category || "N/A").toString(),
-          unitPrice: parseFloat(price || 0),
-          quantity: parseInt(quantity || 1),
-          currency: (currency || "USD").toString(),
-        });
-      }
-
-      if (data.event === "Order Successful") {
-        window.tracker("setUserId", data.orderEmail);
-      }
-
-      // TODO: Get order details from 'Order Successful' event in dataLayer
-      if (data.event === "purchase") {
-        const transaction = data.ecommerce.actionField;
-        const products = data.ecommerce.products;
-        const { id, revenue, tax } = transaction;
-
-        window.tracker("addTrans", {
-          orderId: id.toString(),
-          affiliation: retailId ?? appId,
-          total: parseFloat(revenue),
-          tax: parseFloat(tax),
-          shipping: 0,
-          city: "N/A",
-          state: "N/A",
-          country: "N/A",
-          currency: "USD",
-        });
-
-        products.forEach((items) => {
-          const { brand, category, id, name, price, quantity } = items;
-
-          window.tracker("addItem", {
-            orderId: transaction.id.toString(),
-            sku: items.id.toString(),
-            name: (name || "N/A").toString(),
-            category: (category || "N/A").toString(),
-            price: parseFloat(price || 0),
-            quantity: parseInt(quantity || 1),
-            currency: "USD",
-          });
-        });
-
-        window.tracker("trackTrans");
-      }
-    });
+      window.tracker("trackTrans");
+    },
   });
 };
 

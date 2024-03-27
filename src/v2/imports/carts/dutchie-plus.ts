@@ -1,39 +1,46 @@
-import { datalayerSource } from "../../../shared/sources/google-datalayer-source";
+import dutchiePlusDataSource from "src/shared/environment-data-sources/dutchie-plus";
 import { QueryStringContext } from "../../../shared/types";
 
 const dutchiePlusTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
-  datalayerSource((data: any): void => {
-    if (data.event === "purchase") {
-      const { transaction_id, affiliation, value, items } = data.ecommerce;
-
+  dutchiePlusDataSource({
+    transactionEvent(transactionData) {
       window.tracker("addTrans", {
-        orderId: transaction_id.toString(),
-        affiliation: affiliation.toString(),
-        total: parseFloat(value),
-        tax: 0,
-        shipping: 0,
-        city: "N/A",
-        state: "N/A",
-        country: "N/A",
-        currency: "USD",
+        orderId: transactionData.id,
+        affiliation: retailId ?? appId,
+        total: transactionData.total,
+        tax: transactionData.tax,
+        shipping: transactionData.shipping,
+        city: transactionData.city,
+        state: transactionData.state,
+        country: transactionData.country,
+        currency: transactionData.currency,
       });
 
-      items.forEach((item) => {
-        const { item_id, item_brand, item_category, price, quantity } = item;
+      transactionData.items.forEach((item) => {
+        window.tracker(
+          "addItem",
+          transactionData.id,
+          item.sku,
+          item.name,
+          item.category,
+          item.unitPrice,
+          item.quantity,
+          transactionData.currency
+        );
 
         window.tracker("addItem", {
-          orderId: transaction_id.toString(),
-          sku: item_id.toString(),
-          name: (item_brand || "N/A").toString(),
-          category: (item_category || "N/A").toString(),
-          price: parseFloat(price || 0),
-          quantity: parseInt(quantity || 1),
-          currency: "USD",
+          orderId: transactionData.id,
+          sku: item.sku,
+          name: item.name,
+          category: item.category,
+          price: item.unitPrice,
+          quantity: item.quantity,
+          currency: transactionData.currency,
         });
       });
-
+      
       window.tracker("trackTrans");
-    }
+    },
   });
 };
 
