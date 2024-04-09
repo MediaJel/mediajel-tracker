@@ -75,6 +75,22 @@ export default (context: QueryStringContext): void => {
     case "magento":
       import("./magento").then(({ default: load }): void => load({ appId, retailId }));
       break;
+    //* UNSTABLE
+    case "sticky-leaf":
+      import("./sticky-leaf").then(({ default: load }): void => load({ appId, retailId }));
+      break;
+    //* STABLE
+    case "dispense":
+      import("./dispense").then(({ default: load }): void => load({ appId, retailId }));
+      break;
+    //* UNSTABLE
+    case "square":
+      import("./square").then(({ default: load }): void => load({ appId, retailId }));
+      break;
+    //* STABLE
+    case "yotpo":
+      import("./yotpo").then(({ default: load }): void => load({ appId, retailId }));
+      break;
     default:
       throw new Error("Undefined environment");
   }

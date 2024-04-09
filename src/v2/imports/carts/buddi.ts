@@ -1,8 +1,8 @@
 import { QueryStringContext } from "../../../shared/types";
-import buddiTrackerImport from "../../../shared/environment-data-sources/buddi";
+import buddiDataSource from "../../../shared/environment-data-sources/buddi";
 
 const buddiTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
-  buddiTrackerImport({
+  buddiDataSource({
     addToCartEvent(addToCartData) {
       window.tracker("trackAddToCart", {
         sku: addToCartData.sku,
