@@ -1,30 +1,8 @@
-import tymberDataSource from "src/shared/environment-data-sources/tymber";
 import { QueryStringContext } from "../../../shared/types";
+import dispenseDataSource from "../../../shared/environment-data-sources/dispense";
 
-const tymberTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  tymberDataSource({
-    addToCartEvent(cartData) {
-      window.tracker("trackAddToCart", {
-        sku: cartData.sku,
-        name: cartData.name,
-        category: cartData.category,
-        unitPrice: cartData.unitPrice,
-        quantity: cartData.quantity,
-        currency: cartData.currency,
-      });
-    },
-
-    removeFromCartEvent(cartData) {
-      window.tracker("trackRemoveFromCart", {
-        sku: cartData.sku,
-        name: cartData.name,
-        category: cartData.category,
-        unitPrice: cartData.unitPrice,
-        quantity: cartData.quantity,
-        currency: cartData.currency,
-      });
-    },
-
+const dispenseTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
+  dispenseDataSource({
     transactionEvent(transactionData) {
       window.tracker("addTrans", {
         orderId: transactionData.id,
@@ -34,7 +12,7 @@ const tymberTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "
         shipping: transactionData.shipping,
         city: transactionData.city,
         state: transactionData.state,
-        country: "N/A",
+        country: transactionData.country,
         currency: transactionData.currency,
       });
 
@@ -55,4 +33,4 @@ const tymberTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "
   });
 };
 
-export default tymberTracker;
+export default dispenseTracker;
