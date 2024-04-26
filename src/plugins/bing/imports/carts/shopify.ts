@@ -15,7 +15,7 @@ const shopifyBingAds = (context: Context) => {
         ecomm_totalvalue: transactionData.total,
         revenue_value: transactionData.total,
         currency: "USD",
-        items: transactionData.items.map((item) => ({
+        items: transactionData?.items?.map((item) => ({
           id: item.sku,
           quantity: item.quantity,
           price: item.unitPrice,
