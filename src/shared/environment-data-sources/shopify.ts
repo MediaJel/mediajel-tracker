@@ -10,7 +10,7 @@ const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transa
     const transaction = window?.transactionOrder;
       const products = window?.transactionItems;
       transactionEvent({
-        id: transaction?.id,
+        id: transaction?.order?.id,
         total: parseFloat(transaction?.totalPrice?.amount || 0),
         tax: parseFloat(transaction?.totalTax?.amount || 0),
         shipping: parseFloat(transaction?.shippingLine?.price?.amount || 0),
@@ -21,7 +21,7 @@ const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transa
         items: products?.map((product: any) => {
           const productItem = product?.variant;
           return {
-            orderId: transaction?.id.toString(),
+            orderId: transaction?.order?.id.toString(),
             productId: product?.id.toString(),
             sku: productItem.sku.toString(),
             name: productItem.product.title.toString(),
