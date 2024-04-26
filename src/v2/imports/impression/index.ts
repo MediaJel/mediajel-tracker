@@ -10,6 +10,9 @@ export default async (context: QueryStringContext): Promise<void> => {
     case "ttd":
       import("./ttd").then(({ default: load }): void => load());
       break;
+    case "mantis":
+      import("./mantis").then(({ default: load }): void => load(context));
+      break;
     default:
       console.error("Undefined environment");
       break;
