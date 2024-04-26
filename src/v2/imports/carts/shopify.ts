@@ -16,7 +16,7 @@ const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | 
         currency: transactionData.currency,
       });
 
-      transactionData.items.forEach((item) => {
+      transactionData?.items?.forEach((item) => {
         window.tracker("addItem", {
           orderId: item.orderId,
           sku: item.sku,
