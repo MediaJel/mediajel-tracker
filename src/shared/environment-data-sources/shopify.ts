@@ -3,7 +3,7 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
 
   if(window.transactionOrder === undefined){
-    if (window.Shopify.checkout === undefined) {
+    if (window.Shopify?.checkout === undefined) {
       return;
     }
   } else {
@@ -35,7 +35,7 @@ const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transa
   }
 
   // liquid_total_price is legacy support for old shopify integration
-  if (window.Shopify.checkout) {
+  if (window.Shopify?.checkout) {
     const transaction = window.Shopify.checkout;
     const products = transaction.line_items;
     const email = transaction.email || "N/A";
