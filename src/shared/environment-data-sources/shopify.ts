@@ -2,7 +2,7 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
 
-  const transaction = window.Shopify.checkout ? window.Shopify.checkout : window?.transactionOrder;
+  const transaction = window?.Shopify?.checkout ? window.Shopify.checkout : window?.transactionOrder;
   const products = transaction?.line_items ? transaction?.line_items : window?.transactionItems;
   const email = transaction?.email || "N/A";
   const orderNumber = (document.getElementsByClassName("os-order-number")[0] as HTMLElement)?.innerText || "";
