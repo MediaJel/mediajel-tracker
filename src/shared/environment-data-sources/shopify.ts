@@ -1,11 +1,13 @@
 import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
-  if (window.Shopify.checkout === undefined) {
-    if (window.transactionOrder === undefined) {
+
+  if(window.transactionOrder === undefined){
+    if (window.Shopify.checkout === undefined) {
       return;
-    } else {
-      const transaction = window?.transactionOrder;
+    }
+  } else {
+    const transaction = window?.transactionOrder;
       const products = window?.transactionItems;
       transactionEvent({
         id: transaction?.id,
@@ -30,7 +32,6 @@ const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transa
           } as TransactionCartItem;
         }),
       });
-    }
   }
 
   // liquid_total_price is legacy support for old shopify integration
