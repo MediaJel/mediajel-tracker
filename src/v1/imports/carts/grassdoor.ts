@@ -1,61 +1,86 @@
 import { QueryStringContext } from "../../../shared/types";
-import grassDoorTracker from "src/shared/environment-data-sources/grassdoor";
 
 const greendoorTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  grassDoorTracker({
-    addToCartEvent(addToCartData) {
+  const dataLayer = window.dataLayer || [];
+
+  function onDataLayerChange() {
+    const data = window.dataLayer.slice(-1)[0]; // Gets the newest array member of dataLayer
+
+    if (data.event === "Product Added") {
+      const products = data;
+      const { sku, name, price, quantity, category } = products;
+
       window.tracker(
         "trackAddToCart",
-        addToCartData.sku,
-        addToCartData.name,
-        addToCartData.category,
-        addToCartData.unitPrice,
-        addToCartData.quantity,
-        addToCartData.currency
+        sku.toString(),
+        (name || "N/A").toString(),
+        (category || "N/A").toString(),
+        parseFloat(price || 0),
+        parseInt(quantity || 1),
+        "USD"
       );
-    },
+    }
 
-    removeFromCartEvent(cartData) {
+    if (data.event === "Product Removed") {
+      const products = data;
+      const { sku, name, price, quantity, category } = products;
+
       window.tracker(
         "trackRemoveFromCart",
-        cartData.sku,
-        cartData.name,
-        cartData.category,
-        cartData.unitPrice,
-        cartData.quantity,
-        cartData.currency
+        sku.toString(),
+        (name || "N/A").toString(),
+        (category || "N/A").toString(),
+        parseFloat(price || 0),
+        parseInt(quantity || 1),
+        "USD"
       );
-    },
+    }
 
-    transactionEvent(transactionData) {
+    if (data.event === "Order Made") {
+      const transaction_id = data.order_id;
+      const transaction_total = data.revenue;
+      const transaction_tax = data.tax;
+      const transaction_shipping = data.shipping;
+      const products = data.products;
+
       window.tracker(
         "addTrans",
-        transactionData.id,
+        transaction_id.toString(),
         retailId ?? appId,
-        transactionData.total,
-        transactionData.tax,
-        transactionData.shipping,
-        transactionData.city,
-        transactionData.state,
-        transactionData.country,
-        transactionData.currency
+        parseFloat(transaction_total || 0),
+        parseFloat(transaction_tax || 0),
+        parseFloat(transaction_shipping || 0),
+        "N/A",
+        "N/A",
+        "N/A",
+        "USD"
       );
 
-      transactionData.items.forEach((item) => {
+      products.forEach((items) => {
+        const { product_id, name, price, quantity, category } = items;
+
         window.tracker(
           "addItem",
-          transactionData.id,
-          item.sku,
-          item.name,
-          item.category,
-          item.unitPrice,
-          item.quantity,
-          item.currency
+          transaction_id.toString(),
+          product_id.toString(),
+          (name || "N/A").toString(),
+          (category || "N/A").toString(),
+          parseFloat(price || 0),
+          parseInt(quantity || 1),
+          "USD"
         );
       });
+
       window.tracker("trackTrans");
-    },
-  });
+    }
+  }
+
+  // Stores the original dataLayer.push method before modifying it to execute our snowplow tracker
+  const originalPush = dataLayer.push;
+  dataLayer.push = function (...args) {
+    originalPush(...args);
+    onDataLayerChange();
+  };
 };
 
 export default greendoorTracker;

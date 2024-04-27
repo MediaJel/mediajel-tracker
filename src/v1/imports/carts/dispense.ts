@@ -13,8 +13,7 @@ const dispenseTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" |
         transactionData.shipping,
         transactionData.city,
         transactionData.state,
-        transactionData.country,
-        transactionData.currency
+        transactionData.country
       );
 
       transactionData.items.forEach((item) => {

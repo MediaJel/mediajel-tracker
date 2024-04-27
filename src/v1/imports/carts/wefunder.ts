@@ -1,36 +1,28 @@
+import { xhrResponseSource } from "../../../shared/sources/xhr-response-source";
 import { QueryStringContext } from "../../../shared/types";
-import wefunderTrackerImport from "src/shared/environment-data-sources/wefunder";
 
 const wefunderTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  wefunderTrackerImport({
-    transactionEvent(transactionData) {
+  xhrResponseSource((xhr) => {
+    if (xhr.responseURL.includes("investments") && typeof xhr.responseText === "string") {
+      const data = JSON.parse(xhr?.responseText);
+
+      window.tracker("setUserId", data?.investment?.user_id || data?.investment?.investor_name);
+
       window.tracker(
         "addTrans",
-        transactionData.id,
+        data?.investment?.id.toString(),
         retailId ?? appId,
-        transactionData.total,
-        transactionData.tax,
-        transactionData.shipping,
-        transactionData.city,
-        transactionData.state,
-        transactionData.country,
-        transactionData.currency
+        parseFloat(data?.investment?.amount),
+        0,
+        0,
+        "N/A",
+        "N/A",
+        "N/A",
+        "USD"
       );
 
-      transactionData.items.forEach((item) => {
-        window.tracker(
-          "addItem",
-          transactionData.id,
-          item.sku,
-          item.name,
-          item.category,
-          item.unitPrice,
-          item.quantity,
-          item.currency
-        );
-      });
       window.tracker("trackTrans");
-    },
+    }
   });
 };
 
