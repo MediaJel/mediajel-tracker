@@ -30,8 +30,6 @@ const woocommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
           item.currency
         );
       });
-
-      window.tracker("trackTrans");
     },
   });
 };
