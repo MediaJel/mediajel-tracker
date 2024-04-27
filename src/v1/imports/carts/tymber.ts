@@ -1,60 +1,94 @@
 import { QueryStringContext } from "../../../shared/types";
-import TymberDataSource from "../../../shared/environment-data-sources/tymber";
 
-const tymberTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  TymberDataSource({
-    addToCartEvent(cartData) {
+const tymberTracker = ({
+  appId,
+  retailId,
+}: Pick<QueryStringContext, "appId" | "retailId">) => {
+  const dataLayer = window.dataLayer || [];
+
+  function onDataLayerChange() {
+    const data = dataLayer.slice(-1)[0]; // Gets the newest array member of dataLayer
+
+    if (data.event === "addToCart") {
+      const products = data.ecommerce.add.products;
+      const currency = data.ecommerce.currency;
+      const { brand, category, id, name, price, quantity } = products[0];
+
       window.tracker(
         "trackAddToCart",
-        cartData.sku,
-        cartData.name,
-        cartData.category,
-        cartData.unitPrice,
-        cartData.quantity,
-        cartData.currency
+        id.toString(),
+        (name || "N/A").toString(),
+        (category || "N/A").toString(),
+        parseFloat(price || 0),
+        parseInt(quantity || 1),
+        (currency || "USD").toString()
       );
-    },
+    }
 
-    removeFromCartEvent(cartData) {
+    if (data.event === "removeFromCart") {
+      const products = data.ecommerce.remove.products;
+      const currency = data.ecommerce.currency;
+      const { brand, category, id, name, price, quantity } = products[0];
+
       window.tracker(
         "trackRemoveFromCart",
-        cartData.sku,
-        cartData.name,
-        cartData.category,
-        cartData.unitPrice,
-        cartData.quantity,
-        cartData.currency
+        id.toString(),
+        (name || "N/A").toString(),
+        (category || "N/A").toString(),
+        parseFloat(price || 0),
+        parseInt(quantity || 1),
+        (currency || "USD").toString()
       );
-    },
+    }
 
-    transactionEvent(transactionData) {
+    if (data.event === "Order Successful") {
+      window.tracker("setUserId", data.orderEmail);
+    }
+
+    // TODO: Get order details from 'Order Successful' event in dataLayer
+    if (data.event === "purchase") {
+      const transaction = data.ecommerce.actionField;
+      const products = data.ecommerce.products;
+      const { id, revenue, tax } = transaction;
+
       window.tracker(
         "addTrans",
-        transactionData.id,
+        id.toString(),
         retailId ?? appId,
-        transactionData.shipping,
-        transactionData.tax,
-        transactionData.city,
-        transactionData.state,
-        transactionData.total,
-        transactionData.currency
+        parseFloat(revenue),
+        parseFloat(tax),
+        0,
+        "N/A",
+        "N/A",
+        "N/A",
+        "USD"
       );
 
-      transactionData.items.forEach((item) => {
+      products.forEach(items => {
+        const { brand, category, id, name, price, quantity } = items;
+
         window.tracker(
           "addItem",
-          transactionData.id,
-          item.sku,
-          item.name,
-          item.category,
-          item.unitPrice,
-          item.quantity,
-          transactionData.currency
+          transaction.id.toString(),
+          items.id.toString(),
+          (name || "N/A").toString(),
+          (category || "N/A").toString(),
+          parseFloat(price || 0),
+          parseInt(quantity || 1),
+          "USD"
         );
       });
-      window.tracker("trackTrans");
-    },
-  });
+
+      window.tracker('trackTrans');
+    }
+  }
+
+  // Stores the original dataLayer.push method before modifying it to execute our snowplow tracker
+  const originalPush = dataLayer.push
+  dataLayer.push = function (...args) {
+    originalPush(...args);
+    onDataLayerChange();
+  };
 };
 
 export default tymberTracker;

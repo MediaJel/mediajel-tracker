@@ -1,38 +1,50 @@
 import { QueryStringContext } from "../../../shared/types";
-import shopifyDataSource from "src/shared/environment-data-sources/shopify";
 
 const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  shopifyDataSource({
-    transactionEvent(transactionData) {
-      window.tracker(
-        "addTrans",
-        transactionData.userId,
-        transactionData.id,
-        retailId ?? appId,
-        transactionData.total,
-        transactionData.tax,
-        transactionData.shipping,
-        transactionData.city,
-        transactionData.state,
-        transactionData.country,
-        transactionData.currency
-      );
+  console.log("Shopify tracker called");
+  if (!window.Shopify.checkout) {
+    return;
+  }
 
-      transactionData.items.forEach((item) => {
-        window.tracker(
-          "addItem",
-          item.orderId,
-          item.sku,
-          item.name,
-          item.category,
-          item.unitPrice,
-          item.quantity,
-          item.currency
-        );
-      });
-      window.tracker("trackTrans");
-    },
+  console.log("Window.Shopify.checkout", window.Shopify.checkout);
+
+  const transaction = window.Shopify.checkout;
+  const products = transaction.line_items;
+  const email = transaction.email || "N/A";
+  const orderNumber = document.getElementsByClassName("os-order-number")[0]["innerText"] || "";
+
+  window.tracker("setUserId", email);
+
+  // liquid_total_price is legacy support for old shopify integration
+  window.tracker(
+    "addTrans",
+    `${(transaction.liquid_order_name || transaction.order_id).toString()} ${orderNumber && `- ${orderNumber}`}`,
+    retailId ?? appId,
+    parseFloat(transaction.liquid_total_price || transaction.total_price),
+    parseFloat(transaction.total_tax || 0),
+    parseFloat(transaction.shipping_rate.price || 0),
+    (transaction.billing_address.city || "N/A").toString(),
+    (transaction.billing_address.province || "N/A").toString(),
+    (transaction.billing_address.country || "N/A").toString(),
+    (transaction.currency || "USD").toString()
+  );
+
+  products.forEach((items) => {
+    const { id, product_id, title, variant_title, price, quantity } = items;
+
+    window.tracker(
+      "addItem",
+      `${(transaction.liquid_order_name || transaction.order_id).toString()} ${orderNumber && `- ${orderNumber}`}`,
+      (id || product_id).toString(),
+      (title || "N/A").toString(),
+      (variant_title || "N/A").toString(),
+      parseFloat(price || 0),
+      parseInt(quantity || 1),
+      (transaction.currency || "USD").toString()
+    );
   });
+
+  window.tracker("trackTrans");
 };
 
 export default shopifyTracker;

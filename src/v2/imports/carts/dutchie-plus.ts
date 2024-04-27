@@ -1,46 +1,39 @@
-import dutchiePlusDataSource from "src/shared/environment-data-sources/dutchie-plus";
+import { datalayerSource } from "../../../shared/sources/google-datalayer-source";
 import { QueryStringContext } from "../../../shared/types";
 
 const dutchiePlusTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
-  dutchiePlusDataSource({
-    transactionEvent(transactionData) {
+  datalayerSource((data: any): void => {
+    if (data.event === "purchase") {
+      const { transaction_id, affiliation, value, items } = data.ecommerce;
+
       window.tracker("addTrans", {
-        orderId: transactionData.id,
-        affiliation: retailId ?? appId,
-        total: transactionData.total,
-        tax: transactionData.tax,
-        shipping: transactionData.shipping,
-        city: transactionData.city,
-        state: transactionData.state,
-        country: transactionData.country,
-        currency: transactionData.currency,
+        orderId: transaction_id.toString(),
+        affiliation: affiliation.toString(),
+        total: parseFloat(value),
+        tax: 0,
+        shipping: 0,
+        city: "N/A",
+        state: "N/A",
+        country: "N/A",
+        currency: "USD",
       });
 
-      transactionData.items.forEach((item) => {
-        window.tracker(
-          "addItem",
-          transactionData.id,
-          item.sku,
-          item.name,
-          item.category,
-          item.unitPrice,
-          item.quantity,
-          transactionData.currency
-        );
+      items.forEach((item) => {
+        const { item_id, item_brand, item_category, price, quantity } = item;
 
         window.tracker("addItem", {
-          orderId: transactionData.id,
-          sku: item.sku,
-          name: item.name,
-          category: item.category,
-          price: item.unitPrice,
-          quantity: item.quantity,
-          currency: transactionData.currency,
+          orderId: transaction_id.toString(),
+          sku: item_id.toString(),
+          name: (item_brand || "N/A").toString(),
+          category: (item_category || "N/A").toString(),
+          price: parseFloat(price || 0),
+          quantity: parseInt(quantity || 1),
+          currency: "USD",
         });
       });
-      
+
       window.tracker("trackTrans");
-    },
+    }
   });
 };
 
