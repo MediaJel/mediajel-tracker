@@ -1,61 +1,91 @@
 import { QueryStringContext } from "../../../shared/types";
-import ollaTrackerImport from "src/shared/environment-data-sources/olla";
 
-const ollaTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  ollaTrackerImport({
-    addToCartEvent(cartData) {
+const ollaTracker = ({
+  appId,
+  retailId,
+}: Pick<QueryStringContext, "appId" | "retailId">) => {
+  const dataLayer = window.dataLayer || [];
+
+  function onDataLayerChange() {
+    const data = window.dataLayer.slice(-1)[0]; // Gets the newest array member of dataLayer
+    const dataLayerEvent = data[1];   // data.event is at array index 1
+
+    if (data.event === "add_to_cart" || dataLayerEvent === "add_to_cart") {
+      const products = data.items || data[2].items;   // data.items is at array index 2
+      const { id, name, price, quantity, category } = products[0];
+
       window.tracker(
         "trackAddToCart",
-        cartData.sku,
-        cartData.name,
-        cartData.category,
-        cartData.unitPrice,
-        cartData.quantity,
-        cartData.currency
+        id.toString(),
+        (name || "N/A").toString(),
+        (category || "N/A").toString(),
+        parseFloat(price || 0),
+        parseInt(quantity || 1),
+        "USD"
       );
-    },
+    }
 
-    removeFromCartEvent(cartData) {
+    if (data.event === "remove_from_cart" || dataLayerEvent === "remove_from_cart") {
+      const products = data.items || data[2].items;   // data.items is at array index 2
+      const { id, name, price, quantity, category } = products[0];
+
       window.tracker(
         "trackRemoveFromCart",
-        cartData.sku,
-        cartData.name,
-        cartData.category,
-        cartData.unitPrice,
-        cartData.quantity,
-        cartData.currency
+        id.toString(),
+        (name || "N/A").toString(),
+        (category || "N/A").toString(),
+        parseFloat(price || 0),
+        parseInt(quantity || 1),
+        "USD"
       );
-    },
+    }
 
-    transactionEvent(transactionData) {
+    if (data.event === "purchase" || dataLayerEvent === "purchase") {
+      // all ecommerce information is at array index 2
+      const transaction_id = data.transaction_id || data[2].transaction_id;
+      const transaction_total = data.value || data[2].value;
+      const transaction_currency = data.currency || data[2].currency;
+      const products = data.items || data[2].items;
+
+      // Hardcoded because most fields are empty
       window.tracker(
         "addTrans",
-        transactionData.id,
+        transaction_id.toString(),
         retailId ?? appId,
-        transactionData.total,
-        transactionData.tax,
-        transactionData.shipping,
-        transactionData.city,
-        transactionData.state,
-        transactionData.country,
-        transactionData.currency
+        parseFloat(transaction_total),
+        0,
+        0,
+        "N/A",
+        "N/A",
+        "N/A",
+        (transaction_currency || "USD").toString()
       );
 
-      transactionData.items.forEach((item) => {
+      products.forEach(items => {
+        const { id, name, price, quantity, category } = items;
+
         window.tracker(
           "addItem",
-          transactionData.id,
-          item.sku,
-          item.name,
-          item.category,
-          item.unitPrice,
-          item.quantity,
-          item.currency
+          transaction_id.toString(),
+          id.toString(),
+          (name || "N/A").toString(),
+          (category || "N/A").toString(),
+          parseFloat(price || 0),
+          parseInt(quantity || 1),
+          (transaction_currency || "USD").toString()
         );
       });
-      window.tracker("trackTrans");
-    },
-  });
+
+      window.tracker('trackTrans');
+    }
+  }
+
+  // Stores the original dataLayer.push method before modifying it to execute our snowplow tracker
+  const originalPush = dataLayer.push
+  dataLayer.push = function (...args) {
+    originalPush(...args);
+    onDataLayerChange();
+  };
 };
 
 export default ollaTracker;

@@ -14,7 +14,7 @@ const woocommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
         transactionData.city,
         transactionData.state,
         transactionData.country,
-        transactionData.currency,
+        transactionData.currency
       );
 
       transactionData.items.forEach((item) => {

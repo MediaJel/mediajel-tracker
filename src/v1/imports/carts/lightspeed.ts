@@ -1,37 +1,42 @@
 import { QueryStringContext } from "../../../shared/types";
-import lightspeedTrackerImport from "src/shared/environment-data-sources/lightspeed";
 
-const lightspeedTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  lightspeedTrackerImport({
-    transactionEvent(transactionData) {
+const lightspeedTracker = ({
+  appId,
+  retailId,
+}: Pick<QueryStringContext, "appId" | "retailId">) => {
+  if (!window.lightspeedTransaction) return;
+  else {
+    const transaction = window.lightspeedTransaction;
+    const products = transaction.products;
+
+    window.tracker(
+      "addTrans",
+      transaction.orderNumber.toString(),
+      !retailId ? appId : retailId,
+      parseFloat(transaction.orderTotal),
+      parseFloat(transaction.orderTax ? transaction.orderTax : 0),
+      parseFloat(transaction.orderShipping ? transaction.orderShipping : 0),
+      (transaction.orderCity ? transaction.orderCity : "N/A").toString(),
+      (transaction.orderRegion ? transaction.orderRegion : "N/A").toString(),
+      (transaction.orderCountry ? transaction.orderCountry : "N/A").toString(),
+      (transaction.orderCurrency ? transaction.orderCurrency : "USD").toString()
+    );
+
+    for (let i = 0; i < products.length; ++i) {
       window.tracker(
-        "addTrans",
-        transactionData.id,
-        retailId ?? appId,
-        transactionData.total,
-        transactionData.tax,
-        transactionData.shipping,
-        transactionData.city,
-        transactionData.state,
-        transactionData.country,
-        transactionData.currency
+        "addItem",
+        transaction.orderNumber.toString(),
+        products[i].productId.toString(),
+        (products[i].productName ? products[i].productName : "N/A").toString(),
+        (products[i].productCategory ? products[i].productCategory : "N/A").toString(),
+        parseFloat(products[i].productPrice),
+        parseInt(products[i].productQuantity ? products[i].productQuantity : 1),
+        (transaction.orderCurrency ? transaction.orderCurrency : "USD").toString()
       );
+    }
 
-      transactionData.items.forEach((item) => {
-        window.tracker(
-          "addItem",
-          transactionData.id,
-          item.sku,
-          item.name,
-          item.category,
-          item.unitPrice,
-          item.quantity,
-          item.currency
-        );
-      });
-      window.tracker("trackTrans");
-    },
-  });
+    window.tracker("trackTrans");
+  }
 };
 
 export default lightspeedTracker;

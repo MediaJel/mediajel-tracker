@@ -1,35 +1,39 @@
+import { errorTrackingSource } from "../../../shared/sources/error-tracking-source";
 import { QueryStringContext } from "../../../shared/types";
-import lightspeedTrackerImport from "src/shared/environment-data-sources/lightspeed";
 
 const lightspeedTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  lightspeedTrackerImport({
-    transactionEvent(transactionData) {
+  errorTrackingSource(() => {
+    if (!window.lightspeedTransaction) return;
+    else {
+      const transaction = window.lightspeedTransaction;
+      const products = transaction.products;
+
       window.tracker("addTrans", {
-        orderId: transactionData.id,
-        affiliation: retailId ?? appId,
-        total: transactionData.total,
-        tax: transactionData.tax,
-        shipping: transactionData.shipping,
-        city: transactionData.city,
-        state: transactionData.state,
-        country: transactionData.country,
-        currency: transactionData.currency,
+        orderId: transaction.orderNumber.toString(),
+        affiliation: !retailId ? appId : retailId,
+        total: parseFloat(transaction.orderTotal),
+        tax: parseFloat(transaction.orderTax ? transaction.orderTax : 0),
+        shipping: parseFloat(transaction.orderShipping ? transaction.orderShipping : 0),
+        city: (transaction.orderCity ? transaction.orderCity : "N/A").toString(),
+        state: (transaction.orderRegion ? transaction.orderRegion : "N/A").toString(),
+        country: (transaction.orderCountry ? transaction.orderCountry : "N/A").toString(),
+        currency: (transaction.orderCurrency ? transaction.orderCurrency : "USD").toString(),
       });
 
-      transactionData.items.forEach((item) => {
+      for (let i = 0; i < products.length; ++i) {
         window.tracker("addItem", {
-          orderId: transactionData.id,
-          sku: item.sku,
-          name: item.name,
-          category: item.category,
-          price: item.unitPrice,
-          quantity: item.quantity,
-          currency: item.currency,
+          orderId: transaction.orderNumber.toString(),
+          sku: products[i].productId.toString(),
+          name: (products[i].productName ? products[i].productName : "N/A").toString(),
+          category: (products[i].productCategory ? products[i].productCategory : "N/A").toString(),
+          price: parseFloat(products[i].productPrice),
+          quantity: parseInt(products[i].productQuantity ? products[i].productQuantity : 1),
+          currency: (transaction.orderCurrency ? transaction.orderCurrency : "USD").toString(),
         });
-      });
+      }
 
       window.tracker("trackTrans");
-    },
+    }
   });
 };
 

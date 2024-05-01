@@ -1,61 +1,80 @@
 import { QueryStringContext } from "../../../shared/types";
-import meadowTrackerImport from "src/shared/environment-data-sources/meadow";
 
-const meadowTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  meadowTrackerImport({
-    addToCartEvent(cartData) {
+const meadowTracker = ({
+  appId,
+  retailId,
+}: Pick<QueryStringContext, "appId" | "retailId">) => {
+  function receiveMessage(event: MessageEvent<any>) {
+    const rawData = event.data;
+
+    if (rawData.type === "ANALYTICS_CART_ADD") {
+      const cartData = rawData.payload;
+      const product = rawData.payload.product;
+
       window.tracker(
         "trackAddToCart",
-        cartData.sku,
-        cartData.name,
-        cartData.category,
-        cartData.unitPrice,
-        cartData.quantity,
-        cartData.currency
+        product.id.toString(),
+        (product.name || "N/A").toString(),
+        (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
+        parseFloat(product.option.price || 0) / 100,
+        parseInt(cartData.quantity || 1),
+        "USD"
       );
-    },
+    }
 
-    removeFromCartEvent(cartData) {
+    if (rawData.type === "ANALYTICS_CART_REMOVE") {
+      const cartData = rawData.payload;
+      const product = rawData.payload.product;
+
       window.tracker(
         "trackRemoveFromCart",
-        cartData.sku,
-        cartData.name,
-        cartData.category,
-        cartData.unitPrice,
-        cartData.quantity,
-        cartData.currency
+        product.id.toString(),
+        (product.name || "N/A").toString(),
+        (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
+        parseFloat(product.option.price || 0) / 100,
+        parseInt(cartData.quantity || 1),
+        "USD"
       );
-    },
+    }
 
-    transactionEvent(transactionData) {
+    if (rawData.type === "ANALYTICS_PURCHASE") {
+      const transaction = rawData.payload.order;
+      const products = transaction.lineItems;
+
+      // Hardcoded because most fields are empty
       window.tracker(
         "addTrans",
-        transactionData.id,
+        transaction.id.toString(),
         retailId ?? appId,
-        transactionData.total,
-        transactionData.tax,
-        transactionData.shipping,
-        transactionData.city,
-        transactionData.state,
-        transactionData.country,
-        transactionData.currency
+        parseFloat(transaction.netPrice) / 100,
+        parseFloat(transaction.taxesTotal || 0) / 100,
+        0,
+        "N/A",
+        "N/A",
+        "N/A",
+        "USD"
       );
 
-      transactionData.items.forEach((item) => {
+      products.forEach(items => {
+        const { product, quantity } = items
+
         window.tracker(
           "addItem",
-          transactionData.id,
-          item.sku,
-          item.name,
-          item.category,
-          item.unitPrice,
-          item.quantity,
-          transactionData.currency
+          transaction.id.toString(),
+          product.id.toString(),
+          (product.name || "N/A").toString(),
+          (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
+          parseFloat(product.option.price || 0) / 100,
+          parseInt(quantity || 1),
+          "USD"
         );
-      });
+      })
+
       window.tracker("trackTrans");
-    },
-  });
+    }
+  }
+
+  window.addEventListener("message", receiveMessage, false);
 };
 
 export default meadowTracker;
