@@ -2,8 +2,8 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
 
-  if(window.transactionOrder === undefined){
-    if (window.Shopify?.checkout === undefined) {
+  if(!window.transactionOrder){
+    if (!window.Shopify?.checkout) {
       return;
     }
   } else {
