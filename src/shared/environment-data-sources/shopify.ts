@@ -1,19 +1,47 @@
 import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
-  if (!window.Shopify.checkout) {
-    return;
+
+  if(!window.transactionOrder){
+    if (!window.Shopify?.checkout) {
+      return;
+    }
+  } else {
+    const transaction = window?.transactionOrder;
+      const products = window?.transactionItems;
+      transactionEvent({
+        id: transaction?.order?.id,
+        total: parseFloat(transaction?.totalPrice?.amount || 0),
+        tax: parseFloat(transaction?.totalTax?.amount || 0),
+        shipping: parseFloat(transaction?.shippingLine?.price?.amount || 0),
+        city: "N/A",
+        state: "N/A",
+        country: "N/A",
+        currency: (transaction?.currencyCode || "USD").toString(),
+        items: products?.map((product: any) => {
+          const productItem = product?.variant;
+          return {
+            orderId: transaction?.order?.id.toString(),
+            productId: product?.id.toString(),
+            sku: productItem.sku.toString(),
+            name: productItem.product.title.toString(),
+            category: "N/A", // No Category Field for Shopify in transactionItems
+            unitPrice: parseFloat(productItem.price.amount) || 0,
+            quantity: parseInt(product.quantity) || 1,
+            currency: (transaction?.currencyCode || "USD").toString(),
+          } as TransactionCartItem;
+        }),
+      });
   }
 
-  const transaction = window.Shopify.checkout ? window.Shopify.checkout : window?.transactionOrder;
-  const products = transaction.line_items ? transaction.line_items : window?.transactionItems;
-  const email = transaction.email || "N/A";
-  const orderNumber = document.getElementsByClassName("os-order-number")[0]["innerText"] || "";
-
-  window.tracker("setUserId", email);
-
   // liquid_total_price is legacy support for old shopify integration
-  if(window.Shopify.checkout){
+  if (window.Shopify?.checkout) {
+    const transaction = window.Shopify.checkout;
+    const products = transaction.line_items;
+    const email = transaction.email || "N/A";
+    const orderNumber = document.getElementsByClassName("os-order-number")[0]["innerText"] || "";
+  
+    window.tracker("setUserId", email);
     transactionEvent({
       userId: email,
       id: `${(transaction.liquid_order_name || transaction.order_id).toString()} ${orderNumber && `- ${orderNumber}`}`,
@@ -38,32 +66,8 @@ const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transa
         } as TransactionCartItem;
       }),
     });
-  } else {
-    transactionEvent({
-      id: transaction?.id,
-      total: parseFloat(transaction?.totalPrice?.amount || 0),
-      tax: parseFloat(transaction?.totalTax?.amount || 0),
-      shipping: parseFloat(transaction?.shippingLine?.price?.amount || 0),
-      city: "N/A",
-      state: "N/A",
-      country: "N/A",
-      currency: (transaction?.currencyCode || "USD").toString(),
-      items: products?.map((product: any) => {
-        const productItem = product?.variant;
-        return {
-          orderId: transaction?.id.toString(),
-          productId: product?.id.toString(),
-          sku: productItem.sku.toString(),
-          name: productItem.product.title.toString(),
-          category: "N/A", // No Category Field for Shopify in transactionItems
-          unitPrice: parseFloat(productItem.price.amount) || 0,
-          quantity: parseInt(product.quantity) || 1,
-          currency: (transaction?.currencyCode || "USD").toString(),
-        } as TransactionCartItem;
-      }),
-    });
   }
-  
+
 };
 
 export default shopifyDataSource;
