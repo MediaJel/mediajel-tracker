@@ -35,7 +35,8 @@ const yotpoTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
         transactionData.shipping,
         transactionData.city,
         transactionData.state,
-        transactionData.country
+        transactionData.country,
+        transactionData.currency,
       );
 
       transactionData.items.forEach((item) => {

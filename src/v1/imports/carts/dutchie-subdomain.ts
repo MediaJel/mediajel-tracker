@@ -36,7 +36,8 @@ const dutchieSubdomainTracker = ({ appId, retailId }: Pick<QueryStringContext, "
         transactionData.shipping,
         transactionData.city,
         transactionData.state,
-        transactionData.country
+        transactionData.country,
+        transactionData.currency,
       );
 
       transactionData.items.forEach((item) => {
