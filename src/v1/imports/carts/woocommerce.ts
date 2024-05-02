@@ -24,9 +24,9 @@ const woocommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
           item.sku,
           item.name,
           item.category,
-          item.quantity,
           item.unitPrice,
-          item.currency
+          item.quantity,
+          item.currency,
         );
       });
 

@@ -13,7 +13,8 @@ const magentoTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | 
         transactionData.shipping,
         transactionData.city,
         transactionData.state,
-        transactionData.country
+        transactionData.country,
+        transactionData.currency,
       );
 
       transactionData.items.forEach((item) => {

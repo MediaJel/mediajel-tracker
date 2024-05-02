@@ -32,11 +32,12 @@ const tymberTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "
         "addTrans",
         transactionData.id,
         retailId ?? appId,
-        transactionData.shipping,
+        transactionData.total,
         transactionData.tax,
+        transactionData.shipping,
         transactionData.city,
         transactionData.state,
-        transactionData.total,
+        transactionData.country,
         transactionData.currency
       );
 
