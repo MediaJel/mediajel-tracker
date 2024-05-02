@@ -10,7 +10,7 @@ const applyV2 = (context: QueryStringContext): void => {
   recordIntegration(context);
   tapadHashSyncPixel();
 
-  /** For debugging in the console */
+  /** For debugging in the console **/
   context.debugger === "true" && debuggerPlugin();
 
   switch (context.event) {
