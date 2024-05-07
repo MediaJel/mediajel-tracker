@@ -64,7 +64,7 @@ const ollaTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: 
         });
       }
     } catch (error) {
-      window.tracker('trackError', error, 'OLLA');
+      window.tracker('trackError', JSON.stringify(error), 'OLLA');
     }
   });
 };

@@ -37,7 +37,7 @@ const woocommerceDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "tr
     }),
   });
   } catch (error) {
-    window.tracker('trackError', error, 'WOOCOMMERCE');
+    window.tracker('trackError', JSON.stringify(error), 'WOOCOMMERCE');
   }
 };
 

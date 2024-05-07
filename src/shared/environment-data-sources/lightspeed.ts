@@ -30,7 +30,7 @@ const lightspeedTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) => 
         }),
       });
     } catch (error) {
-      window.tracker('trackError', error, 'LIGHTSPEED');
+      window.tracker('trackError', JSON.stringify(error), 'LIGHTSPEED');
     }
   }
 };

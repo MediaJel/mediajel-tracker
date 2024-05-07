@@ -63,7 +63,7 @@ const meadowTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }
         });
       }
     } catch (error) {
-      window.tracker('trackError', error, 'MEADOW');
+      window.tracker('trackError', JSON.stringify(error), 'MEADOW');
     }
   });
 };

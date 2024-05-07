@@ -82,7 +82,7 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
       }
     }
   } catch (error) {
-    window.tracker('trackError', error, 'DUTCHIEPLUS');
+    window.tracker('trackError', JSON.stringify(error), 'DUTCHIEPLUS');
   }
 
 };

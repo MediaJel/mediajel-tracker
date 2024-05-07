@@ -34,7 +34,7 @@ const wefunderTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
         });
       }
     } catch (error) {
-      window.tracker('trackError', error, 'Wefunder');
+      window.tracker('trackError', JSON.stringify(error), 'Wefunder');
     }
   });
 };
