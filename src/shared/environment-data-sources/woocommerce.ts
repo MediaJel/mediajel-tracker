@@ -5,7 +5,9 @@ const woocommerceDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "tr
   if (!window.transactionOrder && !window.transactionItems) {
     return;
   }
-  const transaction = tryParseJSONObject(window.transactionOrder);
+  
+  try {
+    const transaction = tryParseJSONObject(window.transactionOrder);
   const products = tryParseJSONObject(window.transactionItems);
   const email = transaction.billing.email || "N/A";
 
@@ -34,6 +36,9 @@ const woocommerceDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "tr
       } as TransactionCartItem;
     }),
   });
+  } catch (error) {
+    window.tracker('trackError', JSON.stringify(error), 'WOOCOMMERCE');
+  }
 };
 
 export default woocommerceDataSource;
