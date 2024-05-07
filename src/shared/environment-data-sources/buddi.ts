@@ -79,7 +79,7 @@ const buddiTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }:
         });
       }
     } catch (e) {
-      window.tracker("trackError", e, "BUDDI");
+      window.tracker("trackError", JSON.stringify(e), "BUDDI");
     }
   });
 };

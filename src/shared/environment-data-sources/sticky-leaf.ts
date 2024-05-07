@@ -21,7 +21,7 @@ const stickyLeafDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "tra
       items: [],
     });
   } catch (error) {
-    window.tracker("trackError", error, "STICKYLEAF");
+    window.tracker("trackError", JSON.stringify(error), "STICKYLEAF");
   }
 };
 

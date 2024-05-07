@@ -31,7 +31,7 @@ const webjointDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "trans
         });
       }
     } catch (error) {
-      window.tracker("trackError", error, "WEBJOINT");
+      window.tracker("trackError", JSON.stringify(error), "WEBJOINT");
     }
   });
 };

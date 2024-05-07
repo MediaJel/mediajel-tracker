@@ -40,7 +40,7 @@ const dutchieIframeDataSource = ({
         });
       }
 
-      if (rawData.event === "analytics:dataLayer" && rawData.payload.payload['1'] === "purchase") {
+      if (rawData.event === "analytics:dataLayer" && rawData.payload.payload["1"] === "purchase") {
         const transaction = rawData.payload.payload["2"];
         const products = transaction.items;
         const { transaction_id, value } = transaction;
@@ -99,7 +99,7 @@ const dutchieIframeDataSource = ({
         });
       }
     } catch (error) {
-      window.tracker("trackError", error, "DUTCHIEIFRAME");
+      window.tracker("trackError", JSON.stringify(error), "DUTCHIEIFRAME");
     }
   });
 };

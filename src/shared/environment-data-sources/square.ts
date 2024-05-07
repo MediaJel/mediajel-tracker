@@ -17,7 +17,7 @@ const squareDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transac
           state: "N/A",
           items: ecommerce.items.map((item: any) => {
             const { name, price, quantity } = item;
-  
+
             return {
               orderId: ecommerce.transaction_id,
               category: "N/A",
@@ -31,7 +31,7 @@ const squareDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transac
         });
       }
     } catch (error) {
-      window.tracker("trackError", error, "SQUARE");
+      window.tracker("trackError", JSON.stringify(error), "SQUARE");
     }
   });
 };

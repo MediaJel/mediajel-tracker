@@ -1,7 +1,6 @@
 import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
-
   if (!window.transactionOrder) {
     if (!window.Shopify?.checkout) {
       return;
@@ -34,7 +33,7 @@ const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transa
         }),
       });
     } catch (error) {
-      window.tracker('trackError', error, 'SHOPIFY');
+      window.tracker("trackError", JSON.stringify(error), "SHOPIFY");
     }
   }
 
@@ -49,7 +48,9 @@ const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transa
       window.tracker("setUserId", email);
       transactionEvent({
         userId: email,
-        id: `${(transaction.liquid_order_name || transaction.order_id).toString()} ${orderNumber && `- ${orderNumber}`}`,
+        id: `${(transaction.liquid_order_name || transaction.order_id).toString()} ${
+          orderNumber && `- ${orderNumber}`
+        }`,
         total: parseFloat(transaction.liquid_total_price || transaction.total_price),
         tax: parseFloat(transaction.total_tax || 0),
         shipping: parseFloat(transaction.shipping_rate.price || 0),
@@ -72,10 +73,9 @@ const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transa
         }),
       });
     } catch (error) {
-      window.tracker("trackError", error, "SHOPIFY");
+      window.tracker("trackError", JSON.stringify(error), "SHOPIFY");
     }
   }
-
 };
 
 export default shopifyDataSource;

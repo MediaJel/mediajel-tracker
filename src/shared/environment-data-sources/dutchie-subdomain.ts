@@ -11,7 +11,7 @@ const dutchieSubdomainDataSource = ({
       if (data.event === "add_to_cart") {
         const products = data.ecommerce.items;
         const { item_id, item_name, item_category, price, quantity } = products[0];
-  
+
         addToCartEvent?.({
           sku: item_id.toString(),
           name: item_name?.toString() || "N/A",
@@ -21,11 +21,11 @@ const dutchieSubdomainDataSource = ({
           currency: "USD",
         });
       }
-  
+
       if (data.event === "remove_from_cart") {
         const products = data.ecommerce.items;
         const { item_id, item_name, item_category, price, quantity } = products[0];
-  
+
         removeFromCartEvent?.({
           sku: item_id.toString(),
           name: item_name?.toString() || "N/A",
@@ -35,12 +35,12 @@ const dutchieSubdomainDataSource = ({
           currency: "USD",
         });
       }
-  
+
       if (data["0"] === "event" && data["1"] === "purchase") {
         const transaction = data["2"];
         const products = transaction.items;
         const { transaction_id, value } = transaction;
-  
+
         transactionEvent?.({
           total: parseFloat(value),
           id: transaction_id.toString(),
@@ -66,7 +66,7 @@ const dutchieSubdomainDataSource = ({
         const transaction = data.ecommerce;
         const products = transaction.items;
         const { transaction_id, value } = transaction;
-  
+
         transactionEvent?.({
           total: parseFloat(value),
           id: transaction_id.toString(),
@@ -90,7 +90,7 @@ const dutchieSubdomainDataSource = ({
         });
       }
     } catch (error) {
-      window.tracker("trackError", error, "DUTCHIESUBDOMAIN");
+      window.tracker("trackError", JSON.stringify(error), "DUTCHIESUBDOMAIN");
     }
   });
 };

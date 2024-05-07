@@ -72,7 +72,7 @@ const janeDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent 
         });
       }
     } catch (error) {
-      window.tracker("trackError", error, "JANE");
+      window.tracker("trackError", JSON.stringify(error), "JANE");
     }
   });
 };
