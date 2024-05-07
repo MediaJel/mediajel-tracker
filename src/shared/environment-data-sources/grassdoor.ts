@@ -63,7 +63,7 @@ const grassDoorTracker = ({ addToCartEvent, removeFromCartEvent, transactionEven
         });
       }
     } catch (error) {
-      window.tracker('trackError', error, 'GRASSDOOR');
+      window.tracker('trackError', JSON.stringify(error), 'GRASSDOOR');
     }
   });
 };

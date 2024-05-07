@@ -63,7 +63,7 @@ const yotpoDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent
         });
       }
     } catch (error) {
-      window.tracker('trackError', error, 'YOTPO');
+      window.tracker('trackError', JSON.stringify(error), 'YOTPO');
     }
   });
 };

@@ -62,7 +62,7 @@ const tymberDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEven
         });
       }
     } catch (error) {
-      window.tracker('trackError', error, 'TYMBER');
+      window.tracker('trackError', JSON.stringify(error), 'TYMBER');
     }
   });
 };
