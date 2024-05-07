@@ -40,9 +40,7 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
         }
       }
       //}
-    } catch (e) {
-      window.tracker('trackError', e ,'BIGCOMMERCE');
-    }
+    } catch (e) {}
   });
 };
 

@@ -12,9 +12,7 @@ const magentoDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => 
         const dataToJSON = JSON.stringify(getData);
         sessionStorage.setItem("pixelData", dataToJSON);
       }
-    } catch (e) {
-      window.tracker("trackError", e, "MAGENTO");
-    }
+    } catch (e) {}
   });
 
   try {
@@ -55,9 +53,7 @@ const magentoDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => 
         sessionStorage.setItem("pixelData", "0");
       }, 1000);
     }
-  } catch (error) {
-    window.tracker("trackError", error, "MAGENTO");
-  }
+  } catch (error) {}
 };
 
 export default magentoDataSource;
