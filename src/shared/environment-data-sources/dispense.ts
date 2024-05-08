@@ -3,10 +3,9 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   datalayerSource((data) => {
-    try {
-      if (data.event === "purchase") {
+    if (data.event === "purchase") {
+      try {
         const { transaction_id, tax, value, items } = data;
-
         transactionEvent?.({
           total: parseFloat(value),
           id: transaction_id.toString(),
@@ -30,9 +29,9 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
             } as TransactionCartItem;
           }),
         });
+      } catch (error) {
+        window.tracker('trackError', JSON.stringify(error), 'DISPENSE')
       }
-    } catch (error) {
-      window.tracker('trackError', JSON.stringify(error), 'DISPENSE')
     }
   }, window.gtmDataLayer); // special case for dispense; window.dataLayer is renamed to window.gtmDataLayer
 };

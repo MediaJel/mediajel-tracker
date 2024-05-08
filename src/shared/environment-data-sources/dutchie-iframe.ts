@@ -8,39 +8,40 @@ const dutchieIframeDataSource = ({
   transactionEvent,
 }: Partial<EnvironmentEvents>) => {
   postMessageSource((event: MessageEvent<any>) => {
-    try {
-      const rawData = tryParseJSONObject(event.data);
-      const payload = rawData?.payload?.payload || null;
 
-      if (rawData.event === "analytics:dataLayer" && payload.event === "add_to_cart") {
-        const products = payload.ecommerce.items;
-        const { item_id, item_name, item_category, price, quantity } = products[0];
+    const rawData = tryParseJSONObject(event.data);
+    const payload = rawData?.payload?.payload || null;
 
-        addToCartEvent({
-          sku: item_id.toString(),
-          name: (item_name || "N/A").toString(),
-          category: (item_category || "N/A").toString(),
-          unitPrice: parseFloat(price || 0),
-          quantity: parseInt(quantity || 1),
-          currency: "USD",
-        });
-      }
+    if (rawData.event === "analytics:dataLayer" && payload.event === "add_to_cart") {
+      const products = payload.ecommerce.items;
+      const { item_id, item_name, item_category, price, quantity } = products[0];
 
-      if (rawData.event === "analytics:dataLayer" && payload.event === "remove_from_cart") {
-        const products = payload.ecommerce.items;
-        const { item_id, item_name, item_category, price, quantity } = products[0];
+      addToCartEvent({
+        sku: item_id.toString(),
+        name: (item_name || "N/A").toString(),
+        category: (item_category || "N/A").toString(),
+        unitPrice: parseFloat(price || 0),
+        quantity: parseInt(quantity || 1),
+        currency: "USD",
+      });
+    }
 
-        removeFromCartEvent({
-          sku: item_id.toString(),
-          name: (item_name || "N/A").toString(),
-          category: (item_category || "N/A").toString(),
-          unitPrice: parseFloat(price || 0),
-          quantity: parseInt(quantity || 1),
-          currency: "USD",
-        });
-      }
+    if (rawData.event === "analytics:dataLayer" && payload.event === "remove_from_cart") {
+      const products = payload.ecommerce.items;
+      const { item_id, item_name, item_category, price, quantity } = products[0];
 
-      if (rawData.event === "analytics:dataLayer" && rawData.payload.payload["1"] === "purchase") {
+      removeFromCartEvent({
+        sku: item_id.toString(),
+        name: (item_name || "N/A").toString(),
+        category: (item_category || "N/A").toString(),
+        unitPrice: parseFloat(price || 0),
+        quantity: parseInt(quantity || 1),
+        currency: "USD",
+      });
+    }
+
+    if (rawData.event === "analytics:dataLayer" && rawData.payload.payload["1"] === "purchase") {
+      try {
         const transaction = rawData.payload.payload["2"];
         const products = transaction.items;
         const { transaction_id, value } = transaction;
@@ -67,9 +68,13 @@ const dutchieIframeDataSource = ({
             } as TransactionCartItem;
           }),
         });
+      } catch (error) {
+        window.tracker("trackError", JSON.stringify(error), "DUTCHIEIFRAME");
       }
+    }
 
-      if (rawData.event == "analytics:dataLayer" && payload.event == "purchase") {
+    if (rawData.event == "analytics:dataLayer" && payload.event == "purchase") {
+      try {
         const transaction = payload.ecommerce;
         const products = transaction.items;
         const { transaction_id, value } = transaction;
@@ -97,10 +102,11 @@ const dutchieIframeDataSource = ({
             } as TransactionCartItem;
           }),
         });
+      } catch (error) {
+        window.tracker("trackError", JSON.stringify(error), "DUTCHIEIFRAME");
       }
-    } catch (error) {
-      window.tracker("trackError", JSON.stringify(error), "DUTCHIEIFRAME");
     }
+
   });
 };
 

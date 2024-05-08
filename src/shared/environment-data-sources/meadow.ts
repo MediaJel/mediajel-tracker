@@ -3,38 +3,39 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const meadowTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   postMessageSource((event: MessageEvent<any>): void => {
-    try {
-      const rawData = event.data;
 
-      if (rawData.type === "ANALYTICS_CART_ADD") {
-        const cartData = rawData.payload;
-        const product = rawData.payload.product;
+    const rawData = event.data;
 
-        addToCartEvent({
-          sku: product.id.toString(),
-          name: (product.name || "N/A").toString(),
-          category: (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
-          unitPrice: parseFloat(product.option.price || 0) / 100,
-          quantity: parseInt(cartData.quantity || 1),
-          currency: "USD",
-        });
-      }
+    if (rawData.type === "ANALYTICS_CART_ADD") {
+      const cartData = rawData.payload;
+      const product = rawData.payload.product;
 
-      if (rawData.type === "ANALYTICS_CART_REMOVE") {
-        const cartData = rawData.payload;
-        const product = rawData.payload.product;
+      addToCartEvent({
+        sku: product.id.toString(),
+        name: (product.name || "N/A").toString(),
+        category: (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
+        unitPrice: parseFloat(product.option.price || 0) / 100,
+        quantity: parseInt(cartData.quantity || 1),
+        currency: "USD",
+      });
+    }
 
-        removeFromCartEvent({
-          sku: product.id.toString(),
-          name: (product.name || "N/A").toString(),
-          category: (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
-          unitPrice: parseFloat(product.option.price || 0) / 100,
-          quantity: parseInt(cartData.quantity || 1),
-          currency: "USD",
-        });
-      }
+    if (rawData.type === "ANALYTICS_CART_REMOVE") {
+      const cartData = rawData.payload;
+      const product = rawData.payload.product;
 
-      if (rawData.type === "ANALYTICS_PURCHASE") {
+      removeFromCartEvent({
+        sku: product.id.toString(),
+        name: (product.name || "N/A").toString(),
+        category: (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
+        unitPrice: parseFloat(product.option.price || 0) / 100,
+        quantity: parseInt(cartData.quantity || 1),
+        currency: "USD",
+      });
+    }
+
+    if (rawData.type === "ANALYTICS_PURCHASE") {
+      try {
         const transaction = rawData.payload.order;
         const products = transaction.lineItems;
 
@@ -61,9 +62,9 @@ const meadowTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }
             } as TransactionCartItem;
           }),
         });
+      } catch (error) {
+        window.tracker('trackError', JSON.stringify(error), 'MEADOW');
       }
-    } catch (error) {
-      window.tracker('trackError', JSON.stringify(error), 'MEADOW');
     }
   });
 };
