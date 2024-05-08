@@ -3,10 +3,9 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const greenrushDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   xhrResponseSource((xhr: XMLHttpRequest) => {
-    try {
-      const response = xhr.responseText;
-
-      if (xhr.responseURL.includes("cart") && xhr.response.includes("pending")) {
+    const response = xhr.responseText;
+    if (xhr.responseURL.includes("cart") && xhr.response.includes("pending")) {
+      try {
         const transaction = JSON.parse(response);
         const product = transaction.data.items.data;
 
@@ -31,9 +30,9 @@ const greenrushDataSource = ({ addToCartEvent, removeFromCartEvent, transactionE
             } as TransactionCartItem;
           }),
         });
+      } catch (error) {
+        window.tracker('trackError', JSON.stringify(error), 'GREENRUSH');
       }
-    } catch (error) {
-      window.tracker('trackError', JSON.stringify(error), 'GREENRUSH');
     }
   });
 };

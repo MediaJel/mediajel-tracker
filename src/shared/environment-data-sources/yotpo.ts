@@ -34,8 +34,8 @@ const yotpoDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent
     //   });
     // }
 
-    try {
-      if (data.event === "purchase") {
+    if (data.event === "purchase") {
+      try {
         const transaction = data.ecommerce;
         const products = data.ecommerce.items;
         const { transaction_id, value, tax } = transaction;
@@ -61,10 +61,11 @@ const yotpoDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent
             } as TransactionCartItem;
           }),
         });
+      } catch (error) {
+        window.tracker('trackError', JSON.stringify(error), 'YOTPO');
       }
-    } catch (error) {
-      window.tracker('trackError', JSON.stringify(error), 'YOTPO');
     }
+
   });
 };
 

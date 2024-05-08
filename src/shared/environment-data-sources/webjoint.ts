@@ -3,10 +3,11 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const webjointDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
   xhrRequestSource((data: any): void => {
-    try {
-      const parsedData = JSON.parse(data);
 
-      if (parsedData && Object.keys(parsedData).includes("orders")) {
+    const parsedData = JSON.parse(data);
+
+    if (parsedData && Object.keys(parsedData).includes("orders")) {
+      try {
         transactionEvent({
           id: parsedData.orders[0].id || "N/A",
           total: parseFloat(parsedData.orders[0].total) || 0,
@@ -29,10 +30,11 @@ const webjointDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "trans
             } as TransactionCartItem;
           }),
         });
+      } catch (error) {
+        window.tracker("trackError", JSON.stringify(error), "WEBJOINT");
       }
-    } catch (error) {
-      window.tracker("trackError", JSON.stringify(error), "WEBJOINT");
     }
+
   });
 };
 
