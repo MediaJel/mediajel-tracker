@@ -3,38 +3,39 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const tymberDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   datalayerSource((data: any) => {
-    try {
-      if (data.event === "addToCart") {
-        const products = data.ecommerce.add.products;
-        const currency = data.ecommerce.currency;
-        const { brand, category, id, name, price, quantity } = products[0];
 
-        addToCartEvent({
-          sku: id.toString(),
-          name: (name || "N/A").toString(),
-          category: (category || "N/A").toString(),
-          unitPrice: parseFloat(price || 0),
-          quantity: parseInt(quantity || 1),
-          currency: (currency || "USD").toString(),
-        });
-      }
+    if (data.event === "addToCart") {
+      const products = data.ecommerce.add.products;
+      const currency = data.ecommerce.currency;
+      const { brand, category, id, name, price, quantity } = products[0];
 
-      if (data.event === "removeFromCart") {
-        const products = data.ecommerce.remove.products;
-        const currency = data.ecommerce.currency;
-        const { brand, category, id, name, price, quantity } = products[0];
+      addToCartEvent({
+        sku: id.toString(),
+        name: (name || "N/A").toString(),
+        category: (category || "N/A").toString(),
+        unitPrice: parseFloat(price || 0),
+        quantity: parseInt(quantity || 1),
+        currency: (currency || "USD").toString(),
+      });
+    }
 
-        removeFromCartEvent({
-          sku: id.toString(),
-          name: (name || "N/A").toString(),
-          category: (category || "N/A").toString(),
-          unitPrice: parseFloat(price || 0),
-          quantity: parseInt(quantity || 1),
-          currency: (currency || "USD").toString(),
-        });
-      }
+    if (data.event === "removeFromCart") {
+      const products = data.ecommerce.remove.products;
+      const currency = data.ecommerce.currency;
+      const { brand, category, id, name, price, quantity } = products[0];
 
-      if (data.event === "purchase") {
+      removeFromCartEvent({
+        sku: id.toString(),
+        name: (name || "N/A").toString(),
+        category: (category || "N/A").toString(),
+        unitPrice: parseFloat(price || 0),
+        quantity: parseInt(quantity || 1),
+        currency: (currency || "USD").toString(),
+      });
+    }
+
+    if (data.event === "purchase") {
+      try {
         const transaction = data.ecommerce.actionField;
         const products = data.ecommerce.products;
         const { id, revenue, tax } = transaction;
@@ -60,9 +61,9 @@ const tymberDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEven
             } as TransactionCartItem;
           }),
         });
+      } catch (error) {
+        window.tracker('trackError', JSON.stringify(error), 'TYMBER');
       }
-    } catch (error) {
-      window.tracker('trackError', JSON.stringify(error), 'TYMBER');
     }
   });
 };

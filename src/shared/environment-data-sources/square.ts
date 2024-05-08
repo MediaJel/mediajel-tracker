@@ -3,8 +3,8 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const squareDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
   datalayerSource((data: any): void => {
-    try {
-      if (data[1] === "purchase") {
+    if (data[1] === "purchase") {
+      try {
         const ecommerce = data[2];
         transactionEvent({
           id: ecommerce.transaction_id,
@@ -29,9 +29,9 @@ const squareDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transac
             } as TransactionCartItem;
           }),
         });
+      } catch (error) {
+        window.tracker("trackError", JSON.stringify(error), "SQUARE");
       }
-    } catch (error) {
-      window.tracker("trackError", JSON.stringify(error), "SQUARE");
     }
   });
 };

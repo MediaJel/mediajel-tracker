@@ -3,15 +3,16 @@ import { xhrResponseSource } from "../sources/xhr-response-source";
 
 const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   xhrResponseSource((xhr) => {
-    try {
-      //if (window.location.pathname.includes('/checkout')) {
-      const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
-      const products = transaction?.lineItems?.physicalItems;
-      const getLatestOrder = localStorage.getItem("latestOrder");
-      if (transaction.hasOwnProperty("orderId")) {
-        if (transaction.hasOwnProperty("status")) {
-          if (transaction.status === "AWAITING_FULFILLMENT") {
-            if (getLatestOrder !== transaction?.orderId.toString()) {
+
+    //if (window.location.pathname.includes('/checkout')) {
+    const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
+    const products = transaction?.lineItems?.physicalItems;
+    const getLatestOrder = localStorage.getItem("latestOrder");
+    if (transaction.hasOwnProperty("orderId")) {
+      if (transaction.hasOwnProperty("status")) {
+        if (transaction.status === "AWAITING_FULFILLMENT") {
+          if (getLatestOrder !== transaction?.orderId.toString()) {
+            try {
               transactionEvent({
                 id: transaction?.orderId.toString(),
                 total: parseFloat(transaction?.orderAmount),
@@ -34,15 +35,15 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
                   } as TransactionCartItem;
                 }),
               });
-              localStorage.setItem("latestOrder", transaction.orderId.toString());
+            } catch (e) {
+              window.tracker("trackError", JSON.stringify(e), "BIGCOMMERCE");
             }
+            localStorage.setItem("latestOrder", transaction.orderId.toString());
           }
         }
       }
-      //}
-    } catch (e) {
-      window.tracker("trackError", JSON.stringify(e), "BIGCOMMERCE");
     }
+    //}
   });
 };
 

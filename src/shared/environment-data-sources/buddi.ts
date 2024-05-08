@@ -3,54 +3,55 @@ import { xhrResponseSource } from "../sources/xhr-response-source";
 
 const buddiTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>): void => {
   xhrResponseSource((xhr: XMLHttpRequest): void => {
-    try {
-      const response = JSON.parse(xhr.responseText);
-      const cartList = [];
 
-      if (xhr.responseURL.includes("cart") && !xhr.response.includes("delete")) {
-        const product = response;
+    const response = JSON.parse(xhr.responseText);
+    const cartList = [];
 
-        cartList.push(product);
+    if (xhr.responseURL.includes("cart") && !xhr.response.includes("delete")) {
+      const product = response;
 
-        addToCartEvent({
-          sku: product.id.toString(),
-          name: product.name.toString() || "N/A",
-          category: "N/A",
-          unitPrice: parseFloat(product.price) || 0,
-          quantity: parseInt(product.qty) || 1,
-          currency: "USD",
-        });
-      } else if (xhr.responseURL.includes("delete-product-from-cart")) {
-        const product = response.items;
+      cartList.push(product);
 
-        const removedItem = cartList
-          .filter((x) => {
-            !product.includes(x);
+      addToCartEvent({
+        sku: product.id.toString(),
+        name: product.name.toString() || "N/A",
+        category: "N/A",
+        unitPrice: parseFloat(product.price) || 0,
+        quantity: parseInt(product.qty) || 1,
+        currency: "USD",
+      });
+    } else if (xhr.responseURL.includes("delete-product-from-cart")) {
+      const product = response.items;
+
+      const removedItem = cartList
+        .filter((x) => {
+          !product.includes(x);
+        })
+        .concat(
+          product.filter((x) => {
+            !cartList.includes(x);
           })
-          .concat(
-            product.filter((x) => {
-              !cartList.includes(x);
-            })
-          );
+        );
 
-        try {
-          for (let i = removedItem.length; i > 0; i--) {
-            removeFromCartEvent({
-              sku: removedItem[i - 1].id.toString(),
-              name: removedItem[i - 1].name.toString() || "N/A",
-              category: "N/A",
-              unitPrice: parseFloat(removedItem[i - 1].price) || 0,
-              quantity: parseInt(removedItem[i - 1].qty) || 1,
-              currency: "USD",
-            });
+      try {
+        for (let i = removedItem.length; i > 0; i--) {
+          removeFromCartEvent({
+            sku: removedItem[i - 1].id.toString(),
+            name: removedItem[i - 1].name.toString() || "N/A",
+            category: "N/A",
+            unitPrice: parseFloat(removedItem[i - 1].price) || 0,
+            quantity: parseInt(removedItem[i - 1].qty) || 1,
+            currency: "USD",
+          });
 
-            removedItem.length -= 1;
-          }
-          removedItem.length = 0;
-        } catch {
-          return;
+          removedItem.length -= 1;
         }
-      } else if (xhr.responseURL.includes("orders")) {
+        removedItem.length = 0;
+      } catch {
+        return;
+      }
+    } else if (xhr.responseURL.includes("orders")) {
+      try {
         const transaction = response;
         const products = transaction.products;
 
@@ -77,10 +78,11 @@ const buddiTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }:
             } as TransactionCartItem;
           }),
         });
+      } catch (e) {
+        window.tracker("trackError", JSON.stringify(e), "BUDDI");
       }
-    } catch (e) {
-      window.tracker("trackError", JSON.stringify(e), "BUDDI");
     }
+
   });
 };
 

@@ -3,39 +3,40 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const janeDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   postMessageSource((event: MessageEvent<any>) => {
-    try {
-      const { payload, messageType } = event.data;
 
-      if (!payload || messageType !== "analyticsEvent") {
-        return;
-      }
-      if (payload.name === "cartItemAdd") {
-        const { product, productId } = payload.properties;
+    const { payload, messageType } = event.data;
 
-        addToCartEvent({
-          sku: productId.toString(),
-          name: (product.name || "N/A").toString(),
-          category: (product.category || "N/A").toString(),
-          unitPrice: parseFloat(product.price || 0),
-          quantity: parseInt(product.quantity || 1),
-          currency: "USD",
-        });
-      }
+    if (!payload || messageType !== "analyticsEvent") {
+      return;
+    }
+    if (payload.name === "cartItemAdd") {
+      const { product, productId } = payload.properties;
 
-      if (payload.name === "cartItemRemoval") {
-        const { productId } = payload.properties;
+      addToCartEvent({
+        sku: productId.toString(),
+        name: (product.name || "N/A").toString(),
+        category: (product.category || "N/A").toString(),
+        unitPrice: parseFloat(product.price || 0),
+        quantity: parseInt(product.quantity || 1),
+        currency: "USD",
+      });
+    }
 
-        // Hardcoded because most fields are empty
-        removeFromCartEvent({
-          sku: productId.toString(),
-          name: "N/A",
-          category: "N/A",
-          unitPrice: 0,
-          quantity: 1,
-          currency: "USD",
-        });
-      }
-      if (payload.name === "checkout") {
+    if (payload.name === "cartItemRemoval") {
+      const { productId } = payload.properties;
+
+      // Hardcoded because most fields are empty
+      removeFromCartEvent({
+        sku: productId.toString(),
+        name: "N/A",
+        category: "N/A",
+        unitPrice: 0,
+        quantity: 1,
+        currency: "USD",
+      });
+    }
+    if (payload.name === "checkout") {
+      try {
         const {
           customerEmail, // to implement
           products,
@@ -70,9 +71,9 @@ const janeDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent 
             } as TransactionCartItem;
           }),
         });
+      } catch (error) {
+        window.tracker("trackError", JSON.stringify(error), "JANE");
       }
-    } catch (error) {
-      window.tracker("trackError", JSON.stringify(error), "JANE");
     }
   });
 };

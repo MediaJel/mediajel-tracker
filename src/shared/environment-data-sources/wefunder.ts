@@ -3,8 +3,8 @@ import { xhrResponseSource } from "../sources/xhr-response-source";
 
 const wefunderTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   xhrResponseSource((xhr) => {
-    try {
-      if (xhr.responseURL.includes("investments") && typeof xhr.responseText === "string") {
+    if (xhr.responseURL.includes("investments") && typeof xhr.responseText === "string") {
+      try {
         const response = JSON.parse(xhr.responseText);
         const transaction = response;
         const products = transaction.products;
@@ -32,9 +32,9 @@ const wefunderTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
             } as TransactionCartItem;
           }),
         });
+      } catch (error) {
+        window.tracker('trackError', error, 'Wefunder');
       }
-    } catch (error) {
-      window.tracker('trackError', JSON.stringify(error), 'Wefunder');
     }
   });
 };

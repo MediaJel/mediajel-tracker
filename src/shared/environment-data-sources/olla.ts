@@ -3,38 +3,39 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const ollaTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   datalayerSource((data: any): void => {
-    try {
-      const dataLayerEvent = data[1];
-      if (data.event === "add_to_cart" || dataLayerEvent === "add_to_cart") {
-        const products = data.items || data[2].items; // data.items is at array index 2
-        const { id, name, price, quantity, category } = products[0];
 
-        addToCartEvent({
-          sku: id.toString(),
-          name: (name || "N/A").toString(),
-          category: (category || "N/A").toString(),
-          unitPrice: parseFloat(price || 0),
-          quantity: parseInt(quantity || 1),
-          currency: "USD",
-        });
-      }
+    const dataLayerEvent = data[1];
+    if (data.event === "add_to_cart" || dataLayerEvent === "add_to_cart") {
+      const products = data.items || data[2].items; // data.items is at array index 2
+      const { id, name, price, quantity, category } = products[0];
 
-      if (data.event === "remove_from_cart" || dataLayerEvent === "remove_from_cart") {
-        const products = data.items || data[2].items; // data.items is at array index 2
-        const { id, name, price, quantity, category } = products[0];
+      addToCartEvent({
+        sku: id.toString(),
+        name: (name || "N/A").toString(),
+        category: (category || "N/A").toString(),
+        unitPrice: parseFloat(price || 0),
+        quantity: parseInt(quantity || 1),
+        currency: "USD",
+      });
+    }
 
-        removeFromCartEvent({
-          sku: id.toString(),
-          name: (name || "N/A").toString(),
-          category: (category || "N/A").toString(),
-          unitPrice: parseFloat(price || 0),
-          quantity: parseInt(quantity || 1),
-          currency: "USD",
-        });
-      }
+    if (data.event === "remove_from_cart" || dataLayerEvent === "remove_from_cart") {
+      const products = data.items || data[2].items; // data.items is at array index 2
+      const { id, name, price, quantity, category } = products[0];
 
-      if (data.event === "purchase" || dataLayerEvent === "purchase") {
-        // all ecommerce information is at array index 2
+      removeFromCartEvent({
+        sku: id.toString(),
+        name: (name || "N/A").toString(),
+        category: (category || "N/A").toString(),
+        unitPrice: parseFloat(price || 0),
+        quantity: parseInt(quantity || 1),
+        currency: "USD",
+      });
+    }
+
+    if (data.event === "purchase" || dataLayerEvent === "purchase") {
+      // all ecommerce information is at array index 2
+      try {
         const transaction_id = data.transaction_id || data[2].transaction_id;
         const transaction_total = data.value || data[2].value;
         const products = data.items || data[2].items;
@@ -62,9 +63,9 @@ const ollaTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: 
             } as TransactionCartItem;
           }),
         });
+      } catch (error) {
+        window.tracker('trackError', JSON.stringify(error), 'OLLA');
       }
-    } catch (error) {
-      window.tracker('trackError', JSON.stringify(error), 'OLLA');
     }
   });
 };

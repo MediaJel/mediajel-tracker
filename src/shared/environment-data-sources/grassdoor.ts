@@ -2,36 +2,37 @@ import { datalayerSource } from "../sources/google-datalayer-source";
 import { EnvironmentEvents, TransactionCartItem } from "../types";
 const grassDoorTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   datalayerSource((data: any): void => {
-    try {
-      if (data.event === "Product Added") {
-        const products = data;
-        const { sku, name, price, quantity, category } = products;
 
-        addToCartEvent({
-          sku: sku.toString(),
-          name: (name || "N/A").toString(),
-          category: (category || "N/A").toString(),
-          unitPrice: parseFloat(price || 0),
-          quantity: parseInt(quantity || 1),
-          currency: "USD",
-        });
-      }
+    if (data.event === "Product Added") {
+      const products = data;
+      const { sku, name, price, quantity, category } = products;
 
-      if (data.event === "Product Removed") {
-        const products = data;
-        const { sku, name, price, quantity, category } = products;
+      addToCartEvent({
+        sku: sku.toString(),
+        name: (name || "N/A").toString(),
+        category: (category || "N/A").toString(),
+        unitPrice: parseFloat(price || 0),
+        quantity: parseInt(quantity || 1),
+        currency: "USD",
+      });
+    }
 
-        removeFromCartEvent({
-          sku: sku.toString(),
-          name: (name || "N/A").toString(),
-          category: (category || "N/A").toString(),
-          unitPrice: parseFloat(price || 0),
-          quantity: parseInt(quantity || 1),
-          currency: "USD",
-        });
-      }
+    if (data.event === "Product Removed") {
+      const products = data;
+      const { sku, name, price, quantity, category } = products;
 
-      if (data.event === "Order Made") {
+      removeFromCartEvent({
+        sku: sku.toString(),
+        name: (name || "N/A").toString(),
+        category: (category || "N/A").toString(),
+        unitPrice: parseFloat(price || 0),
+        quantity: parseInt(quantity || 1),
+        currency: "USD",
+      });
+    }
+
+    if (data.event === "Order Made") {
+      try {
         const transaction_id = data.order_id;
         const transaction_total = data.revenue;
         const transaction_tax = data.tax;
@@ -61,10 +62,11 @@ const grassDoorTracker = ({ addToCartEvent, removeFromCartEvent, transactionEven
             } as TransactionCartItem;
           }),
         });
+      } catch (error) {
+        window.tracker('trackError', JSON.stringify(error), 'GRASSDOOR');
       }
-    } catch (error) {
-      window.tracker('trackError', JSON.stringify(error), 'GRASSDOOR');
     }
+
   });
 };
 

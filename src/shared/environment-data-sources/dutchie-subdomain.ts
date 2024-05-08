@@ -7,36 +7,37 @@ const dutchieSubdomainDataSource = ({
   transactionEvent,
 }: Partial<EnvironmentEvents>) => {
   datalayerSource((data) => {
-    try {
-      if (data.event === "add_to_cart") {
-        const products = data.ecommerce.items;
-        const { item_id, item_name, item_category, price, quantity } = products[0];
 
-        addToCartEvent?.({
-          sku: item_id.toString(),
-          name: item_name?.toString() || "N/A",
-          category: item_category?.toString() || "N/A",
-          unitPrice: parseFloat(price || "0"),
-          quantity: parseInt(quantity || "1"),
-          currency: "USD",
-        });
-      }
+    if (data.event === "add_to_cart") {
+      const products = data.ecommerce.items;
+      const { item_id, item_name, item_category, price, quantity } = products[0];
 
-      if (data.event === "remove_from_cart") {
-        const products = data.ecommerce.items;
-        const { item_id, item_name, item_category, price, quantity } = products[0];
+      addToCartEvent?.({
+        sku: item_id.toString(),
+        name: item_name?.toString() || "N/A",
+        category: item_category?.toString() || "N/A",
+        unitPrice: parseFloat(price || "0"),
+        quantity: parseInt(quantity || "1"),
+        currency: "USD",
+      });
+    }
 
-        removeFromCartEvent?.({
-          sku: item_id.toString(),
-          name: item_name?.toString() || "N/A",
-          category: item_category?.toString() || "N/A",
-          unitPrice: parseFloat(price || "0"),
-          quantity: parseInt(quantity || "1"),
-          currency: "USD",
-        });
-      }
+    if (data.event === "remove_from_cart") {
+      const products = data.ecommerce.items;
+      const { item_id, item_name, item_category, price, quantity } = products[0];
 
-      if (data["0"] === "event" && data["1"] === "purchase") {
+      removeFromCartEvent?.({
+        sku: item_id.toString(),
+        name: item_name?.toString() || "N/A",
+        category: item_category?.toString() || "N/A",
+        unitPrice: parseFloat(price || "0"),
+        quantity: parseInt(quantity || "1"),
+        currency: "USD",
+      });
+    }
+
+    if (data["0"] === "event" && data["1"] === "purchase") {
+      try {
         const transaction = data["2"];
         const products = transaction.items;
         const { transaction_id, value } = transaction;
@@ -62,7 +63,11 @@ const dutchieSubdomainDataSource = ({
             } as TransactionCartItem;
           }),
         });
-      } else if (data.event === "purchase") {
+      } catch (error) {
+        window.tracker("trackError", JSON.stringify(error), "DUTCHIESUBDOMAIN");
+      }
+    } else if (data.event === "purchase") {
+      try {
         const transaction = data.ecommerce;
         const products = transaction.items;
         const { transaction_id, value } = transaction;
@@ -88,9 +93,9 @@ const dutchieSubdomainDataSource = ({
             } as TransactionCartItem;
           }),
         });
+      } catch (error) {
+        window.tracker("trackError", JSON.stringify(error), "DUTCHIESUBDOMAIN");
       }
-    } catch (error) {
-      window.tracker("trackError", JSON.stringify(error), "DUTCHIESUBDOMAIN");
     }
   });
 };
