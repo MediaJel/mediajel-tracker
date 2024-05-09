@@ -25,7 +25,7 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
               category: item_category?.toString() || "N/A",
               unitPrice: parseFloat(price || 0),
               quantity: parseInt(quantity || 1),
-              currencys: "USD",
+              currency: "USD",
             } as TransactionCartItem;
           }),
         });
