@@ -12,10 +12,8 @@ const magentoDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => 
         const dataToJSON = JSON.stringify(getData);
         sessionStorage.setItem("pixelData", dataToJSON);
       }
-    } catch (e) {
-    }
+    } catch (e) {}
   });
-
 
   if (window.location.pathname.includes("/checkout/onepage/success/")) {
     setTimeout(() => {
@@ -52,12 +50,11 @@ const magentoDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => 
           }),
         });
       } catch (error) {
-        window.tracker("trackError", JSON.stringify(error), "MAGENTO");
+        // window.tracker("trackError", JSON.stringify(error), "MAGENTO");
       }
       sessionStorage.setItem("pixelData", "0");
     }, 1000);
   }
-
 };
 
 export default magentoDataSource;

@@ -33,7 +33,7 @@ const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transa
         }),
       });
     } catch (error) {
-      window.tracker("trackError", JSON.stringify(error), "SHOPIFY");
+      // window.tracker("trackError", JSON.stringify(error), "SHOPIFY");
     }
   }
 
@@ -73,7 +73,7 @@ const shopifyDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transa
         }),
       });
     } catch (error) {
-      window.tracker("trackError", JSON.stringify(error), "SHOPIFY");
+      // window.tracker("trackError", JSON.stringify(error), "SHOPIFY");
     }
   }
 };

@@ -3,7 +3,6 @@ import { xhrResponseSource } from "../sources/xhr-response-source";
 
 const buddiTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>): void => {
   xhrResponseSource((xhr: XMLHttpRequest): void => {
-
     const response = JSON.parse(xhr.responseText);
     const cartList = [];
 
@@ -79,10 +78,9 @@ const buddiTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }:
           }),
         });
       } catch (e) {
-        window.tracker("trackError", JSON.stringify(e), "BUDDI");
+        // window.tracker("trackError", JSON.stringify(e), "BUDDI");
       }
     }
-
   });
 };
 

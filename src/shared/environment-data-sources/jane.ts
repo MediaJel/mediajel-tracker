@@ -3,7 +3,6 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const janeDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   postMessageSource((event: MessageEvent<any>) => {
-
     const { payload, messageType } = event.data;
 
     if (!payload || messageType !== "analyticsEvent") {
@@ -72,7 +71,7 @@ const janeDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent 
           }),
         });
       } catch (error) {
-        window.tracker("trackError", JSON.stringify(error), "JANE");
+        // window.tracker("trackError", JSON.stringify(error), "JANE");
       }
     }
   });

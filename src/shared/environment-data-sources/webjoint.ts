@@ -3,7 +3,6 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const webjointDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
   xhrRequestSource((data: any): void => {
-
     const parsedData = JSON.parse(data);
 
     if (parsedData && Object.keys(parsedData).includes("orders")) {
@@ -31,10 +30,9 @@ const webjointDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "trans
           }),
         });
       } catch (error) {
-        window.tracker("trackError", JSON.stringify(error), "WEBJOINT");
+        // window.tracker("trackError", JSON.stringify(error), "WEBJOINT");
       }
     }
-
   });
 };
 

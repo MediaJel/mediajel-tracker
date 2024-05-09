@@ -3,7 +3,6 @@ import { xhrResponseSource } from "../sources/xhr-response-source";
 
 const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   xhrResponseSource((xhr) => {
-
     //if (window.location.pathname.includes('/checkout')) {
     const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
     const products = transaction?.lineItems?.physicalItems;
@@ -36,7 +35,7 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
                 }),
               });
             } catch (e) {
-              window.tracker("trackError", JSON.stringify(e), "BIGCOMMERCE");
+              // window.tracker("trackError", JSON.stringify(e), "BIGCOMMERCE");
             }
             localStorage.setItem("latestOrder", transaction.orderId.toString());
           }

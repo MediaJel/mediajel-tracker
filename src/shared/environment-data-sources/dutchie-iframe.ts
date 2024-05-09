@@ -8,7 +8,6 @@ const dutchieIframeDataSource = ({
   transactionEvent,
 }: Partial<EnvironmentEvents>) => {
   postMessageSource((event: MessageEvent<any>) => {
-
     const rawData = tryParseJSONObject(event.data);
     const payload = rawData?.payload?.payload || null;
 
@@ -69,7 +68,7 @@ const dutchieIframeDataSource = ({
           }),
         });
       } catch (error) {
-        window.tracker("trackError", JSON.stringify(error), "DUTCHIEIFRAME");
+        // window.tracker("trackError", JSON.stringify(error), "DUTCHIEIFRAME");
       }
     }
 
@@ -103,10 +102,9 @@ const dutchieIframeDataSource = ({
           }),
         });
       } catch (error) {
-        window.tracker("trackError", JSON.stringify(error), "DUTCHIEIFRAME");
+        // window.tracker("trackError", JSON.stringify(error), "DUTCHIEIFRAME");
       }
     }
-
   });
 };
 
