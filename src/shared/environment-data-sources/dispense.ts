@@ -25,12 +25,12 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
               category: item_category?.toString() || "N/A",
               unitPrice: parseFloat(price || 0),
               quantity: parseInt(quantity || 1),
-              currency: "USD",
+              currencys: "USD",
             } as TransactionCartItem;
           }),
         });
       } catch (error) {
-        window.tracker('trackError', JSON.stringify(error), 'DISPENSE')
+        // window.tracker('trackError', JSON.stringify(error), 'DISPENSE')
       }
     }
   }, window.gtmDataLayer); // special case for dispense; window.dataLayer is renamed to window.gtmDataLayer

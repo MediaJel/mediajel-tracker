@@ -3,7 +3,6 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const ollaTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   datalayerSource((data: any): void => {
-
     const dataLayerEvent = data[1];
     if (data.event === "add_to_cart" || dataLayerEvent === "add_to_cart") {
       const products = data.items || data[2].items; // data.items is at array index 2
@@ -64,7 +63,7 @@ const ollaTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: 
           }),
         });
       } catch (error) {
-        window.tracker('trackError', JSON.stringify(error), 'OLLA');
+        // window.tracker('trackError', JSON.stringify(error), 'OLLA');
       }
     }
   });

@@ -34,7 +34,7 @@ const ecwidTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
       }),
     });
   } catch (error) {
-    window.tracker('trackError', JSON.stringify(error), 'ECWID');
+    // window.tracker('trackError', JSON.stringify(error), 'ECWID');
   }
 };
 

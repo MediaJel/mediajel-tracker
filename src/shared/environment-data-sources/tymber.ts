@@ -3,7 +3,6 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const tymberDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   datalayerSource((data: any) => {
-
     if (data.event === "addToCart") {
       const products = data.ecommerce.add.products;
       const currency = data.ecommerce.currency;
@@ -62,7 +61,7 @@ const tymberDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEven
           }),
         });
       } catch (error) {
-        window.tracker('trackError', JSON.stringify(error), 'TYMBER');
+        // window.tracker('trackError', JSON.stringify(error), 'TYMBER');
       }
     }
   });
