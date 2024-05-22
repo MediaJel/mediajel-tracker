@@ -1,0 +1,348 @@
+<script>
+    if (window.location.pathname.includes('/thank-you-page')) {
+    window.dataLayer = window.dataLayer || [];
+    for (let i = 0; i < window.dataLayer.length; i++) {
+            const data = window.dataLayer[i];
+            if (data.event === 'purchase') {
+                const { id, revenue, shipping } = data.ecommerce.purchase.actionField;
+                const items = data.ecommerce.purchase.products[0];
+
+                console.log(
+                    "addTrans",
+                    id,
+                    "N/A",
+                    parseFloat(revenue) || 0,
+                    0,
+                    parseFloat(shipping) || 0,
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "USD"
+                );
+
+                console.log(
+                    "addItem",
+                    id,
+                    items.id || "N/A",
+                    items.name || "N/A",
+                    items.category || "N/A",
+                    parseFloat(items.price) || 0,
+                    parseInt(items.quantity) || 1,
+                    items.currency || "USD"
+                );
+            }
+        }
+    }
+</script>
+
+<script>
+    if (window.location.pathname.includes('/thank-you')) {
+        window.dataLayer = window.dataLayer || [];
+        for (let i = 0; i < window.dataLayer.length; i++) {
+            const data = window.dataLayer[i];
+            if (data.event === 'purchase') {
+                const { transaction_id, tax, shipping, value } = data.ecommerce;
+                const items = data.ecommerce.items;
+
+                console.log(
+                    "addTrans",
+                    transaction_id,
+                    "N/A",
+                    parseFloat(value),
+                    parseFloat(tax) || 0,
+                    parseFloat(shipping) || 0,
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "USD"
+                );
+
+                items.map((item) => {
+                    console.log(
+                        "addItem",
+                        transaction_id,
+                        item.item_id || "N/A",
+                        item.item_name || "N/A",
+                        item.item_category || "N/A",
+                        parseFloat(item.price) || 0,
+                        parseInt(item.quantity) || 1,
+                        "USD"
+                    );
+                });
+                console.log("trackTrans");
+            }
+        }
+    }
+</script>
+
+<script>
+    function checkDataLayer(callback) {
+    if (window.dataLayer && Array.isArray(window.dataLayer)) {
+        callback();
+    } else {
+        setTimeout(() => checkDataLayer(callback), 100);
+    }
+    }
+
+        checkDataLayer(() => {
+        console.log("Data layer is defined and ready.");
+
+        const datalayerSource = (callback, dataLayer = window.dataLayer || []) => {
+            dataLayer.forEach((event) => {
+            callback(event);
+            });
+        };
+
+        datalayerSource((event) => {
+            console.log("Datalayer event", event);
+            if (event.event === "purchase") {
+                const { transaction_id, tax, shipping, value } = event.ecommerce;
+                const items = event.ecommerce.items;
+
+                window.tracker(
+                    "addTrans",
+                    transaction_id,
+                    "N/A",
+                    parseFloat(value),
+                    parseFloat(tax) || 0,
+                    parseFloat(shipping) || 0,
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "USD"
+                );
+
+                items.map((item) => {
+                    window.tracker(
+                        "addItem",
+                        transaction_id,
+                        item.item_id || "N/A",
+                        item.item_name || "N/A",
+                        item.item_category || "N/A",
+                        parseFloat(item.price) || 0,
+                        parseInt(item.quantity) || 1,
+                        "USD"
+                    );
+                });
+                window.tracker("trackTrans");
+            }
+        });
+    });
+</script>
+
+
+<script>
+    window.addEventListener('DOMContentLoaded', function() {
+        if (window.location.pathname.includes('/order-confirmation')) {
+        const id = document.querySelector('.ec-confirmation__number').textContent.trim();
+        const total = parseFloat((document.querySelector('.ec-confirmation__order-confirmation-total').textContent).replace('$', ''));
+        const product = document.querySelector('.ec-cart-item__title').textContent.trim();
+        const quantityVal = document.querySelector('.ec-cart-item__count-inner').textContent.trim();
+        const quantity = parseInt(quantityVal.split(' ')[1]);
+
+        console.log(
+            id,
+            total,
+            product,
+            quantity
+        );
+
+        window.tracker(
+            "addTrans",
+            id,
+            "N/A",
+            total,
+            0,
+            0,
+            "N/A",
+            "N/A",
+            "N/A",
+            "USD",
+        );
+
+        window.tracker(
+            "addItem",
+            id,
+            "N/A",
+            total,
+            "N/A",
+            total,
+            quantity,
+            "USD",
+        );
+        window.tracker("trackTrans");
+    }
+    });
+</script>
+
+<!-- Nothing but hemp -->
+<script>
+    window.addEventListener('DOMContentLoaded', function() {
+        if (window.location.pathname.includes('/order-confirmation')) {
+        const id = document.querySelector('.ec-confirmation__number').textContent.trim();
+        const total = parseFloat((document.querySelector('.ec-confirmation__order-confirmation-total').textContent).replace('$', ''));
+        const product = document.querySelector('.ec-cart-item__title').textContent.trim();
+        const quantityVal = document.querySelector('.ec-cart-item__count-inner').textContent.trim();
+        const quantity = parseInt(quantityVal.split(' ')[1]);
+
+        console.log(
+            id,
+            total,
+            product,
+            quantity
+        );
+
+        window.tracker(
+            "addTrans",
+            id,
+            "N/A",
+            total,
+            0,
+            0,
+            "N/A",
+            "N/A",
+            "N/A",
+            "USD",
+        );
+
+        window.tracker(
+            "addItem",
+            id,
+            "N/A",
+            total,
+            "N/A",
+            total,
+            quantity,
+            "USD",
+        );
+        window.tracker("trackTrans");
+    }
+    });
+</script>
+
+<!-- VPA: Enbridge-WI Digital -->
+<script>
+    if (window.location.pathname.includes('/take-action')) {
+        console.log("It's inside /take-action");
+        var form = document.querySelector('.speak4-form');
+
+        form.addEventListener("submit", (event) => {
+            console.log("It's here inside addEventListener Submit");
+
+            var prefix = form.querySelector('[name="prefix"]').value;
+            var fname = form.querySelector('[name="nameFirst"]').value;
+            var lname = form.querySelector('[name="nameLast"]').value;
+            var email = form.querySelector('[name="email"]').value;
+            var phone = form.querySelector('[name="phoneMobile"]').value;
+            var address = form.querySelector('[name="address1"]').value;
+            var zip = form.querySelector('[name="zipcode"]').value;
+            const id = fname + lname;
+
+
+            window.tracker("trackSelfDescribingEvent", {
+            schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-2",
+            data: {
+                uuid: id,
+                firstName: fname,
+                lastName: lname,
+                emailAddress: email,
+                hashedEmailAddress: email,
+                phoneNumber: phone,
+                address: address,
+                gender: prefix,
+                city: zip,
+            },
+            });
+        });
+    }
+</script>
+
+<script>
+    setTimeout(() => {
+        console.log("It's in the setTimeout");
+        if (window.location.pathname.includes('/take-action')) {
+            console.log("It's in the take-action path");
+            var form = document.querySelector('.speak4-form');
+
+            form.addEventListener("submit", (event) => {
+                console.log("It's in the addEventListener Submit");
+                event.preventDefault();
+
+                    var prefix = form.querySelector('[name="prefix"]').value;
+                    var fname = form.querySelector('[name="nameFirst"]').value;
+                    var lname = form.querySelector('[name="nameLast"]').value;
+                    var email = form.querySelector('[name="email"]').value;
+                    var phone = form.querySelector('[name="phoneMobile"]').value;
+                    var address = form.querySelector('[name="address1"]').value;
+                    var zip = form.querySelector('[name="zipcode"]').value;
+                    const id = fname + lname;
+
+                    window.tracker("trackSelfDescribingEvent", {
+                        schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-2",
+                        data: {
+                            uuid: id,
+                            firstName: fname,
+                            lastName: lname,
+                            emailAddress: email,
+                            hashedEmailAddress: email,
+                            phoneNumber: phone,
+                            address: address,
+                            gender: prefix,
+                            city: zip,
+                        },
+                    });
+                
+            });
+        }
+    }, 1000);
+</script>
+
+<script>
+function pollForElement(selector, callback, interval = 100, timeout = 30000) {
+    const startTime = Date.now(); 
+
+    const poller = setInterval(() => {
+        const element = document.querySelector(selector);
+        if (element) {
+            clearInterval(poller);  
+            callback(element);   
+        } else if (Date.now() - startTime >= timeout) {
+            clearInterval(poller); 
+            console.error(`Timeout reached: element with selector "${selector}" not found.`);
+        }
+    }, interval);
+}
+
+pollForElement('.speak4-form', (element) => {
+    var form = document.querySelector('.speak4-form');
+
+            form.addEventListener("submit", (event) => {
+                event.preventDefault();
+
+                    var prefix = form.querySelector('[name="prefix"]').value;
+                    var fname = form.querySelector('[name="nameFirst"]').value;
+                    var lname = form.querySelector('[name="nameLast"]').value;
+                    var email = form.querySelector('[name="email"]').value;
+                    var phone = form.querySelector('[name="phoneMobile"]').value;
+                    var address = form.querySelector('[name="address1"]').value;
+                    var zip = form.querySelector('[name="zipcode"]').value;
+                    const id = fname + lname;
+
+                    window.tracker("trackSelfDescribingEvent", {
+                        schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-2",
+                        data: {
+                            uuid: id,
+                            firstName: fname,
+                            lastName: lname,
+                            emailAddress: email,
+                            hashedEmailAddress: email,
+                            phoneNumber: phone,
+                            address: address,
+                            gender: prefix,
+                            city: zip,
+                        },
+                    });
+                
+            });
+});
+</script>

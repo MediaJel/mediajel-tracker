@@ -1,0 +1,433 @@
+<script type="text/javascript" src="https://tags.cnna.io/?segmentId=2YjYNCN3Rer5ok8c__iDaA&appId=8b5ed5bb-7660-487b-bead-8a6049240cdb"></script>
+
+<script type="text/javascript">
+    addEventListener('submit', (event) => {
+        window.dataLayer = window.dataLayer || [];
+
+        for (let i = 0; i < window.dataLayer.length; i++) {
+            const checker = window.dataLayer[i][1];
+            const data = window.dataLayer[i][2];
+            if (checker === 'purchase') {
+                const { transaction_id, value, tax, shipping }  = data;
+                const { item_name, price, quantity } = data.items[0];
+
+                window.tracker(
+                    "addTrans",
+                    transaction_id,
+                    "N/A",
+                    parseFloat(value),
+                    parseFloat(tax) || 0,
+                    parseFloat(shipping) || 0,
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "USD"
+                );
+
+                items.forEach((item) => {
+                    window.tracker(
+                    "addItem",
+                    transaction_id,
+                    item_id || "N/A",
+                    item_name || "N/A",
+                    "N/A",
+                    price || 0,
+                    quantity || 0,
+                    "USD"
+                    );
+                });
+                window.tracker("trackTrans");
+            }
+        }
+    });
+</script>
+
+<script>
+    setTimeout(() => {
+        if (window.location.href.includes('/orderConfirmation')) {
+            console.log("It's in the orderConfirmation path");
+            var id = document.querySelector('.ec-confirmation__number.ec-header-h5').textContent;
+            var total = document.querySelector('.ec-confirmation__order-confirmation-total').textContent.replace('$', '');
+            var name = document.querySelector('.ec-cart-item__title').textContent;
+            var quantity = document.querySelector('.ec-cart-item__count-inner').textContent.replace('× ', '');
+
+            window.tracker(
+                "addTrans",
+                id,
+                "N/A",
+                parseFloat(total),
+                0,
+                0,
+                "N/A",
+                "N/A",
+                "USA",
+                "USD"
+            );
+
+            window.tracker(
+                "addItem",
+                id,
+                "N/A",
+                name,
+                "N/A",
+                parseFloat(total),
+                parseInt(quantity),
+                "USD"
+            );
+            window.tracker("trackTrans");
+        }
+    }, 3000);
+</script>
+
+<script>
+    setTimeout(() => {
+        if (window.location.href.includes('/orderConfirmation')) {
+            const idElement = document.querySelector('.ec-confirmation__number.ec-header-h5');
+            const totalElement = document.querySelector('.ec-confirmation__order-confirmation-total');
+            const nameElement = document.querySelector('.ec-cart-item__title');
+            const quantityElement = document.querySelector('.ec-cart-item__count-inner');
+
+            var id = idElement.textContent;
+            var total = totalElement.textContent.replace('$', '');
+            var name = nameElement.textContent;
+            var quantity = quantityElement.textContent.replace('× ', '');
+
+            window.tracker(
+                "addTrans",
+                id,
+                "N/A",
+                parseFloat(total),
+                0,
+                0,
+                "N/A",
+                "N/A",
+                "USA",
+                "USD"
+            );
+
+            window.tracker(
+                "addItem",
+                id,
+                "N/A",
+                name,
+                "N/A",
+                parseFloat(total),
+                parseInt(quantity),
+                "USD"
+            );
+
+            window.tracker("trackTrans");
+        }
+    }, 5000);
+</script> 
+
+<!-- Nurse Wellness -->
+
+<script>
+    function pollForElement(selectors, callback, interval = 100, timeout = 30000) {
+    const startTime = Date.now();  // Record the start time
+
+    // Define the polling function
+    const poller = setInterval(() => {
+       const elements = selectors.map((selector) => {
+          const element = document.querySelector(selector);
+          if (element) {
+            return true
+          }
+            return false
+       })
+      
+        const isAllLoaded = elements.every(Boolean)
+
+        if (isAllLoaded) {
+            clearInterval(poller);  // Stop the polling
+            callback();       // Execute the callback with the found element
+        } else if (Date.now() - startTime >= timeout) {
+            clearInterval(poller);  // Stop the polling if the timeout is reached
+            console.error(`Timeout reached: element with selector "${selector}" not found.`);
+        }
+    }, interval);
+    }
+
+    // Usage example
+    pollForElement(['.ec-confirmation__number.ec-header-h5', '.ec-confirmation__order-confirmation-total', '.ec-cart-item__title', '.ec-cart-item__count-inner'], () => {
+    console.log("Success in pollForElement");
+    if (window.location.href.includes('/orderConfirmation') || window.location.href.includes('/order-confirmation')) {
+            console.log("Success in orderConfirmation");
+            const idElement = document.querySelector('.ec-confirmation__number.ec-header-h5');
+            const totalElement = document.querySelector('.ec-confirmation__order-confirmation-total');
+            const nameElement = document.querySelector('.ec-cart-item__title');
+            const quantityElement = document.querySelector('.ec-cart-item__count-inner');
+
+            var id = idElement.textContent;
+            var total = totalElement.textContent.replace('$', '');
+            var name = nameElement.textContent;
+            var quantity = quantityElement.textContent.replace('× ', '');
+
+            window.tracker(
+                "addTrans",
+                id,
+                "N/A",
+                parseFloat(total),
+                0,
+                0,
+                "N/A",
+                "N/A",
+                "USA",
+                "USD"
+            );
+
+            window.tracker(
+                "addItem",
+                id,
+                "N/A",
+                name,
+                "N/A",
+                parseFloat(total),
+                parseInt(quantity),
+                "USD"
+            );
+
+            window.tracker("trackTrans");
+            
+        };
+    }); 
+</script>
+
+<!-- WNC CBD -->
+
+<script>
+    const xhrResponseSource1 = callback => {
+    const origOpen = XMLHttpRequest.prototype.open
+    XMLHttpRequest.prototype.open = function() {
+      this.addEventListener("load", () => callback(this))
+      origOpen.apply(this, arguments)
+    }
+    }
+  
+    xhrResponseSource((xhr) => {
+        const getData = JSON.parse(xhr.responseText);
+        
+        console.log(getData.orderId);
+   });
+</script>
+
+<script>
+    const xhrResponseSource = callback => {
+    const origOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function() {
+        this.addEventListener("load", () => callback(this));
+        origOpen.apply(this, arguments);
+    };
+    };
+
+    xhrResponseSource((xhr) => {
+        const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText))); 
+        console.log("Get Data: ", transaction);
+        
+            if (transaction.hasOwnProperty("status")) {
+              if (transaction.status === "AWAITING_FULFILLMENT") {
+                  console.log("Successfully Passed through all checks");
+                  
+                  setTimeout(() => {
+                    window.tracker("addTrans",
+                        transaction.orderId.toString(),
+                        "N/A",
+                        parseFloat(transaction.orderAmount),
+                        parseFloat(transaction.taxTotal) || 0,
+                        parseFloat(transaction.shippingCostTotal) || 0,
+                        (transaction.billingAddress.city || "N/A").toString(),
+                        (transaction.billingAddress.stateOrProvinceCode || "N/A").toString(),
+                        (transaction.billingAddress.countryCode || "N/A").toString(),
+                        "USD"
+                    );
+                  //}, 3000);
+                  
+                  console.log("Passed through window.tracker1 successfully");
+
+                  //setTimeout(() => {
+                    console.log("Inside setTimeout loop");
+                    transaction.lineItems.physicalItems.forEach((item, index) => {
+                      console.log("Inside addItem loop");
+                      console.log("SKU: ", transaction.lineItems.physicalItems[0].sku);
+                        const { productId, sku, name, listPrice, quantity } = item;
+                            window.tracker(
+                                "addItem",
+                                transaction.orderId.toString(),
+                                item.sku.toString(),
+                                (item.name || "N/A").toString(),
+                                "N/A",
+                                parseFloat(item.listPrice || 0),
+                                parseInt(item.quantity || 1),
+                                "USD"
+                            );
+                            console.log("Successful in getting Items");
+                    });
+                  }, 3000);
+                  window.tracker("trackTrans");
+                  console.log("Successfully tracked transaction");
+              }
+            }
+    });
+</script>
+
+<script>
+    var xhrResponseSourceRequest = function(callback) {
+  var send = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.send = function(data) {
+    var self = this;
+    this.addEventListener("readystatechange", function() {
+      callback(data); // Request Payload data
+    });
+    send.apply(self, arguments);
+  };
+};
+
+xhrResponseSourceRequest(function(xhr) {
+  try {
+    var getxhr = JSON.parse(JSON.stringify(JSON.parse(xhr)));
+    var getPayload =
+      getxhr.params &&
+      getxhr.params.data &&
+      getxhr.params.data[0] &&
+      getxhr.params.data[0].eventPayload;
+
+    if (getPayload) {
+      var products = JSON.parse(getPayload).order;
+      if (products.orderNo > 0) {
+        sessionStorage.setItem("pixelData", JSON.stringify(products));
+      }
+    }
+
+    var storedData = sessionStorage.getItem("pixelData");
+    var retrievedObject = JSON.parse(storedData);
+
+    var url = window.location.pathname;
+    var parts = url.split("/");
+    var orderId = parts[parts.length - 1];
+    if (retrievedObject.id === orderId && storedData !== "0") {
+      var invoice = retrievedObject.invoice;
+      var finalProducts = invoice.products;
+
+      gtag('event', 'conversion', {
+      'send_to': 'AW-11413419653/p0DZCPaMq_cYEIXtq8Iq',
+      'value': parseFloat(invoice.totalAmount),
+      'currency': 'USD',
+      'transaction_id': retrievedObject.orderNo.toString()});
+      sessionStorage.setItem("pixelData", "0");
+    }
+  } catch (error) {}
+});
+
+</script>
+
+<script>
+const tag = document.createElement('script')
+tag.src = "https://www.googletagmanager.com/gtag/js?id=AW-11413419653"
+document.head.appendChild(tag)
+
+window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'AW-11413419653');
+
+var xhrResponseSourceRequest = function(callback) {
+  var send = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.send = function(data) {
+    var self = this;
+    this.addEventListener("readystatechange", function() {
+      callback(data); // Request Payload data
+    });
+    send.apply(self, arguments);
+  };
+};
+
+xhrResponseSourceRequest(function(xhr) {
+  try {
+    var getxhr = JSON.parse(JSON.stringify(JSON.parse(xhr)));
+    var getPayload =
+      getxhr.params &&
+      getxhr.params.data &&
+      getxhr.params.data[0] &&
+      getxhr.params.data[0].eventPayload;
+
+    if (getPayload) {
+      var products = JSON.parse(getPayload).order;
+      if (products.orderNo > 0) {
+        sessionStorage.setItem("pixelData", JSON.stringify(products));
+      }
+    }
+
+    var storedData = sessionStorage.getItem("pixelData");
+    var retrievedObject = JSON.parse(storedData);
+
+    var url = window.location.pathname;
+    var parts = url.split("/");
+    var orderId = parts[parts.length - 1];
+    if (retrievedObject.id === orderId && storedData !== "0") {
+      var invoice = retrievedObject.invoice;
+      var finalProducts = invoice.products;
+
+      gtag('event', 'conversion', {
+      'send_to': 'AW-11413419653/p0DZCPaMq_cYEIXtq8Iq',
+      'value': parseFloat(invoice.totalAmount),
+      'currency': 'USD',
+      'transaction_id': retrievedObject.orderNo.toString()});
+      sessionStorage.setItem("pixelData", "0");
+    }
+  } catch (error) {}
+});
+
+</script>
+
+
+
+
+<!-- Try again WNC -->
+<script>
+  const xhrResponseSource2 = callback => {
+    const origOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function() {
+        this.addEventListener("load", () => callback(this));
+        origOpen.apply(this, arguments);
+    };
+    };
+
+    xhrResponseSource2((xhr) => {
+        const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
+        
+        setTimeout(() => {
+          if (transaction.status === "AWAITING_FULFILLMENT") {
+                setTimeout(() => {
+                    window.tracker("addTrans",
+                        transaction.orderId.toString(),
+                        "N/A",
+                        parseFloat(transaction.orderAmount),
+                        parseFloat(transaction.taxTotal) || 0,
+                        parseFloat(transaction.shippingCostTotal) || 0,
+                        (transaction.billingAddress.city || "N/A").toString(),
+                        (transaction.billingAddress.stateOrProvinceCode || "N/A").toString(),
+                        (transaction.billingAddress.countryCode || "N/A").toString(),
+                        "USD"
+                    );
+
+                    transaction.lineItems.physicalItems.forEach((item) => {
+                        const { productId, sku, name, listPrice, quantity } = item;
+                            window.tracker(
+                                "addItem",
+                                transaction.orderId.toString(),
+                                item.sku.toString(),
+                                (item.name || "N/A").toString(),
+                                "N/A",
+                                parseFloat(item.listPrice || 0),
+                                parseInt(item.quantity || 1),
+                                "USD"
+                            );
+                    });
+                    window.tracker("trackTrans");
+                }, 3000);
+          }
+        }, 3000);
+    });
+</script>

@@ -1,0 +1,37 @@
+<script>
+    if (window.location.pathname.includes('/thank-you-page')) {
+    window.dataLayer = window.dataLayer || [];
+    for (let i = 0; i < window.dataLayer.length; i++) {
+        const data = window.dataLayer[i];
+        if(data.event === "purchase") {
+            const { id, revenue, shipping } = data.ecommerce.purchase.actionField;
+            const { category, currency, name, price, quantity } = data.ecommerce.purchase.products[0];
+            const item_id = data.ecommerce.purchase.products[0].id;
+
+            window.tracker(
+                    "addTrans",
+                    id,
+                    "N/A",
+                    parseFloat(revenue) || 0,
+                    parseFloat(shipping) || 0,
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "USD"
+                );
+
+            window.tracker(
+                "addItem",
+                id,
+                item_id || "N/A",
+                name || "N/A",
+                category || "N/A",
+                parseFloat(price) || 0,
+                parseInt(quantity) || 1,
+                currency || "USD"
+            );
+            window.tracker("trackTrans");
+        }
+    }
+}
+</script>

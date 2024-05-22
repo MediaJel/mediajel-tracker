@@ -1,0 +1,77 @@
+<script>
+    const xhrResponseSource = callback => {
+        const origOpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function() {
+            this.addEventListener("load", () => callback(this));
+            origOpen.apply(this, arguments);
+        };
+    }
+
+    xhrResponseSource(xhr => {
+        const response = JSON.parse(xhr.responseText);
+        const newOrder = response.newOrder;
+
+            window.tracker(
+                "addTrans",
+                newOrder.order_code,
+                "N/A",
+                parseFloat(newOrder.total_in_cents) / 100,
+                0,
+                0,
+                newOrder.address.city,
+                newOrder.address.state,
+                "USA",
+                "USD",
+            );
+
+            newOrder.orderItems.map((item) => {
+                window.tracker(
+                    "addItem",
+                    newOrder.order_code,
+                    item.productId,
+                    item.productName,
+                    "N/A",
+                    0,
+                    item.quantityPurchased,
+                    "USD",
+                );
+            });
+            window.tracker("trackTrans");
+        });
+</script>
+
+<script>
+    let address;
+    let price;
+    let shipping;
+    let id;
+    
+    if (window.location.pathname.includes('/checkout')) {
+        const form = document.forms[0];
+
+        form.addEventListener("submit", (event) => {
+            address = document.querySelector('.cc-section-input input[type="text"]').value;
+            
+            const cartLabel = document.querySelector('label.cc-section-sum-label');
+            const priceVal = cartLabel.querySelector('span').textContent;
+            price = priceVal.slice(1);
+
+            const shippingLabel = document.querySelector('label.cc-section-sum-label:nth-of-type(2)');;
+            const shippingVal = shippingLabel.querySelector('span').textContent;
+            shipping = shippingVal.slice(1);
+            
+        });
+    }
+
+    if (window.location.pathname.includes('/order-confirmation')) {
+        id = document.querySelector('div.os-info label:nth-of-type(1) span').textContent;
+    }
+
+    console.log(
+        address,
+        price,
+        shipping,
+        id
+    );
+</script>
+    

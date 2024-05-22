@@ -1,0 +1,43 @@
+<script type="text/javascript" src="https://tags.cnna.io/?segmentId=uL5SicbpReptBqahVmfDVg&appId=2ce17dab-911a-44f8-8d8f-b222c85d5894"></script>
+
+<script type="text/javascript">
+    if (window.location.pathname.includes('/thank-you-page')) {
+
+        window.dataLayer = window.dataLayer || [];
+
+        for (let i = 0; i < window.dataLayer.length; i++) {
+            const data = window.dataLayer[i];
+            if (data.event === "purchase") {
+                const { id, revenue, tax, shipping } = data.ecommerce.purchase.actionField;
+                const items = data.ecommerce.purchase.products;
+
+                window.tracker(
+                    "addTrans",
+                    id,
+                    "N/A",
+                    parseFloat(revenue),
+                    parseFloat(tax) || 0,
+                    parseFloat(shipping) || 0,
+                    "N/A",
+                    "N/A",
+                    "N/A",
+                    "USD"
+                );
+
+                items.forEach((item) => {
+                    window.tracker(
+                        "addItem",
+                        id,
+                        item.id || "N/A",
+                        item.name || "N/A",
+                        item.category || "N/A",
+                        parseFloat(item.price) || 0,
+                        parseInt(item.quantity) || 1,
+                        item.currency || "USD"
+                    );
+                });
+                window.tracker("trackTrans");
+            }
+        }
+    }
+</script>

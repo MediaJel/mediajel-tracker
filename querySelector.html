@@ -1,0 +1,419 @@
+<button id="submitButton">Submit</button>
+<!-- Self describing -->
+<script type="text/javascript">
+    addEventListener("submit", (event) => {
+      const formData = new FormData(event.target);
+  
+      const fullName= formData.get("name*");
+      const email = formData.get("email");
+      const phone = formData.get("phone");
+  
+      const separateName = fullName.split(' ');
+      const firstName = separatedWords.slice(0, -1).join(' ');
+      const lastName = separatedWords.slice(-1).join(' ')
+  
+      window.tracker("trackSelfDescribingEvent", {
+        schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-2",
+        data: {
+          uuid: "IDHERE",
+          firstName: firstName,
+          lastName: lastName,
+          emailAddress: email,
+          hashedEmailAddress: email,
+          phoneNumber: phone,
+        },
+      });
+    });
+  </script>
+
+<script>
+    document.getElementById('submitButton').addEventListener('click', (event) => {
+        event.preventDefault(); // Prevent the default form submission behavior
+
+        const spanElement = document.querySelector('[data-hook="total-row-value"]');
+        const orderNumberElement = document.querySelector('[data-hook="HeaderDataHook.orderNumberLine"] .oBEELa');
+        
+        const firstName = document.querySelector("#\\34 ");
+
+        console.log("Sean Test Transaction");
+
+        if (spanElement) {
+            const textContent = spanElement.textContent;
+            const parsedValue = parseInt(textContent.replace('$', ''), 10);
+            console.log("Sean Transaction Value: ", parsedValue);
+        }
+
+        if (orderNumberElement) {
+            const orderNumberText = orderNumberElement.textContent.trim();
+            const orderNumber = parseInt(orderNumberText, 10);
+            console.log("Sean Order Number: ", orderNumber);
+        }
+    });
+</script>
+
+<script>
+    document.getElementById('submitButton').addEventListener('click', (event) => {
+        event.preventDefault();
+        const firstName = document.querySelector("#\\34 ");
+        const lastName = document.querySelector("#\\35 "); 
+
+        console.log("Sean Test Transaction");
+
+        console.log("FName: ", firstName);
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var fname = document.getElementById("firstName");
+        var firstName = fname.value;
+        console.log("Value: ", firstName);
+    });
+</script>
+
+<input dir="" type="text" id="4" name="first_name" data-test-id="firstName" value="gaefawddwaf">
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+    var textbox = document.querySelector('[data-test-id="firstName"]');
+
+    if (textbox) {
+        var value = textbox.value;
+
+        console.log("Value of the textbox:", value);
+    } else {
+        console.log("Textbox not found!");
+    }
+});
+
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+    var textbox = document.getElementById("4");
+
+    if (textbox) {
+        var value = textbox.value;
+
+        console.log("Value of the textbox:", value);
+    } else {
+        console.log("Textbox not found!");
+    }
+});
+</script>
+
+<script>
+    const form1 = document.forms[0]
+
+    form.addEventListener("submit", (event) => {
+    const fname = document.getElementsByName("first_name")[0].value
+    const lname = document.getElementsByName("last_name")[0].value
+    const phone = document.getElementByName("phone")[0].value
+    const email = document.getElementsByName("email")[0].value
+    const bday = document.getElementsByName("birthdate")[0].value
+    const id = fname + lname
+
+    window.tracker("trackSelfDescribingEvent", {
+        schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-2",
+        data: {
+            uuid: id,
+            firstName: fname,
+            lastName: lname,
+            emailAddress: email,
+            hashedEmailAddress: email,
+            phoneNumber: phone,
+        },
+      });
+
+    });
+</script>
+
+<script>
+    const form = document.forms[0];
+
+    form.addEventListener("submit", (event) => {
+
+        const mail = document.getElementsByName("input_1")[0].value;
+        const fname = document.getElementsByName("input_2")[0].value;
+        const lname = document.getElementsByName("input_3")[0].value;
+        const postal = document.getElementsByName("input_4")[0].value;
+        const phone = document.getElementsByName("input_5")[0].value;
+        const id = fname + lname
+
+        window.tracker("trackSelfDescribingEvent", {
+        schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-2",
+        data: {
+            uuid: id,
+            firstName: fname,
+            lastName: lname,
+            emailAddress: mail,
+            hashedEmailAddress: mail,
+            phoneNumber: phone
+        },
+      });
+    });
+
+</script>
+
+<script>
+function storeFormValues() {
+    const mail = document.getElementsByName("input_1")[0].value;
+    const fname = document.getElementsByName("input_2")[0].value;
+    const lname = document.getElementsByName("input_3")[0].value;
+    const postal = document.getElementsByName("input_4")[0].value;
+    const phone = document.getElementsByName("input_5")[0].value;
+
+    return {
+        mail: mail,
+        fname: fname,
+        lname: lname,
+        postal: postal,
+        phone: phone
+    };
+}
+const form4 = document.forms[0];
+form.addEventListener("submit", (event) => {
+    
+    const formValues = storeFormValues();
+
+    const mail = formValues.mail;
+    const fname = formValues.fname;
+    const lname = formValues.lname;
+    const phone = formValues.phone;
+
+    const id = fname + lname;
+
+    window.tracker("trackSelfDescribingEvent", {
+        schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-2",
+        data: {
+            uuid: id,
+            firstName: fname,
+            lastName: lname,
+            emailAddress: mail,
+            hashedEmailAddress: mail,
+            phoneNumber: phone
+        }
+    });
+});
+
+</script>
+
+<script>
+    function storeFormValues() {
+    const mail = document.querySelector('#email-748efd87-22c0-4767-8b11-e51dfbbe609c').value;
+    const fname = document.querySelector('#firstname-748efd87-22c0-4767-8b11-e51dfbbe609c').value;
+    const lname = document.querySelector('#lastname-748efd87-22c0-4767-8b11-e51dfbbe609c').value;
+    const phone = document.querySelector('#mobilephone-748efd87-22c0-4767-8b11-e51dfbbe609c').value;
+
+    return {
+        mail: mail,
+        fname: fname,
+        lname: lname,
+        phone: phone
+    };
+    }
+
+    const form5 = document.getElementById('hsForm_748efd87-22c0-4767-8b11-e51dfbbe609c');
+    form5.addEventListener("submit", (event) => {
+
+        const formValues = storeFormValues();
+        const fname = formValues.fname;
+        const lname = formValues.lname;
+        const email = formValues.email;
+        const phone = formValues.phone;
+        const id = fname + lname
+
+        window.tracker("trackSelfDescribingEvent", {
+        schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-2",
+        data: {
+            uuid: id,
+            firstName: fname,
+            lastName: lname,
+            emailAddress: email,
+            hashedEmailAddress: email,
+            phoneNumber: phone
+        },
+        });
+    });
+</script>
+
+<script>
+    
+document.forms[0];
+    form.addEventListener("submit", (event) => {
+        var prefix = document.querySelector("#speak4-form-select--prefix").value;
+        var fname = document.querySelector("#speak4-form-input--nameFirst").value;
+        var lname = document.querySelector("#speak4-form-input--nameLast").value;
+        var email = document.querySelector("#speak4-form-input--email").value;
+        var phone = document.querySelector("#speak4-form-input--phoneMobile").value;
+        var address = document.querySelector("#speak4-form-input--address1").value;
+        var zip = document.querySelector("#speak4-form-input--zipcode").value;
+        const id = fname + lname;
+
+        console.log(
+            prefix,
+            fname,
+            lname,
+            email,
+            phone,
+            address,
+            zip,
+            id
+        );
+
+        window.tracker("trackSelfDescribingEvent", {
+        schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-2",
+        data: {
+            uuid: id,
+            firstName: fname,
+            lastName: lname,
+            emailAddress: email,
+            hashedEmailAddress: email,
+            phoneNumber: phone,
+            address: address,
+            gender: prefix,
+            city: zip,
+        },
+        });
+    });
+</script>
+
+<script>
+    // Pach's work
+    (function (e, o, n, t, a, c, i) {
+        if (!e[a]) {
+          e.GlobalSnowplowNamespace = e.GlobalSnowplowNamespace || [];
+          e.GlobalSnowplowNamespace.push(a);
+          e[a] = function () {
+            (e[a].q = e[a].q || []).push(arguments);
+          };
+          e[a].q = e[a].q || [];
+          c = o.createElement(n);
+          i = o.getElementsByTagName(n)[0];
+          c.async = 1;
+          c.src = t;
+          i.parentNode.insertBefore(c, i);
+        }
+      })(window, document, "script", "https://dm2q9qfzyjfox.cloudfront.net/sp.js", "tracker");
+
+      // Creates the tracker with the appId and sends events to collector url
+      window.tracker("newTracker", "635aa988-e364-4412-8eb4-cd7a3327a76e", "//collector.dmp.cnna.io", {
+        appId: "635aa988-e364-4412-8eb4-cd7a3327a76e",
+        postPath: "/analytics/track",
+        discoverRootDomain: true,
+        stateStorageStrategy: "cookieAndLocalStorage",
+        cookieSameSite: "Lax",
+        respectDoNotTrack: false,
+        eventMethod: "post",
+      });
+
+      window.tracker("enableActivityTracking", 30, 10);
+      window.tracker("trackPageView");
+      window.tracker("enableFormTracking");
+
+      window.addEventListener("message", function (message) {
+        if (message.data.eventName === "onFormSubmitted") {
+          const values = message.data.data.submissionValues;
+          console.log("Form submitted");
+          window.tracker("trackSelfDescribingEvent", {
+            schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-2",
+            data: {
+              uuid: values.lastname + values.firstname,
+              firstName: values.firstname,
+              lastName: values.lastname,
+              emailAddress: values.email,
+              phoneNumber: values.mobilephone,
+            },
+          });
+        }
+      });
+</script>
+
+
+<script>
+    addEventListener("submit", (event) => {
+        const lname = document.getElementById('hs-form-iframe-0').contentDocument.forms[0]['lastname-748efd87-22c0-4767-8b11-e51dfbbe609c'].value;
+        const fname = document.getElementById('hs-form-iframe-0').contentDocument.forms[0]['firstname-748efd87-22c0-4767-8b11-e51dfbbe609c'].value;
+        const email = document.getElementById('hs-form-iframe-0').contentDocument.forms[0]['email-748efd87-22c0-4767-8b11-e51dfbbe609c'].value;
+        const phone = document.getElementById('hs-form-iframe-0').contentDocument.forms[0]['mobilephone-748efd87-22c0-4767-8b11-e51dfbbe609c'].value;
+        const id = fname + lname;
+
+        console.log(
+            fname,
+            lname,
+            email,
+            phone
+            );
+
+        window.tracker("trackSelfDescribingEvent", {
+            schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-2",
+            data: {
+                uuid: id,
+                firstName: fname,
+                lastName: lname,
+                emailAddress: email,
+                hashedEmailAddress: email,
+                phoneNumber: phone
+            },
+        });
+
+    });
+</script>
+
+
+<script>
+    if (window.location.pathname.includes('/order-confirmation')) {
+        const id = document.querySelector('.ec-confirmation__number').textContent.trim();
+        const total = parseFloat((document.querySelector('.ec-confirmation__order-confirmation-total').textContent).replace('$', ''));
+        const product = document.querySelector('.ec-cart-item__title').textContent.trim();
+        const quantityVal = document.querySelector('.ec-cart-item__count-inner').textContent.trim();
+        const quantity = parseInt(quantityVal.split(' ')[1]);
+
+        window.tracker(
+            "addTrans",
+            id,
+            "N/A",
+            total,
+            0,
+            0,
+            "N/A",
+            "N/A",
+            "N/A",
+            "USD",
+        );
+
+        window.tracker(
+            "addItem",
+            id,
+            "N/A",
+            total,
+            "N/A",
+            total,
+            quantity,
+            "USD",
+        );
+        window.tracker("trackTrans");
+    }
+</script>
+
+<script>
+    const datalayerSource = (callback, dataLayer = window.dataLayer || []) => {
+    const originalPush = dataLayer.push;
+    dataLayer.push = (...args) => {
+      originalPush(...args);
+      callback(dataLayer.slice(-1)[0]);
+    };
+      
+      datalayerSource((data) => {
+        if (data.event == "LB_Purchase"){
+          gtag("event", "conversion", {
+              send_to: "AW-11458001607/IbDiCN65hKgZEMf1zNcq",
+              value: data.transaction_total,
+              currency: "USD",
+              transaction_id: data.transaction_id,
+              event_callback: callback,
+            });
+        }
+      });
+    }
+  </script>

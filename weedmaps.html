@@ -1,0 +1,110 @@
+<script>
+  const xhrResponseSourceRequest = callback => {
+    const send = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function (data) {
+      this.addEventListener("readystatechange", function () {
+        callback(data);
+      });
+      send.apply(this, arguments);
+    };
+  }
+  
+  xhrResponseSourceRequest((xhr) => {
+    const response = JSON.parse(xhr.responseText);
+    const newOrder = response.newOrder;
+    
+    console.log(
+      newOrder.id,
+      newOrder.listingName,
+      parseFloat(newOrder.total_in_cents) / 100,
+
+    );
+
+    newOrder.orderItems.map((item) => {
+        console.log(
+            "addItem",
+            newOrder.id,
+            item.id,
+            item.menuItemName,
+            item.categoryName, //category name
+            item.originalPrice,
+            item.amount,
+            "USD",
+        );
+    });
+
+    window.tracker(
+        "addTrans",
+        newOrder.id,
+        newOrder.listingName,
+        parseFloat(newOrder.total_in_cents) / 100, //this ain't it
+        0,
+        0,
+        "N/A",
+        "N/A",
+        "USA",
+        "USD",
+    );
+
+    newOrder.orderItems.map((item) => {
+        window.tracker(
+            "addItem",
+            newOrder.id,
+            item.id,
+            item.menuItemName,
+            item.categoryName, //category name
+            item.originalPrice,
+            item.amount,
+            "USD",
+        );
+    });
+    window.tracker("trackTrans");
+  });
+</script>
+
+<!-- riyusghsrigsrgbprsgb -->
+
+<script>
+  const xhrResponseSourceRequest1 = callback => {
+  const send = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.send = function (data) {
+    this.addEventListener("readystatechange", function () {
+      callback(data);
+    });
+    send.apply(this, arguments);
+  };
+}
+
+xhrResponseSourceRequest1((xhr) => {
+  const response = JSON.parse(xhr.responseText);
+  console.log(response);
+  const newOrder = response.newOrder;
+  
+  console.log(
+      "addTrans",
+      newOrder.id,
+      newOrder.listingName,
+      //parseFloat(newOrder.total_in_cents) / 100, //this ain't it
+      0,
+      0,
+      "N/A",
+      "N/A",
+      "USA",
+      "USD",
+  );
+
+  newOrder.orderItems.map((item) => {
+      console.log(
+          "addItem",
+          newOrder.id,
+          item.id,
+          item.menuItemName,
+          item.categoryName, //category name
+          item.originalPrice,
+          item.amount,
+          "USD",
+      );
+  });
+  //window.tracker("trackTrans");
+});
+</script>

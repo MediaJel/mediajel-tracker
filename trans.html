@@ -1,0 +1,100 @@
+<!-- DAZED -->
+
+<script>
+    if (window.location.pathname.includes('/thank-you')) {
+        const data = window.dataLayer[3];
+        if (data.event === "LB_Purchase") {
+            const items = Object.values(data.items);
+
+            window.tracker(
+                "addTrans",
+                data.transaction_id.toString(),
+                "N/A",
+                parseFloat(data.transaction_total),
+                parseFloat(data.transaction_tax),
+                0,
+                "N/A",
+                "N/A",
+                "USA",
+                "USD"
+            );
+
+            items.forEach((item) => {
+                window.tracker(
+                    "addItem",
+                    data.transaction_id.toString(),
+                    item.item_id.toString(),
+                    item.item_name.toString(),
+                    item.item_category.toString(),
+                    parseFloat(item.item_value),
+                    parseFloat(item.quantity),
+                    "USD"
+                );
+            });
+            window.tracker("trackTrans");
+        }
+    }   
+</script>
+
+<script>
+    if (window.location.pathname.includes('/thank-you')) {
+        const data = window.dataLayer[3];
+        if (data.event === "LB_Purchase") {
+            const items = Object.values(data.items);
+
+            window.tracker(
+                "addTrans",
+                data.transaction_id.toString(),
+                "N/A",
+                parseFloat(data.transaction_total),
+                parseFloat(data.transaction_tax),
+                0,
+                "N/A",
+                "N/A",
+                "USA",
+                "USD"
+            );
+
+            items.forEach((item) => {
+                window.tracker(
+                    "addItem",
+                    data.transaction_id.toString(),
+                    item.item_id.toString(),
+                    item.item_name.toString(),
+                    item.item_category.toString(),
+                    parseFloat(item.item_value),
+                    parseFloat(item.quantity),
+                    "USD"
+                );
+            });
+            window.tracker("trackTrans");
+            
+            //logging
+            console.log(
+                "addTrans",
+                data.transaction_id.toString(),
+                "N/A",
+                parseFloat(data.transaction_total),
+                parseFloat(data.transaction_tax),
+                0,
+                "N/A",
+                "N/A",
+                "USA",
+                "USD"
+            );
+
+            items.forEach((item) => {
+                console.log(
+                    "addItem",
+                    data.transaction_id.toString(),
+                    item.item_id.toString(),
+                    item.item_name.toString(),
+                    item.item_category.toString(),
+                    parseFloat(item.item_value),
+                    parseFloat(item.quantity),
+                    "USD"
+                );
+            });
+        }
+    }   
+</script>

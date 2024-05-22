@@ -1,0 +1,99 @@
+document.forms[0];
+
+<!-- datalayerSource -->
+
+const datalayerSource = (callback, dataLayer = window.dataLayer || []) => {
+  const originalPush = dataLayer.push;
+  dataLayer.push = (...args) => {
+    originalPush(...args);
+    callback(dataLayer.slice(-1)[0]); // Gets the newest array member of dataLayer
+  };
+};
+
+datalayerSource((data) => {console.log("datalayerSource: ", data)});
+
+<!-- xhrResponseSourceRequest -->
+
+const xhrResponseSourceRequest = callback => {
+    const send = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function (data) {
+      this.addEventListener("readystatechange", function () {
+        callback(data); // Request Payload data
+      });
+      send.apply(this, arguments);
+    };
+  }
+  
+  xhrResponseSourceRequest((xhr) => {
+      console.log('xhr request1',xhr);
+  
+  });
+
+<!-- xhrResponseSource -->
+
+  const xhrResponseSource = callback => {
+    const origOpen = XMLHttpRequest.prototype.open
+    XMLHttpRequest.prototype.open = function() {
+      this.addEventListener("load", () => callback(this))
+      origOpen.apply(this, arguments)
+    }
+  }
+  
+  xhrResponseSource((xhr) => {
+      console.log('xhr response2',xhr);
+      const getData = JSON.parse(xhr.responseText);
+       console.log('xhr response getData ',getData );
+   });
+
+   <!-- addEventListener -->
+
+   window.addEventListener("Event Listener Message", (event) => console.log('post message data',event), false);
+
+<script>
+  const datalayerSource = (callback, dataLayer = window.dataLayer || []) => {
+  const originalPush = dataLayer.push;
+  dataLayer.push = (...args) => {
+    originalPush(...args);
+    callback(dataLayer.slice(-1)[0]); // Gets the newest array member of dataLayer
+  };
+};
+
+datalayerSource((data) => {console.log("datalayerSource: ", data)});
+
+// <!-- xhrResponseSourceRequest -->
+
+const xhrResponseSourceRequest = callback => {
+    const send = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function (data) {
+      this.addEventListener("readystatechange", function () {
+        callback(data); // Request Payload data
+      });
+      send.apply(this, arguments);
+    };
+  }
+  
+  xhrResponseSourceRequest((xhr) => {
+      console.log('xhr request1',xhr);
+  
+  });
+
+// <!-- xhrResponseSource -->
+
+  const xhrResponseSource = callback => {
+    const origOpen = XMLHttpRequest.prototype.open
+    XMLHttpRequest.prototype.open = function() {
+      this.addEventListener("load", () => callback(this))
+      origOpen.apply(this, arguments)
+    }
+  }
+  
+  xhrResponseSource((xhr) => {
+      console.log('xhr response2',xhr);
+      const getData = JSON.parse(xhr.responseText);
+       console.log('xhr response getData ',getData );
+   });
+
+  //  <!-- addEventListener -->
+
+   window.addEventListener("Event Listener Message", (event) => console.log('post message data',event), false);
+</script>  
