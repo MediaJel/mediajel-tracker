@@ -1,8 +1,8 @@
 import { QueryStringContext } from "../../../shared/types";
-import ecwidTrackerImport from "src/shared/environment-data-sources/ecwid";
+import ecwidTracker from "src/shared/environment-data-sources/ecwid";
 
-const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  ecwidTrackerImport({
+const EcwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
+  ecwidTracker({
     transactionEvent(transactionData) {
       window.tracker("addTrans", {
         orderId: transactionData.id,
@@ -33,4 +33,4 @@ const ecwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
   });
 };
 
-export default ecwidTracker;
+export default EcwidTracker;
