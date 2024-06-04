@@ -2,7 +2,6 @@ import { datalayerSource } from "../sources/google-datalayer-source";
 import { EnvironmentEvents, TransactionCartItem } from "../types";
 const grassDoorTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   datalayerSource((data: any): void => {
-
     if (data.event === "Product Added") {
       const products = data;
       const { sku, name, price, quantity, category } = products;
@@ -63,10 +62,9 @@ const grassDoorTracker = ({ addToCartEvent, removeFromCartEvent, transactionEven
           }),
         });
       } catch (error) {
-        window.tracker('trackError', JSON.stringify(error), 'GRASSDOOR');
+        // window.tracker('trackError', JSON.stringify(error), 'GRASSDOOR');
       }
     }
-
   });
 };
 

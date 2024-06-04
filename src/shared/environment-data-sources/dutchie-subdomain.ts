@@ -7,7 +7,6 @@ const dutchieSubdomainDataSource = ({
   transactionEvent,
 }: Partial<EnvironmentEvents>) => {
   datalayerSource((data) => {
-
     if (data.event === "add_to_cart") {
       const products = data.ecommerce.items;
       const { item_id, item_name, item_category, price, quantity } = products[0];
@@ -64,7 +63,7 @@ const dutchieSubdomainDataSource = ({
           }),
         });
       } catch (error) {
-        window.tracker("trackError", JSON.stringify(error), "DUTCHIESUBDOMAIN");
+        // window.tracker("trackError", JSON.stringify(error), "DUTCHIESUBDOMAIN");
       }
     } else if (data.event === "purchase") {
       try {
@@ -94,7 +93,7 @@ const dutchieSubdomainDataSource = ({
           }),
         });
       } catch (error) {
-        window.tracker("trackError", JSON.stringify(error), "DUTCHIESUBDOMAIN");
+        // window.tracker("trackError", JSON.stringify(error), "DUTCHIESUBDOMAIN");
       }
     }
   });

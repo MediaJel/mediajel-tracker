@@ -3,7 +3,6 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const meadowTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   postMessageSource((event: MessageEvent<any>): void => {
-
     const rawData = event.data;
 
     if (rawData.type === "ANALYTICS_CART_ADD") {
@@ -63,7 +62,7 @@ const meadowTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }
           }),
         });
       } catch (error) {
-        window.tracker('trackError', JSON.stringify(error), 'MEADOW');
+        // window.tracker('trackError', JSON.stringify(error), 'MEADOW');
       }
     }
   });

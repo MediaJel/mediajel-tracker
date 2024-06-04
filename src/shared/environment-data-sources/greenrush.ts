@@ -31,7 +31,7 @@ const greenrushDataSource = ({ addToCartEvent, removeFromCartEvent, transactionE
           }),
         });
       } catch (error) {
-        window.tracker('trackError', JSON.stringify(error), 'GREENRUSH');
+        // window.tracker('trackError', JSON.stringify(error), 'GREENRUSH');
       }
     }
   });

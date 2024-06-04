@@ -30,7 +30,7 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
           }),
         });
       } catch (error) {
-        window.tracker('trackError', JSON.stringify(error), 'DISPENSE')
+        // window.tracker('trackError', JSON.stringify(error), 'DISPENSE')
       }
     }
   }, window.gtmDataLayer); // special case for dispense; window.dataLayer is renamed to window.gtmDataLayer

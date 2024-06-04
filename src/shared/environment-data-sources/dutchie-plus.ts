@@ -1,7 +1,6 @@
 import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
-
   // IMPORTANT NOTE: dutchieplus cart CURALEAF is Paid search only & greenvalleydispensary is display
   window.dataLayer = window.dataLayer || [];
 
@@ -81,11 +80,10 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
           }),
         });
       } catch (error) {
-        window.tracker('trackError', JSON.stringify(error), 'DUTCHIEPLUS');
+        // window.tracker('trackError', JSON.stringify(error), 'DUTCHIEPLUS');
       }
     }
   }
-
 };
 
 export default dutchiePlusDataSource;

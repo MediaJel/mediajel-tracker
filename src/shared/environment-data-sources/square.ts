@@ -30,7 +30,7 @@ const squareDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transac
           }),
         });
       } catch (error) {
-        window.tracker("trackError", JSON.stringify(error), "SQUARE");
+        // window.tracker("trackError", JSON.stringify(error), "SQUARE");
       }
     }
   });
