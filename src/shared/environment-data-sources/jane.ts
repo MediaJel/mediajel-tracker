@@ -11,14 +11,15 @@ const janeDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent 
     if (payload.name === "cartItemAdd") {
       const { product, productId } = payload.properties;
 
-      addToCartEvent({
-        sku: productId.toString(),
-        name: (product.name || "N/A").toString(),
-        category: (product.category || "N/A").toString(),
-        unitPrice: parseFloat(product.price || 0),
-        quantity: parseInt(product.quantity || 1),
-        currency: "USD",
-      });
+      //! TODO: Fix this since it's not working
+      // addToCartEvent({
+      //   sku: productId.toString(),
+      //   name: (product.name || "N/A").toString(),
+      //   category: (product.category || "N/A").toString(),
+      //   unitPrice: parseFloat(product.price || 0),
+      //   quantity: parseInt(product.quantity || 1),
+      //   currency: "USD",
+      // });
     }
 
     if (payload.name === "cartItemRemoval") {
