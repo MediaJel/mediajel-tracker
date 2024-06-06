@@ -10,6 +10,7 @@ import { ImpressionsMacrosParams } from "../../../shared/types";
 
 const liquidm = ({
   advertiserId,
+  advertiserName,
   insertionOrder,
   lineItemId,
   creativeId,
@@ -36,6 +37,7 @@ const liquidm = ({
     schema: "iglu:com.mediajel.events/ad_impression/jsonschema/1-0-3",
     data: {
       advertiserId: advertiserId || "N/A",
+      advertiserName: advertiserName || "N/A",
       insertionOrder: insertionOrder || "N/A",
       lineItemId: lineItemId || "LiquidM_MAIN",
       creativeId: creativeId || "N/A",

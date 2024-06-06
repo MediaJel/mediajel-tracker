@@ -34,32 +34,36 @@ const meadowTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }
     }
 
     if (rawData.type === "ANALYTICS_PURCHASE") {
-      const transaction = rawData.payload.order;
-      const products = transaction.lineItems;
+      try {
+        const transaction = rawData.payload.order;
+        const products = transaction.lineItems;
 
-      transactionEvent({
-        id: transaction.id.toString(),
-        total: parseFloat(transaction.netPrice) / 100,
-        tax: parseFloat(transaction.taxesTotal || 0) / 100,
-        shipping: parseFloat(transaction.delivery_fee) || 0,
-        city: "N/A",
-        state: "N/A",
-        country: "USA",
-        currency: "USD",
-        items: products.map((items) => {
-          const { product, quantity } = items;
-          return {
-            orderId: transaction.id.toString(),
-            productId: product.id.toString(),
-            sku: product.id.toString(),
-            name: (product.name || "N/A").toString(),
-            category: (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
-            unitPrice: parseFloat(product.option.price || 0) / 100,
-            quantity: parseInt(quantity || 1),
-            currency: "USD",
-          } as TransactionCartItem;
-        }),
-      });
+        transactionEvent({
+          id: transaction.id.toString(),
+          total: parseFloat(transaction.netPrice) / 100,
+          tax: parseFloat(transaction.taxesTotal || 0) / 100,
+          shipping: parseFloat(transaction.delivery_fee) || 0,
+          city: "N/A",
+          state: "N/A",
+          country: "USA",
+          currency: "USD",
+          items: products.map((items) => {
+            const { product, quantity } = items;
+            return {
+              orderId: transaction.id.toString(),
+              productId: product.id.toString(),
+              sku: product.id.toString(),
+              name: (product.name || "N/A").toString(),
+              category: (product.primaryCategory.name || product.primaryCategory.id || "N/A").toString(),
+              unitPrice: parseFloat(product.option.price || 0) / 100,
+              quantity: parseInt(quantity || 1),
+              currency: "USD",
+            } as TransactionCartItem;
+          }),
+        });
+      } catch (error) {
+        // window.tracker('trackError', JSON.stringify(error), 'MEADOW');
+      }
     }
   });
 };
