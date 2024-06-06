@@ -8,7 +8,7 @@ export const getCustomTags = async () => {
     try {
       const response = await fetch(url);
       if (!response.ok) {
-        console.error(`custom tag for ${hname} not found ${btoa(hname)}.js`);
+        console.info(`custom tag for ${hname} not found ${btoa(hname)}.js`);
       }
       const scriptText = await response.text();
       const script = document.createElement("script");
