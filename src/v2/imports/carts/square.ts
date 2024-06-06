@@ -1,8 +1,13 @@
-import shopifyDataSource from "src/shared/environment-data-sources/shopify";
+import squareDataSource from "../../../shared/environment-data-sources/square";
 import { QueryStringContext } from "../../../shared/types";
 
-const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  shopifyDataSource({
+/**
+ * The Square Tracker relies on the Google Datalayer Source to track events.
+ * There is documentation to improve this more since Square exports variables
+ * to the window object.
+ */
+const squareTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
+  squareDataSource({
     transactionEvent(transactionData) {
       window.tracker("addTrans", {
         orderId: transactionData.id,
@@ -13,18 +18,17 @@ const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | 
         city: transactionData.city,
         state: transactionData.state,
         country: transactionData.country,
-        currency: transactionData.currency,
       });
 
       transactionData.items.forEach((item) => {
         window.tracker("addItem", {
-          orderId: item.orderId,
+          orderId: transactionData.id,
           sku: item.sku,
           name: item.name,
           category: item.category,
           price: item.unitPrice,
           quantity: item.quantity,
-          currency: item.currency,
+          currency: transactionData.currency,
         });
       });
 
@@ -33,4 +37,4 @@ const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | 
   });
 };
 
-export default shopifyTracker;
+export default squareTracker;

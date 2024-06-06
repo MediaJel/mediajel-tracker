@@ -4,18 +4,16 @@ import { QueryStringContext } from "../../../shared/types";
 const stickyLeafTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   stickyLeafDataSource({
     transactionEvent(transactionData) {
-      window.tracker(
-        "addTrans",
-        transactionData.id,
-        retailId ?? appId,
-        transactionData.total,
-        transactionData.tax,
-        transactionData.shipping,
-        transactionData.city,
-        transactionData.state,
-        transactionData.country,
-        transactionData.currency
-      );
+      window.tracker("addTrans", {
+        orderId: transactionData.id,
+        affiliation: retailId ?? appId,
+        total: transactionData.total,
+        tax: transactionData.tax,
+        shipping: transactionData.shipping,
+        city: transactionData.city,
+        state: transactionData.state,
+        country: transactionData.country,
+      });
       window.tracker("trackTrans");
     },
   });

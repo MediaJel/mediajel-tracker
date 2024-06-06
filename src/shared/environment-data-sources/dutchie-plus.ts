@@ -54,30 +54,34 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
     }
 
     if (data[1] === "purchase") {
-      const transactionData = data[2];
-      const items = transactionData.items;
+      try {
+        const transactionData = data[2];
+        const items = transactionData.items;
 
-      transactionEvent({
-        total: parseFloat(transactionData.value),
-        id: transactionData.rawData.orderNumber,
-        tax: parseFloat(transactionData.tax || 0),
-        shipping: parseFloat(transactionData.shipping || 0),
-        city: transactionData.city || "N/A",
-        state: transactionData.state || "N/A",
-        country: "USA",
-        currency: "USD",
-        items: items.map((item) => {
-          return {
-            orderId: transactionData.rawData.orderNumber,
-            sku: item.item_id,
-            name: item.item_name || "N/A",
-            category: item.item_category || "N/A",
-            unitPrice: parseFloat(item.price || 0),
-            quantity: parseInt(item.quantity || 1),
-            currency: "USD",
-          } as TransactionCartItem;
-        }),
-      });
+        transactionEvent({
+          total: parseFloat(transactionData.value),
+          id: transactionData.rawData.orderNumber,
+          tax: parseFloat(transactionData.tax || 0),
+          shipping: parseFloat(transactionData.shipping || 0),
+          city: transactionData.city || "N/A",
+          state: transactionData.state || "N/A",
+          country: "USA",
+          currency: "USD",
+          items: items.map((item) => {
+            return {
+              orderId: transactionData.rawData.orderNumber,
+              sku: item.item_id,
+              name: item.item_name || "N/A",
+              category: item.item_category || "N/A",
+              unitPrice: parseFloat(item.price || 0),
+              quantity: parseInt(item.quantity || 1),
+              currency: "USD",
+            } as TransactionCartItem;
+          }),
+        });
+      } catch (error) {
+        // window.tracker('trackError', JSON.stringify(error), 'DUTCHIEPLUS');
+      }
     }
   }
 };

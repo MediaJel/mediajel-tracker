@@ -15,7 +15,6 @@ const woocommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
         transactionData.state,
         transactionData.country,
         transactionData.currency,
-        transactionData.userId
       );
 
       transactionData.items.forEach((item) => {
@@ -25,11 +24,13 @@ const woocommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
           item.sku,
           item.name,
           item.category,
-          item.quantity,
           item.unitPrice,
-          item.currency
+          item.quantity,
+          item.currency,
         );
       });
+
+      window.tracker("trackTrans");
     },
   });
 };

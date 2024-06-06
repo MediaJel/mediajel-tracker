@@ -11,14 +11,15 @@ const janeDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent 
     if (payload.name === "cartItemAdd") {
       const { product, productId } = payload.properties;
 
-      addToCartEvent({
-        sku: productId.toString(),
-        name: (product.name || "N/A").toString(),
-        category: (product.category || "N/A").toString(),
-        unitPrice: parseFloat(product.price || 0),
-        quantity: parseInt(product.quantity || 1),
-        currency: "USD",
-      });
+      //! TODO: Fix this since it's not working
+      // addToCartEvent({
+      //   sku: productId.toString(),
+      //   name: (product.name || "N/A").toString(),
+      //   category: (product.category || "N/A").toString(),
+      //   unitPrice: parseFloat(product.price || 0),
+      //   quantity: parseInt(product.quantity || 1),
+      //   currency: "USD",
+      // });
     }
 
     if (payload.name === "cartItemRemoval") {
@@ -35,40 +36,44 @@ const janeDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent 
       });
     }
     if (payload.name === "checkout") {
-      const {
-        customerEmail, // to implement
-        products,
-        cartId,
-        estimatedTotal,
-        deliveryFee,
-        deliveryAddress = {},
-        salesTax,
-        storeTax,
-      } = payload.properties;
+      try {
+        const {
+          customerEmail, // to implement
+          products,
+          cartId,
+          estimatedTotal,
+          deliveryFee,
+          deliveryAddress = {},
+          salesTax,
+          storeTax,
+        } = payload.properties;
 
-      transactionEvent({
-        userId: customerEmail,
-        id: cartId.toString(),
-        total: parseFloat(estimatedTotal),
-        tax: parseFloat(salesTax + storeTax || 0),
-        shipping: parseFloat(deliveryFee || 0),
-        city: (deliveryAddress?.city || "N/A").toString(),
-        state: (deliveryAddress?.state_code || "N/A").toString(),
-        country: (deliveryAddress?.country_code || "N/A").toString(),
-        currency: "USD",
-        items: products.map((product) => {
-          const { product_id, name, category, unit_price, count } = product;
-          return {
-            orderId: cartId.toString(),
-            sku: product_id.toString(),
-            name: (name || "N/A").toString(),
-            category: (category || "N/A").toString(),
-            unitPrice: parseFloat(unit_price || 0),
-            quantity: parseInt(count || 1),
-            currency: "USD",
-          } as TransactionCartItem;
-        }),
-      });
+        transactionEvent({
+          userId: customerEmail,
+          id: cartId.toString(),
+          total: parseFloat(estimatedTotal),
+          tax: parseFloat(salesTax + storeTax || 0),
+          shipping: parseFloat(deliveryFee || 0),
+          city: (deliveryAddress?.city || "N/A").toString(),
+          state: (deliveryAddress?.state_code || "N/A").toString(),
+          country: (deliveryAddress?.country_code || "N/A").toString(),
+          currency: "USD",
+          items: products.map((product) => {
+            const { product_id, name, category, unit_price, count } = product;
+            return {
+              orderId: cartId.toString(),
+              sku: product_id.toString(),
+              name: (name || "N/A").toString(),
+              category: (category || "N/A").toString(),
+              unitPrice: parseFloat(unit_price || 0),
+              quantity: parseInt(count || 1),
+              currency: "USD",
+            } as TransactionCartItem;
+          }),
+        });
+      } catch (error) {
+        // window.tracker("trackError", JSON.stringify(error), "JANE");
+      }
     }
   });
 };

@@ -1,51 +1,6 @@
 import getContext from "./shared/utils/get-context";
 import { QueryStringContext } from "./shared/types";
-import { datalayerSource } from "./shared/sources/google-datalayer-source";
-import { xhrRequestSource } from "./shared/sources/xhr-request-source";
-import { xhrResponseSource } from "./shared/sources/xhr-response-source";
-import { postMessageSource } from "./shared/sources/post-message-source";
 import { getCustomTags } from "./shared/utils/get-custom-tags";
-
-export interface CreateLoggerOptionsInput {
-  label?: string;
-  level?: string;
-}
-
-interface Logger {
-  debug: (...message: unknown[]) => void;
-  info: (...message: unknown[]) => void;
-  warn: (...message: unknown[]) => void;
-  error: (...message: unknown[]) => void;
-}
-
-const parseMsgToString = (message: unknown | unknown[]): string => {
-  if (typeof message === "string" || typeof message === "number") {
-    return message.toString();
-  } else if (Array.isArray(message)) {
-    return message.map(parseMsgToString).join(" ");
-  } else {
-    return JSON.stringify(message, null, 2);
-  }
-};
-
-const createLogger = (name: String, label: String): Logger => {
-  const logContext = `[${name}${label ? " " + label : ""}]`;
-  
-  return {
-    debug: (...message: unknown[]) => {
-      console.log("🔧", logContext, ...message.map(parseMsgToString));
-    },
-    info: (...message: unknown[]) => {
-      console.log("ℹ️", logContext, ...message.map(parseMsgToString));
-    },
-    warn: (...message: unknown[]) => {
-      console.warn("⚠️", logContext, ...message.map(parseMsgToString));
-    },
-    error: (...message: unknown[]) => {
-      console.error("❌", logContext, ...message.map(parseMsgToString));
-    },
-  };
-};
 
 (async (): Promise<void> => {
   try {
@@ -53,26 +8,6 @@ const createLogger = (name: String, label: String): Logger => {
 
     console.log("MJ Tag Context", context);
     console.log("Include me into the generated index.js script" + window.location.hostname)
-    datalayerSource((data) => {
-      const dataSourceLogger = createLogger(context.appId, "Data Layer Source");
-
-      dataSourceLogger.info(data);
-    });
-
-    xhrRequestSource((data) => {
-      const xhrSourceLogger = createLogger(context.appId, "XHR Layer Source");
-      xhrSourceLogger.info(data);
-    });
-
-    xhrResponseSource((data) => {
-      const xhrResponseSource = createLogger(context.appId, "XHR Response Source");
-      xhrResponseSource.info(data);
-    });
-
-    postMessageSource((data) => {
-      const postMessageSource = createLogger(context.appId, "Post Message Source");
-      postMessageSource.info(data);
-    });
 
     // Load plugin
     if (context.plugin) {

@@ -1,40 +1,35 @@
-import { errorTrackingSource } from "../../../shared/sources/error-tracking-source";
-import { xhrResponseSource } from "../../../shared/sources/xhr-response-source";
+import greenrushDataSource from "src/shared/environment-data-sources/greenrush";
 import { QueryStringContext } from "../../../shared/types";
 
 const greenrushTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  xhrResponseSource((xhr: XMLHttpRequest) => {
-    errorTrackingSource(() => {
-      const response = xhr.responseText;
-      if (xhr.responseURL.includes("cart") && xhr.response.includes("pending")) {
-        const transaction = JSON.parse(response);
-        const product = transaction.data.items.data;
-        window.tracker("addTrans", {
-          orderId: transaction.data.id.toString(),
-          affiliation: !retailId ? appId : retailId,
-          total: parseFloat(transaction.data.total),
-          tax: parseFloat(transaction.data.tax),
-          shipping: 0,
-          city: "N/A",
-          state: "N/A",
-          country: "USA",
-          currency: "USD",
+  greenrushDataSource({
+    transactionEvent(transactionData) {
+      window.tracker("addTrans", {
+        orderId: transactionData.id,
+        affiliation: retailId ?? appId,
+        total: transactionData.total,
+        tax: transactionData.tax,
+        shipping: transactionData.shipping,
+        city: transactionData.city,
+        state: transactionData.state,
+        country: transactionData.country,
+        currency: transactionData.currency,
+      });
+
+      transactionData.items.forEach((item) => {
+        window.tracker("addItem", {
+          orderId: transactionData.id,
+          sku: item.sku,
+          name: item.name,
+          category: item.category,
+          price: item.unitPrice,
+          quantity: item.quantity,
+          currency: transactionData.currency,
         });
-        for (let i = 0, l = product.length; i < l; i++) {
-          const item = product[i];
-          window.tracker("addItem", {
-            orderId: transaction.data.id.toString(),
-            sku: item.id.toString(),
-            name: item.name.toString(),
-            category: item.category.toString(),
-            price: parseFloat(item.price),
-            quantity: parseInt(item.quantity),
-            currency: "USD",
-          });
-        }
-        window.tracker("trackTrans");
-      }
-    });
+      });
+
+      window.tracker("trackTrans");
+    },
   });
 };
 

@@ -35,31 +35,35 @@ const yotpoDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent
     // }
 
     if (data.event === "purchase") {
-      const transaction = data.ecommerce;
-      const products = data.ecommerce.items;
-      const { transaction_id, value, tax } = transaction;
+      try {
+        const transaction = data.ecommerce;
+        const products = data.ecommerce.items;
+        const { transaction_id, value, tax } = transaction;
 
-      transactionEvent({
-        id: transaction_id.toString(),
-        total: parseFloat(value),
-        tax: parseFloat(tax),
-        shipping: 0,
-        city: "N/A",
-        state: "N/A",
-        country: "N/A",
-        currency: "USD",
-        items: products.map((item) => {
-          return {
-            orderId: transaction_id.toString(),
-            sku: item.item_id.toString(),
-            name: (item.item_name || "N/A").toString(),
-            category: (item.item_category || "N/A").toString(),
-            unitPrice: parseFloat(item.price || 0),
-            quantity: parseInt(item.quantity || 1),
-            currency: "USD",
-          } as TransactionCartItem;
-        }),
-      });
+        transactionEvent({
+          id: transaction_id.toString(),
+          total: parseFloat(value),
+          tax: parseFloat(tax),
+          shipping: 0,
+          city: "N/A",
+          state: "N/A",
+          country: "N/A",
+          currency: "USD",
+          items: products.map((item) => {
+            return {
+              orderId: transaction_id.toString(),
+              sku: item.item_id.toString(),
+              name: (item.item_name || "N/A").toString(),
+              category: (item.item_category || "N/A").toString(),
+              unitPrice: parseFloat(item.price || 0),
+              quantity: parseInt(item.quantity || 1),
+              currency: "USD",
+            } as TransactionCartItem;
+          }),
+        });
+      } catch (error) {
+        // window.tracker('trackError', JSON.stringify(error), 'YOTPO');
+      }
     }
   });
 };

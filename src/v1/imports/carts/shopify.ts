@@ -6,7 +6,6 @@ const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | 
     transactionEvent(transactionData) {
       window.tracker(
         "addTrans",
-        transactionData.userId,
         transactionData.id,
         retailId ?? appId,
         transactionData.total,
