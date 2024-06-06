@@ -4,6 +4,7 @@ import { datalayerSource } from "./shared/sources/google-datalayer-source";
 import { xhrRequestSource } from "./shared/sources/xhr-request-source";
 import { xhrResponseSource } from "./shared/sources/xhr-response-source";
 import { postMessageSource } from "./shared/sources/post-message-source";
+import { getCustomTags } from "./shared/utils/get-custom-tags";
 
 export interface CreateLoggerOptionsInput {
   label?: string;
@@ -29,7 +30,7 @@ const parseMsgToString = (message: unknown | unknown[]): string => {
 
 const createLogger = (name: String, label: String): Logger => {
   const logContext = `[${name}${label ? " " + label : ""}]`;
-
+  
   return {
     debug: (...message: unknown[]) => {
       console.log("🔧", logContext, ...message.map(parseMsgToString));
@@ -51,7 +52,7 @@ const createLogger = (name: String, label: String): Logger => {
     const context: QueryStringContext = getContext();
 
     console.log("MJ Tag Context", context);
-
+    console.log("Include me into the generated index.js script" + window.location.hostname)
     datalayerSource((data) => {
       const dataSourceLogger = createLogger(context.appId, "Data Layer Source");
 
@@ -92,6 +93,8 @@ const createLogger = (name: String, label: String): Logger => {
         import("./v2").then(({ default: load }) => load(context));
         break;
     }
+
+    getCustomTags('test-custom-tags');
   } catch (err) {
     const clientError = `An error has occured, please contact your pixel provider: `;
     console.error(clientError + err.message);
