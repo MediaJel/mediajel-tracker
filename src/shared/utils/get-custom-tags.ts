@@ -1,13 +1,14 @@
 import axios from "axios";
 
-export const getCustomTags = async (domain:string) => {
+export const getCustomTags = async () => {
 
     //const url = `https://mediajel-tracker-custom-tags-staging.s3.amazonaws.com/`;
-    const url = `https://d3wuj95q2emo9.cloudfront.net/${domain}.js`
+    const hname = window.location.hostname
+    const url = `https://d3wuj95q2emo9.cloudfront.net/${btoa(hname)}.js`
     try {
       const response = await fetch(url);
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        console.error(`custom tag for ${hname} not found ${btoa(hname)}.js`);
       }
       const scriptText = await response.text();
       const script = document.createElement("script");
