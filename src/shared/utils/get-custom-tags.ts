@@ -4,11 +4,11 @@ export const getCustomTags = async () => {
 
     //const url = `https://mediajel-tracker-custom-tags-staging.s3.amazonaws.com/`;
     const hname = window.location.hostname
-    const url = `https://d3wuj95q2emo9.cloudfront.net/${btoa(hname)}.js`
+    const url = `https://d3wuj95q2emo9.cloudfront.net/${Buffer.from(hname, 'utf-8').toString('base64')}.js`
     try {
       const response = await fetch(url);
       if (!response.ok) {
-        console.info(`custom tag for ${hname} not found ${btoa(hname)}.js`);
+        console.info(`custom tag for ${hname} not found ${Buffer.from(hname, 'utf-8').toString('base64')}.js`);
       }
       const scriptText = await response.text();
       const script = document.createElement("script");
