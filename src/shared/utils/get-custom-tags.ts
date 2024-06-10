@@ -2,7 +2,6 @@ import axios from "axios";
 
 export const getCustomTags = async () => {
 
-    //const url = `https://mediajel-tracker-custom-tags-staging.s3.amazonaws.com/`;
     const hname = window.location.hostname
     const url = `https://d3wuj95q2emo9.cloudfront.net/${Buffer.from(hname, 'utf-8').toString('base64')}.js`
     try {
