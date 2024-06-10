@@ -1,11 +1,13 @@
 import getContext from "./shared/utils/get-context";
 import { QueryStringContext } from "./shared/types";
+import { getCustomTags } from "./shared/utils/get-custom-tags";
 
 (async (): Promise<void> => {
   try {
     const context: QueryStringContext = getContext();
 
     console.log("MJ Tag Context", context);
+    console.log("Include me into the generated index.js script" + window.location.hostname)
 
     // Load plugin
     if (context.plugin) {
@@ -26,6 +28,8 @@ import { QueryStringContext } from "./shared/types";
         import("./v2").then(({ default: load }) => load(context));
         break;
     }
+
+    getCustomTags();
   } catch (err) {
     const clientError = `An error has occured, please contact your pixel provider: `;
     console.error(clientError + err.message);
