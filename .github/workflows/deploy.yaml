@@ -1,0 +1,64 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      S3_BUCKET_MAIN: ${{ secrets.S3_BUCKET_MAIN }}
+      S3_BUCKET_STAGING: ${{ secrets.S3_BUCKET_STAGING }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'  # Specify the Node.js version 18
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: TypeScript check
+        run: yarn check
+
+      - name: Build and start application
+        if: success()
+        run: |
+          yarn start &  # Start the application in the background
+          sleep 30  # Wait for the application to start properly
+          pkill -f "parcel"  # Stop the running application
+
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+
+      - name: Determine S3 Bucket
+        id: determine-s3
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "bucket=${{ env.S3_BUCKET_MAIN }}" >> $GITHUB_ENV
+          elif [ "${{ github.ref }}" == "refs/heads/staging" ]; then
+            echo "bucket=${{ env.S3_BUCKET_STAGING }}" >> $GITHUB_ENV
+          else
+            echo "This branch is not configured for deployment."
+            exit 1
+          fi
+
+      - name: Copy files to S3
+        if: success()
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          S3_BUCKET: ${{ env.bucket }}
+        run: |
+          aws s3 sync dist/ s3://$S3_BUCKET/ --delete
