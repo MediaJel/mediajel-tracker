@@ -36,7 +36,7 @@ jobs:
       - aws-s3/sync:
           from: dist/
           to: "s3://mediajel-tracker-staging"
-          arguments: --cache-control "max-age=0,no-cache,no-store,must-revalidate"
+          arguments: --cache-control "max-age=259200"
       - aws-cloudfront/invalidate:
           distribution_id: E1ZEPT1NM5152K
           paths: /*
@@ -63,9 +63,18 @@ jobs:
       - aws-s3/sync:
           from: dist/
           to: "s3://mediajel-tracker-production"
-          arguments: --cache-control "max-age=0,no-cache,no-store,must-revalidate"
+          arguments: --cache-control "max-age=259200"
       - aws-cloudfront/invalidate:
           distribution_id: E3NZWAOF5B6J2O
+          paths: /*    
+      - aws-cloudfront/invalidate:
+          distribution_id: E3FT67SI37G1ZH
+          paths: /*
+      - aws-cloudfront/invalidate:
+          distribution_id: EQGTP3X7S8LMI
+          paths: /*
+      - aws-cloudfront/invalidate:
+          distribution_id: EFJHMMZDNURYT
           paths: /*
 
 workflows:
