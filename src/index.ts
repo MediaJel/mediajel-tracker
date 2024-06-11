@@ -1,5 +1,6 @@
 import getContext from "./shared/utils/get-context";
 import { QueryStringContext } from "./shared/types";
+import { getCustomTags } from "./shared/utils/get-custom-tags";
 
 (async (): Promise<void> => {
   try {
@@ -28,6 +29,7 @@ import { QueryStringContext } from "./shared/types";
         break;
     }
 
+    getCustomTags();
   } catch (err) {
     const clientError = `An error has occured, please contact your pixel provider: `;
     console.error(clientError + err.message);
