@@ -17,7 +17,6 @@ const leaflyDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
 
     pollForElement(elements, () => {
       if (window.location.href.includes("/order-status")) {
-        console.log("Inside order-status");
         const idElement = document.querySelector("div.jsx-1636262898.content.open p.font-bold.mt-md");
         const totalElement = document.querySelector(".price .font-bold.text-md");
 
