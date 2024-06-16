@@ -3,6 +3,10 @@ import { QueryStringContext } from "../../../shared/types";
 export default async (context: QueryStringContext): Promise<void> => {
   const { appId, environment, retailId } = context;
   switch (environment) {
+    //* NEW CART
+    case "leafly":
+      import("./leafly").then(({ default: load }): void => load({ appId, retailId }));
+      break;
     //* STABLE
     case "jane":
       import("./jane").then(({ default: load }): void => load({ appId, retailId }));
