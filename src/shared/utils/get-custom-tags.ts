@@ -3,7 +3,7 @@ export const getCustomTags = async (isStaged=false) => {
     const hname = window.location.hostname
     var url = `https://test-custom-tags.cnna.io/${Buffer.from(hname, 'utf-8').toString('base64')}.js`
     if(isStaged){
-        url = `https://d3wuj95q2emo9.cloudfront.net/custom/${hname}.js`
+        url = `https://d3wuj95q2emo9.cloudfront.net/${Buffer.from(hname, 'utf-8').toString('base64')}.js`
     }
     
     try {
