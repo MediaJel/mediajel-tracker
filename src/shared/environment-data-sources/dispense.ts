@@ -3,9 +3,9 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   datalayerSource((data) => {
-    if (data.event === "purchase") {
+    if (data[1] === "purchase") {
       try {
-        const { transaction_id, tax, value, items } = data;
+        const { transaction_id, tax, value, items } = data[2];
         transactionEvent?.({
           total: parseFloat(value),
           id: transaction_id.toString(),
@@ -20,7 +20,7 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
 
             return {
               orderId: transaction_id.toString(),
-              sku: item_name.toString(),
+              sku: item_name.toString() || "N/A",
               name: item_name?.toString() || "N/A",
               category: item_category?.toString() || "N/A",
               unitPrice: parseFloat(price || 0),
