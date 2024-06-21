@@ -1,4 +1,4 @@
-export const getCustomTags = async (isStaged=false) => {
+export const getCustomTags = async () => {
 
     const hname = window.location.hostname
     var url = `${process.env.FRICTIONLESS_CUSTOMTAG_URL}/${Buffer.from(hname, 'utf-8').toString('base64')}.js`
