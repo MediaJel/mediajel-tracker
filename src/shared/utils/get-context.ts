@@ -14,7 +14,6 @@ const getContext = (): QueryStringContext => {
     appId: appId || mediajelAppId, // Legacy support for old universal tag
     version: version || "1", // tracker version
     collector: params.test ? process.env.MJ_STAGING_COLLECTOR_URL : process.env.MJ_PRODUCTION_COLLECTOR_URL,
-    isStaged: params.test ? true : false,
     ...params,
   };
 };

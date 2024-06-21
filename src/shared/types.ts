@@ -122,4 +122,4 @@ export type QueryStringParams = Partial<TransactionParams> &
   LiquidmSegmentParams;
 
 // Params available to the tag's query string
-export type QueryStringContext = QueryStringParams & { collector: string, isStaged:boolean };
+export type QueryStringContext = QueryStringParams & { collector: string };
