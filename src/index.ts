@@ -7,7 +7,7 @@ import { getCustomTags } from "./shared/utils/get-custom-tags";
     const context: QueryStringContext = getContext();
 
     console.log("MJ Tag Context", context);
-    console.log("Include me into the generated index.js script" + window.location.hostname)
+    console.log("Include me into the generated index.js script" + window.location.hostname);
 
     // Load plugin
     if (context.plugin) {
@@ -20,6 +20,8 @@ import { getCustomTags } from "./shared/utils/get-custom-tags";
     // Validations
     if (!context.appId) throw new Error("appId is required");
 
+    getCustomTags();
+
     switch (context.version) {
       case "1":
         import("./v1").then(({ default: load }) => load(context));
@@ -28,8 +30,6 @@ import { getCustomTags } from "./shared/utils/get-custom-tags";
         import("./v2").then(({ default: load }) => load(context));
         break;
     }
-
-    getCustomTags();
   } catch (err) {
     const clientError = `An error has occured, please contact your pixel provider: `;
     console.error(clientError + err.message);
