@@ -1,7 +1,9 @@
 export const getCustomTags = async () => {
 
     const hname = window.location.hostname
-    const url = `https://d3wuj95q2emo9.cloudfront.net/${Buffer.from(hname, 'utf-8').toString('base64')}.js`
+    var url = `${process.env.FRICTIONLESS_CUSTOMTAG_URL}/${Buffer.from(hname, 'utf-8').toString('base64')}.js`
+    
+    
     try {
     const response = await fetch(url);
     if (!response.ok) {
