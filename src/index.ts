@@ -7,7 +7,6 @@ import { getCustomTags } from "./shared/utils/get-custom-tags";
     const context: QueryStringContext = getContext();
 
     console.log("MJ Tag Context", context);
-    console.log("Include me into the generated index.js script" + window.location.hostname);
 
     // Load plugin
     if (context.plugin) {
