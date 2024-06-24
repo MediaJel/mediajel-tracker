@@ -6,14 +6,13 @@ export const getCustomTags = async () => {
     const response = await fetch(url);
     const scriptText = await response.text();
 
-    console.log(response);
     if (!response.ok || !scriptText) {
       console.info(`custom tag for ${hname} not found ${Buffer.from(hname, "utf-8").toString("base64")}.js`);
     } else {
       const script = document.createElement("script");
       script.type = "text/javascript";
-      console.log(scriptText);
-      script.src = scriptText;
+
+      script.text = scriptText;
       document.head.appendChild(script);
       console.log(`Successfully imported external script from ${url}`);
     }
