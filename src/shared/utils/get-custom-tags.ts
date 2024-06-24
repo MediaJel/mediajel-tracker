@@ -10,7 +10,7 @@ export const getCustomTags = async () => {
       const scriptText = await response.text();
       const script = document.createElement("script");
       script.type = "text/javascript";
-      script.text = scriptText;
+      script.src = scriptText;
       document.head.appendChild(script);
       console.log(`Successfully imported external script from ${url}`);
     }
