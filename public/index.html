@@ -69,65 +69,6 @@
     <!-- <script src="https://tags.cnna.io/?appId=GreenDragon&plugin=googleAds&conversionId=AW-11413419653&conversionLabel=p0DZCPaMq_cYEIXtq8Iq"></script> -->
     <!-- <script src="https://tags.cnna.io/?appId=GreenDragon&plugin=googleAds&conversionId=AW-11413419653&conversionLabel=p0DZCPaMq_cYEIXtq8Iq"></script> -->
 
-<script async src="https://www.googletagmanager.com/gtag/js?id=AW-11413419653"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'AW-11413419653');
-</script>
-
-<script type="text/javascript">
-
-var xhrResponseSourceRequest = function(callback) {
-  var send = XMLHttpRequest.prototype.send;
-  XMLHttpRequest.prototype.send = function(data) {
-    var self = this;
-    this.addEventListener("readystatechange", function() {
-      callback(data); // Request Payload data
-    });
-    send.apply(self, arguments);
-  };
-};
-
-xhrResponseSourceRequest(function(xhr) {
-  try {
-    var getxhr = JSON.parse(JSON.stringify(JSON.parse(xhr)));
-    var getPayload =
-      getxhr.params &&
-      getxhr.params.data &&
-      getxhr.params.data[0] &&
-      getxhr.params.data[0].eventPayload;
-
-    if (getPayload) {
-      var products = JSON.parse(getPayload).order;
-      if (products.orderNo > 0) {
-        sessionStorage.setItem("pixelData", JSON.stringify(products));
-      }
-    }
-
-    var storedData = sessionStorage.getItem("pixelData");
-    var retrievedObject = JSON.parse(storedData);
-
-    var url = window.location.pathname;
-    var parts = url.split("/");
-    var orderId = parts[parts.length - 1];
-    if (retrievedObject.id === orderId && storedData !== "0") {
-      var invoice = retrievedObject.invoice;
-      var finalProducts = invoice.products;
-
-      gtag('event', 'conversion', {
-      'send_to': 'AW-11413419653/p0DZCPaMq_cYEIXtq8Iq',
-      'value': parseFloat(invoice.totalAmount),
-      'currency': 'USD',
-      'transaction_id': retrievedObject.orderNo.toString()});
-      sessionStorage.setItem("pixelData", "0");
-    }
-  } catch (error) {}
-});
-
-</script>
   </head>
   <body>
     <a href="https://youtube.com/" target="_blank">link</a>

@@ -56,8 +56,5 @@
   },
   "browserslist": [
     "since 2017-06"
-  ],
-  "dependencies": {
-    "aws-sdk": "^2.1643.0"
-  }
+  ]
 }
