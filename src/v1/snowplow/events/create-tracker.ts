@@ -46,22 +46,37 @@ import { QueryStringContext } from "../../../shared/types";
 const createTracker = ({ appId, collector, event }: QueryStringContext): void => {
   // Loading tracker with the snowplow tag by fetching our sp.js file
   // Creates a global function called "tracker" which we use to access the Snowplow Tracker
-  (function (e, o, n, t, a, c, i) {
-    if (!e[a]) {
-      e.GlobalSnowplowNamespace = e.GlobalSnowplowNamespace || [];
-      e.GlobalSnowplowNamespace.push(a);
-      e[a] = function () {
-        (e[a].q = e[a].q || []).push(arguments);
+  // (function (e, o, n, t, a, c, i) {
+  //   if (!e[a]) {
+  //     e.GlobalSnowplowNamespace = e.GlobalSnowplowNamespace || [];
+  //     e.GlobalSnowplowNamespace.push(a);
+  //     e[a] = function () {
+  //       (e[a].q = e[a].q || []).push(arguments);
+  //     };
+  //     e[a].q = e[a].q || [];
+  //     c = o.createElement(n);
+  //     i = o.getElementsByTagName(n)[0];
+  //     c.async = 1;
+  //     c.src = t;
+  //     i.parentNode.insertBefore(c, i);
+  //   }
+  // })(window, document, "script", "//dm2q9qfzyjfox.cloudfront.net/sp.js", "trackerStaging");
+
+  (function (p, l, o, w, i, n, g) {
+    if (!p[i]) {
+      p.GlobalSnowplowNamespace = p.GlobalSnowplowNamespace || [];
+      p.GlobalSnowplowNamespace.push(i);
+      p[i] = function () {
+        (p[i].q = p[i].q || []).push(arguments);
       };
-      e[a].q = e[a].q || [];
-      c = o.createElement(n);
-      i = o.getElementsByTagName(n)[0];
-      c.async = 1;
-      c.src = t;
-      i.parentNode.insertBefore(c, i);
+      p[i].q = p[i].q || [];
+      n = l.createElement(o);
+      g = l.getElementsByTagName(o)[0];
+      n.async = 1;
+      n.src = w;
+      g.parentNode.insertBefore(n, g);
     }
   })(window, document, "script", "//dm2q9qfzyjfox.cloudfront.net/sp.js", "trackerStaging");
-
   // Creates the tracker with the appId and sends events to collector url
   window.trackerStaging("newTracker", appId, `${collector}`, {
     appId: appId,
