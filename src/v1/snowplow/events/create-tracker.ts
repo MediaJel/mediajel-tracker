@@ -76,7 +76,8 @@ const createTracker = ({ appId, collector, event }: QueryStringContext): void =>
       n.src = w;
       g.parentNode.insertBefore(n, g);
     }
-  })(window, document, "script", "//dm2q9qfzyjfox.cloudfront.net/sp.js", "trackerStaging");
+  })(window, document, "script", "//mj-snowplow-static-js.s3.amazonaws.com/sp.js", "trackerStaging");
+
   // Creates the tracker with the appId and sends events to collector url
   window.trackerStaging("newTracker", appId, `${collector}`, {
     appId: appId,
