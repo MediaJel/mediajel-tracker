@@ -1,5 +1,9 @@
 [
   {
+    label: "Leafly",
+    value: "leafly"
+  },
+  {
     label: "Jane",
     value: "jane"
   },
