@@ -6,7 +6,7 @@ const createStagingTag = (appId: string) => {
   console.log("Beta Domain Detected: ", window.location.hostname);
   const mjStaging = document.createElement("script");
   // mjStaging.type = "text/javascript";
-  mjStaging.src = `//staging-tags.attentionsignals.net/?appId=${appId + "staging"}`;
+  mjStaging.src = `https://staging-tags.attentionsignals.net/?appId=${appId + "staging"}`;
   document.head.appendChild(mjStaging);
 };
 
@@ -16,9 +16,11 @@ const createStagingTag = (appId: string) => {
 
     const domains = ["localhost"];
 
-    if (domains.includes(window.location.hostname)) {
-      createStagingTag(context.appId);
-    }
+    document.addEventListener("DOMContentLoaded", () => {
+      if (domains.includes(window.location.hostname)) {
+        createStagingTag(context.appId);
+      }
+    });
 
     console.log("MJ Tag Context", context);
 
