@@ -14,7 +14,7 @@ const createStagingTag = (appId: string) => {
   try {
     const context: QueryStringContext = getContext();
 
-    const domains = ["localhost"];
+    const domains = ["www.budhut.net"];
 
     document.addEventListener("DOMContentLoaded", () => {
       if (domains.includes(window.location.hostname)) {
