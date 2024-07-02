@@ -9,7 +9,7 @@ import { getCustomTags } from "./shared/utils/get-custom-tags";
     const betaDomains = ["seedoflifelabs.com"];
 
     if (betaDomains.includes(window.location.hostname)) {
-      console.log("Loading custom tag")
+      console.log("Loading custom tag for: ", window.location.hostname);
       getCustomTags();
     }
 
