@@ -1,24 +1,10 @@
 import getContext from "./shared/utils/get-context";
 import { QueryStringContext } from "./shared/types";
-// import { getCustomTags } from "./shared/utils/get-custom-tags";
-
-const createStagingTag = (appId: string) => {
-  const mjStaging = document.createElement("script");
-  mjStaging.type = "text/javascript";
-  mjStaging.src = `https://staging-tags.attentionsignals.net/?appId=${appId + "staging"}`;
-  document.head.appendChild(mjStaging);
-};
+import { getCustomTags } from "./shared/utils/get-custom-tags";
 
 (async (): Promise<void> => {
   try {
     const context: QueryStringContext = getContext();
-
-    const betaDomains = ["www.budhut.net", "budhut.net"];
-
-    if (betaDomains.includes(window.location.hostname)) {
-      console.log("Beta Domain Detected: ", window.location.hostname);
-      createStagingTag(context.appId);
-    }
 
     console.log("MJ Tag Context", context);
 
@@ -32,6 +18,8 @@ const createStagingTag = (appId: string) => {
 
     // Validations
     if (!context.appId) throw new Error("appId is required");
+
+    getCustomTags();
 
     switch (context.version) {
       case "1":
