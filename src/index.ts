@@ -5,7 +5,7 @@ import { QueryStringContext } from "./shared/types";
 const createStagingTag = (appId: string) => {
   console.log("Beta Domain Detected: ", window.location.hostname);
   const mjStaging = document.createElement("script");
-  mjStaging.type = "text/javascript";
+  // mjStaging.type = "text/javascript";
   mjStaging.src = `https://staging-tags.attentionsignals.net/?appId=${appId + "staging"}`;
   document.head.appendChild(mjStaging);
 };
@@ -14,11 +14,13 @@ const createStagingTag = (appId: string) => {
   try {
     const context: QueryStringContext = getContext();
 
-    const betaDomains = [""];
+    const domains = ["www.budhut.net"];
 
-    if (betaDomains.includes(window.location.hostname)) {
-      createStagingTag(context.appId);
-    }
+    document.addEventListener("DOMContentLoaded", () => {
+      if (domains.includes(window.location.hostname)) {
+        createStagingTag(context.appId);
+      }
+    });
 
     console.log("MJ Tag Context", context);
 
