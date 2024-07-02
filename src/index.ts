@@ -13,12 +13,12 @@ const createStagingTag = (appId: string) => {
   try {
     const context: QueryStringContext = getContext();
 
-    const betaDomains = ["www.budhut.net", "budhut.net"];
+    // const betaDomains = [""];
 
-    if (betaDomains.includes(window.location.hostname)) {
-      console.log("Beta Domain Detected: ", window.location.hostname);
-      createStagingTag(context.appId);
-    }
+    // if (betaDomains.includes(window.location.hostname)) {
+    //   console.log("Beta Domain Detected: ", window.location.hostname);
+    //   createStagingTag(context.appId);
+    // }
 
     console.log("MJ Tag Context", context);
 
