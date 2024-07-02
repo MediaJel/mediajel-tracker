@@ -6,6 +6,12 @@ import { getCustomTags } from "./shared/utils/get-custom-tags";
   try {
     const context: QueryStringContext = getContext();
 
+    const betaDomains = ["seedoflifelabs.com"];
+
+    if (betaDomains.includes(window.location.hostname)) {
+      getCustomTags();
+    }
+
     console.log("MJ Tag Context", context);
 
     // Load plugin
@@ -18,8 +24,6 @@ import { getCustomTags } from "./shared/utils/get-custom-tags";
 
     // Validations
     if (!context.appId) throw new Error("appId is required");
-
-    getCustomTags();
 
     switch (context.version) {
       case "1":
