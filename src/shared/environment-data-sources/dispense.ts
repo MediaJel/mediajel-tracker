@@ -19,7 +19,7 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
             const { item_name, item_category, price, quantity } = item;
 
             return {
-              orderId: item_name.toString() || transaction_id.toString(),
+              orderId: transaction_id.toString(),
               sku: item_name.toString(),
               name: item_name?.toString() || "N/A",
               category: item_category?.toString() || "N/A",
