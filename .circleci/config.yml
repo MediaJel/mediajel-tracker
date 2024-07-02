@@ -76,6 +76,15 @@ jobs:
       - aws-cloudfront/invalidate:
           distribution_id: EFJHMMZDNURYT
           paths: /*
+      - aws-cloudfront/invalidate:
+          distribution_id: E3FT67SI37G1ZH
+          paths: /*
+      - aws-cloudfront/invalidate:
+          distribution_id: EQGTP3X7S8LMI
+          paths: /*
+      - aws-cloudfront/invalidate:
+          distribution_id: EFJHMMZDNURYT
+          paths: /*
 
 workflows:
   version: 2

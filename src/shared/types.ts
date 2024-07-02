@@ -83,6 +83,7 @@ export type BingAdsPluginParams = {
 
 export type ImpressionsMacrosParams = {
   advertiserId: string;
+  advertiserName: string;
   insertionOrder: string;
   lineItemId: string;
   creativeId: string;

@@ -1,8 +1,8 @@
 import { QueryStringContext } from "../../../shared/types";
-import ecwidTracker from "src/shared/environment-data-sources/ecwid";
+import leaflyDataSource from "src/shared/environment-data-sources/leafly";
 
-const EcwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  ecwidTracker({
+const leaflyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
+  leaflyDataSource({
     transactionEvent(transactionData) {
       window.tracker("addTrans", {
         orderId: transactionData.id,
@@ -16,21 +16,9 @@ const EcwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
         currency: transactionData.currency,
       });
 
-      transactionData.items.forEach((item) => {
-        window.tracker("addItem", {
-          orderId: transactionData.id,
-          sku: item.sku,
-          name: item.name,
-          category: item.category,
-          unitPrice: item.unitPrice,
-          quantity: item.quantity,
-          currency: item.currency,
-        });
-      });
-
       window.tracker("trackTrans");
     },
   });
 };
 
-export default EcwidTracker;
+export default leaflyTracker;
