@@ -1,6 +1,6 @@
 import getContext from "./shared/utils/get-context";
 import { QueryStringContext } from "./shared/types";
-import { getCustomTags } from "./shared/utils/get-custom-tags";
+// import { getCustomTags } from "./shared/utils/get-custom-tags";
 
 const createStagingTag = (appId: string) => {
   const mjStaging = document.createElement("script");
