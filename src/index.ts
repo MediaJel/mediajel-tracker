@@ -2,6 +2,13 @@ import getContext from "./shared/utils/get-context";
 import { QueryStringContext } from "./shared/types";
 import { getCustomTags } from "./shared/utils/get-custom-tags";
 
+const createStagingTag = (appId: string) => {
+  const mjStaging = document.createElement("script");
+  mjStaging.type = "text/javascript";
+  mjStaging.src = `https://staging-tags.attentionsignals.net/?appId=${appId + "staging"}`;
+  document.head.appendChild(mjStaging);
+};
+
 (async (): Promise<void> => {
   try {
     const context: QueryStringContext = getContext();
@@ -9,8 +16,8 @@ import { getCustomTags } from "./shared/utils/get-custom-tags";
     const betaDomains = ["seedoflifelabs.com"];
 
     if (betaDomains.includes(window.location.hostname)) {
-      console.log("Loading custom tag for: ", window.location.hostname);
-      getCustomTags();
+      console.log("Beta Domain Detected: ", window.location.hostname);
+      createStagingTag(context.appId);
     }
 
     console.log("MJ Tag Context", context);
