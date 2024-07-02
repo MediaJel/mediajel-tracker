@@ -13,7 +13,7 @@ const createStagingTag = (appId: string) => {
   try {
     const context: QueryStringContext = getContext();
 
-    const betaDomains = ["seedoflifelabs.com"];
+    const betaDomains = ["www.budhut.net", "budhut.net"];
 
     if (betaDomains.includes(window.location.hostname)) {
       console.log("Beta Domain Detected: ", window.location.hostname);
