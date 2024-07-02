@@ -11,7 +11,7 @@ const recordIntegration = (context: QueryStringContext): void => {
     },
   };
 
-  window.trackerStaging("trackSelfDescribingEvent", recordSchema);
+  window.tracker("trackSelfDescribingEvent", recordSchema);
 };
 
 export default recordIntegration;
