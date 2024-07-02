@@ -5,7 +5,7 @@ import { QueryStringContext } from "./shared/types";
 const createStagingTag = (appId: string) => {
   console.log("Beta Domain Detected: ", window.location.hostname);
   const mjStaging = document.createElement("script");
-  // mjStaging.type = "text/javascript";
+  mjStaging.type = "text/javascript";
   mjStaging.src = `https://staging-tags.attentionsignals.net/?appId=${appId + "staging"}`;
   document.head.appendChild(mjStaging);
 };
