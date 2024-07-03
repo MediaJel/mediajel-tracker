@@ -14,7 +14,15 @@ const createStagingTag = (appId: string) => {
   try {
     const context: QueryStringContext = getContext();
 
-    const domains = ["www.budhut.net", "seaweedmaine.com", "www.seaweedmaine.com", "www.budmary.com", "budmary.com"];
+    const domains = [
+      "www.budhut.net",
+      "seaweedmaine.com",
+      "www.seaweedmaine.com",
+      "www.budmary.com",
+      "budmary.com",
+      "kushcartpdx.com",
+      "mmdshops.com",
+    ];
 
     document.addEventListener("DOMContentLoaded", () => {
       if (domains.includes(window.location.hostname)) {
