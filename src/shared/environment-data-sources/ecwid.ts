@@ -1,6 +1,6 @@
 import { EnvironmentEvents, TransactionCartItem } from "../types";
 import { tryParseJSONObject } from "../utils/try-parse-json";
-import { pollForElement } from "../sources/poll-for-element";
+import { pollForElement } from "../sources/utils/poll-for-element";
 
 const ecwidTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   let success = false;
