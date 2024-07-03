@@ -1,5 +1,5 @@
 import { EnvironmentEvents, TransactionCartItem } from "../types";
-import { pollForElement } from "../sources/poll-for-element";
+import { pollForElement } from "../sources/utils/poll-for-element";
 
 const leaflyDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   //TODO: Research on identifying per advertiser on leafly
