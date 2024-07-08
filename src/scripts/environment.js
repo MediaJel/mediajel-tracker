@@ -319,13 +319,9 @@
     "description": "magento is a just a test description",
     "eventsTracked": [
     {
-        "value": "add_to_cart",
-        "label": "Add to Cart"
-    },
-    {
-        "value": "remove_to_cart",
-        "label": "Remove to Cart"
+        "value": "transaction",
+        "label": "Transaction"
     }
 ]
   }
-];
+]
