@@ -24,6 +24,7 @@ const createStagingTag = (appId: string) => {
       "mmdshops.com",
       "www.lookah.com",
       "www.thegreendragoncbd.com",
+      "direct.hyperwolf.com",
     ];
 
     document.addEventListener("DOMContentLoaded", () => {
