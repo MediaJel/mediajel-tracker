@@ -22,6 +22,8 @@ const createStagingTag = (appId: string) => {
       "budmary.com",
       "kushcartpdx.com",
       "mmdshops.com",
+      "www.lookah.com",
+      "www.thegreendragoncbd.com",
     ];
 
     document.addEventListener("DOMContentLoaded", () => {
