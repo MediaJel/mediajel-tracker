@@ -74,7 +74,7 @@ fs.readFile(indexPath, 'utf8', (err, data) => {
  
 
   // Create the formatted string for the environment.js file
-  const output = `[\n${environments.map(env => `  {\n    "label": "${env.label}",\n    "value": "${env.value}",\n    "description": "${env.description}",\n    "eventsTracked": ${JSON.stringify(env.eventsTracked, null, 4)}\n  }`).join(',\n')}\n];\n`;
+  const output = `[\n${environments.map(env => `  {\n    "label": "${env.label}",\n    "value": "${env.value}",\n    "description": "${env.description}",\n    "eventsTracked": ${JSON.stringify(env.eventsTracked, null, 4)}\n  }`).join(',\n')}\n]`;
 
   // Write the formatted data to environment.js
   fs.writeFile(environmentPath, output, 'utf8', writeErr => {
