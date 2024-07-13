@@ -87,7 +87,7 @@ jobs:
           paths: /*
       - run:
           name: Run Tracker
-          command: yarn tracker:generate-environments
+          command: npm run tracker:generate-environments
 
 workflows:
   version: 2
