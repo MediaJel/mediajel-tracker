@@ -85,6 +85,9 @@ jobs:
       - aws-cloudfront/invalidate:
           distribution_id: EFJHMMZDNURYT
           paths: /*
+      - run:
+          name: Run Tracker
+          command: npm run tracker:generate-environments
 
 workflows:
   version: 2
