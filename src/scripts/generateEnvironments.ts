@@ -11,7 +11,6 @@ const s3 = new S3({
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY_PROD
 });
 
-console.log(" process.env.AWS_REGION_PROD" , process.env.AWS_ACCESS_KEY_ID_PROD);
 // Path to the index.ts file
 const indexPath = path.join(__dirname, '../v1/imports/carts/index.ts');
 // Path to the environment.js file
@@ -32,7 +31,8 @@ const uploadToS3 = (filePath: string, bucket: string, key: string) => {
       Bucket: bucket,
       Key: key,
       Body: data,
-      ContentType: 'application/javascript'
+      ContentType: 'application/javascript',
+      ACL: 'public-read' 
     };
 
     s3.upload(params, (s3Err, data) => {
@@ -52,25 +52,29 @@ fs.readFile(indexPath, 'utf8', (err, data) => {
     return;
   }
 
-  // Regular expression to match case values
-  const caseRegex = /case\s+"(.*?)":/g;
-  let match;
-  const environments = [];
-
-  // Extract case values
-  while ((match = caseRegex.exec(data)) !== null) {
-    const value = match[1];
-    // Convert to label format (capitalize first letter and replace hyphens with spaces)
-    const label = value
-      .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-
-    environments.push({ label, value });
-  }
+   // Regular expression to match case values, descriptions, and events-tracked
+   const caseRegex = /case\s+"(.*?)":\s+import\(".*?"\)\.then\(.*?\);\s*\/\/\s*description:\s*"(.*?)"\s*\/\/\s*events-tracked:\s*(\[.*?\])/gs;
+   let match;
+   const environments = [];
+ 
+   // Extract case values, descriptions, and events-tracked
+   while ((match = caseRegex.exec(data)) !== null) {
+     const value = match[1];
+     const description = match[2];
+     const eventsTracked = JSON.parse(match[3].replace(/([\w-]+):/g, '"$1":'));
+ 
+     // Convert to label format (capitalize first letter and replace hyphens with spaces)
+     const label = value
+       .split('-')
+       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+       .join(' ');
+ 
+     environments.push({ label, value, description, eventsTracked });
+   }
+ 
 
   // Create the formatted string for the environment.js file
-  const output = `[\n${environments.map(env => `  {\n    label: "${env.label}",\n    value: "${env.value}"\n  }`).join(',\n')}\n];\n`;
+  const output = `[\n${environments.map(env => `  {\n    "label": "${env.label}",\n    "value": "${env.value}",\n    "description": "${env.description}",\n    "eventsTracked": ${JSON.stringify(env.eventsTracked, null, 4)}\n  }`).join(',\n')}\n]`;
 
   // Write the formatted data to environment.js
   fs.writeFile(environmentPath, output, 'utf8', writeErr => {
