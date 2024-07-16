@@ -6,7 +6,6 @@ declare global {
     src: any;
     snowplow: any;
     tracker: any;
-
     mj_liquidm_click_macros: any;
     Shopify: any;
     lightspeedTransaction: any;
