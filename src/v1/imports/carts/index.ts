@@ -110,6 +110,7 @@ export default async (context: QueryStringContext): Promise<void> => {
       import("./webjoint").then(({ default: load }): void => load({ appId, retailId }));
       // description: "webjoint is a just a test description"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+      break;
     //* UNSTABLE
     case "sticky-leaf":
       import("./sticky-leaf").then(({ default: load }): void => load({ appId, retailId }));
