@@ -53,9 +53,9 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
           if (!localStorage.getItem(key)) {
             if (window.location.href.includes("/checkout-complete")) {
               transactionEvent?.({
-                total: parseFloat(responseBody.total || "0"),
+                total: parseFloat(responseBody.total || 0),
                 id: responseBody.id,
-                tax: parseFloat(responseBody.totalTax || "0"),
+                tax: parseFloat(responseBody.totalTax || 0),
                 shipping: 0,
                 city: "N/A",
                 state: "N/A",
