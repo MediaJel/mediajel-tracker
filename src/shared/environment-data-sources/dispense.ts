@@ -52,35 +52,29 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
 
           if (!localStorage.getItem(key)) {
             if (window.location.href.includes("/checkout-complete")) {
-              window.tracker(
-                "addTrans",
-                responseBody.id,
-                "N/A",
-                parseFloat(responseBody.total || "0"),
-                parseFloat(responseBody.totalTax || "0"),
-                0,
-                "N/A",
-                "N/A",
-                "N/A",
-                "USD"
-              );
-
-              responseBody.items.forEach((item) => {
-                window.tracker(
-                  "addItem",
-                  responseBody.id,
-                  item.product.sku || "N/A",
-                  item.product.name || "N/A",
-                  item.product.productCategoryName || "N/A",
-                  parseFloat(item.price || "0"),
-                  parseInt(item.quantity || "0"),
-                  "USD"
-                );
+              transactionEvent?.({
+                total: parseFloat(responseBody.total || "0"),
+                id: responseBody.id,
+                tax: parseFloat(responseBody.totalTax || "0"),
+                shipping: 0,
+                city: "N/A",
+                state: "N/A",
+                country: "USA",
+                currency: "USD",
+                items: responseBody.items.map((item) => {
+                  return {
+                    orderId: responseBody.id,
+                    sku: item.product.sku || "N/A",
+                    name: item.product.name || "N/A",
+                    category: item.product.productCategoryName || "N/A",
+                    unitPrice: parseFloat(item.price || 0),
+                    quantity: parseInt(item.quantity || 1),
+                    currency: "USD",
+                  } as TransactionCartItem;
+                }),
               });
-
-              window.tracker("trackTrans");
             }
-            localStorage.setItem(key, "loaded");
+            localStorage.setItem(key, "loaded"); // do not remove, this prevents duplicating transactions
           }
         } catch (error) {}
       }
