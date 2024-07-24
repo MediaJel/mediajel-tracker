@@ -4,12 +4,13 @@ export const getCustomTags = async () => {
 
   try {
     const response = await fetch(url);
-    const scriptText = await response.text();
+    
 
-    if (!response.ok || !scriptText) {
+    if (!response.ok) {
       //console.info(`custom tag for ${hname} not found ${Buffer.from(hname, "utf-8").toString("base64")}.js`);
       return;
     } else {
+      const scriptText = await response.text();
       const script = document.createElement("script");
       script.type = "text/javascript";
 
