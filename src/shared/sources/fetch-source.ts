@@ -9,17 +9,34 @@
 
 export const fetchSource = (
   requestCallback: (input: RequestInfo | URL, init?: RequestInit) => void,
-  responseCallback: (response: Response) => void
+  responseCallback: (response: Response, responseBody: any) => void
 ): void => {
   const originalFetch = window.fetch;
 
-  window.fetch = function (...args) {
+  window.fetch = function (...args: [RequestInfo, RequestInit?]): Promise<Response> {
     requestCallback(...args);
-    return originalFetch(...args).then((response: Response) => {
-      responseCallback(response.clone());
-      return response;
-    });
+
+    return originalFetch(...args)
+      .then(async (response: Response) => {
+        const clonedResponse = response.clone();
+        const responseBody = await parseResponse(clonedResponse);
+        responseCallback(response, responseBody);
+        return response;
+      })
+      .catch((error: Error) => {
+        console.error("Fetch error:", error);
+        throw error;
+      });
   };
+};
+
+const parseResponse = async (response: Response): Promise<any> => {
+  const contentType = response.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    return await response.json();
+  } else {
+    return await response.text();
+  }
 };
 
 export default fetchSource;
