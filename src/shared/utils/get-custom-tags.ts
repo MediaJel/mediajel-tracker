@@ -4,11 +4,13 @@ export const getCustomTags = async () => {
 
   try {
     const response = await fetch(url);
-    const scriptText = await response.text();
+    
 
-    if (!response.ok || !scriptText) {
-      console.info(`custom tag for ${hname} not found ${Buffer.from(hname, "utf-8").toString("base64")}.js`);
+    if (!response.ok) {
+      //console.info(`custom tag for ${hname} not found ${Buffer.from(hname, "utf-8").toString("base64")}.js`);
+      return;
     } else {
+      const scriptText = await response.text();
       const script = document.createElement("script");
       script.type = "text/javascript";
 
@@ -17,6 +19,7 @@ export const getCustomTags = async () => {
       console.log(`Successfully imported external script from ${url}`);
     }
   } catch (error) {
-    console.error(`Failed to import script from ${url}: ${error.message}`);
+    //console.error(`Failed to import script from ${url}: ${error.message}`);
+    return;
   }
 };
