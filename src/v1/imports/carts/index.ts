@@ -6,7 +6,7 @@ export default async (context: QueryStringContext): Promise<void> => {
     //* NEW CART
     case "leafly":
       import("./leafly").then(({ default: load }): void => load({ appId, retailId }));
-      // description: "leafly is a just a test description"
+      // description: "leafly is a just a test descriptions"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
     //* STABLE
@@ -139,6 +139,11 @@ export default async (context: QueryStringContext): Promise<void> => {
     case "magento":
       import("./magento").then(({ default: load }): void => load({ appId, retailId }));
       // description: "magento is a just a test description"
+      // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+      break;
+    case "thirdparty":
+      import("./thirdparty").then(({ default: load }): void => load());
+      // description: "thirdparty is a just a test descriptions"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
     default:

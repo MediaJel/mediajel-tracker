@@ -141,6 +141,11 @@ export default (context: QueryStringContext): void => {
       // description: "magento is a just a test description"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
+    case "thirdparty":
+      import("./thirdparty").then(({ default: load }): void => load());
+      // description: "thirdparty is a just a test descriptions"
+      // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+      break;
     default:
       throw new Error("Undefined environment");
   }
