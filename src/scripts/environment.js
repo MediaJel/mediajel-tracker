@@ -2,7 +2,7 @@
   {
     "label": "Leafly",
     "value": "leafly",
-    "description": "leafly is a just a test description",
+    "description": "leafly is a just a test descriptions",
     "eventsTracked": [
     {
         "value": "transaction",
@@ -317,6 +317,17 @@
     "label": "Magento",
     "value": "magento",
     "description": "magento is a just a test description",
+    "eventsTracked": [
+    {
+        "value": "transaction",
+        "label": "Transaction"
+    }
+]
+  },
+  {
+    "label": "Thirdparty",
+    "value": "thirdparty",
+    "description": "thirdparty is a just a test descriptions",
     "eventsTracked": [
     {
         "value": "transaction",
