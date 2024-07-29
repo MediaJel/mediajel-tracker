@@ -3,12 +3,31 @@ import { fetchSource } from "../sources/fetch-source";
 import { runOncePerPageLoad } from "../sources/utils/run-once-per-page";
 import { EnvironmentEvents, TransactionCartItem } from "../types";
 
-const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
+const TransactionCache = (ttl: number) => {
   let success = false;
-  let counter = 1;
 
+  return {
+    recordTransaction: () => {
+      success = true;
+
+      setTimeout(() => {
+        success = false;
+      }, ttl);
+    },
+    isTransactionRecorded: () => success,
+  };
+};
+
+const cache = TransactionCache(5000);
+
+const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   const dataLayerCheck = () => {
     datalayerSource((data) => {
+      if (cache.isTransactionRecorded()) {
+        console.log("Transaction has happened");
+        return;
+      }
+
       if (data[1] === "purchase") {
         try {
           const { transaction_id, tax, value, items } = data[2];
@@ -36,7 +55,7 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
             }),
           });
 
-          success = true; // Allows the IF case to execute break on the switch case
+          cache.recordTransaction(); // Allows the IF case to execute break on the switch case
         } catch (error) {
           // window.tracker('trackError', JSON.stringify(error), 'DISPENSE')
         }
@@ -48,6 +67,11 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
     fetchSource(
       (request) => {},
       (reponse, responseBody) => {
+        if (cache.isTransactionRecorded()) {
+          console.log("Transaction has happened");
+          return;
+        }
+
         try {
           window.addEventListener("beforeunload", () => {
             sessionStorage.removeItem("key");
@@ -79,28 +103,31 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
             }
           });
 
-          success = true; // Allows the IF case to execute break on the switch case
+          cache.recordTransaction(); // Allows the IF case to execute break on the switch case
+          // success = true; // Allows the IF case to execute break on the switch case
         } catch (error) {}
       }
     );
   };
 
+  dataLayerCheck();
+  fetchSourceCheck();
   // ALLOWS FOR MULTIPLE USE CASES FOR SCALABILITY
 
-  switch (counter) {
-    case 1:
-      dataLayerCheck();
-      if (success) {
-        break;
-      }
-    case 2:
-      fetchSourceCheck();
-      if (success) {
-        break;
-      }
-    default:
-      console.log("DISPENSE ENVIRONMENT ERROR AT CASE ", counter);
-  }
+  // switch (counter) {
+  //   case 1:
+  //     dataLayerCheck();
+  //     if (success) {
+  //       break;
+  //     }
+  //   case 2:
+  //     fetchSourceCheck();
+  //     if (success) {
+  //       break;
+  //     }
+  //   default:
+  //     console.log("DISPENSE ENVIRONMENT ERROR AT CASE ", counter);
+  // }
 };
 
 export default dispenseDataSource;
