@@ -1,5 +1,6 @@
 import { datalayerSource } from "../sources/google-datalayer-source";
 import { fetchSource } from "../sources/fetch-source";
+import { runOncePerPageLoad } from "../sources/utils/run-once-per-page";
 import { EnvironmentEvents, TransactionCartItem } from "../types";
 
 const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
@@ -43,25 +44,7 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
     }, window.gtmDataLayer); // special case for dispense; window.dataLayer is renamed to window.gtmDataLayer
   };
 
-  // This function runs once per page load
   const fetchSourceCheck = () => {
-    function runOncePerPageLoad(callback) {
-      const key = "key";
-
-      if (!sessionStorage.getItem(key)) {
-        console.log("First run in this session");
-        callback();
-        sessionStorage.setItem(key, "loaded");
-      } else {
-        console.log("Already run in this session");
-      }
-    }
-
-    // Listen for the unload event to reset the sessionStorage item
-    window.addEventListener("beforeunload", () => {
-      sessionStorage.removeItem("key");
-    });
-
     fetchSource(
       (request) => {},
       (reponse, responseBody) => {
