@@ -49,6 +49,10 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
       (request) => {},
       (reponse, responseBody) => {
         try {
+          window.addEventListener("beforeunload", () => {
+            sessionStorage.removeItem("key");
+          });
+
           runOncePerPageLoad(() => {
             if (window.location.href.includes("/checkout-complete")) {
               transactionEvent?.({

@@ -18,6 +18,7 @@ export const runOncePerPageLoad = (callback) => {
 };
 
 // Listen for the unload event to reset the sessionStorage item
+// Add this on the top of the method
 window.addEventListener("beforeunload", () => {
   sessionStorage.removeItem("key");
 });
