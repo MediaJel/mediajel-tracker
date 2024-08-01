@@ -146,6 +146,11 @@ export default async (context: QueryStringContext): Promise<void> => {
       // description: "thirdparty is a just a test descriptions"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
+    case "wix":
+      import("./wix").then(({ default: load }): void => load({ appId, retailId }));
+      // description: "wix is a just a test description"
+      // events-tracked: [{ value: "add_to_cart", label: "Add to Cart" }, { value: "remove_from_cart", label: "Remove from Cart" }, { "value": "transaction", "label": "Transaction" }]
+      break;
     default:
       throw new Error("Undefined environment");
   }
