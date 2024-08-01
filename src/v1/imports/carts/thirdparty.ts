@@ -1,5 +1,5 @@
 const thirdpartyTracker = () => {
-    console.log('thirdpartyTracker');
+    console.log('custom adapter');
 }
 
 export default thirdpartyTracker;

@@ -1,27 +1,27 @@
+import wixTrackerDataSource from "src/shared/environment-data-sources/wix";
 import { QueryStringContext } from "../../../shared/types";
-import meadowTrackerImport from "src/shared/environment-data-sources/meadow";
 
-const meadowTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
-  meadowTrackerImport({
-    addToCartEvent(cartData) {
+const wixTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
+  wixTrackerDataSource({
+    addToCartEvent(addToCartData) {
       window.tracker("trackAddToCart", {
-        sku: cartData.sku,
-        name: cartData.name,
-        category: cartData.category,
-        unitPrice: cartData.unitPrice,
-        quantity: cartData.quantity,
-        currency: cartData.currency,
+        sku: addToCartData.sku,
+        name: addToCartData.name,
+        category: addToCartData.category,
+        unitPrice: addToCartData.unitPrice,
+        quantity: addToCartData.quantity,
+        currency: addToCartData.currency,
       });
     },
 
-    removeFromCartEvent(cartData) {
+    removeFromCartEvent(removeFromCartData) {
       window.tracker("trackRemoveFromCart", {
-        sku: cartData.sku,
-        name: cartData.name,
-        category: cartData.category,
-        unitPrice: cartData.unitPrice,
-        quantity: cartData.quantity,
-        currency: cartData.currency,
+        sku: removeFromCartData.sku,
+        name: removeFromCartData.name,
+        category: removeFromCartData.category,
+        unitPrice: removeFromCartData.unitPrice,
+        quantity: removeFromCartData.quantity,
+        currency: removeFromCartData.currency,
       });
     },
 
@@ -40,19 +40,19 @@ const meadowTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "
 
       transactionData.items.forEach((item) => {
         window.tracker("addItem", {
-          orderId: transactionData.id,
+          orderId: item.orderId,
           sku: item.sku,
           name: item.name,
           category: item.category,
           price: item.unitPrice,
           quantity: item.quantity,
-          currency: transactionData.currency,
+          currency: item.currency,
         });
       });
-
+      
       window.tracker("trackTrans");
     },
   });
 };
 
-export default meadowTracker;
+export default wixTracker;
