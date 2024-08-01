@@ -17,17 +17,6 @@ const dutchiePlusTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
       });
 
       transactionData.items.forEach((item) => {
-        window.tracker(
-          "addItem",
-          transactionData.id,
-          item.sku,
-          item.name,
-          item.category,
-          item.unitPrice,
-          item.quantity,
-          transactionData.currency
-        );
-
         window.tracker("addItem", {
           orderId: transactionData.id,
           sku: item.sku,
