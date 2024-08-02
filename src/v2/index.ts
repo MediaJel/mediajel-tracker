@@ -3,12 +3,17 @@ import recordIntegration from "./snowplow/events/record";
 
 import { QueryStringContext } from "../shared/types";
 import { debuggerPlugin } from "./snowplow/plugins";
-import { tapadHashSyncPixel } from "../shared/partners/tapad/hash-sync-pixel";
+import { createSegments } from "src/shared/segment-builder";
 
 const applyV2 = (context: QueryStringContext): void => {
   createTracker(context);
   recordIntegration(context);
-  tapadHashSyncPixel();
+
+  createSegments({
+    //* Accept both segmentId and s1 for legacy purposes
+    liquidm: context.segmentId || context.s1,
+    nexxen: context.s2,
+  });
 
   /** For debugging in the console **/
   context.debugger === "true" && debuggerPlugin();

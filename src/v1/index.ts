@@ -1,14 +1,20 @@
 import createTracker from "./snowplow/events/create-tracker";
 import recordIntegration from "./snowplow/events/record-integration";
 
-import { tapadHashSyncPixel } from "../shared/partners/tapad/hash-sync-pixel";
 import { QueryStringContext } from "../shared/types";
 import { liquidmSegmentPixel } from "../shared/partners/liquidm/liquidm-segment-pixel";
+import { createSegments } from "src/shared/segment-builder";
 
 const applyV1 = (context: QueryStringContext): void => {
   createTracker(context);
   recordIntegration(context);
-  tapadHashSyncPixel();
+
+  createSegments({
+    //* Accept both segmentId and s1 for legacy purposes
+    liquidm: context.segmentId || context.s1,
+    nexxen: context.s2,
+  });
+
   if (context.segmentId) liquidmSegmentPixel(context);
 
   switch (context.event) {
