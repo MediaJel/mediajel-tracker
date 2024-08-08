@@ -19,7 +19,7 @@ const applyV2 = (context: QueryStringContext): void => {
   });
 
   //* Expose to window
-  window.segments = segments;
+  window.cnnaSegments = segments;
 
   liquidm && segments.liquidm.emit();
   nexxen && segments.nexxen.emit();
