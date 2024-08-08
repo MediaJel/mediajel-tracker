@@ -16,8 +16,8 @@ const nexxenSegmentBuilder = (segmentId: string) => {
     emitPurchase: (input: EmitPurchaseInput) => {
       const { cid, bprice } = input;
 
-      if (!cid || !bprice) {
-        console.warn("Missing required purchase data for s2");
+      if (!cid || !bprice || !segmentId) {
+        console.warn("Missing required data for s2");
         return;
       }
 
