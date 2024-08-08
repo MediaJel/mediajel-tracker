@@ -1,7 +1,11 @@
+import { createSegments } from "src/shared/segment-builder";
 import { QueryStringContext } from "../../../shared/types";
 import dutchieIframeDataSource from "src/shared/environment-data-sources/dutchie-iframe";
 
-const dutchieIframeTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
+const dutchieIframeTracker = (
+  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
+  segments: ReturnType<typeof createSegments>
+) => {
   dutchieIframeDataSource({
     addToCartEvent(addToCartData) {
       window.tracker(
@@ -54,6 +58,11 @@ const dutchieIframeTracker = ({ appId, retailId }: Pick<QueryStringContext, "app
         );
       });
       window.tracker("trackTrans");
+
+      segments.nexxen.emitPurchase({
+        bprice: transactionData.total,
+        cid: transactionData.id,
+      });
     },
   });
 };

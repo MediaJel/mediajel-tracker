@@ -1,7 +1,11 @@
 import shopifyDataSource from "src/shared/environment-data-sources/shopify";
 import { QueryStringContext } from "../../../shared/types";
+import { createSegments } from "src/shared/segment-builder";
 
-const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
+const shopifyTracker = (
+  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
+  segments: ReturnType<typeof createSegments>
+) => {
   shopifyDataSource({
     transactionEvent(transactionData) {
       window.tracker("addTrans", {
@@ -29,6 +33,11 @@ const shopifyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | 
       });
 
       window.tracker("trackTrans");
+
+      segments.nexxen.emitPurchase({
+        bprice: transactionData.total,
+        cid: transactionData.id,
+      });
     },
   });
 };

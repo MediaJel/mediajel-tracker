@@ -1,7 +1,11 @@
+import { createSegments } from "src/shared/segment-builder";
 import { QueryStringContext } from "../../../shared/types";
 import grassDoorTracker from "src/shared/environment-data-sources/grassdoor";
 
-const greendoorTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
+const greendoorTracker = (
+  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
+  segments: ReturnType<typeof createSegments>
+) => {
   grassDoorTracker({
     addToCartEvent(addToCartData) {
       window.tracker(
@@ -54,6 +58,11 @@ const greendoorTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" 
         );
       });
       window.tracker("trackTrans");
+
+      segments.nexxen.emitPurchase({
+        bprice: transactionData.total,
+        cid: transactionData.id,
+      });
     },
   });
 };
