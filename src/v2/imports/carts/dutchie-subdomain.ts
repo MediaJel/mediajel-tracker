@@ -1,7 +1,11 @@
 import dutchieSubdomainDataSource from "src/shared/environment-data-sources/dutchie-subdomain";
 import { QueryStringContext } from "../../../shared/types";
+import { createSegments } from "src/shared/segment-builder";
 
-const dutchieSubdomainTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
+const dutchieSubdomainTracker = (
+  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
+  segments: ReturnType<typeof createSegments>
+): void => {
   dutchieSubdomainDataSource({
     addToCartEvent(addToCartData) {
       window.tracker("trackAddToCart", {
@@ -48,8 +52,13 @@ const dutchieSubdomainTracker = ({ appId, retailId }: Pick<QueryStringContext, "
           currency: transactionData.currency,
         });
       });
-      
+
       window.tracker("trackTrans");
+
+      segments.nexxen.emitPurchase({
+        bprice: transactionData.total,
+        cid: transactionData.id,
+      });
     },
   });
 };

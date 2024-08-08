@@ -1,7 +1,11 @@
 import janeDataSource from "src/shared/environment-data-sources/jane";
 import { QueryStringContext } from "../../../shared/types";
+import { createSegments } from "src/shared/segment-builder";
 
-const janeTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
+const janeTracker = (
+  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
+  segments: ReturnType<typeof createSegments>
+): void => {
   janeDataSource({
     addToCartEvent(cartData) {
       window.tracker("trackAddToCart", {
@@ -51,6 +55,11 @@ const janeTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "re
       });
 
       window.tracker("trackTrans");
+
+      segments.nexxen.emitPurchase({
+        bprice: transactionData.total,
+        cid: transactionData.id,
+      });
     },
   });
 };

@@ -9,18 +9,24 @@ const applyV2 = (context: QueryStringContext): void => {
   createTracker(context);
   recordIntegration(context);
 
-  createSegments({
+  const liquidm = context.segmentId || context.s1;
+  const nexxen = context.s2;
+
+  const segments = createSegments({
     //* Accept both segmentId and s1 for legacy purposes
-    liquidm: context.segmentId || context.s1,
-    nexxen: context.s2,
+    liquidm,
+    nexxen,
   });
+
+  liquidm && segments.liquidm.emit();
+  nexxen && segments.nexxen.emit();
 
   /** For debugging in the console **/
   context.debugger === "true" && debuggerPlugin();
 
   switch (context.event) {
     case "transaction":
-      import("./imports/carts").then(({ default: load }): void => load(context));
+      import("./imports/carts").then(({ default: load }): void => load(context, segments));
       break;
     case "impression":
       import("./imports/impression").then(({ default: load }): Promise<void> => load(context));
@@ -33,7 +39,7 @@ const applyV2 = (context: QueryStringContext): void => {
         console.warn("No event/environment specified, Only pageview is active");
         return;
       }
-      import("./imports/carts").then(({ default: load }): void => load(context));
+      import("./imports/carts").then(({ default: load }): void => load(context, segments));
       console.warn(`No event specified, Loading ${context.environment} }`);
   }
 };
