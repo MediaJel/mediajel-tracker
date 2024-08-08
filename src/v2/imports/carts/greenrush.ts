@@ -1,7 +1,11 @@
 import greenrushDataSource from "src/shared/environment-data-sources/greenrush";
 import { QueryStringContext } from "../../../shared/types";
+import { createSegments } from "src/shared/segment-builder";
 
-const greenrushTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
+const greenrushTracker = (
+  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
+  segments: ReturnType<typeof createSegments>
+) => {
   greenrushDataSource({
     transactionEvent(transactionData) {
       window.tracker("addTrans", {
@@ -29,6 +33,11 @@ const greenrushTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" 
       });
 
       window.tracker("trackTrans");
+
+      segments.nexxen.emitPurchase({
+        bprice: transactionData.total,
+        cid: transactionData.id,
+      });
     },
   });
 };

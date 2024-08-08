@@ -108,8 +108,15 @@ export type ImpressionsMacrosParams = {
 };
 
 export type LiquidmSegmentParams = {
+  s1: string;
   segmentId: string;
 };
+
+export type NexxenSegmentParams = {
+  s2: string;
+};
+
+export type SegmentParams = LiquidmSegmentParams & NexxenSegmentParams;
 
 export type QueryStringParams = Partial<TransactionParams> &
   Partial<SignupParams> &
@@ -119,7 +126,7 @@ export type QueryStringParams = Partial<TransactionParams> &
   GoogleAdsPluginParams &
   BingAdsPluginParams &
   SnowplowParams &
-  LiquidmSegmentParams;
+  SegmentParams;
 
 // Params available to the tag's query string
 export type QueryStringContext = QueryStringParams & { collector: string };

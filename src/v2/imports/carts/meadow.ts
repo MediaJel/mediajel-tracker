@@ -1,7 +1,11 @@
+import { createSegments } from "src/shared/segment-builder";
 import { QueryStringContext } from "../../../shared/types";
 import meadowTrackerImport from "src/shared/environment-data-sources/meadow";
 
-const meadowTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
+const meadowTracker = (
+  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
+  segments: ReturnType<typeof createSegments>
+) => {
   meadowTrackerImport({
     addToCartEvent(cartData) {
       window.tracker("trackAddToCart", {
@@ -51,6 +55,11 @@ const meadowTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "
       });
 
       window.tracker("trackTrans");
+
+      segments.nexxen.emitPurchase({
+        bprice: transactionData.total,
+        cid: transactionData.id,
+      });
     },
   });
 };

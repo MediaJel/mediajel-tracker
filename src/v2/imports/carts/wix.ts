@@ -1,7 +1,11 @@
 import wixTrackerDataSource from "src/shared/environment-data-sources/wix";
 import { QueryStringContext } from "../../../shared/types";
+import { createSegments } from "src/shared/segment-builder";
 
-const wixTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
+const wixTracker = (
+  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
+  segments: ReturnType<typeof createSegments>
+): void => {
   wixTrackerDataSource({
     addToCartEvent(addToCartData) {
       window.tracker("trackAddToCart", {
@@ -49,8 +53,13 @@ const wixTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "ret
           currency: item.currency,
         });
       });
-      
+
       window.tracker("trackTrans");
+
+      segments.nexxen.emitPurchase({
+        bprice: transactionData.total,
+        cid: transactionData.id,
+      });
     },
   });
 };

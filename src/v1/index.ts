@@ -1,19 +1,32 @@
 import createTracker from "./snowplow/events/create-tracker";
 import recordIntegration from "./snowplow/events/record-integration";
 
-import { tapadHashSyncPixel } from "../shared/partners/tapad/hash-sync-pixel";
 import { QueryStringContext } from "../shared/types";
-import { liquidmSegmentPixel } from "../shared/partners/liquidm/liquidm-segment-pixel";
+
+import { createSegments } from "src/shared/segment-builder";
 
 const applyV1 = (context: QueryStringContext): void => {
   createTracker(context);
   recordIntegration(context);
-  tapadHashSyncPixel();
-  if (context.segmentId) liquidmSegmentPixel(context);
+
+  const liquidm = context.segmentId || context.s1;
+  const nexxen = context.s2;
+
+  const segments = createSegments({
+    //* Accept both segmentId and s1 for legacy purposes
+    liquidm,
+    nexxen,
+  });
+
+  //* Expose to window
+  window.cnnaSegments = segments;
+
+  liquidm && segments.liquidm.emit();
+  nexxen && segments.nexxen.emit();
 
   switch (context.event) {
     case "transaction":
-      import("./imports/carts").then(({ default: load }): Promise<void> => load(context));
+      import("./imports/carts").then(({ default: load }): Promise<void> => load(context, segments));
       break;
     case "impression":
       import("./imports/impression").then(({ default: load }): Promise<void> => load(context));
@@ -26,7 +39,7 @@ const applyV1 = (context: QueryStringContext): void => {
         console.warn("No event/environment specified, Only pageview is active");
         return;
       }
-      import("./imports/carts").then(({ default: load }): Promise<void> => load(context));
+      import("./imports/carts").then(({ default: load }): Promise<void> => load(context, segments));
       console.warn(`No event specified, Loading ${context.environment}`);
   }
 };

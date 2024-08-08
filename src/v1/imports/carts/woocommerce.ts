@@ -1,7 +1,11 @@
+import { createSegments } from "src/shared/segment-builder";
 import { QueryStringContext } from "../../../shared/types";
 import woocommerceDataSource from "src/shared/environment-data-sources/woocommerce";
 
-const woocommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
+const woocommerceTracker = (
+  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
+  segments: ReturnType<typeof createSegments>
+) => {
   woocommerceDataSource({
     transactionEvent(transactionData) {
       window.tracker(
@@ -14,7 +18,7 @@ const woocommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
         transactionData.city,
         transactionData.state,
         transactionData.country,
-        transactionData.currency,
+        transactionData.currency
       );
 
       transactionData.items.forEach((item) => {
@@ -26,11 +30,16 @@ const woocommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
           item.category,
           item.unitPrice,
           item.quantity,
-          item.currency,
+          item.currency
         );
       });
 
       window.tracker("trackTrans");
+
+      segments.nexxen.emitPurchase({
+        bprice: transactionData.total,
+        cid: transactionData.id,
+      });
     },
   });
 };

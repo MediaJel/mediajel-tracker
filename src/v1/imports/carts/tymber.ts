@@ -1,7 +1,11 @@
 import { QueryStringContext } from "../../../shared/types";
 import TymberDataSource from "../../../shared/environment-data-sources/tymber";
+import { createSegments } from "src/shared/segment-builder";
 
-const tymberTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
+const tymberTracker = (
+  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
+  segments: ReturnType<typeof createSegments>
+) => {
   TymberDataSource({
     addToCartEvent(cartData) {
       window.tracker(
@@ -54,6 +58,11 @@ const tymberTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "
         );
       });
       window.tracker("trackTrans");
+
+      segments.nexxen.emitPurchase({
+        bprice: transactionData.total,
+        cid: transactionData.id,
+      });
     },
   });
 };

@@ -1,7 +1,11 @@
 import { QueryStringContext } from "../../../shared/types";
 import buddiTrackerImport from "../../../shared/environment-data-sources/buddi";
+import { createSegments } from "src/shared/segment-builder";
 
-const buddiTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
+const buddiTracker = (
+  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
+  segments: ReturnType<typeof createSegments>
+) => {
   buddiTrackerImport({
     addToCartEvent(addToCartData) {
       window.tracker(
@@ -54,6 +58,11 @@ const buddiTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "r
         );
       });
       window.tracker("trackTrans");
+
+      segments.nexxen.emitPurchase({
+        bprice: transactionData.total,
+        cid: transactionData.id,
+      });
     },
   });
 };

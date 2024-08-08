@@ -1,7 +1,11 @@
 import dutchiePlusDataSource from "src/shared/environment-data-sources/dutchie-plus";
 import { QueryStringContext } from "../../../shared/types";
+import { createSegments } from "src/shared/segment-builder";
 
-const dutchiePlusTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
+const dutchiePlusTracker = (
+  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
+  segments: ReturnType<typeof createSegments>
+): void => {
   dutchiePlusDataSource({
     transactionEvent(transactionData) {
       window.tracker("addTrans", {
@@ -27,8 +31,13 @@ const dutchiePlusTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId
           currency: transactionData.currency,
         });
       });
-      
+
       window.tracker("trackTrans");
+
+      segments.nexxen.emitPurchase({
+        bprice: transactionData.total,
+        cid: transactionData.id,
+      });
     },
   });
 };
