@@ -17,6 +17,9 @@ const applyV1 = (context: QueryStringContext): void => {
     liquidm,
     nexxen,
   });
+  
+  //* Expose to window
+  window.segments = segments;
 
   liquidm && segments.liquidm.emit();
   nexxen && segments.nexxen.emit();
