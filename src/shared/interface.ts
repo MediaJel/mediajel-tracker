@@ -2,7 +2,7 @@ export {};
 
 declare global {
   interface Window {
-    segments: any;
+    cnnaSegments: any;
     wixDevelopersAnalytics: any;
     GlobalSnowplowNamespace: any;
     src: any;
