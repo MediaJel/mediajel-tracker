@@ -5,6 +5,10 @@ export default (context: QueryStringContext, segments: ReturnType<typeof createS
   const { appId, environment, retailId } = context;
   switch (environment) {
     //* NEW CART
+    case "weave":
+      import("./weave").then(({ default: load }): void => load({ appId, retailId }, segments));
+      break;
+    //* NEW CART
     case "leafly":
       import("./leafly").then(({ default: load }): void => load({ appId, retailId }, segments));
       // description: "leafly is a just a test description"
