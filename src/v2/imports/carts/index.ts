@@ -7,6 +7,8 @@ export default (context: QueryStringContext, segments: ReturnType<typeof createS
     //* NEW CART
     case "weave":
       import("./weave").then(({ default: load }): void => load({ appId, retailId }, segments));
+      // description: "weave is a just a test descriptions"
+      // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
     //* NEW CART
     case "leafly":
