@@ -158,6 +158,11 @@ export default (context: QueryStringContext, segments: ReturnType<typeof createS
       // description: "wix is a just a test description"
       // events-tracked: [{ value: "add_to_cart", label: "Add to Cart" }, { value: "remove_from_cart", label: "Remove from Cart" }, { "value": "transaction", "label": "Transaction" }]
       break;
+    case "sweed":
+      import("./sweed").then(({ default: load }): void => load({ appId, retailId }, segments));
+      // description: "sweed is a just a test description"
+      // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+      break;
     default:
       throw new Error("Undefined environment");
   }
