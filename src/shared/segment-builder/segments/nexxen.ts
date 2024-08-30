@@ -1,14 +1,17 @@
+import { NexxenSegmentBuilderInput } from "src/shared/segment-builder/types";
+
 interface EmitPurchaseInput {
   cid: string;
   bprice: number;
 }
-const nexxenSegmentBuilder = (segmentId: string) => {
+const nexxenSegmentBuilder = (beacons: NexxenSegmentBuilderInput) => {
+  const { pageVisitorBeaconId, transactionBeaconId } = beacons;
   return {
     emit: () => {
-      console.log("Building s2 segment with segmentId: ", segmentId);
+      console.log("Building s2 segment with segmentId: ", pageVisitorBeaconId);
 
       const pixel = document.createElement("img");
-      pixel.src = `https://r.turn.com/r/beacon?b2=${segmentId}`;
+      pixel.src = `https://r.turn.com/r/beacon?b2=${pageVisitorBeaconId}`;
       pixel.border = "0";
       document.body.appendChild(pixel);
     },
@@ -16,15 +19,15 @@ const nexxenSegmentBuilder = (segmentId: string) => {
     emitPurchase: (input: EmitPurchaseInput) => {
       const { cid, bprice } = input;
 
-      if (!cid || !bprice || !segmentId) {
-        console.warn("Missing required data for s2");
+      if (!cid || !bprice || !transactionBeaconId) {
+        console.warn("Missing required data for s2.tr");
         return;
       }
 
-      console.log("Emitting purchase event for segmentId: ", segmentId);
+      console.log("Emitting purchase event for segmentId: ", transactionBeaconId);
 
       const pixel = document.createElement("img");
-      pixel.src = `https://r.turn.com/r/beacon?b2=${segmentId}&cid=${cid}&bprice=${bprice}`;
+      pixel.src = `https://r.turn.com/r/beacon?b2=${transactionBeaconId}&cid=${cid}&bprice=${bprice}`;
       pixel.border = "0";
       document.body.appendChild(pixel);
     },
