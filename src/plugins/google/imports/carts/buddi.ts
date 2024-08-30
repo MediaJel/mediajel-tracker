@@ -1,12 +1,14 @@
-import buddiDataSource from "../../../../shared/environment-data-sources/buddi";
-import { GoogleAdsPluginParams, SnowplowParams } from "../../../../shared/types";
+import logger from 'src/shared/logger';
+
+import buddiDataSource from '../../../../shared/environment-data-sources/buddi';
+import { GoogleAdsPluginParams, SnowplowParams } from '../../../../shared/types';
 
 interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const buddiGoogleAds = (context: Context) => {
   buddiDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 Buddi Transaction Event ", { transactionData });
+      logger.info("🚀🚀🚀 Buddi Transaction Event ", { transactionData });
       window.gtag("event", "conversion", {
         send_to: `${context.conversionId}/${context.conversionLabel}`,
         value: transactionData.total,

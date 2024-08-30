@@ -1,12 +1,14 @@
-import lightspeedDataSource from "../../../../shared/environment-data-sources/lightspeed";
-import { GoogleAdsPluginParams, SnowplowParams } from "../../../../shared/types";
+import logger from 'src/shared/logger';
+
+import lightspeedDataSource from '../../../../shared/environment-data-sources/lightspeed';
+import { GoogleAdsPluginParams, SnowplowParams } from '../../../../shared/types';
 
 interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const lightspeedGoogleAds = (context: Context) => {
   lightspeedDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 Lightspeed Transaction Event ", { transactionData });
+      logger.info("🚀🚀🚀 Lightspeed Transaction Event ", { transactionData });
       window.gtag("event", "conversion", {
         send_to: `${context.conversionId}/${context.conversionLabel}`,
         value: transactionData.total,

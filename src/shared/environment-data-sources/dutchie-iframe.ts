@@ -1,6 +1,8 @@
-import { postMessageSource } from "../sources/post-message-source";
-import { EnvironmentEvents, TransactionCartItem } from "../types";
-import { tryParseJSONObject } from "../utils/try-parse-json";
+import logger from 'src/shared/logger';
+
+import { postMessageSource } from '../sources/post-message-source';
+import { EnvironmentEvents, TransactionCartItem } from '../types';
+import { tryParseJSONObject } from '../utils/try-parse-json';
 
 const dutchieIframeDataSource = ({
   addToCartEvent,

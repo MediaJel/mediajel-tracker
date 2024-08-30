@@ -1,5 +1,7 @@
-import { EnvironmentEvents, TransactionCartItem } from "../types";
-import { tryParseJSONObject } from "../utils/try-parse-json";
+import logger from 'src/shared/logger';
+
+import { EnvironmentEvents, TransactionCartItem } from '../types';
+import { tryParseJSONObject } from '../utils/try-parse-json';
 
 const woocommerceDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
   if (!window.transactionOrder && !window.transactionItems) {

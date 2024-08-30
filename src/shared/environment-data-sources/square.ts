@@ -1,5 +1,7 @@
-import { datalayerSource } from "../sources/google-datalayer-source";
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import logger from 'src/shared/logger';
+
+import { datalayerSource } from '../sources/google-datalayer-source';
+import { EnvironmentEvents, TransactionCartItem } from '../types';
 
 const squareDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
   datalayerSource((data: any): void => {

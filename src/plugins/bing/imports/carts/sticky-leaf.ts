@@ -1,12 +1,14 @@
-import stickyLeafDataSource from "../../../../shared/environment-data-sources/sticky-leaf";
-import { BingAdsPluginParams, SnowplowParams } from "../../../../shared/types";
+import logger from 'src/shared/logger';
+
+import stickyLeafDataSource from '../../../../shared/environment-data-sources/sticky-leaf';
+import { BingAdsPluginParams, SnowplowParams } from '../../../../shared/types';
 
 interface Context extends BingAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const stickLeafBingAds = (context: Context) => {
   stickyLeafDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 Sticky Leaf Transaction Event ", { transactionData });
+      logger.info("🚀🚀🚀 Sticky Leaf Transaction Event ", { transactionData });
 
       window.uetq.push("event", "purchase", {
         transaction_id: transactionData.id,

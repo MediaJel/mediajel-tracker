@@ -1,6 +1,8 @@
-import { EnvironmentEvents, TransactionCartItem } from "../types";
-import { tryParseJSONObject } from "../utils/try-parse-json";
-import { pollForElement } from "../sources/utils/poll-for-element";
+import logger from 'src/shared/logger';
+
+import { pollForElement } from '../sources/utils/poll-for-element';
+import { EnvironmentEvents, TransactionCartItem } from '../types';
+import { tryParseJSONObject } from '../utils/try-parse-json';
 
 const ecwidTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   let success = false;
@@ -39,7 +41,7 @@ const ecwidTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
 
     success = true;
   } catch (error) {
-    console.log("trackError", JSON.stringify(error), "ECWID IMPLEMENTATION 1");
+    logger.info("trackError", JSON.stringify(error), "ECWID IMPLEMENTATION 1");
   }
 
   // In the instance the above code doesn't work, the code below will execute since the if statement is true.
@@ -95,7 +97,7 @@ const ecwidTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
         }
       );
     } catch (error) {
-      console.log("trackError", JSON.stringify(error), "ECWID IMPLEMENTATION 2");
+      logger.info("trackError", JSON.stringify(error), "ECWID IMPLEMENTATION 2");
     }
   }
 };

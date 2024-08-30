@@ -1,4 +1,5 @@
-import { NexxenSegmentBuilderInput } from "src/shared/segment-builder/types";
+import logger from 'src/shared/logger';
+import { NexxenSegmentBuilderInput } from 'src/shared/segment-builder/types';
 
 interface EmitPurchaseInput {
   cid: string;
@@ -9,7 +10,7 @@ const nexxenSegmentBuilder = (beacons: NexxenSegmentBuilderInput) => {
   return {
     emit: () => {
       if (!pageVisitorBeaconId) return;
-      console.log("Building s2 segment with segmentId: ", pageVisitorBeaconId);
+      logger.info("Building s2 segment with segmentId: ", pageVisitorBeaconId);
 
       const pixel = document.createElement("img");
       pixel.src = `https://r.turn.com/r/beacon?b2=${pageVisitorBeaconId}`;
@@ -25,7 +26,7 @@ const nexxenSegmentBuilder = (beacons: NexxenSegmentBuilderInput) => {
         return;
       }
 
-      console.log("Emitting purchase event for segmentId: ", transactionBeaconId);
+      logger.info("Emitting purchase event for segmentId: ", transactionBeaconId);
 
       const pixel = document.createElement("img");
       pixel.src = `https://r.turn.com/r/beacon?b2=${transactionBeaconId}&cid=${cid}&bprice=${bprice}`;

@@ -1,7 +1,9 @@
+import logger from 'src/shared/logger';
+
 const liquidmSegmentBuilder = (segmentId: string) => {
   return {
     emit: () => {
-      console.log("Building s1 segment with segmentId: ", segmentId);
+      logger.info("Building s1 segment with segmentId: ", segmentId);
       (function (c, d) {
         var a = document.createElement("script");
         a.type = "text/javascript";

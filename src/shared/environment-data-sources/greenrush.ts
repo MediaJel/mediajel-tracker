@@ -1,5 +1,7 @@
-import { xhrResponseSource } from "../sources/xhr-response-source";
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import logger from 'src/shared/logger';
+
+import { xhrResponseSource } from '../sources/xhr-response-source';
+import { EnvironmentEvents, TransactionCartItem } from '../types';
 
 const greenrushDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   xhrResponseSource((xhr: XMLHttpRequest) => {

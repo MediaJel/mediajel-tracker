@@ -1,4 +1,6 @@
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import logger from 'src/shared/logger';
+
+import { EnvironmentEvents, TransactionCartItem } from '../types';
 
 const weaveDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   try {

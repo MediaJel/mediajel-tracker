@@ -1,4 +1,6 @@
-import { GoogleAdsPluginParams } from "../../shared/types";
+import logger from 'src/shared/logger';
+
+import { GoogleAdsPluginParams } from '../../shared/types';
 
 const createGoogleAdsPlugin = (context: GoogleAdsPluginParams) => {
   // Fail fast if the required params are not present
@@ -10,8 +12,8 @@ const createGoogleAdsPlugin = (context: GoogleAdsPluginParams) => {
     context.conversionId = `AW-${context.conversionId}`;
   }
 
-  console.log(`🚀🚀🚀 Google Ads Plugin loaded for ${context.environment}`);
-  console.log(`🚀🚀🚀 Google Ads Plugin params: ${JSON.stringify(context, null, 2)}`);
+  logger.info(`🚀🚀🚀 Google Ads Plugin loaded for ${context.environment}`);
+  logger.info(`🚀🚀🚀 Google Ads Plugin params: ${JSON.stringify(context, null, 2)}`);
 
   document.createElement("script").src = `https://www.googletagmanager.com/gtag/js?id=${context.conversionId}`;
 

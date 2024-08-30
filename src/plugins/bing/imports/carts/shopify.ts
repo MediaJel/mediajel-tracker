@@ -1,12 +1,14 @@
-import shopifyDataSource from "../../../../shared/environment-data-sources/shopify";
-import { BingAdsPluginParams, SnowplowParams } from "../../../../shared/types";
+import logger from 'src/shared/logger';
+
+import shopifyDataSource from '../../../../shared/environment-data-sources/shopify';
+import { BingAdsPluginParams, SnowplowParams } from '../../../../shared/types';
 
 interface Context extends BingAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const shopifyBingAds = (context: Context) => {
   shopifyDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 Shopify Transaction Event ", { transactionData });
+      logger.info("🚀🚀🚀 Shopify Transaction Event ", { transactionData });
 
       window.uetq.push("event", "purchase", {
         transaction_id: transactionData.id,

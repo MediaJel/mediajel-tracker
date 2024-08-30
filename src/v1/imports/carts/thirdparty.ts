@@ -1,5 +1,5 @@
-const thirdpartyTracker = () => {
-    console.log('custom adapter');
-}
+import logger from 'src/shared/logger';
+
+const thirdpartyTracker = () => {};
 
 export default thirdpartyTracker;

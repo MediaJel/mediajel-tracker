@@ -1,12 +1,14 @@
-import greenrushDataSource from "../../../../shared/environment-data-sources/greenrush";
-import { GoogleAdsPluginParams, SnowplowParams } from "../../../../shared/types";
+import logger from 'src/shared/logger';
+
+import greenrushDataSource from '../../../../shared/environment-data-sources/greenrush';
+import { GoogleAdsPluginParams, SnowplowParams } from '../../../../shared/types';
 
 interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const greenrushGoogleAds = (context: Context) => {
   greenrushDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 Greenrush Transaction Event ", { transactionData });
+      logger.info("🚀🚀🚀 Greenrush Transaction Event ", { transactionData });
       window.gtag("event", "conversion", {
         send_to: `${context.conversionId}/${context.conversionLabel}`,
         value: transactionData.total,

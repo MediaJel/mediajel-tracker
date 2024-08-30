@@ -1,7 +1,9 @@
-import { datalayerSource } from "../sources/google-datalayer-source";
-import { fetchSource } from "../sources/fetch-source";
-import { runOncePerPageLoad } from "../sources/utils/run-once-per-page";
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import logger from 'src/shared/logger';
+
+import { fetchSource } from '../sources/fetch-source';
+import { datalayerSource } from '../sources/google-datalayer-source';
+import { runOncePerPageLoad } from '../sources/utils/run-once-per-page';
+import { EnvironmentEvents, TransactionCartItem } from '../types';
 
 const TransactionCache = (ttl: number) => {
   let success = false;
@@ -24,7 +26,7 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
   const dataLayerCheck = () => {
     datalayerSource((data) => {
       if (cache.isTransactionRecorded()) {
-        console.log("Transaction has happened");
+        logger.info("Transaction has happened");
         return;
       }
 
@@ -68,7 +70,7 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
       (request) => {},
       (reponse, responseBody) => {
         if (cache.isTransactionRecorded()) {
-          console.log("Transaction has happened");
+          logger.info("Transaction has happened");
           return;
         }
 
@@ -126,7 +128,7 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
   //       break;
   //     }
   //   default:
-  //     console.log("DISPENSE ENVIRONMENT ERROR AT CASE ", counter);
+  //     logger.info("DISPENSE ENVIRONMENT ERROR AT CASE ", counter);
   // }
 };
 

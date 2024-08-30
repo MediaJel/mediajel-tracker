@@ -1,5 +1,7 @@
-import { EnvironmentEvents, TransactionCartItem } from "../types";
-import { xhrResponseSource } from "../sources/xhr-response-source";
+import logger from 'src/shared/logger';
+
+import { xhrResponseSource } from '../sources/xhr-response-source';
+import { EnvironmentEvents, TransactionCartItem } from '../types';
 
 const wefunderTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   xhrResponseSource((xhr) => {

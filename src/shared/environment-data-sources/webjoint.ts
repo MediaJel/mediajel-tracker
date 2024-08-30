@@ -1,5 +1,7 @@
-import { xhrRequestSource } from "../sources/xhr-request-source";
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import logger from 'src/shared/logger';
+
+import { xhrRequestSource } from '../sources/xhr-request-source';
+import { EnvironmentEvents, TransactionCartItem } from '../types';
 
 const webjointDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
   xhrRequestSource((data: any): void => {

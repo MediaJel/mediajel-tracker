@@ -1,5 +1,3 @@
-const thirdpartyTracker = () => {
-    console.log('thirdpartyTracker');
-}
+const thirdpartyTracker = () => {};
 
 export default thirdpartyTracker;
