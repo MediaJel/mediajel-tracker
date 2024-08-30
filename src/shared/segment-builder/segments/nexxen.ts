@@ -8,6 +8,7 @@ const nexxenSegmentBuilder = (beacons: NexxenSegmentBuilderInput) => {
   const { pageVisitorBeaconId, transactionBeaconId } = beacons;
   return {
     emit: () => {
+      if (!pageVisitorBeaconId) return;
       console.log("Building s2 segment with segmentId: ", pageVisitorBeaconId);
 
       const pixel = document.createElement("img");
