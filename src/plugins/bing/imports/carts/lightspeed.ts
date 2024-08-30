@@ -1,12 +1,14 @@
-import lightspeedDataSource from "../../../../shared/environment-data-sources/lightspeed";
-import { BingAdsPluginParams, SnowplowParams } from "../../../../shared/types";
+import logger from 'src/shared/logger';
+
+import lightspeedDataSource from '../../../../shared/environment-data-sources/lightspeed';
+import { BingAdsPluginParams, SnowplowParams } from '../../../../shared/types';
 
 interface Context extends BingAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const lightspeedBingAds = (context: Context) => {
   lightspeedDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 Lightspeed Transaction Event ", { transactionData });
+      logger.info("🚀🚀🚀 Lightspeed Transaction Event ", { transactionData });
 
       window.uetq.push("event", "purchase", {
         transaction_id: transactionData.id,

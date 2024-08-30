@@ -1,16 +1,22 @@
-import createTracker from "./snowplow/events/create-tracker";
-import recordIntegration from "./snowplow/events/record";
+import { createSegments, NexxenSegmentBuilderInput } from "src/shared/segment-builder";
 
 import { QueryStringContext } from "../shared/types";
+import createTracker from "./snowplow/events/create-tracker";
+import recordIntegration from "./snowplow/events/record";
 import { debuggerPlugin } from "./snowplow/plugins";
-import { createSegments } from "src/shared/segment-builder";
 
 const applyV2 = (context: QueryStringContext): void => {
   createTracker(context);
   recordIntegration(context);
 
   const liquidm = context.segmentId || context.s1;
-  const nexxen = context.s2;
+
+  //* If s2.pv or s2.tr is not present, use context.s2 as default
+  //* mainly used for legacy purposes
+  const nexxen: NexxenSegmentBuilderInput = {
+    pageVisitorBeaconId: context["s2.pv"] || context["s2"],
+    transactionBeaconId: context["s2.tr"] || context["s2"],
+  };
 
   const segments = createSegments({
     //* Accept both segmentId and s1 for legacy purposes

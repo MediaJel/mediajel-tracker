@@ -1,12 +1,14 @@
-import dutchieIframeDataSource from "../../../../shared/environment-data-sources/dutchie-iframe";
-import { BingAdsPluginParams, SnowplowParams } from "../../../../shared/types";
+import logger from 'src/shared/logger';
+
+import dutchieIframeDataSource from '../../../../shared/environment-data-sources/dutchie-iframe';
+import { BingAdsPluginParams, SnowplowParams } from '../../../../shared/types';
 
 interface Context extends BingAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const dutchieIframeBingAds = (context: Context) => {
   dutchieIframeDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 Dutchie Transaction Event ", { transactionData });
+      logger.info("🚀🚀🚀 Dutchie Transaction Event ", { transactionData });
 
       window.uetq.push("event", "purchase", {
         transaction_id: transactionData.id,

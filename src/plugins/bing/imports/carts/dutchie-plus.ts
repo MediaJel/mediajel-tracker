@@ -1,12 +1,14 @@
-import dutchiePlusDataSource from "../../../../shared/environment-data-sources/dutchie-plus";
-import { BingAdsPluginParams, SnowplowParams } from "../../../../shared/types";
+import logger from 'src/shared/logger';
+
+import dutchiePlusDataSource from '../../../../shared/environment-data-sources/dutchie-plus';
+import { BingAdsPluginParams, SnowplowParams } from '../../../../shared/types';
 
 interface Context extends BingAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const dutchiePlusBingAds = (context: Context) => {
   dutchiePlusDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 Dutchie Plus Event ", { transactionData });
+      logger.info("🚀🚀🚀 Dutchie Plus Event ", { transactionData });
 
       window.uetq.push("event", "purchase", {
         transaction_id: transactionData.id,

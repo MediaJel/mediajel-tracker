@@ -1,5 +1,7 @@
-import { EnvironmentEvents, TransactionCartItem } from "../types";
-import { pollForElement } from "../sources/utils/poll-for-element";
+import logger from 'src/shared/logger';
+
+import { pollForElement } from '../sources/utils/poll-for-element';
+import { EnvironmentEvents, TransactionCartItem } from '../types';
 
 const leaflyDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   //TODO: Research on identifying per advertiser on leafly
@@ -39,7 +41,7 @@ const leaflyDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
       }
     });
   } catch (error) {
-    console.log("trackError", JSON.stringify(error), "LEAFLY");
+    logger.info("trackError", JSON.stringify(error), "LEAFLY");
   }
 };
 

@@ -1,12 +1,14 @@
-import janeDataSource from "../../../../shared/environment-data-sources/jane";
-import { BingAdsPluginParams, SnowplowParams } from "../../../../shared/types";
+import logger from 'src/shared/logger';
+
+import janeDataSource from '../../../../shared/environment-data-sources/jane';
+import { BingAdsPluginParams, SnowplowParams } from '../../../../shared/types';
 
 interface Context extends BingAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const janeBingAds = (context: Context) => {
   janeDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 Jane Transaction Event ", { transactionData });
+      logger.info("🚀🚀🚀 Jane Transaction Event ", { transactionData });
 
       window.uetq.push("event", "purchase", {
         transaction_id: transactionData.id,

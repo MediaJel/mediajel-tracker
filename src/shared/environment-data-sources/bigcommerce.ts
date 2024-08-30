@@ -1,6 +1,8 @@
-import { EnvironmentEvents, TransactionCartItem } from "../types";
-import { xhrResponseSource } from "../sources/xhr-response-source";
-import { isTrackerLoaded } from "../sources/utils/is-tracker-loaded";
+import logger from 'src/shared/logger';
+
+import { isTrackerLoaded } from '../sources/utils/is-tracker-loaded';
+import { xhrResponseSource } from '../sources/xhr-response-source';
+import { EnvironmentEvents, TransactionCartItem } from '../types';
 
 const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   let success = false;

@@ -1,4 +1,6 @@
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import logger from 'src/shared/logger';
+
+import { EnvironmentEvents, TransactionCartItem } from '../types';
 
 const wixTrackerDataSource = ({
   addToCartEvent,
@@ -7,8 +9,8 @@ const wixTrackerDataSource = ({
 }: Partial<EnvironmentEvents>) => {
   function registerListeners() {
     window.wixDevelopersAnalytics.register("conversionListener", (e, p) => {
-      console.log("e", e);
-      console.log("p", p);
+      logger.info("e", e);
+      logger.info("p", p);
 
       if (e === "AddToCart") {
         addToCartEvent({

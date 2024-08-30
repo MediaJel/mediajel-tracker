@@ -1,5 +1,7 @@
-import { datalayerSource } from "../sources/google-datalayer-source";
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import logger from 'src/shared/logger';
+
+import { datalayerSource } from '../sources/google-datalayer-source';
+import { EnvironmentEvents, TransactionCartItem } from '../types';
 
 const ollaTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
   datalayerSource((data: any): void => {

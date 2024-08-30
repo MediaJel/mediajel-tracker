@@ -1,12 +1,14 @@
-import grassdoorDataSource from "../../../../shared/environment-data-sources/grassdoor";
-import { BingAdsPluginParams, SnowplowParams } from "../../../../shared/types";
+import logger from 'src/shared/logger';
+
+import grassdoorDataSource from '../../../../shared/environment-data-sources/grassdoor';
+import { BingAdsPluginParams, SnowplowParams } from '../../../../shared/types';
 
 interface Context extends BingAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const grassdoorBingAds = (context: Context) => {
   grassdoorDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 Grassdoor Transaction Event ", { transactionData });
+      logger.info("🚀🚀🚀 Grassdoor Transaction Event ", { transactionData });
 
       window.uetq.push("event", "purchase", {
         transaction_id: transactionData.id,

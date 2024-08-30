@@ -1,12 +1,14 @@
-import wefunderDataSource from "../../../../shared/environment-data-sources/wefunder";
-import { BingAdsPluginParams, SnowplowParams } from "../../../../shared/types";
+import logger from 'src/shared/logger';
+
+import wefunderDataSource from '../../../../shared/environment-data-sources/wefunder';
+import { BingAdsPluginParams, SnowplowParams } from '../../../../shared/types';
 
 interface Context extends BingAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const wefunderBingAds = (context: Context) => {
   wefunderDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 Wefunder Transaction Event ", { transactionData });
+      logger.info("🚀🚀🚀 Wefunder Transaction Event ", { transactionData });
 
       window.uetq.push("event", "purchase", {
         transaction_id: transactionData.id,

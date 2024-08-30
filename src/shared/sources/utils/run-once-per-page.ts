@@ -5,15 +5,17 @@
  *   the key will be removed and placed again.
  */
 
+import logger from 'src/shared/logger';
+
 export const runOncePerPageLoad = (callback) => {
   const key = "key";
 
   if (!sessionStorage.getItem(key)) {
-    console.log("First run in this session");
+    logger.info("First run in this session");
     callback();
     sessionStorage.setItem(key, "loaded");
   } else {
-    console.log("Already run in this session");
+    logger.info("Already run in this session");
   }
 };
 

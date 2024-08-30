@@ -1,12 +1,14 @@
-import buddiDataSource from "../../../../shared/environment-data-sources/buddi";
-import { BingAdsPluginParams, SnowplowParams } from "../../../../shared/types";
+import logger from 'src/shared/logger';
+
+import buddiDataSource from '../../../../shared/environment-data-sources/buddi';
+import { BingAdsPluginParams, SnowplowParams } from '../../../../shared/types';
 
 interface Context extends BingAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const buddiBingAds = (context: Context) => {
   buddiDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 buddi Transaction Event ", { transactionData });
+      logger.info("🚀🚀🚀 buddi Transaction Event ", { transactionData });
 
       window.uetq.push("event", "purchase", {
         transaction_id: transactionData.id,
