@@ -40,7 +40,7 @@ const uploadToS3 = (filePath: string, bucket: string, key: string) => {
         console.error("Error uploading file:", s3Err);
         return;
       }
-      logger.info(`File uploaded successfully at ${data.Location}`);
+      console.info(`File uploaded successfully at ${data.Location}`);
     });
   });
 };
@@ -89,7 +89,7 @@ fs.readFile(indexPath, "utf8", (err, data) => {
       console.error("Error writing environment.js file:", writeErr);
       return;
     }
-    logger.info("environment.js file created successfully!");
+    console.info("environment.js file created successfully!");
 
     // Upload the file to S3
     uploadToS3(environmentPath, bucketName, s3Key);

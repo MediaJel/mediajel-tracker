@@ -8,7 +8,7 @@ import { getCustomTags } from './shared/utils/get-custom-tags';
   try {
     const context: QueryStringContext = getContext();
 
-    logger.info("MJ Tag Context", context);
+    logger.debug("MJ Tag Context", context);
 
     // Load plugin
     if (context.plugin) {

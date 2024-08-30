@@ -1,7 +1,6 @@
 export interface CreateLoggerOptionsInput {
   label?: string;
   level?: string;
-  slackWebHook?: string;
 }
 
 export interface Logger {
@@ -12,10 +11,10 @@ export interface Logger {
 }
 
 const colors = {
-  debug: "color: White; background: #3748B8; font-weight: bold; padding: 1px 4px; border-radius: 3px;",
+  debug: "color: White; background: #CB7A01; font-weight: bold; padding: 1px 4px; border-radius: 3px;",
   info: "color: White; background: #388AB8; font-weight: bold; padding: 1px 4px; border-radius: 3px;",
   warn: "color: White; background: #F26430; font-weight: bold; padding: 1px 4px; border-radius: 3px;",
-  error: "color: White; background: #E4572E; font-weight: bold; padding: 1px 4px; border-radius: 3px;",
+  error: "color: White; background: #AD343E; font-weight: bold; padding: 1px 4px; border-radius: 3px;",
 };
 
 const parseMsgToString = (message: unknown | unknown[]): string => {
