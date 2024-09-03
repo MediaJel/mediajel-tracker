@@ -1,12 +1,14 @@
-import wefunderDataSource from "../../../../shared/environment-data-sources/wefunder";
-import { GoogleAdsPluginParams, SnowplowParams } from "../../../../shared/types";
+import logger from 'src/shared/logger';
+
+import wefunderDataSource from '../../../../shared/environment-data-sources/wefunder';
+import { GoogleAdsPluginParams, SnowplowParams } from '../../../../shared/types';
 
 interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const wefunderGoogleAds = (context: Context) => {
   wefunderDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 Wefunder Transaction Event ", { transactionData });
+      logger.info("🚀🚀🚀 Wefunder Transaction Event ", { transactionData });
       window.gtag("event", "conversion", {
         send_to: `${context.conversionId}/${context.conversionLabel}`,
         value: transactionData.total,

@@ -113,7 +113,12 @@ export type LiquidmSegmentParams = {
 };
 
 export type NexxenSegmentParams = {
+  //* Parameter used for identifying the nexxen beacon for visitor tracking & conversion tracking (Legacy)
   s2: string;
+  // * Parameter used for identifyin the nexxen beacon for visitor tracking
+  "s2.pv": string;
+  // * Parameter used for identifying the nexxen beacon for conversion tracking
+  "s2.tr": string;
 };
 
 export type SegmentParams = LiquidmSegmentParams & NexxenSegmentParams;

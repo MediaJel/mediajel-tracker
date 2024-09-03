@@ -1,4 +1,7 @@
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import logger from 'src/shared/logger';
+
+import { EnvironmentEvents, TransactionCartItem } from '../types';
+
 const lightspeedTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   if (!window.lightspeedTransaction) return;
   else {

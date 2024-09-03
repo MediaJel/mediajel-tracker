@@ -1,4 +1,6 @@
-import { BingAdsPluginParams, GoogleAdsPluginParams, PluginParams } from "../shared/types";
+import logger from 'src/shared/logger';
+
+import { BingAdsPluginParams, GoogleAdsPluginParams, PluginParams } from '../shared/types';
 
 interface ApplyPluginParams extends PluginParams, GoogleAdsPluginParams, BingAdsPluginParams {}
 
@@ -13,7 +15,7 @@ const applyPlugins = (context: ApplyPluginParams) => {
         import("./bing").then(({ default: load }) => load(context));
         break;
       default:
-        console.log("Plugin not found");
+        logger.info("Plugin not found");
     }
   }
 };

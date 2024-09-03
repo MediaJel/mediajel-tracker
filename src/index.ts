@@ -1,12 +1,14 @@
-import getContext from "./shared/utils/get-context";
-import { QueryStringContext } from "./shared/types";
-import { getCustomTags } from "./shared/utils/get-custom-tags";
+import logger from 'src/shared/logger';
+
+import { QueryStringContext } from './shared/types';
+import getContext from './shared/utils/get-context';
+import { getCustomTags } from './shared/utils/get-custom-tags';
 
 (async (): Promise<void> => {
   try {
     const context: QueryStringContext = getContext();
 
-    console.log("MJ Tag Context", context);
+    logger.debug("MJ Tag Context", context);
 
     // Load plugin
     if (context.plugin) {

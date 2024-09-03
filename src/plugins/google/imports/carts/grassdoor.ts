@@ -1,12 +1,14 @@
-import grassdoorDataSource from "../../../../shared/environment-data-sources/grassdoor";
-import { GoogleAdsPluginParams, SnowplowParams } from "../../../../shared/types";
+import logger from 'src/shared/logger';
+
+import grassdoorDataSource from '../../../../shared/environment-data-sources/grassdoor';
+import { GoogleAdsPluginParams, SnowplowParams } from '../../../../shared/types';
 
 interface Context extends GoogleAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const grassdoorGoogleAds = (context: Context) => {
   grassdoorDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 Grassdoor Transaction Event ", { transactionData });
+      logger.info("🚀🚀🚀 Grassdoor Transaction Event ", { transactionData });
       window.gtag("event", "conversion", {
         send_to: `${context.conversionId}/${context.conversionLabel}`,
         value: transactionData.total,

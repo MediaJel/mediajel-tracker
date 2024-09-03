@@ -1,12 +1,14 @@
-import squareDataSource from "../../../../shared/environment-data-sources/square";
-import { BingAdsPluginParams, SnowplowParams } from "../../../../shared/types";
+import logger from 'src/shared/logger';
+
+import squareDataSource from '../../../../shared/environment-data-sources/square';
+import { BingAdsPluginParams, SnowplowParams } from '../../../../shared/types';
 
 interface Context extends BingAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const squareBingAds = (context: Context) => {
   squareDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 quare Transaction Event ", { transactionData });
+      logger.info("🚀🚀🚀 quare Transaction Event ", { transactionData });
 
       window.uetq.push("event", "purchase", {
         transaction_id: transactionData.id,

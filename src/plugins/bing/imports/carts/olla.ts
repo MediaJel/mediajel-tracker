@@ -1,12 +1,14 @@
-import ollaDataSource from "../../../../shared/environment-data-sources/olla";
-import { BingAdsPluginParams, SnowplowParams } from "../../../../shared/types";
+import logger from 'src/shared/logger';
+
+import ollaDataSource from '../../../../shared/environment-data-sources/olla';
+import { BingAdsPluginParams, SnowplowParams } from '../../../../shared/types';
 
 interface Context extends BingAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const ollaBingAds = (context: Context) => {
   ollaDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 Olla Transaction Event ", { transactionData });
+      logger.info("🚀🚀🚀 Olla Transaction Event ", { transactionData });
 
       window.uetq.push("event", "purchase", {
         transaction_id: transactionData.id,

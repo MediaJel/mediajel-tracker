@@ -1,4 +1,6 @@
-import { BingAdsPluginParams } from "../../shared/types";
+import logger from 'src/shared/logger';
+
+import { BingAdsPluginParams } from '../../shared/types';
 
 const createBingScript = (context: BingAdsPluginParams) => {
   const script = document.createElement("script");
@@ -7,8 +9,8 @@ const createBingScript = (context: BingAdsPluginParams) => {
   document.head.appendChild(script);
 };
 const createBingAdsPlugin = (context: BingAdsPluginParams) => {
-  console.log(`🚀🚀🚀 Bing Ads Plugin loaded for ${context.environment}`);
-  console.log(`🚀🚀🚀 Bing Ads Plugin params: ${JSON.stringify(context, null, 2)}`);
+  logger.info(`🚀🚀🚀 Bing Ads Plugin loaded for ${context.environment}`);
+  logger.info(`🚀🚀🚀 Bing Ads Plugin params: ${JSON.stringify(context, null, 2)}`);
 
   createBingScript(context);
 

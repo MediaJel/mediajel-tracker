@@ -1,12 +1,14 @@
-import tymberDataSource from "../../../../shared/environment-data-sources/tymber";
-import { BingAdsPluginParams, SnowplowParams } from "../../../../shared/types";
+import logger from 'src/shared/logger';
+
+import tymberDataSource from '../../../../shared/environment-data-sources/tymber';
+import { BingAdsPluginParams, SnowplowParams } from '../../../../shared/types';
 
 interface Context extends BingAdsPluginParams, Pick<SnowplowParams, "environment"> {}
 
 const tymberBingAds = (context: Context) => {
   tymberDataSource({
     transactionEvent(transactionData) {
-      console.log("🚀🚀🚀 tymber Transaction Event ", { transactionData });
+      logger.info("🚀🚀🚀 tymber Transaction Event ", { transactionData });
 
       window.uetq.push("event", "purchase", {
         transaction_id: transactionData.id,
