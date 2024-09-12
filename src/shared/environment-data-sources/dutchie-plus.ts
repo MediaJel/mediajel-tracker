@@ -62,7 +62,7 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
 
       if (getId) {
         transactionEvent({
-          total: parseFloat(getRevenue),
+          total: parseFloat(getRevenue || 0),
           id: getId.toString(),
           tax: parseFloat(getTax || 0),
           shipping: 0,
