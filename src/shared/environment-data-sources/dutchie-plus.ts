@@ -54,13 +54,16 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
       // // set order id to local storage to prevent duplicate events
       // localStorage.setItem("orderNumber", orderNumber);
 
-      const { id, revenue, tax } = data.ecommerce.purchase.actionField;
-      const items = data.ecommerce.purchase.products;
+      const items = data?.ecommerce?.purchase?.products;
+
+      const getId = data?.ecommerce?.purchase?.actionField?.id;
+      const getRevenue = data?.ecommerce?.purchase?.actionField?.revenue;
+      const getTax = data?.ecommerce?.purchase?.actionField?.tax;
 
       transactionEvent({
-        total: parseFloat(revenue),
-        id: id.toString(),
-        tax: parseFloat(tax || 0),
+        total: parseFloat(getRevenue),
+        id: getId,
+        tax: parseFloat(getTax || 0),
         shipping: 0,
         city: "N/A",
         state: "N/A",
