@@ -38,7 +38,7 @@
     "@typescript-eslint/parser": "^4.28.4",
     "aws-cli-js": "^2.2.2",
     "better-docs": "^2.7.2",
-    "concurrently": "^7.1.0",
+    "concurrently": "^9.0.1",
     "cypress": "^10.0.3",
     "dotenv": "^5.0.1",
     "eslint": "^7.31.0",
