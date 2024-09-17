@@ -54,32 +54,37 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
       // // set order id to local storage to prevent duplicate events
       // localStorage.setItem("orderNumber", orderNumber);
 
-      const { id, revenue, tax } = data.ecommerce.purchase.actionField;
-      const items = data.ecommerce.purchase.products;
+      const items = data?.ecommerce?.purchase?.products;
 
-      transactionEvent({
-        total: parseFloat(revenue),
-        id: id.toString(),
-        tax: parseFloat(tax || 0),
-        shipping: 0,
-        city: "N/A",
-        state: "N/A",
-        country: "N/A",
-        currency: "USD",
-        items: items.map((item) => {
-          const { id, name, category, price, quantity } = item;
+      const getId = data?.ecommerce?.purchase?.actionField?.id;
+      const getRevenue = data?.ecommerce?.purchase?.actionField?.revenue;
+      const getTax = data?.ecommerce?.purchase?.actionField?.tax;
 
-          return {
-            orderId: id.toString(),
-            sku: id.toString(),
-            name: name?.toString() || "N/A",
-            category: category?.toString() || "N/A",
-            unitPrice: parseFloat(price || 0),
-            quantity: parseInt(quantity || 1),
-            currency: "USD",
-          } as TransactionCartItem;
-        }),
-      });
+      if (getId) {
+        transactionEvent({
+          total: parseFloat(getRevenue || 0),
+          id: getId.toString(),
+          tax: parseFloat(getTax || 0),
+          shipping: 0,
+          city: "N/A",
+          state: "N/A",
+          country: "N/A",
+          currency: "USD",
+          items: items.map((item) => {
+            const { id, name, category, price, quantity } = item;
+
+            return {
+              orderId: id.toString(),
+              sku: id.toString(),
+              name: name?.toString() || "N/A",
+              category: category?.toString() || "N/A",
+              unitPrice: parseFloat(price || 0),
+              quantity: parseInt(quantity || 1),
+              currency: "USD",
+            } as TransactionCartItem;
+          }),
+        });
+      }
     }
 
     if (data[1] === "purchase") {
