@@ -65,6 +65,7 @@ const dutchieSubdomainDataSource = ({
           }),
         });
       } catch (error) {
+        console.log("log: ", error);
         // window.tracker("trackError", JSON.stringify(error), "DUTCHIESUBDOMAIN");
       }
     } else if (data.event === "purchase") {
