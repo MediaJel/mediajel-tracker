@@ -9,7 +9,6 @@ const dutchieSubdomainDataSource = ({
   transactionEvent,
 }: Partial<EnvironmentEvents>) => {
   datalayerSource((data) => {
-    console.log("Data Source: ", data);
     if (data.event === "add_to_cart") {
       const products = data.ecommerce.items;
       const { item_id, item_name, item_category, price, quantity } = products[0];
@@ -66,7 +65,7 @@ const dutchieSubdomainDataSource = ({
           }),
         });
       } catch (error) {
-        console.log("log: ", error);
+        //console.log("log: ", error);
         // window.tracker("trackError", JSON.stringify(error), "DUTCHIESUBDOMAIN");
       }
     } else if (data.event === "purchase") {
