@@ -1,6 +1,8 @@
 import dutchieSubdomainDataSource from "src/shared/environment-data-sources/dutchie-subdomain";
-import { QueryStringContext } from "../../../shared/types";
+import logger from "src/shared/logger";
 import { createSegments } from "src/shared/segment-builder";
+
+import { QueryStringContext } from "../../../shared/types";
 
 const dutchieSubdomainTracker = (
   { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
@@ -31,6 +33,8 @@ const dutchieSubdomainTracker = (
     },
 
     transactionEvent(transactionData) {
+      logger.info("Dutchie Transaction Event, Tracker: ", { transactionData });
+
       window.tracker(
         "addTrans",
         transactionData.id,
