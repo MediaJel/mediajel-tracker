@@ -1,9 +1,10 @@
-import dutchieSubdomainDataSource from "src/shared/environment-data-sources/dutchie-subdomain";
 import logger from "src/shared/logger";
 import { createSegments } from "src/shared/segment-builder";
 
+import dutchieSubdomainDataSource from "../../../shared/environment-data-sources/dutchie-subdomain";
 import { QueryStringContext } from "../../../shared/types";
 
+//
 const dutchieSubdomainTracker = (
   { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
   segments: ReturnType<typeof createSegments>
