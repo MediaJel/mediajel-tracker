@@ -12,8 +12,6 @@ export interface NexxenSegmentBuilderInput {
 }
 
 export interface DstillerySegmentBuilderInput {
-  // adv
-  advertiser: string;
   // Dstillery Tag Site Visitor
   siteVisitorNC: string;
   // Dstillery Tag Purchase

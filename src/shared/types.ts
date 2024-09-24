@@ -122,8 +122,6 @@ export type NexxenSegmentParams = {
 };
 
 export type DstillerySegmentParams = {
-  // Advertiser ID
-  s3: string;
   // Site Visitor NC
   "s3.pv": string;
   // Purchase NC
