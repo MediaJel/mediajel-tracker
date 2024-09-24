@@ -121,7 +121,16 @@ export type NexxenSegmentParams = {
   "s2.tr": string;
 };
 
-export type SegmentParams = LiquidmSegmentParams & NexxenSegmentParams;
+export type DstillerySegmentParams = {
+  // Advertiser ID
+  s3: string;
+  // Site Visitor NC
+  "s3.pv": string;
+  // Purchase NC
+  "s3.tr": string;
+};
+
+export type SegmentParams = LiquidmSegmentParams & NexxenSegmentParams & DstillerySegmentParams;
 
 export type QueryStringParams = Partial<TransactionParams> &
   Partial<SignupParams> &
