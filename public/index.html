@@ -47,9 +47,9 @@
     <!-- <script src="http://localhost:3000/index.js?appId=staging-s3-test&test=true&test=true"></script> -->
     <!-- <script src="http://localhost:3000/index.js?appId=test&s2=MvJegWkaPIV2qutFH57lslPA6w3VXMhZM28eTrt9xP9mtcPrqfSc6KIChYwtyot4fVeW7C-bgD6Pu7KbxlxWFw"></script> -->
     <!-- <script src="http://localhost:3000/index.js?appId=Example2&s2.pv={BEACON_ID_FOR_VISITORS}&s2.tr={BEACON_ID_FOR_TRANSACTIONS_TRACKING}"></script> -->
-
-    <script src="https://tags.mediajel.ninja/?appId=Example&version=1&test=true" type="text/javascript"></script>
     <script src="https://tags.mediajel.ninja/?appId=Example2&version=2&test=true" type="text/javascript"></script>
+    <script src="https://tags.mediajel.ninja/?appId=Example&version=1&test=true" type="text/javascript"></script>
+
     <!-- <script src="https://staging-tags.attentionsignals.net/?appId=Example3staging"></script> -->
     <!-- <script type="text/javascript">
       window.tracker(
@@ -78,7 +78,18 @@
     <a href="https://youtube.com/" target="_blank">link</a>
     <script type="text/javascript">
       window.setTimeout(function () {
-        window.tracker("addTrans", "1234", "Acme Clothing", 11.99, 1.29, 5, "San Jose", "CA", "USA");
+        // window.tracker("addTrans", "1234", "Acme Clothing", 11.99, 1.29, 5, "San Jose", "CA", "USA");
+
+        window.tracker("addTrans", {
+          orderId: "1234",
+          store: "Acme Clothing",
+          total: 11.99,
+          tax: 1.29,
+          shipping: 5,
+          city: "San Jose",
+          state: "CA",
+          country: "USA",
+        });
 
         window.tracker("trackTrans");
       }, 1000);
