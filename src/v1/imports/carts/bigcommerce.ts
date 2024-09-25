@@ -39,6 +39,11 @@ const bigcommerceTracker = (
         cid: transactionData.id,
         bprice: transactionData.total,
       });
+
+      segments.dstillery.emitPurchase({
+        orderId: transactionData.id,
+        amount: transactionData.total,
+      });
     },
   });
 };

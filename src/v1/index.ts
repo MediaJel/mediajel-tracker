@@ -1,8 +1,8 @@
-import { createSegments, NexxenSegmentBuilderInput } from "src/shared/segment-builder";
-
+import { createSegments, NexxenSegmentBuilderInput, DstillerySegmentBuilderInput } from "src/shared/segment-builder";
 import { QueryStringContext } from "../shared/types";
 import createTracker from "./snowplow/events/create-tracker";
 import recordIntegration from "./snowplow/events/record-integration";
+import { S3 } from "aws-sdk";
 
 const applyV1 = (context: QueryStringContext): void => {
   createTracker(context);
@@ -17,10 +17,16 @@ const applyV1 = (context: QueryStringContext): void => {
     transactionBeaconId: context["s2.tr"] || context["s2"],
   };
 
+  const dstillery: DstillerySegmentBuilderInput = {
+    siteVisitorNC: context["s3.pv"] || context["s3"],
+    purchaseNC: context["s3.tr"] || context["s3"],
+  };
+
   const segments = createSegments({
     //* Accept both segmentId and s1 for legacy purposes
     liquidm,
     nexxen,
+    dstillery
   });
 
   //* Expose to window
@@ -28,6 +34,7 @@ const applyV1 = (context: QueryStringContext): void => {
 
   liquidm && segments.liquidm.emit();
   nexxen && segments.nexxen.emit();
+  dstillery && segments.dstillery.emit();
 
   switch (context.event) {
     case "transaction":
