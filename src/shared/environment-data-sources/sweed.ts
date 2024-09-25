@@ -1,9 +1,7 @@
-import logger from 'src/shared/logger';
-
 import { datalayerSource } from '../sources/google-datalayer-source';
 import { EnvironmentEvents, TransactionCartItem } from '../types';
 
-const sweedDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transactionEvent">) => {
+const sweedDataSource = ({ transactionEvent, removeFromCartEvent, addToCartEvent }: Partial<EnvironmentEvents>) => {
   datalayerSource((data: any): void => {
     if (data.event === "purchase") {
       try {
@@ -34,6 +32,38 @@ const sweedDataSource = ({ transactionEvent }: Pick<EnvironmentEvents, "transact
           }),
         });
       } catch (error) {}
+    }
+
+    if (data.event === "add_to_cart") {
+      try {
+        const transaction = data && data.ecommerce;
+        const products = transaction?.items[0];
+
+        addToCartEvent?.({
+          sku: products?.item_id.toString(),
+          name: products?.item_name?.toString() || "N/A",
+          category: products?.item_category?.toString() || "N/A",
+          unitPrice: parseFloat(products?.price || "0"),
+          quantity: parseInt(products?.quantity || "1"),
+          currency: "USD",
+        });
+      } catch (error) { }
+    }
+
+    if (data.event === "remove_from_cart") {
+      try {
+        const transaction = data && data.ecommerce;
+        const products = transaction?.items[0];
+
+        removeFromCartEvent?.({
+          sku: products?.item_id.toString(),
+          name: products?.item_name?.toString() || "N/A",
+          category: products?.item_category?.toString() || "N/A",
+          unitPrice: parseFloat(products?.price || "0"),
+          quantity: parseInt(products?.quantity || "1"),
+          currency: "USD",
+        });
+      } catch (error) { }
     }
   });
 };
