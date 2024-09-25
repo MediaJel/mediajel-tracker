@@ -1,4 +1,4 @@
-import { QueryStringContext, QueryStringParams } from "../types";
+import { QueryStringContext, QueryStringParams } from '../types';
 
 // Locates our tag
 
@@ -11,14 +11,14 @@ const getContext = (): QueryStringContext => {
     urlSearchParams.entries()
   ) as unknown as QueryStringParams;
 
-  const storedVersion = localStorage.getItem('version');
+  const storedVersion = localStorage.getItem("mj-tag-version");
 
   if (!storedVersion) {
-    localStorage.setItem('mj-tag-version', version || "1");
+    localStorage.setItem("mj-tag-version", version || "1");
   }
 
   // Store the version in local storage
-  const resolvedVersion = storedVersion || localStorage.getItem('mj-tag-version');
+  const resolvedVersion = storedVersion || localStorage.getItem("mj-tag-version");
 
   return {
     appId: appId || mediajelAppId, // Legacy support for old universal tag
