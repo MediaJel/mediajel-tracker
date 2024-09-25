@@ -24,6 +24,11 @@ const stickyLeafTracker = (
         bprice: transactionData.total,
         cid: transactionData.id,
       });
+
+      segments.dstillery.emitPurchase({
+        orderId: transactionData.id,
+        amount: transactionData.total,
+      });
     },
   });
 };
