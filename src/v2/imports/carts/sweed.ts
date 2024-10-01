@@ -10,7 +10,29 @@ const sweedTracker = (
   segments: ReturnType<typeof createSegments>
 ) => {
   sweedDataSource({
+    addToCartEvent(addToCartData) {
+      window.tracker("trackAddToCart", {
+        sku: addToCartData.sku,
+        name: addToCartData.name,
+        category: addToCartData.category,
+        unitPrice: addToCartData.unitPrice,
+        quantity: addToCartData.quantity,
+        currency: addToCartData.currency,
+      });
+    },
+
+    removeFromCartEvent(removeFromCartData) {
+      window.tracker("trackRemoveFromCart", {
+        sku: removeFromCartData.sku,
+        name: removeFromCartData.name,
+        category: removeFromCartData.category,
+        unitPrice: removeFromCartData.unitPrice,
+        quantity: removeFromCartData.quantity,
+        currency: removeFromCartData.currency,
+      });
+    },
     transactionEvent(transactionData) {
+      console.log("Sweed Transaction Event, Tracker: ", { transactionData });
       window.tracker("addTrans", {
         orderId: transactionData.id,
         affiliation: retailId ?? appId,
@@ -35,6 +57,7 @@ const sweedTracker = (
       });
 
       window.tracker("trackTrans");
+      console.log("Sweed track success!")
 
       segments.nexxen.emitPurchase({
         bprice: transactionData.total,
