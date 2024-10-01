@@ -11,6 +11,7 @@ const sweedTracker = (
 ) => {
   sweedDataSource({
     addToCartEvent(addToCartData) {
+      console.log("Sweed addToCartEvent Event, Tracker: ", { addToCartData });
       window.tracker(
         "trackAddToCart",
         addToCartData.sku,
@@ -22,6 +23,7 @@ const sweedTracker = (
       );
     },
     removeFromCartEvent(removeFromCartData) {
+      console.log("Sweed trackRemoveFromCart Event, Tracker: ", { removeFromCartData });
       window.tracker(
         "trackRemoveFromCart",
         removeFromCartData.sku,
@@ -60,7 +62,7 @@ const sweedTracker = (
         );
       });
       window.tracker("trackTrans");
-      console.log("Sweed track success!")
+      console.log("Sweed track success!");
 
       segments.nexxen.emitPurchase({
         bprice: transactionData.total,

@@ -11,6 +11,7 @@ const sweedTracker = (
 ) => {
   sweedDataSource({
     addToCartEvent(addToCartData) {
+      console.log("Sweed addToCartEvent Event, Tracker: ", { addToCartData });
       window.tracker("trackAddToCart", {
         sku: addToCartData.sku,
         name: addToCartData.name,
@@ -22,6 +23,7 @@ const sweedTracker = (
     },
 
     removeFromCartEvent(removeFromCartData) {
+      console.log("Sweed trackRemoveFromCart Event, Tracker: ", { removeFromCartData });
       window.tracker("trackRemoveFromCart", {
         sku: removeFromCartData.sku,
         name: removeFromCartData.name,
