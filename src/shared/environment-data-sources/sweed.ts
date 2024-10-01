@@ -28,11 +28,13 @@ const sweedDataSource = ({ transactionEvent, removeFromCartEvent, addToCartEvent
               name: item_name,
               quantity,
               sku: item_id,
-              unitPrice: parseFloat(price),
+              unitPrice: parseFloat(price) || 0,
             } as TransactionCartItem;
           }),
         });
-      } catch (error) {}
+      } catch (error) {
+        console.log("Log Warn Purchase Event: ", error);
+      }
     }
 
     if (data.event === "add_to_cart") {
@@ -44,11 +46,13 @@ const sweedDataSource = ({ transactionEvent, removeFromCartEvent, addToCartEvent
           sku: products?.item_id.toString(),
           name: products?.item_name?.toString() || "N/A",
           category: products?.item_category?.toString() || "N/A",
-          unitPrice: parseFloat(products?.price || "0"),
-          quantity: parseInt(products?.quantity || "1"),
+          unitPrice: parseFloat(products?.price || 0),
+          quantity: parseInt(products?.quantity || 1),
           currency: "USD",
         });
-      } catch (error) { }
+      } catch (error) { 
+        console.log("Log Warn Add to Cart Event: ", error);
+      }
     }
 
     if (data.event === "remove_from_cart") {
@@ -60,11 +64,13 @@ const sweedDataSource = ({ transactionEvent, removeFromCartEvent, addToCartEvent
           sku: products?.item_id.toString(),
           name: products?.item_name?.toString() || "N/A",
           category: products?.item_category?.toString() || "N/A",
-          unitPrice: parseFloat(products?.price || "0"),
-          quantity: parseInt(products?.quantity || "1"),
+          unitPrice: parseFloat(products?.price || 0),
+          quantity: parseInt(products?.quantity || 1),
           currency: "USD",
         });
-      } catch (error) { }
+      } catch (error) { 
+        console.log("Log Warn Remove from Cart Event: ", error);
+      }
     }
   });
 };
