@@ -4,6 +4,7 @@ import { EnvironmentEvents, TransactionCartItem } from '../types';
 const sweedDataSource = ({ transactionEvent, removeFromCartEvent, addToCartEvent }: Partial<EnvironmentEvents>) => {
   datalayerSource((data: any): void => {
     if (data.event === "purchase") {
+      console.log("Purchase Event: ", data);
       try {
         const transaction = data && data.ecommerce;
         const products = transaction.items;
