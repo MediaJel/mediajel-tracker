@@ -10,30 +10,31 @@ const sweedTracker = (
   segments: ReturnType<typeof createSegments>
 ) => {
   sweedDataSource({
-    addToCartEvent(addToCartData) {
-      console.log("Sweed addToCartEvent Event, Tracker: ", { addToCartData });
-      window.tracker(
-        "trackAddToCart",
-        addToCartData.sku,
-        addToCartData.name,
-        addToCartData.category,
-        addToCartData.unitPrice,
-        addToCartData.quantity,
-        addToCartData.currency
-      );
-    },
-    removeFromCartEvent(removeFromCartData) {
-      console.log("Sweed trackRemoveFromCart Event, Tracker: ", { removeFromCartData });
-      window.tracker(
-        "trackRemoveFromCart",
-        removeFromCartData.sku,
-        removeFromCartData.name,
-        removeFromCartData.category,
-        removeFromCartData.unitPrice,
-        removeFromCartData.quantity,
-        removeFromCartData.currency
-      );
-    },
+    //// TODO FIX THIS: Issue sometimes it doesn't get the right data from the datalayer which returns null | HARD TO REPLICATE | DUPLICATION OF ADD AND REMOVE CART EVENTS
+    // addToCartEvent(addToCartData) {
+    //   console.log("Sweed addToCartEvent Event, Tracker: ", { addToCartData });
+    //   window.tracker(
+    //     "trackAddToCart",
+    //     addToCartData.sku,
+    //     addToCartData.name,
+    //     addToCartData.category,
+    //     addToCartData.unitPrice,
+    //     addToCartData.quantity,
+    //     addToCartData.currency
+    //   );
+    // },
+    // removeFromCartEvent(removeFromCartData) {
+    //   console.log("Sweed trackRemoveFromCart Event, Tracker: ", { removeFromCartData });
+    //   window.tracker(
+    //     "trackRemoveFromCart",
+    //     removeFromCartData.sku,
+    //     removeFromCartData.name,
+    //     removeFromCartData.category,
+    //     removeFromCartData.unitPrice,
+    //     removeFromCartData.quantity,
+    //     removeFromCartData.currency
+    //   );
+    // },
     transactionEvent(transactionData) {
       console.log("Sweed Transaction Event, Tracker: ", { transactionData });
       window.tracker(

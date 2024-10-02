@@ -37,41 +37,43 @@ const sweedDataSource = ({ transactionEvent, removeFromCartEvent, addToCartEvent
       }
     }
 
-    if (data.event === "add_to_cart") {
-      try {
-        const transaction = data && data.ecommerce;
-        const products = transaction?.items[0];
+    //// TODO FIX THIS: Issue sometimes it doesn't get the right data from the datalayer which returns null | HARD TO REPLICATE | DUPLICATION OF ADD AND REMOVE CART EVENTS
 
-        addToCartEvent?.({
-          sku: products?.item_id.toString(),
-          name: products?.item_name?.toString() || "N/A",
-          category: products?.item_category?.toString() || "N/A",
-          unitPrice: parseFloat(products?.price || 0),
-          quantity: parseInt(products?.quantity || 1),
-          currency: "USD",
-        });
-      } catch (error) { 
-        console.log("Log Warn Add to Cart Event: ", error);
-      }
-    }
+    // if (data.event === "add_to_cart") {
+    //   try {
+    //     const transaction = data && data.ecommerce;
+    //     const products = transaction?.items[0];
 
-    if (data.event === "remove_from_cart") {
-      try {
-        const transaction = data && data.ecommerce;
-        const products = transaction?.items[0];
+    //     addToCartEvent?.({
+    //       sku: products?.item_id.toString(),
+    //       name: products?.item_name?.toString() || "N/A",
+    //       category: products?.item_category?.toString() || "N/A",
+    //       unitPrice: parseFloat(products?.price || 0),
+    //       quantity: parseInt(products?.quantity || 1),
+    //       currency: "USD",
+    //     });
+    //   } catch (error) { 
+    //     console.log("Log Warn Add to Cart Event: ", error);
+    //   }
+    // }
 
-        removeFromCartEvent?.({
-          sku: products?.item_id.toString(),
-          name: products?.item_name?.toString() || "N/A",
-          category: products?.item_category?.toString() || "N/A",
-          unitPrice: parseFloat(products?.price || 0),
-          quantity: parseInt(products?.quantity || 1),
-          currency: "USD",
-        });
-      } catch (error) { 
-        console.log("Log Warn Remove from Cart Event: ", error);
-      }
-    }
+    // if (data.event === "remove_from_cart") {
+    //   try {
+    //     const transaction = data && data.ecommerce;
+    //     const products = transaction?.items[0];
+
+    //     removeFromCartEvent?.({
+    //       sku: products?.item_id.toString(),
+    //       name: products?.item_name?.toString() || "N/A",
+    //       category: products?.item_category?.toString() || "N/A",
+    //       unitPrice: parseFloat(products?.price || 0),
+    //       quantity: parseInt(products?.quantity || 1),
+    //       currency: "USD",
+    //     });
+    //   } catch (error) { 
+    //     console.log("Log Warn Remove from Cart Event: ", error);
+    //   }
+    // }
   });
 };
 

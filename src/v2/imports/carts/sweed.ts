@@ -10,29 +10,30 @@ const sweedTracker = (
   segments: ReturnType<typeof createSegments>
 ) => {
   sweedDataSource({
-    addToCartEvent(addToCartData) {
-      console.log("Sweed addToCartEvent Event, Tracker: ", { addToCartData });
-      window.tracker("trackAddToCart", {
-        sku: addToCartData.sku,
-        name: addToCartData.name,
-        category: addToCartData.category,
-        unitPrice: addToCartData.unitPrice,
-        quantity: addToCartData.quantity,
-        currency: addToCartData.currency,
-      });
-    },
+    //// TODO FIX THIS: Issue sometimes it doesn't get the right data from the datalayer which returns null | HARD TO REPLICATE | DUPLICATION OF ADD AND REMOVE CART EVENTS
+    // addToCartEvent(addToCartData) {
+    //   console.log("Sweed addToCartEvent Event, Tracker: ", { addToCartData });
+    //   window.tracker("trackAddToCart", {
+    //     sku: addToCartData.sku,
+    //     name: addToCartData.name,
+    //     category: addToCartData.category,
+    //     unitPrice: addToCartData.unitPrice,
+    //     quantity: addToCartData.quantity,
+    //     currency: addToCartData.currency,
+    //   });
+    // },
 
-    removeFromCartEvent(removeFromCartData) {
-      console.log("Sweed trackRemoveFromCart Event, Tracker: ", { removeFromCartData });
-      window.tracker("trackRemoveFromCart", {
-        sku: removeFromCartData.sku,
-        name: removeFromCartData.name,
-        category: removeFromCartData.category,
-        unitPrice: removeFromCartData.unitPrice,
-        quantity: removeFromCartData.quantity,
-        currency: removeFromCartData.currency,
-      });
-    },
+    // removeFromCartEvent(removeFromCartData) {
+    //   console.log("Sweed trackRemoveFromCart Event, Tracker: ", { removeFromCartData });
+    //   window.tracker("trackRemoveFromCart", {
+    //     sku: removeFromCartData.sku,
+    //     name: removeFromCartData.name,
+    //     category: removeFromCartData.category,
+    //     unitPrice: removeFromCartData.unitPrice,
+    //     quantity: removeFromCartData.quantity,
+    //     currency: removeFromCartData.currency,
+    //   });
+    // },
     transactionEvent(transactionData) {
       console.log("Sweed Transaction Event, Tracker: ", { transactionData });
       window.tracker("addTrans", {
