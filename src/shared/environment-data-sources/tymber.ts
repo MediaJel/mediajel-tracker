@@ -54,7 +54,6 @@ const tymberDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEven
           country: "N/A",
           currency: "USD",
           items: products.map((item) => {
-            success=true;
             return {
               orderId: transaction.id.toString(),
               sku: item.id.toString(),
@@ -66,6 +65,7 @@ const tymberDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEven
             } as TransactionCartItem;
           }),
         });
+        success=true;
       } catch (error) {
         // window.tracker('trackError', JSON.stringify(error), 'TYMBER');
       }
