@@ -4,6 +4,7 @@ import { EnvironmentEvents, TransactionCartItem } from '../types';
 const sweedDataSource = ({ transactionEvent, removeFromCartEvent, addToCartEvent }: Partial<EnvironmentEvents>) => {
   datalayerSource((data: any): void => {
     if (data.event === "purchase") {
+      console.log("Purchase Event: ", data);
       try {
         const transaction = data && data.ecommerce;
         const products = transaction.items;
@@ -27,44 +28,52 @@ const sweedDataSource = ({ transactionEvent, removeFromCartEvent, addToCartEvent
               name: item_name,
               quantity,
               sku: item_id,
-              unitPrice: parseFloat(price),
+              unitPrice: parseFloat(price) || 0,
             } as TransactionCartItem;
           }),
         });
-      } catch (error) {}
+      } catch (error) {
+        console.log("Log Warn Purchase Event: ", error);
+      }
     }
 
-    if (data.event === "add_to_cart") {
-      try {
-        const transaction = data && data.ecommerce;
-        const products = transaction?.items[0];
+    //// TODO FIX THIS: Issue sometimes it doesn't get the right data from the datalayer which returns null | HARD TO REPLICATE | DUPLICATION OF ADD AND REMOVE CART EVENTS
 
-        addToCartEvent?.({
-          sku: products?.item_id.toString(),
-          name: products?.item_name?.toString() || "N/A",
-          category: products?.item_category?.toString() || "N/A",
-          unitPrice: parseFloat(products?.price || "0"),
-          quantity: parseInt(products?.quantity || "1"),
-          currency: "USD",
-        });
-      } catch (error) { }
-    }
+    // if (data.event === "add_to_cart") {
+    //   try {
+    //     const transaction = data && data.ecommerce;
+    //     const products = transaction?.items[0];
 
-    if (data.event === "remove_from_cart") {
-      try {
-        const transaction = data && data.ecommerce;
-        const products = transaction?.items[0];
+    //     addToCartEvent?.({
+    //       sku: products?.item_id.toString(),
+    //       name: products?.item_name?.toString() || "N/A",
+    //       category: products?.item_category?.toString() || "N/A",
+    //       unitPrice: parseFloat(products?.price || 0),
+    //       quantity: parseInt(products?.quantity || 1),
+    //       currency: "USD",
+    //     });
+    //   } catch (error) { 
+    //     console.log("Log Warn Add to Cart Event: ", error);
+    //   }
+    // }
 
-        removeFromCartEvent?.({
-          sku: products?.item_id.toString(),
-          name: products?.item_name?.toString() || "N/A",
-          category: products?.item_category?.toString() || "N/A",
-          unitPrice: parseFloat(products?.price || "0"),
-          quantity: parseInt(products?.quantity || "1"),
-          currency: "USD",
-        });
-      } catch (error) { }
-    }
+    // if (data.event === "remove_from_cart") {
+    //   try {
+    //     const transaction = data && data.ecommerce;
+    //     const products = transaction?.items[0];
+
+    //     removeFromCartEvent?.({
+    //       sku: products?.item_id.toString(),
+    //       name: products?.item_name?.toString() || "N/A",
+    //       category: products?.item_category?.toString() || "N/A",
+    //       unitPrice: parseFloat(products?.price || 0),
+    //       quantity: parseInt(products?.quantity || 1),
+    //       currency: "USD",
+    //     });
+    //   } catch (error) { 
+    //     console.log("Log Warn Remove from Cart Event: ", error);
+    //   }
+    // }
   });
 };
 
