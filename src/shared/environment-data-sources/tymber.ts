@@ -1,9 +1,12 @@
 import logger from 'src/shared/logger';
 
 import { datalayerSource } from '../sources/google-datalayer-source';
+import { isTrackerLoaded } from '../sources/utils/is-tracker-loaded';
+import { xhrResponseSource } from '../sources/xhr-response-source';
 import { EnvironmentEvents, TransactionCartItem } from '../types';
 
 const tymberDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
+  let success = false;
   datalayerSource((data: any) => {
     if (data.event === "addToCart") {
       const products = data.ecommerce.add.products;
@@ -62,11 +65,51 @@ const tymberDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEven
             } as TransactionCartItem;
           }),
         });
+        success=true;
       } catch (error) {
         // window.tracker('trackError', JSON.stringify(error), 'TYMBER');
       }
     }
   });
+
+  if (!success) {
+    const trackTransaction = (transaction) => {
+      transactionEvent({
+        id: transaction.orderId.toString(),
+        total: parseFloat(transaction.orderAmount),
+        tax: parseFloat(transaction.taxTotal) || 0,
+        shipping: parseFloat(transaction.shippingCostTotal) || 0,
+        city: (transaction.billingAddress.city || "N/A").toString(),
+        state: (transaction.billingAddress.stateOrProvinceCode || "N/A").toString(),
+        country: (transaction.billingAddress.countryCode || "N/A").toString(),
+        currency: "USD",
+        items: transaction.lineItems.physicalItems.map((item) => {
+          return {
+            orderId: transaction.orderId.toString(),
+            sku: item.sku.toString(),
+            name: (item.name || "N/A").toString(),
+            category: "N/A",
+            unitPrice: parseFloat(item.listPrice || 0),
+            quantity: parseInt(item.quantity || 1),
+            currency: "USD",
+          } as TransactionCartItem;
+        }),
+      });
+    };
+
+    xhrResponseSource((xhr) => {
+      const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
+      if (transaction.status && transaction.orderAmount > 0) {
+        try {
+          isTrackerLoaded(() => {
+            trackTransaction(transaction);
+          });
+        } catch (error) {}
+      }
+    });
+  }
+
+  
 };
 
 export default tymberDataSource;
