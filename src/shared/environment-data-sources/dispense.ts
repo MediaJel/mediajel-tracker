@@ -66,8 +66,6 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
   };
 
   const fetchSourceCheck = () => {
-
-
     fetchSource(
       (request) => {},
       (reponse, responseBody) => {
