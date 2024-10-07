@@ -51,6 +51,3 @@ export const trackPurchase = (tracker: any = window.tracker): void => {
 
     window.trackTrans = tracking;
 }
-
-// Will only need to call trackPurchase to trigger the purchase event for segments. But how do I get the values of cid and bprice?
-// Create types for window.trackPurchase so we can pass in the cid and bprice from the original tracker function. But how do I pass the values from the original tracker?
