@@ -74,13 +74,13 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
           return;
         }
 
-        try {
-          window.addEventListener("beforeunload", () => {
-            sessionStorage.removeItem("key");
-          });
-
-          runOncePerPageLoad(() => {
-            if (window.location.href.includes("/checkout-complete")) {
+        window.addEventListener("beforeunload", () => {
+          sessionStorage.removeItem("key");
+        });
+          
+        if (window.location.href.includes("/checkout-complete")) {
+          try {
+            runOncePerPageLoad(() => {
               transactionEvent?.({
                 total: parseFloat(responseBody.total || 0),
                 id: responseBody.id,
@@ -102,12 +102,12 @@ const dispenseDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) =>
                   } as TransactionCartItem;
                 }),
               });
-            }
-          });
+            });
 
-          cache.recordTransaction(); // Allows the IF case to execute break on the switch case
-          // success = true; // Allows the IF case to execute break on the switch case
-        } catch (error) {}
+            cache.recordTransaction(); // Allows the IF case to execute break on the switch case
+            // success = true; // Allows the IF case to execute break on the switch case
+          } catch (error) {}
+        }
       }
     );
   };
