@@ -161,7 +161,7 @@ export default async (context: QueryStringContext, segments: ReturnType<typeof c
     case "sweed":
       import("./sweed").then(({ default: load }): void => load({ appId, retailId }, segments));
       // description: "sweed is a just a test description"
-      // events-tracked: [{ value: "add_to_cart", label: "Add to Cart" }, { value: "remove_from_cart", label: "Remove from Cart" }, { "value": "transaction", "label": "Transaction" }]
+      // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
     default:
       throw new Error("Undefined environment");
