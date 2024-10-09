@@ -7,6 +7,26 @@ const dutchiePlusTracker = (
   segments: ReturnType<typeof createSegments>
 ): void => {
   dutchiePlusDataSource({
+    addToCartEvent(addToCartData) {
+      window.tracker("trackAddToCart", {
+        sku: addToCartData.sku,
+        name: addToCartData.name,
+        category: addToCartData.category,
+        unitPrice: addToCartData.unitPrice,
+        quantity: addToCartData.quantity,
+        currency: addToCartData.currency,
+      });
+    },
+    removeFromCartEvent(removeFromCartData) {
+      window.tracker("trackRemoveFromCart", {
+        sku: removeFromCartData.sku,
+        name: removeFromCartData.name,
+        category: removeFromCartData.category,
+        unitPrice: removeFromCartData.unitPrice,
+        quantity: removeFromCartData.quantity,
+        currency: removeFromCartData.currency,
+      });
+    },
     transactionEvent(transactionData) {
       window.tracker("addTrans", {
         orderId: transactionData.id,

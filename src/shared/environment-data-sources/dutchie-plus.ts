@@ -2,7 +2,7 @@ import { datalayerSource } from 'src/shared/sources/google-datalayer-source';
 
 import { EnvironmentEvents, TransactionCartItem } from '../types';
 
-const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
+const dutchiePlusDataSource = ({ transactionEvent, addToCartEvent, removeFromCartEvent }: Partial<EnvironmentEvents>) => {
   // IMPORTANT NOTE: dutchieplus cart CURALEAF is Paid search only & greenvalleydispensary is display
   window.dataLayer = window.dataLayer || [];
 
@@ -31,7 +31,37 @@ const dutchiePlusDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
         }),
       });
     }
+
+    if (data.event === "add_to_cart") {
+      const products = data.ecommerce.items;
+      const { item_id, item_name, item_category, full_price, quantity } = products[0];
+
+      addToCartEvent?.({
+        sku: item_id.toString(),
+        name: item_name?.toString() || "N/A",
+        category: item_category?.toString() || "N/A",
+        unitPrice: parseFloat(full_price || "0"),
+        quantity: parseInt(quantity || "1"),
+        currency: "USD",
+      });
+    }
+
+    if (data.event === "remove_from_cart") {
+      const products = data.ecommerce.items;
+      const { item_id, item_name, item_category, full_price, quantity } = products[0];
+
+      removeFromCartEvent?.({
+        sku: item_id.toString(),
+        name: item_name?.toString() || "N/A",
+        category: item_category?.toString() || "N/A",
+        unitPrice: parseFloat(full_price || "0"),
+        quantity: parseInt(quantity || "1"),
+        currency: "USD",
+      });
+    }
   });
+
+
 
   // if window.locatoin.href includes 'order-confirmation'
   // if (!window.location.href.includes("order-confirmation")) {
