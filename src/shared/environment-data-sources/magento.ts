@@ -1,9 +1,43 @@
 import logger from 'src/shared/logger';
 
+import { datalayerSource } from '../sources/google-datalayer-source';
 import { xhrResponseSource } from '../sources/xhr-response-source';
 import { EnvironmentEvents, TransactionCartItem } from '../types';
 
 const magentoDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
+
+  datalayerSource((data: any): void => {
+    if(data.event === "purchase") {
+      try {
+        const ecommerce = data.ecommerce;
+
+        transactionEvent({
+          id: ecommerce.transaction_id,
+          total: parseFloat(ecommerce.value),
+          tax: parseFloat(ecommerce.tax),
+          city: "N/A",
+          country: "USA",
+          currency: "USD",
+          shipping: parseFloat(ecommerce.shipping) || 0,
+          state: "N/A",
+          items: ecommerce.items.map((item: any) => {
+            return {
+              orderId: ecommerce.transaction_id.toString(),
+              sku: item.id.toString(),
+              name: (item.name || "N/A").toString(),
+              category: (item.category || "N/A").toString(),
+              unitPrice: parseFloat(item.price || 0),
+              quantity: parseInt(item.quantity || 1),
+              currency: "USD",
+            } as TransactionCartItem;
+          }),
+        });
+      } catch (error) {
+        // window.tracker("trackError", JSON.stringify(error), "MAGENTO");
+      }
+    }
+  });
+
   xhrResponseSource((xhr) => {
     try {
       const getData = JSON.parse(xhr.responseText);
