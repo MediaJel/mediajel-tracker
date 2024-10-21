@@ -12,13 +12,13 @@ const magentoDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => 
         const ecommerce = data.ecommerce;
 
         transactionEvent({
-          id: ecommerce.transaction_id,
+          id: ecommerce.transaction_id.toString(),
           total: parseFloat(ecommerce.value),
-          tax: parseFloat(ecommerce.tax),
+          tax: parseFloat(ecommerce.tax) || 0,
+          shipping: parseFloat(ecommerce.shipping) || 0,
           city: "N/A",
           country: "USA",
           currency: "USD",
-          shipping: parseFloat(ecommerce.shipping) || 0,
           state: "N/A",
           items: ecommerce.items.map((item: any) => {
             return {
