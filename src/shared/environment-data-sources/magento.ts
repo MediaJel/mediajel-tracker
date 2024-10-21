@@ -5,38 +5,7 @@ import { xhrResponseSource } from '../sources/xhr-response-source';
 import { EnvironmentEvents, TransactionCartItem } from '../types';
 
 const magentoDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
-
-  datalayerSource((data: any): void => {
-    if(data.event === "purchase") {
-      try {
-        const ecommerce = data.ecommerce;
-
-        transactionEvent({
-          id: ecommerce.transaction_id.toString(),
-          total: parseFloat(ecommerce.value),
-          tax: parseFloat(ecommerce.tax) || 0,
-          shipping: parseFloat(ecommerce.shipping) || 0,
-          city: "N/A",
-          country: "USA",
-          currency: "USD",
-          state: "N/A",
-          items: ecommerce.items.map((item: any) => {
-            return {
-              orderId: ecommerce.transaction_id.toString(),
-              sku: item.id.toString(),
-              name: (item.name || "N/A").toString(),
-              category: (item.category || "N/A").toString(),
-              unitPrice: parseFloat(item.price || 0),
-              quantity: parseInt(item.quantity || 1),
-              currency: "USD",
-            } as TransactionCartItem;
-          }),
-        });
-      } catch (error) {
-        // window.tracker("trackError", JSON.stringify(error), "MAGENTO");
-      }
-    }
-  });
+  let success = false;
 
   xhrResponseSource((xhr) => {
     try {
@@ -85,11 +54,46 @@ const magentoDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => 
             } as TransactionCartItem;
           }),
         });
+        success = true;
       } catch (error) {
         // window.tracker("trackError", JSON.stringify(error), "MAGENTO");
       }
       sessionStorage.setItem("pixelData", "0");
     }, 1000);
+  }
+
+  if(!success) {
+    datalayerSource((data: any): void => {
+      if(data.event === "purchase") {
+        try {
+          const ecommerce = data.ecommerce;
+
+          transactionEvent({
+            id: ecommerce.transaction_id.toString(),
+            total: parseFloat(ecommerce.value),
+            tax: parseFloat(ecommerce.tax) || 0,
+            shipping: parseFloat(ecommerce.shipping) || 0,
+            city: "N/A",
+            country: "USA",
+            currency: "USD",
+            state: "N/A",
+            items: ecommerce.items.map((item: any) => {
+              return {
+                orderId: ecommerce.transaction_id.toString(),
+                sku: item.id.toString(),
+                name: (item.name || "N/A").toString(),
+                category: (item.category || "N/A").toString(),
+                unitPrice: parseFloat(item.price || 0),
+                quantity: parseInt(item.quantity || 1),
+                currency: "USD",
+              } as TransactionCartItem;
+            }),
+          });
+        } catch (error) {
+          // window.tracker("trackError", JSON.stringify(error), "MAGENTO");
+        }
+      }
+    });
   }
 };
 
