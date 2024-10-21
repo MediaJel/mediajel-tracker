@@ -1,5 +1,16 @@
 [
   {
+    "label": "Weave",
+    "value": "weave",
+    "description": "weave is a just a test descriptions",
+    "eventsTracked": [
+    {
+        "value": "transaction",
+        "label": "Transaction"
+    }
+]
+  },
+  {
     "label": "Leafly",
     "value": "leafly",
     "description": "leafly is a just a test descriptions",
@@ -329,6 +340,25 @@
     "value": "thirdparty",
     "description": "thirdparty is a just a test descriptions",
     "eventsTracked": [
+    {
+        "value": "transaction",
+        "label": "Transaction"
+    }
+]
+  },
+  {
+    "label": "Wix",
+    "value": "wix",
+    "description": "wix is a just a test description",
+    "eventsTracked": [
+    {
+        "value": "add_to_cart",
+        "label": "Add to Cart"
+    },
+    {
+        "value": "remove_from_cart",
+        "label": "Remove from Cart"
+    },
     {
         "value": "transaction",
         "label": "Transaction"
