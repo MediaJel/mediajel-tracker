@@ -17,10 +17,29 @@ export const runOncePerPageLoad = (callback) => {
   } else {
     logger.info("Already run in this session");
   }
-};
 
-// Listen for the unload event to reset the sessionStorage item
-// Add this on the top of the method
+   // Listen for the unload event to reset the sessionStorage item
 window.addEventListener("beforeunload", () => {
   sessionStorage.removeItem("key");
 });
+
+// Listen for page changes to reset the sessionStorage item
+window.addEventListener("popstate", () => {
+  sessionStorage.removeItem("key");
+});
+
+const originalPushState = history.pushState;
+const originalReplaceState = history.replaceState;
+
+history.pushState = function (...args) {
+  originalPushState.apply(this, args);
+  sessionStorage.removeItem("key");
+  window.dispatchEvent(new Event("popstate"));
+};
+
+history.replaceState = function (...args) {
+  originalReplaceState.apply(this, args);
+  sessionStorage.removeItem("key");
+  window.dispatchEvent(new Event("popstate"));
+};
+};
