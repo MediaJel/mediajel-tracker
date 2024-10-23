@@ -37,7 +37,7 @@ const magentoDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => 
       }
     }
 
-    if(!sessionStorage.getItem("key")) { 
+    if(!sessionStorage.getItem("key")) {
       xhrResponseSource((xhr) => {
         try {
           const getData = JSON.parse(xhr.responseText);
@@ -91,6 +91,10 @@ const magentoDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => 
           sessionStorage.setItem("pixelData", "0");
         }, 1000);
       }
+    }
+
+    if(sessionStorage.getItem("key")) {
+      sessionStorage.removeItem("key");
     }
   });
 };
