@@ -4,28 +4,6 @@ import { datalayerSource } from '../sources/google-datalayer-source';
 import { xhrResponseSource } from '../sources/xhr-response-source';
 import { EnvironmentEvents, TransactionCartItem } from '../types';
 
-const runOncePerPageLoad = (callback) => {
-  const key = "key";
-
-  if (!sessionStorage.getItem(key)) {
-    console.log("First run in this session");
-    callback();
-    sessionStorage.setItem(key, "loaded");
-  } else {
-    console.log("Already run in this session");
-  }
-};
-
-// Listen for the unload event to reset the sessionStorage item
-window.addEventListener("beforeunload", () => {
-  sessionStorage.removeItem("key");
-});
-
-// Listen for page changes to reset the sessionStorage item
-window.addEventListener("popstate", () => {
-  sessionStorage.removeItem("key");
-});
-
 const magentoDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
   datalayerSource((data: any): void => {
     if(data.event === "purchase") {
