@@ -43,20 +43,20 @@ const magentoDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => 
     }
   }
 
+  xhrResponseSource((xhr) => {
+    try {
+      const getData = JSON.parse(xhr.responseText);
+
+      const products = getData && getData.items;
+
+      if (products !== undefined || products.length !== 0) {
+        const dataToJSON = JSON.stringify(getData);
+        sessionStorage.setItem("pixelData", dataToJSON);
+      }
+    } catch (e) {}
+  });
+
   if(!sessionStorage.getItem("key")) {
-    xhrResponseSource((xhr) => {
-      try {
-        const getData = JSON.parse(xhr.responseText);
-
-        const products = getData && getData.items;
-
-        if (products !== undefined || products.length !== 0) {
-          const dataToJSON = JSON.stringify(getData);
-          sessionStorage.setItem("pixelData", dataToJSON);
-        }
-      } catch (e) {}
-    });
-
     if (window.location.pathname.includes("/checkout/onepage/success/") || 
       window.location.pathname.includes("/success/")) {
       setTimeout(() => {
