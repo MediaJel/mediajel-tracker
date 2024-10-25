@@ -2,7 +2,7 @@ import logger from 'src/shared/logger';
 
 import { fetchSource } from '../sources/fetch-source';
 import { datalayerSource } from '../sources/google-datalayer-source';
-import { runOncePerPageLoad } from '../sources/utils/run-once-per-page';
+import { runOncePerPageLoad } from '../sources/utils/trans-deduplicator';
 import { EnvironmentEvents, TransactionCartItem } from '../types';
 
 const TransactionCache = (ttl: number) => {
