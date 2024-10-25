@@ -53,27 +53,29 @@ const bigcommerceDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>)
 
   if (!success) {
     const trackTransaction = (transaction) => {
-      transactionEvent({
-        id: transaction.orderId.toString(),
-        total: parseFloat(transaction.orderAmount),
-        tax: parseFloat(transaction.taxTotal) || 0,
-        shipping: parseFloat(transaction.shippingCostTotal) || 0,
-        city: (transaction.billingAddress.city || "N/A").toString(),
-        state: (transaction.billingAddress.stateOrProvinceCode || "N/A").toString(),
-        country: (transaction.billingAddress.countryCode || "N/A").toString(),
-        currency: "USD",
-        items: transaction.lineItems.physicalItems.map((item) => {
-          return {
-            orderId: transaction.orderId.toString(),
-            sku: item.sku.toString(),
-            name: (item.name || "N/A").toString(),
-            category: "N/A",
-            unitPrice: parseFloat(item.listPrice || 0),
-            quantity: parseInt(item.quantity || 1),
-            currency: "USD",
-          } as TransactionCartItem;
-        }),
-      });
+      try {
+        transactionEvent({
+          id: transaction.orderId.toString(),
+          total: parseFloat(transaction.orderAmount),
+          tax: parseFloat(transaction.taxTotal) || 0,
+          shipping: parseFloat(transaction.shippingCostTotal) || 0,
+          city: (transaction.billingAddress.city || "N/A").toString(),
+          state: (transaction.billingAddress.stateOrProvinceCode || "N/A").toString(),
+          country: (transaction.billingAddress.countryCode || "N/A").toString(),
+          currency: "USD",
+          items: transaction.lineItems.physicalItems.map((item) => {
+            return {
+              orderId: transaction.orderId.toString(),
+              sku: item.sku.toString(),
+              name: (item.name || "N/A").toString(),
+              category: "N/A",
+              unitPrice: parseFloat(item.listPrice || 0),
+              quantity: parseInt(item.quantity || 1),
+              currency: "USD",
+            } as TransactionCartItem;
+          }),
+        });
+      } catch (error) {}
     };
 
     xhrResponseSource((xhr) => {
