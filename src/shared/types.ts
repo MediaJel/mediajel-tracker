@@ -31,6 +31,12 @@ export interface EnvironmentEvents {
   transactionEvent: (transactionData: TransactionEvent) => void;
 }
 
+export interface EventsObservableEvents {
+  transactionEvent: TransactionEvent;
+  addToCartEvent: CartEvent;
+  removeFromCartEvent: CartEvent;
+}
+
 // Data structure of the tag after parsing
 export type TransactionParams = {
   environment: string;

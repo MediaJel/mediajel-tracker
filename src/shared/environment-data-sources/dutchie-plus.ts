@@ -1,34 +1,43 @@
-import { datalayerSource } from 'src/shared/sources/google-datalayer-source';
+import { datalayerSource } from "src/shared/sources/google-datalayer-source";
+import createEventsObservable from "src/shared/utils/create-events-observable";
 
-import { EnvironmentEvents, TransactionCartItem } from '../types';
+import { EnvironmentEvents, TransactionCartItem } from "../types";
 
-const dutchiePlusDataSource = ({ transactionEvent, addToCartEvent, removeFromCartEvent }: Partial<EnvironmentEvents>) => {
+export const dutchiePlusDataSourceObservable = createEventsObservable();
+
+const dutchiePlusDataSource = ({
+  transactionEvent,
+  addToCartEvent,
+  removeFromCartEvent,
+}: Partial<EnvironmentEvents>) => {
   // IMPORTANT NOTE: dutchieplus cart CURALEAF is Paid search only & greenvalleydispensary is display
   window.dataLayer = window.dataLayer || [];
 
   datalayerSource((data) => {
     //* Works on Curaleaf
     if (data.event === "purchase") {
-      transactionEvent({
-        total: parseFloat(data.ecommerce.value),
-        id: data.ecommerce.transaction_id,
-        tax: parseFloat(data.ecommerce.tax || 0),
-        shipping: parseFloat(data.ecommerce.shipping || 0),
-        city: "N/A",
-        country: "USA",
-        currency: "USD",
-        state: "N/A",
-        items: data.ecommerce.items.map((item) => {
-          return {
-            orderId: data.ecommerce.transaction_id,
-            sku: item.item_id,
-            name: item.item_name,
-            category: item.item_category,
-            unitPrice: parseFloat(item.price),
-            quantity: parseInt(item.quantity),
-            currency: "USD",
-          } as TransactionCartItem;
-        }),
+      dutchiePlusDataSourceObservable.notify({
+        transactionEvent: {
+          id: data.ecommerce.transaction_id,
+          total: parseFloat(data.ecommerce.value),
+          tax: parseFloat(data.ecommerce.tax || 0),
+          shipping: parseFloat(data.ecommerce.shipping || 0),
+          city: "N/A",
+          country: "USA",
+          currency: "USD",
+          state: "N/A",
+          items: data.ecommerce.items.map((item) => {
+            return {
+              orderId: data.ecommerce.transaction_id,
+              sku: item.item_id,
+              name: item.item_name,
+              category: item.item_category,
+              unitPrice: parseFloat(item.price),
+              quantity: parseInt(item.quantity),
+              currency: "USD",
+            } as TransactionCartItem;
+          }),
+        },
       });
     }
 
@@ -60,8 +69,6 @@ const dutchiePlusDataSource = ({ transactionEvent, addToCartEvent, removeFromCar
       });
     }
   });
-
-
 
   // if window.locatoin.href includes 'order-confirmation'
   // if (!window.location.href.includes("order-confirmation")) {
