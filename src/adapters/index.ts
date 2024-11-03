@@ -1,10 +1,10 @@
-import { createSnowplowTracker } from "src/shared/snowplow";
-import withSnowplowSegmentsExtension from "src/shared/snowplow-extensions.ts/segments";
+import { createSnowplowTracker } from 'src/shared/snowplow';
+import withSnowplowSegmentsExtension from 'src/shared/snowplow-extensions.ts/segments';
 
-import { QueryStringContext } from "../shared/types";
+import { QueryStringContext } from '../shared/types';
 
 // TODO: Better function name?
-const loadAdapters = (context: QueryStringContext): void => {
+const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   // createTracker(context);
   const tracker = withSnowplowSegmentsExtension(createSnowplowTracker(context));
 

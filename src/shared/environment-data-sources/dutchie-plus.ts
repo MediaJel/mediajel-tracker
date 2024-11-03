@@ -1,22 +1,16 @@
 import { datalayerSource } from "src/shared/sources/google-datalayer-source";
-import createEventsObservable from "src/shared/utils/create-events-observable";
+import observable from "src/shared/utils/create-events-observable";
 
 import { EnvironmentEvents, TransactionCartItem } from "../types";
 
-export const dutchiePlusDataSourceObservable = createEventsObservable();
-
-const dutchiePlusDataSource = ({
-  transactionEvent,
-  addToCartEvent,
-  removeFromCartEvent,
-}: Partial<EnvironmentEvents>) => {
+const dutchiePlusDataSource = () => {
   // IMPORTANT NOTE: dutchieplus cart CURALEAF is Paid search only & greenvalleydispensary is display
   window.dataLayer = window.dataLayer || [];
 
   datalayerSource((data) => {
     //* Works on Curaleaf
     if (data.event === "purchase") {
-      dutchiePlusDataSourceObservable.notify({
+      observable.notify({
         transactionEvent: {
           id: data.ecommerce.transaction_id,
           total: parseFloat(data.ecommerce.value),
@@ -45,13 +39,15 @@ const dutchiePlusDataSource = ({
       const products = data.ecommerce.items;
       const { item_id, item_name, item_category, full_price, quantity } = products[0];
 
-      addToCartEvent?.({
-        sku: item_id.toString(),
-        name: item_name?.toString() || "N/A",
-        category: item_category?.toString() || "N/A",
-        unitPrice: parseFloat(full_price || "0"),
-        quantity: parseInt(quantity || "1"),
-        currency: "USD",
+      observable.notify({
+        addToCartEvent: {
+          sku: item_id.toString(),
+          name: item_name?.toString() || "N/A",
+          category: item_category?.toString() || "N/A",
+          unitPrice: parseFloat(full_price || "0"),
+          quantity: parseInt(quantity || "1"),
+          currency: "USD",
+        },
       });
     }
 
@@ -59,13 +55,15 @@ const dutchiePlusDataSource = ({
       const products = data.ecommerce.items;
       const { item_id, item_name, item_category, full_price, quantity } = products[0];
 
-      removeFromCartEvent?.({
-        sku: item_id.toString(),
-        name: item_name?.toString() || "N/A",
-        category: item_category?.toString() || "N/A",
-        unitPrice: parseFloat(full_price || "0"),
-        quantity: parseInt(quantity || "1"),
-        currency: "USD",
+      observable.notify({
+        removeFromCartEvent: {
+          sku: item_id.toString(),
+          name: item_name?.toString() || "N/A",
+          category: item_category?.toString() || "N/A",
+          unitPrice: parseFloat(full_price || "0"),
+          quantity: parseInt(quantity || "1"),
+          currency: "USD",
+        },
       });
     }
   });
@@ -98,28 +96,28 @@ const dutchiePlusDataSource = ({
       const getTax = data?.ecommerce?.purchase?.actionField?.tax;
 
       if (getId) {
-        transactionEvent({
-          total: parseFloat(getRevenue || 0),
-          id: getId.toString(),
-          tax: parseFloat(getTax || 0),
-          shipping: 0,
-          city: "N/A",
-          state: "N/A",
-          country: "N/A",
-          currency: "USD",
-          items: items.map((item) => {
-            const { id, name, category, price, quantity } = item;
-
-            return {
-              orderId: id.toString(),
-              sku: id.toString(),
-              name: name?.toString() || "N/A",
-              category: category?.toString() || "N/A",
-              unitPrice: parseFloat(price || 0),
-              quantity: parseInt(quantity || 1),
-              currency: "USD",
-            } as TransactionCartItem;
-          }),
+        observable.notify({
+          transactionEvent: {
+            total: parseFloat(getRevenue),
+            id: getId,
+            tax: parseFloat(getTax || 0),
+            shipping: 0,
+            city: "N/A",
+            state: "N/A",
+            country: "USA",
+            currency: "USD",
+            items: items.map((item) => {
+              return {
+                orderId: getId,
+                sku: item.id,
+                name: item.name,
+                category: item.category,
+                unitPrice: parseFloat(item.price),
+                quantity: parseInt(item.quantity),
+                currency: "USD",
+              } as TransactionCartItem;
+            }),
+          },
         });
       }
     }
@@ -129,26 +127,28 @@ const dutchiePlusDataSource = ({
         const transactionData = data[2];
         const items = transactionData.items;
 
-        transactionEvent({
-          total: parseFloat(transactionData.value),
-          id: transactionData.rawData.orderNumber,
-          tax: parseFloat(transactionData.tax || 0),
-          shipping: parseFloat(transactionData.shipping || 0),
-          city: transactionData.city || "N/A",
-          state: transactionData.state || "N/A",
-          country: "USA",
-          currency: "USD",
-          items: items.map((item) => {
-            return {
-              orderId: transactionData.rawData.orderNumber,
-              sku: item.item_id,
-              name: item.item_name || "N/A",
-              category: item.item_category || "N/A",
-              unitPrice: parseFloat(item.price || 0),
-              quantity: parseInt(item.quantity || 1),
-              currency: "USD",
-            } as TransactionCartItem;
-          }),
+        observable.notify({
+          transactionEvent: {
+            total: parseFloat(transactionData.value),
+            id: transactionData.rawData.orderNumber,
+            tax: parseFloat(transactionData.tax || 0),
+            shipping: parseFloat(transactionData.shipping || 0),
+            city: transactionData.city || "N/A",
+            state: transactionData.state || "N/A",
+            country: "USA",
+            currency: "USD",
+            items: items.map((item) => {
+              return {
+                orderId: transactionData.rawData.orderNumber,
+                sku: item.item_id,
+                name: item.item_name || "N/A",
+                category: item.item_category || "N/A",
+                unitPrice: parseFloat(item.price || 0),
+                quantity: parseInt(item.quantity || 1),
+                currency: "USD",
+              } as TransactionCartItem;
+            }),
+          },
         });
       } catch (error) {
         // window.tracker('trackError', JSON.stringify(error), 'DUTCHIEPLUS');

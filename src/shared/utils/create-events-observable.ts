@@ -1,4 +1,4 @@
-import { EventsObservableEvents } from 'src/shared/types';
+import { EventsObservableEvents } from "src/shared/types";
 
 const createObservable = () => {
   const listeners: Array<(data: Partial<EventsObservableEvents>) => void> = [];
@@ -7,7 +7,6 @@ const createObservable = () => {
     listeners,
     subscribe: (fn: (data: Partial<EventsObservableEvents>) => void) => {
       listeners.push(fn);
-      console.log("listeners", listeners);
     },
     unsubscribe: (fn: (data: Partial<EventsObservableEvents>) => void) => {
       const index = listeners.indexOf(fn);
@@ -27,4 +26,6 @@ const createEventsObservable = (() => {
   };
 })();
 
-export default createEventsObservable;
+const observable = createEventsObservable();
+
+export default observable;
