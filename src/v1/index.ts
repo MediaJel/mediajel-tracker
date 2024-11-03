@@ -1,11 +1,16 @@
-import { createSegments, NexxenSegmentBuilderInput, DstillerySegmentBuilderInput } from "src/shared/segment-builder";
-import { QueryStringContext } from "../shared/types";
-import createTracker from "./snowplow/events/create-tracker";
-import recordIntegration from "./snowplow/events/record-integration";
-import { S3 } from "aws-sdk";
+import { S3 } from 'aws-sdk';
+import {
+    createSegments, DstillerySegmentBuilderInput, NexxenSegmentBuilderInput
+} from 'src/shared/segment-builder';
+import { createSnowplowTracker } from 'src/shared/snowplow';
+
+import { QueryStringContext } from '../shared/types';
+import createTracker from './snowplow/events/create-tracker';
+import recordIntegration from './snowplow/events/record-integration';
 
 const applyV1 = (context: QueryStringContext): void => {
   createTracker(context);
+  const tracker = createSnowplowTracker(context);
   recordIntegration(context);
 
   const liquidm = context.segmentId || context.s1;
@@ -26,7 +31,7 @@ const applyV1 = (context: QueryStringContext): void => {
     //* Accept both segmentId and s1 for legacy purposes
     liquidm,
     nexxen,
-    dstillery
+    dstillery,
   });
 
   //* Expose to window

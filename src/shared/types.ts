@@ -58,7 +58,7 @@ export type SignupParams = {
 };
 
 export type SnowplowParams = {
-  appId?: string;
+  appId: string;
   mediajelAppId?: string;
   environment: string;
   event: "impression" | "transaction" | "signup" | "googleAds";

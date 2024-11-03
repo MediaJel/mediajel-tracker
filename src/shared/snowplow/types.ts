@@ -1,4 +1,4 @@
-import { CartEvent, QueryStringContext, TransactionEvent } from "src/shared/types";
+import { CartEvent, QueryStringContext, SignupParams, TransactionEvent } from 'src/shared/types';
 
 export interface SnowplowTrackerInitializeInput {
   appId: string;
@@ -10,6 +10,7 @@ export interface SnowplowTracker {
   /** Mainly used for book-keeping purposes so we can document params & the tag itself */
   record: (input: QueryStringContext) => void;
   ecommerce: SnowplowTrackerEcommerceEvents;
+  
 }
 
 export interface SnowplowTrackerEcommerceEvents {
