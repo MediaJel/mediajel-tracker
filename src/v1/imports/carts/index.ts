@@ -1,7 +1,13 @@
-import { createSegments } from "src/shared/segment-builder";
-import { QueryStringContext } from "../../../shared/types";
+import { createSegments } from 'src/shared/segment-builder';
+import { SnowplowTracker } from 'src/shared/snowplow';
 
-export default async (context: QueryStringContext, segments: ReturnType<typeof createSegments>): Promise<void> => {
+import { QueryStringContext } from '../../../shared/types';
+
+export default async (
+  context: QueryStringContext,
+  segments: ReturnType<typeof createSegments>,
+  tracker: SnowplowTracker
+): Promise<void> => {
   const { appId, environment, retailId } = context;
   switch (environment) {
     //* NEW CART
@@ -108,7 +114,7 @@ export default async (context: QueryStringContext, segments: ReturnType<typeof c
       break;
     //* UNSTABLE
     case "dutchieplus":
-      import("./dutchie-plus").then(({ default: load }): void => load({ appId, retailId }, segments));
+      import("./dutchie-plus").then(({ default: load }): void => load({ appId, retailId }, segments, tracker));
       // description: "dutchieplus is a just a test description"
       // events-tracked: [{ value: "add_to_cart", label: "Add to Cart" }, { value: "remove_from_cart", label: "Remove from Cart" }, { "value": "transaction", "label": "Transaction" }]
       break;

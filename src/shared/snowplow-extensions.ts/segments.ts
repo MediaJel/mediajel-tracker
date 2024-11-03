@@ -1,13 +1,14 @@
 import { SnowplowTracker } from "src/shared/snowplow/types";
 
 const withSnowplowSegmentsExtension = (snowplow: SnowplowTracker) => {
-  return {
-    ...(snowplow.ecommerce.trackTransaction = (input) => {
-      snowplow.ecommerce.trackTransaction(input);
+  const trackTransaction = snowplow.ecommerce.trackTransaction;
 
-      console.log("Hook");
-    }),
+  //* Overwrite the trackTransaction method
+  snowplow.ecommerce.trackTransaction = (input) => {
+    trackTransaction(input);
+    console.log("Hook");
   };
+  return snowplow;
 };
 
 export default withSnowplowSegmentsExtension;

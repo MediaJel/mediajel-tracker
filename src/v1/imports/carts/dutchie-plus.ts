@@ -1,4 +1,5 @@
 import { createSegments } from "src/shared/segment-builder";
+import { SnowplowTracker } from "src/shared/snowplow";
 
 import dutchiePlusDataSource, {
   dutchiePlusDataSourceObservable,
@@ -7,46 +8,48 @@ import { QueryStringContext } from "../../../shared/types";
 
 const dutchiePlusTracker = (
   { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
-  segments: ReturnType<typeof createSegments>
+  segments: ReturnType<typeof createSegments>,
+  tracker: SnowplowTracker
 ): void => {
   dutchiePlusDataSourceObservable.subscribe(({ transactionEvent: transactionData }) => {
     console.log("🚀🚀🚀 Snowplow Dutchie Transaction Event ", { transactionData });
-    window.tracker(
-      "addTrans",
-      transactionData.id,
-      retailId ?? appId,
-      transactionData.total,
-      transactionData.tax,
-      transactionData.shipping,
-      transactionData.city,
-      transactionData.state,
-      transactionData.country,
-      transactionData.currency
-    );
+    tracker.ecommerce.trackTransaction(transactionData);
+    // window.tracker(
+    //   "addTrans",
+    //   transactionData.id,
+    //   retailId ?? appId,
+    //   transactionData.total,
+    //   transactionData.tax,
+    //   transactionData.shipping,
+    //   transactionData.city,
+    //   transactionData.state,
+    //   transactionData.country,
+    //   transactionData.currency
+    // );
 
-    transactionData.items.forEach((item) => {
-      window.tracker(
-        "addItem",
-        transactionData.id,
-        item.sku,
-        item.name,
-        item.category,
-        item.unitPrice,
-        item.quantity,
-        transactionData.currency
-      );
-    });
-    window.tracker("trackTrans");
+    // transactionData.items.forEach((item) => {
+    //   window.tracker(
+    //     "addItem",
+    //     transactionData.id,
+    //     item.sku,
+    //     item.name,
+    //     item.category,
+    //     item.unitPrice,
+    //     item.quantity,
+    //     transactionData.currency
+    //   );
+    // });
+    // window.tracker("trackTrans");
 
-    segments.nexxen.emitPurchase({
-      bprice: transactionData.total,
-      cid: transactionData.id,
-    });
+    // segments.nexxen.emitPurchase({
+    //   bprice: transactionData.total,
+    //   cid: transactionData.id,
+    // });
 
-    segments.dstillery.emitPurchase({
-      orderId: transactionData.id,
-      amount: transactionData.total,
-    });
+    // segments.dstillery.emitPurchase({
+    //   orderId: transactionData.id,
+    //   amount: transactionData.total,
+    // });
   });
   dutchiePlusDataSource({
     addToCartEvent(addToCartData) {

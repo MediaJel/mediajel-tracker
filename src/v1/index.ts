@@ -3,15 +3,16 @@ import {
     createSegments, DstillerySegmentBuilderInput, NexxenSegmentBuilderInput
 } from 'src/shared/segment-builder';
 import { createSnowplowTracker } from 'src/shared/snowplow';
+import withSnowplowSegmentsExtension from 'src/shared/snowplow-extensions.ts/segments';
 
 import { QueryStringContext } from '../shared/types';
 import createTracker from './snowplow/events/create-tracker';
 import recordIntegration from './snowplow/events/record-integration';
 
 const applyV1 = (context: QueryStringContext): void => {
-  createTracker(context);
-  const tracker = createSnowplowTracker(context);
-  recordIntegration(context);
+  // createTracker(context);
+  // TODO: Improve this
+  const tracker = withSnowplowSegmentsExtension(createSnowplowTracker(context, context));
 
   const liquidm = context.segmentId || context.s1;
 
@@ -43,7 +44,7 @@ const applyV1 = (context: QueryStringContext): void => {
 
   switch (context.event) {
     case "transaction":
-      import("./imports/carts").then(({ default: load }): Promise<void> => load(context, segments));
+      import("./imports/carts").then(({ default: load }): Promise<void> => load(context, segments, tracker));
       break;
     case "impression":
       import("./imports/impression").then(({ default: load }): Promise<void> => load(context));
@@ -56,7 +57,7 @@ const applyV1 = (context: QueryStringContext): void => {
         console.warn("No event/environment specified, Only pageview is active");
         return;
       }
-      import("./imports/carts").then(({ default: load }): Promise<void> => load(context, segments));
+      import("./imports/carts").then(({ default: load }): Promise<void> => load(context, segments, tracker));
       console.warn(`No event specified, Loading ${context.environment}`);
   }
 };
