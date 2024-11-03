@@ -64,6 +64,7 @@ export type SnowplowParams = {
   event: "impression" | "transaction" | "signup" | "googleAds";
   test: string;
   version: string;
+  tag: string;
 };
 
 export type SnowplowPluginParams = {
