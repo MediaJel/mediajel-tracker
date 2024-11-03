@@ -1,9 +1,11 @@
-import { CreateSnowplowTrackerInput, SnowplowTracker } from "src/shared/snowplow/tracker";
+import { CreateSnowplowTrackerInput, SnowplowTracker } from "src/shared/snowplow/types";
+import createSnowplowV2TrackerEcommerceEventsHandlers from "src/shared/snowplow/v2/ecommerce";
 import { initialize } from "src/shared/snowplow/v2/init";
 
-const createSnowplowV2Tracker = (): SnowplowTracker => {
+const createSnowplowV2Tracker = (input: CreateSnowplowTrackerInput): SnowplowTracker => {
   return {
     initialize,
+    ecommerce: createSnowplowV2TrackerEcommerceEventsHandlers(input),
     record(input) {
       window.tracker("trackSelfDescribingEvent", {
         event: {

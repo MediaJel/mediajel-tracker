@@ -1,4 +1,4 @@
-import { QueryStringContext } from "../../../shared/types";
+import { QueryStringContext } from '../../../shared/types';
 
 const createTracker = ({ appId, collector, event }: QueryStringContext): void => {
   (function (e, o, n, t, a, c, i) {

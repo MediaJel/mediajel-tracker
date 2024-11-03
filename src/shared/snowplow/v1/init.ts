@@ -1,4 +1,4 @@
-import { CreateSnowplowTrackerInput } from "src/shared/snowplow/tracker";
+import { CreateSnowplowTrackerInput } from "src/shared/snowplow/types";
 
 export const initialize = ({ appId, collector, event }: CreateSnowplowTrackerInput) => {
   // Loading tracker with the snowplow tag by fetching our sp.js file
