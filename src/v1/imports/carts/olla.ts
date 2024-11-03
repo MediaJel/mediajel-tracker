@@ -1,11 +1,9 @@
-import { createSegments } from "src/shared/segment-builder";
-import { QueryStringContext } from "../../../shared/types";
 import ollaTrackerImport from "src/shared/environment-data-sources/olla";
+import { createSegments } from "src/shared/segment-builder";
 
-const ollaTracker = (
-  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
-  segments: ReturnType<typeof createSegments>
-) => {
+import { QueryStringContext } from "../../../shared/types";
+
+const ollaTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   ollaTrackerImport({
     addToCartEvent(cartData) {
       window.tracker(
@@ -58,16 +56,6 @@ const ollaTracker = (
         );
       });
       window.tracker("trackTrans");
-
-      segments.nexxen.emitPurchase({
-        bprice: transactionData.total,
-        cid: transactionData.id,
-      });
-
-      segments.dstillery.emitPurchase({
-        orderId: transactionData.id,
-        amount: transactionData.total,
-      });
     },
   });
 };

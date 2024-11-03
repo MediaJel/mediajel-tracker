@@ -1,11 +1,9 @@
-import { createSegments } from "src/shared/segment-builder";
-import { QueryStringContext } from "../../../shared/types";
 import wefunderTrackerImport from "src/shared/environment-data-sources/wefunder";
+import { createSegments } from "src/shared/segment-builder";
 
-const wefunderTracker = (
-  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
-  segments: ReturnType<typeof createSegments>
-) => {
+import { QueryStringContext } from "../../../shared/types";
+
+const wefunderTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   wefunderTrackerImport({
     transactionEvent(transactionData) {
       window.tracker(
@@ -34,16 +32,6 @@ const wefunderTracker = (
         );
       });
       window.tracker("trackTrans");
-
-      segments.nexxen.emitPurchase({
-        bprice: transactionData.total,
-        cid: transactionData.id,
-      });
-
-      segments.dstillery.emitPurchase({
-        orderId: transactionData.id,
-        amount: transactionData.total,
-      });
     },
   });
 };

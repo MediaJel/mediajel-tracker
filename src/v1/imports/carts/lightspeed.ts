@@ -1,11 +1,9 @@
-import { createSegments } from "src/shared/segment-builder";
-import { QueryStringContext } from "../../../shared/types";
 import lightspeedTrackerImport from "src/shared/environment-data-sources/lightspeed";
+import { createSegments } from "src/shared/segment-builder";
 
-const lightspeedTracker = (
-  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
-  segments: ReturnType<typeof createSegments>
-) => {
+import { QueryStringContext } from "../../../shared/types";
+
+const lightspeedTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   lightspeedTrackerImport({
     transactionEvent(transactionData) {
       window.tracker(
@@ -34,16 +32,6 @@ const lightspeedTracker = (
         );
       });
       window.tracker("trackTrans");
-
-      segments.nexxen.emitPurchase({
-        bprice: transactionData.total,
-        cid: transactionData.id,
-      });
-
-      segments.dstillery.emitPurchase({
-        orderId: transactionData.id,
-        amount: transactionData.total,
-      });
     },
   });
 };

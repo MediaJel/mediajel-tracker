@@ -4,6 +4,7 @@ import { initialize } from "src/shared/snowplow/v1/init";
 
 const createSnowplowV1Tracker = (input: CreateSnowplowTrackerInput): SnowplowTracker => {
   return {
+    context: input,
     initialize,
     ecommerce: createSnowplowV1TrackerEcommerceEventsHandlers(input),
     record: (input) => {

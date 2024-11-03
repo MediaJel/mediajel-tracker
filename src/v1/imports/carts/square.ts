@@ -1,4 +1,5 @@
 import { createSegments } from "src/shared/segment-builder";
+
 import squareDataSource from "../../../shared/environment-data-sources/square";
 import { QueryStringContext } from "../../../shared/types";
 
@@ -7,10 +8,7 @@ import { QueryStringContext } from "../../../shared/types";
  * There is documentation to improve this more since Square exports variables
  * to the window object.
  */
-const squareTracker = (
-  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
-  segments: ReturnType<typeof createSegments>
-) => {
+const squareTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   squareDataSource({
     transactionEvent(transactionData) {
       window.tracker(
@@ -39,16 +37,6 @@ const squareTracker = (
         );
       });
       window.tracker("trackTrans");
-
-      segments.nexxen.emitPurchase({
-        bprice: transactionData.total,
-        cid: transactionData.id,
-      });
-
-      segments.dstillery.emitPurchase({
-        orderId: transactionData.id,
-        amount: transactionData.total,
-      });
     },
   });
 };

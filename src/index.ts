@@ -23,6 +23,8 @@ import { getCustomTags } from './shared/utils/get-custom-tags';
 
     getCustomTags();
 
+  
+
     switch (context.version) {
       case "1":
         import("./v1").then(({ default: load }) => load(context));

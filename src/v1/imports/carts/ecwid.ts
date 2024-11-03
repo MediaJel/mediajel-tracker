@@ -1,11 +1,9 @@
-import { createSegments } from "src/shared/segment-builder";
-import { QueryStringContext } from "../../../shared/types";
 import ecwidTracker from "src/shared/environment-data-sources/ecwid";
+import { createSegments } from "src/shared/segment-builder";
 
-const EcwidTracker = (
-  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
-  segments: ReturnType<typeof createSegments>
-) => {
+import { QueryStringContext } from "../../../shared/types";
+
+const EcwidTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   ecwidTracker({
     transactionEvent(transactionData) {
       window.tracker(
@@ -33,16 +31,6 @@ const EcwidTracker = (
         );
       });
       window.tracker("trackTrans");
-
-      segments.nexxen.emitPurchase({
-        bprice: transactionData.total,
-        cid: transactionData.id,
-      });
-
-      segments.dstillery.emitPurchase({
-        orderId: transactionData.id,
-        amount: transactionData.total,
-      });
     },
   });
 };

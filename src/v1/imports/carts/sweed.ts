@@ -1,14 +1,12 @@
-import { createSegments } from "src/shared/segment-builder";
-import { QueryStringContext } from "../../../shared/types";
 import sweedDataSource from "src/shared/environment-data-sources/sweed";
+import { createSegments } from "src/shared/segment-builder";
+
+import { QueryStringContext } from "../../../shared/types";
 
 /**
  * The Sweed Tracker relies on the Google Datalayer Source to track events.
  */
-const sweedTracker = (
-  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
-  segments: ReturnType<typeof createSegments>
-) => {
+const sweedTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   sweedDataSource({
     //// TODO FIX THIS: Issue sometimes it doesn't get the right data from the datalayer which returns null | HARD TO REPLICATE | DUPLICATION OF ADD AND REMOVE CART EVENTS
     // addToCartEvent(addToCartData) {
@@ -64,16 +62,6 @@ const sweedTracker = (
       });
       window.tracker("trackTrans");
       console.log("Sweed track success!");
-
-      segments.nexxen.emitPurchase({
-        bprice: transactionData.total,
-        cid: transactionData.id,
-      });
-
-      segments.dstillery.emitPurchase({
-        orderId: transactionData.id,
-        amount: transactionData.total,
-      });
     },
   });
 };

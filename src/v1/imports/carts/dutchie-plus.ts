@@ -1,14 +1,14 @@
-import { createSegments } from "src/shared/segment-builder";
-import { SnowplowTracker } from "src/shared/snowplow";
+import { createSegments } from 'src/shared/segment-builder';
+import { SnowplowTracker } from 'src/shared/snowplow';
 
 import dutchiePlusDataSource, {
-  dutchiePlusDataSourceObservable,
-} from "../../../shared/environment-data-sources/dutchie-plus";
-import { QueryStringContext } from "../../../shared/types";
+    dutchiePlusDataSourceObservable
+} from '../../../shared/environment-data-sources/dutchie-plus';
+import { QueryStringContext } from '../../../shared/types';
 
 const dutchiePlusTracker = (
   { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
-  segments: ReturnType<typeof createSegments>,
+
   tracker: SnowplowTracker
 ): void => {
   dutchiePlusDataSourceObservable.subscribe(({ transactionEvent: transactionData }) => {

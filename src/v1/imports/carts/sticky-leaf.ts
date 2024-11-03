@@ -1,11 +1,9 @@
 import { createSegments } from "src/shared/segment-builder";
+
 import stickyLeafDataSource from "../../../shared/environment-data-sources/sticky-leaf";
 import { QueryStringContext } from "../../../shared/types";
 
-const stickyLeafTracker = (
-  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
-  segments: ReturnType<typeof createSegments>
-) => {
+const stickyLeafTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   stickyLeafDataSource({
     transactionEvent(transactionData) {
       window.tracker(
@@ -21,16 +19,6 @@ const stickyLeafTracker = (
         transactionData.currency
       );
       window.tracker("trackTrans");
-
-      segments.nexxen.emitPurchase({
-        bprice: transactionData.total,
-        cid: transactionData.id,
-      });
-
-      segments.dstillery.emitPurchase({
-        orderId: transactionData.id,
-        amount: transactionData.total,
-      });
     },
   });
 };

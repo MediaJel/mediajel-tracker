@@ -1,11 +1,9 @@
-import { createSegments } from "src/shared/segment-builder";
-import { QueryStringContext } from "../../../shared/types";
 import leaflyDataSource from "src/shared/environment-data-sources/leafly";
+import { createSegments } from "src/shared/segment-builder";
 
-const leaflyTracker = (
-  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
-  segments: ReturnType<typeof createSegments>
-): void => {
+import { QueryStringContext } from "../../../shared/types";
+
+const leaflyTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
   leaflyDataSource({
     transactionEvent(transactionData) {
       window.tracker(
@@ -22,16 +20,6 @@ const leaflyTracker = (
       );
 
       window.tracker("trackTrans");
-
-      segments.nexxen.emitPurchase({
-        bprice: transactionData.total,
-        cid: transactionData.id,
-      });
-
-      segments.dstillery.emitPurchase({
-        orderId: transactionData.id,
-        amount: transactionData.total,
-      });
     },
   });
 };

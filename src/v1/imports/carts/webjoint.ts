@@ -1,11 +1,9 @@
 import { createSegments } from "src/shared/segment-builder";
+
 import webjointDataSource from "../../../shared/environment-data-sources/webjoint";
 import { QueryStringContext } from "../../../shared/types";
 
-const webjointTracker = (
-  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
-  segments: ReturnType<typeof createSegments>
-) => {
+const webjointTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   var isTrackerSubmitted = false;
 
   webjointDataSource({
@@ -40,16 +38,6 @@ const webjointTracker = (
         window.tracker("trackTrans");
         isTrackerSubmitted = true;
       }
-
-      segments.nexxen.emitPurchase({
-        bprice: transactionData.total,
-        cid: transactionData.id,
-      });
-
-      segments.dstillery.emitPurchase({
-        orderId: transactionData.id,
-        amount: transactionData.total,
-      });
     },
   });
 };

@@ -1,11 +1,9 @@
-import { QueryStringContext } from "../../../shared/types";
-import magentoDataSource from "../../../shared/environment-data-sources/magento";
 import { createSegments } from "src/shared/segment-builder";
 
-const magentoTracker = (
-  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
-  segments: ReturnType<typeof createSegments>
-) => {
+import magentoDataSource from "../../../shared/environment-data-sources/magento";
+import { QueryStringContext } from "../../../shared/types";
+
+const magentoTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   magentoDataSource({
     transactionEvent(transactionData) {
       window.tracker(
@@ -34,16 +32,6 @@ const magentoTracker = (
         );
       });
       window.tracker("trackTrans");
-
-      segments.nexxen.emitPurchase({
-        bprice: transactionData.total,
-        cid: transactionData.id,
-      });
-
-      segments.dstillery.emitPurchase({
-        orderId: transactionData.id,
-        amount: transactionData.total,
-      });
     },
   });
 };

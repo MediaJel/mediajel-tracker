@@ -1,11 +1,9 @@
-import { QueryStringContext } from "../../../shared/types";
-import dispenseDataSource from "../../../shared/environment-data-sources/dispense";
 import { createSegments } from "src/shared/segment-builder";
 
-const dispenseTracker = (
-  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
-  segments: ReturnType<typeof createSegments>
-): void => {
+import dispenseDataSource from "../../../shared/environment-data-sources/dispense";
+import { QueryStringContext } from "../../../shared/types";
+
+const dispenseTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">): void => {
   dispenseDataSource({
     transactionEvent(transactionData) {
       window.tracker(
@@ -34,16 +32,6 @@ const dispenseTracker = (
         );
       });
       window.tracker("trackTrans");
-
-      segments.nexxen.emitPurchase({
-        bprice: transactionData.total,
-        cid: transactionData.id,
-      });
-
-      segments.dstillery.emitPurchase({
-        orderId: transactionData.id,
-        amount: transactionData.total,
-      });
     },
   });
 };

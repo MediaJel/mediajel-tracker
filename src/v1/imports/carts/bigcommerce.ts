@@ -1,11 +1,9 @@
-import { QueryStringContext } from "../../../shared/types";
-import bigcommerceDataSource from "../../../shared/environment-data-sources/bigcommerce";
 import { createSegments } from "src/shared/segment-builder";
 
-const bigcommerceTracker = (
-  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
-  segments: ReturnType<typeof createSegments>
-) => {
+import bigcommerceDataSource from "../../../shared/environment-data-sources/bigcommerce";
+import { QueryStringContext } from "../../../shared/types";
+
+const bigcommerceTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   bigcommerceDataSource({
     transactionEvent(transactionData) {
       window.tracker(
@@ -34,16 +32,6 @@ const bigcommerceTracker = (
         );
       });
       window.tracker("trackTrans");
-
-      segments.nexxen.emitPurchase({
-        cid: transactionData.id,
-        bprice: transactionData.total,
-      });
-
-      segments.dstillery.emitPurchase({
-        orderId: transactionData.id,
-        amount: transactionData.total,
-      });
     },
   });
 };

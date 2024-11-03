@@ -1,11 +1,9 @@
 import { createSegments } from "src/shared/segment-builder";
+
 import yotpoDataSource from "../../../shared/environment-data-sources/yotpo";
 import { QueryStringContext } from "../../../shared/types";
 
-const yotpoTracker = (
-  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
-  segments: ReturnType<typeof createSegments>
-) => {
+const yotpoTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   yotpoDataSource({
     addToCartEvent(addToCartData) {
       window.tracker(
@@ -57,16 +55,6 @@ const yotpoTracker = (
       });
 
       window.tracker("trackTrans");
-
-      segments.nexxen.emitPurchase({
-        bprice: transactionData.total,
-        cid: transactionData.id,
-      });
-
-      segments.dstillery.emitPurchase({
-        orderId: transactionData.id,
-        amount: transactionData.total,
-      });
     },
   });
 };

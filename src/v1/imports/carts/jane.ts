@@ -1,11 +1,9 @@
-import { createSegments } from "src/shared/segment-builder";
-import { QueryStringContext } from "../../../shared/types";
 import janeDataSource from "src/shared/environment-data-sources/jane";
+import { createSegments } from "src/shared/segment-builder";
 
-const janeTracker = (
-  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
-  segments: ReturnType<typeof createSegments>
-) => {
+import { QueryStringContext } from "../../../shared/types";
+
+const janeTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   janeDataSource({
     addToCartEvent(cartData) {
       window.tracker(
@@ -58,16 +56,6 @@ const janeTracker = (
         );
       });
       window.tracker("trackTrans");
-
-      segments.nexxen.emitPurchase({
-        bprice: transactionData.total,
-        cid: transactionData.id,
-      });
-
-      segments.dstillery.emitPurchase({
-        orderId: transactionData.id,
-        amount: transactionData.total,
-      });
     },
   });
 };

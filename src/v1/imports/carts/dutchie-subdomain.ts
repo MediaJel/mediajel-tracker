@@ -5,10 +5,7 @@ import dutchieSubdomainDataSource from "../../../shared/environment-data-sources
 import { QueryStringContext } from "../../../shared/types";
 
 //
-const dutchieSubdomainTracker = (
-  { appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">,
-  segments: ReturnType<typeof createSegments>
-) => {
+const dutchieSubdomainTracker = ({ appId, retailId }: Pick<QueryStringContext, "appId" | "retailId">) => {
   dutchieSubdomainDataSource({
     addToCartEvent(addToCartData) {
       window.tracker(
@@ -62,16 +59,6 @@ const dutchieSubdomainTracker = (
         );
       });
       window.tracker("trackTrans");
-
-      segments.nexxen.emitPurchase({
-        bprice: transactionData.total,
-        cid: transactionData.id,
-      });
-
-      segments.dstillery.emitPurchase({
-        orderId: transactionData.id,
-        amount: transactionData.total,
-      });
     },
   });
 };
