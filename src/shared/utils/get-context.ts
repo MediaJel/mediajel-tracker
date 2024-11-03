@@ -1,5 +1,3 @@
-import logger from "src/shared/logger";
-
 import { QueryStringContext, QueryStringParams } from "../types";
 
 // Locates our tag

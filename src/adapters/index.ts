@@ -1,12 +1,23 @@
-import { createSnowplowTracker } from 'src/shared/snowplow';
-import withSnowplowSegmentsExtension from 'src/shared/snowplow-extensions.ts/segments';
+import { createSnowplowTracker } from "src/shared/snowplow";
+import withSnowplowBingAdsExtension from "src/shared/snowplow-extensions.ts/bing-ads";
+import withSnowplowGoogleAdsExtension from "src/shared/snowplow-extensions.ts/google-ads";
+import withSnowplowSegmentsExtension from "src/shared/snowplow-extensions.ts/segments";
 
-import { QueryStringContext } from '../shared/types';
+import { QueryStringContext } from "../shared/types";
+
+const applyExtensions = (tracker: any, extensions: ((tracker: any) => any)[]): any => {
+  return extensions.reduce((currentTracker, extension) => extension(currentTracker), tracker);
+};
 
 // TODO: Better function name?
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
-  // createTracker(context);
-  const tracker = withSnowplowSegmentsExtension(createSnowplowTracker(context));
+  const plugins = context.plugin.split(",");
+
+  const tracker = applyExtensions(createSnowplowTracker(context), [
+    withSnowplowSegmentsExtension,
+    plugins.includes("googleAds") && withSnowplowGoogleAdsExtension,
+    plugins.includes("bingAds") && withSnowplowBingAdsExtension,
+  ]);
 
   switch (context.event) {
     case "transaction":
