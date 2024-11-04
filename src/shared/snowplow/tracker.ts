@@ -1,10 +1,10 @@
-import logger from "src/shared/logger";
-import { CreateSnowplowTrackerInput, SnowplowTracker } from "src/shared/snowplow/types";
+import logger from 'src/shared/logger';
+import { CreateSnowplowTrackerInput, SnowplowTracker } from 'src/shared/snowplow/types';
 
 const createSnowplowTracker = async (input: CreateSnowplowTrackerInput): Promise<SnowplowTracker> => {
   const { appId, collector, event } = input;
   logger.info(`Creating Snowplow tracker for version ${input.version}`);
-  const isLegacyTracker = input.version === "v1";
+  const isLegacyTracker = input.version === "1";
 
   const createSnowplowV1Tracker = async () => {
     return await import(`src/shared/snowplow/v1/tracker`).then(
