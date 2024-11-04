@@ -1,13 +1,10 @@
 import logger from "src/shared/logger";
+import observable from "src/shared/utils/create-events-observable";
 
 import { datalayerSource } from "../sources/google-datalayer-source";
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import { TransactionCartItem } from "../types";
 
-const dutchieSubdomainDataSource = ({
-  addToCartEvent,
-  removeFromCartEvent,
-  transactionEvent,
-}: Partial<EnvironmentEvents>) => {
+const dutchieSubdomainDataSource = () => {
   datalayerSource((data) => {
     logger.debug("Dutchie Subdomain Data Source Events: ", { data });
 
@@ -15,13 +12,15 @@ const dutchieSubdomainDataSource = ({
       const products = data.ecommerce.items;
       const { item_id, item_name, item_category, price, quantity } = products[0];
 
-      addToCartEvent?.({
-        sku: item_id.toString(),
-        name: item_name?.toString() || "N/A",
-        category: item_category?.toString() || "N/A",
-        unitPrice: parseFloat(price || "0"),
-        quantity: parseInt(quantity || "1"),
-        currency: "USD",
+      observable.notify({
+        addToCartEvent: {
+          sku: item_id.toString(),
+          name: item_name?.toString() || "N/A",
+          category: item_category?.toString() || "N/A",
+          unitPrice: parseFloat(price || "0"),
+          quantity: parseInt(quantity || "1"),
+          currency: "USD",
+        },
       });
     }
 
@@ -29,13 +28,15 @@ const dutchieSubdomainDataSource = ({
       const products = data.ecommerce.items;
       const { item_id, item_name, item_category, price, quantity } = products[0];
 
-      removeFromCartEvent?.({
-        sku: item_id.toString(),
-        name: item_name?.toString() || "N/A",
-        category: item_category?.toString() || "N/A",
-        unitPrice: parseFloat(price || "0"),
-        quantity: parseInt(quantity || "1"),
-        currency: "USD",
+      observable.notify({
+        removeFromCartEvent: {
+          sku: item_id.toString(),
+          name: item_name?.toString() || "N/A",
+          category: item_category?.toString() || "N/A",
+          unitPrice: parseFloat(price || "0"),
+          quantity: parseInt(quantity || "1"),
+          currency: "USD",
+        },
       });
     }
 
@@ -44,26 +45,28 @@ const dutchieSubdomainDataSource = ({
       const products = transaction.items;
       const { transaction_id, value } = transaction;
 
-      transactionEvent?.({
-        total: parseFloat(value),
-        id: transaction_id.toString(),
-        tax: 0,
-        shipping: 0,
-        city: "N/A",
-        state: "N/A",
-        country: "N/A",
-        currency: "USD",
-        items: products.map((product) => {
-          return {
-            orderId: transaction_id.toString(),
-            sku: product.item_id.toString(),
-            name: product.item_name?.toString() || "N/A",
-            category: product.item_category?.toString() || "N/A",
-            unitPrice: parseFloat(product.price || "0"),
-            quantity: parseInt(product.quantity || "1"),
-            currency: "USD",
-          } as TransactionCartItem;
-        }),
+      observable.notify({
+        transactionEvent: {
+          total: parseFloat(value),
+          id: transaction_id.toString(),
+          tax: 0,
+          shipping: 0,
+          city: "N/A",
+          state: "N/A",
+          country: "N/A",
+          currency: "USD",
+          items: products.map((product) => {
+            return {
+              orderId: transaction_id.toString(),
+              sku: product.item_id.toString(),
+              name: product.item_name?.toString() || "N/A",
+              category: product.item_category?.toString() || "N/A",
+              unitPrice: parseFloat(product.price || "0"),
+              quantity: parseInt(product.quantity || "1"),
+              currency: "USD",
+            } as TransactionCartItem;
+          }),
+        },
       });
     }
     if (data.event === "purchase") {
@@ -73,26 +76,28 @@ const dutchieSubdomainDataSource = ({
       const products = transaction.items;
       const { transaction_id, value } = transaction;
 
-      transactionEvent?.({
-        total: parseFloat(value),
-        id: transaction_id.toString(),
-        tax: 0,
-        shipping: 0,
-        city: "N/A",
-        state: "N/A",
-        country: "N/A",
-        currency: "USD",
-        items: products.map((product) => {
-          return {
-            orderId: transaction_id.toString(),
-            sku: product.item_id.toString(),
-            name: product.item_name?.toString() || "N/A",
-            category: product.item_category?.toString() || "N/A",
-            unitPrice: parseFloat(product.price || "0"),
-            quantity: parseInt(product.quantity || "1"),
-            currency: "USD",
-          } as TransactionCartItem;
-        }),
+      observable.notify({
+        transactionEvent: {
+          total: parseFloat(value),
+          id: transaction_id.toString(),
+          tax: 0,
+          shipping: 0,
+          city: "N/A",
+          state: "N/A",
+          country: "N/A",
+          currency: "USD",
+          items: products.map((product) => {
+            return {
+              orderId: transaction_id.toString(),
+              sku: product.item_id.toString(),
+              name: product.item_name?.toString() || "N/A",
+              category: product.item_category?.toString() || "N/A",
+              unitPrice: parseFloat(product.price || "0"),
+              quantity: parseInt(product.quantity || "1"),
+              currency: "USD",
+            } as TransactionCartItem;
+          }),
+        },
       });
     }
   });

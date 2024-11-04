@@ -4,7 +4,7 @@ import observable from "src/shared/utils/create-events-observable";
 import { fetchSource } from "../sources/fetch-source";
 import { datalayerSource } from "../sources/google-datalayer-source";
 import { runOncePerPageLoad } from "../sources/utils/trans-deduplicator";
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import { TransactionCartItem } from "../types";
 
 const TransactionCache = (ttl: number) => {
   let success = false;

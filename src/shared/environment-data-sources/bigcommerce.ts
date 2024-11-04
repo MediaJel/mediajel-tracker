@@ -1,9 +1,8 @@
-import logger from "src/shared/logger";
 import observable from "src/shared/utils/create-events-observable";
 
 import { isTrackerLoaded } from "../sources/utils/is-tracker-loaded";
 import { xhrResponseSource } from "../sources/xhr-response-source";
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import { TransactionCartItem } from "../types";
 
 // TODO: Remove the success evaluation, doesn't really do anything
 const bigcommerceDataSource = () => {
