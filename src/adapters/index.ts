@@ -32,7 +32,7 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
       import("./impressions").then(({ default: load }): Promise<void> => load(tracker));
       break;
     case "signup":
-      // import("./snowplow/events/signup").then(({ default: load }): void => load(context));
+      tracker.trackSignup(context);
       break;
     default:
       if (!context.environment) {

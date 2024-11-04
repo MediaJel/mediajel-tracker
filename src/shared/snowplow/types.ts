@@ -17,6 +17,8 @@ export interface SnowplowTracker {
   record: (input: QueryStringContext) => void;
   ecommerce: SnowplowTrackerEcommerceEvents;
   impressions: SnowplowTrackerImpressionEvents;
+  /** Used for tracking a signup when rendering the tag, acts like an image tag */
+  trackSignup: (input: Partial<SignupParams>) => void;
   /** Properties of the integration tracker url */
   context: QueryStringContext;
 }

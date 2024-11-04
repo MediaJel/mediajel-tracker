@@ -9,6 +9,39 @@ const createSnowplowV2Tracker = (input: CreateSnowplowTrackerInput): SnowplowTra
     initialize,
     ecommerce: createSnowplowV2TrackerEcommerceEventsHandlers(input),
     impressions: createSnowplowV2TrackerImpressionEventsHandlers(input),
+    trackSignup(input) {
+      const {
+        uuid,
+        firstName,
+        lastName,
+        gender,
+        emailAddress,
+        hashedEmailAddress,
+        address,
+        city,
+        state,
+        phoneNumber,
+        advertiser,
+      } = input;
+      window.tracker("trackSelfDescribingEvent", {
+        event: {
+          schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-2",
+          data: {
+            uuid,
+            firstName,
+            lastName,
+            gender,
+            emailAddress,
+            hashedEmailAddress,
+            address,
+            city,
+            state,
+            phoneNumber,
+            advertiser,
+          },
+        },
+      });
+    },
     record(input) {
       window.tracker("trackSelfDescribingEvent", {
         event: {
