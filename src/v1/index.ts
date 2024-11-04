@@ -13,7 +13,7 @@ const applyV1 = (context: QueryStringContext): void => {
 
   switch (context.event) {
     case "transaction":
-      import("./imports/carts").then(({ default: load }): Promise<void> => load(context, tracker));
+      console.log("Removed");
       break;
     case "impression":
       import("./imports/impression").then(({ default: load }): Promise<void> => load(context));
@@ -26,7 +26,7 @@ const applyV1 = (context: QueryStringContext): void => {
         console.warn("No event/environment specified, Only pageview is active");
         return;
       }
-      import("./imports/carts").then(({ default: load }): Promise<void> => load(context, tracker));
+      console.log("Removed");
       console.warn(`No event specified, Loading ${context.environment}`);
   }
 };

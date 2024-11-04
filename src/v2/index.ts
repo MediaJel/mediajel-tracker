@@ -1,4 +1,4 @@
-import { createSegments, NexxenSegmentBuilderInput, DstillerySegmentBuilderInput } from "src/shared/segment-builder";
+import { createSegments, DstillerySegmentBuilderInput, NexxenSegmentBuilderInput } from "src/shared/segment-builder";
 
 import { QueryStringContext } from "../shared/types";
 import createTracker from "./snowplow/events/create-tracker";
@@ -27,7 +27,7 @@ const applyV2 = (context: QueryStringContext): void => {
     //* Accept both segmentId and s1 for legacy purposes
     liquidm,
     nexxen,
-    dstillery
+    dstillery,
   });
 
   //* Expose to window
@@ -42,7 +42,7 @@ const applyV2 = (context: QueryStringContext): void => {
 
   switch (context.event) {
     case "transaction":
-      import("./imports/carts").then(({ default: load }): void => load(context, segments));
+      console.log("Removed");
       break;
     case "impression":
       import("./imports/impression").then(({ default: load }): Promise<void> => load(context));
@@ -55,7 +55,7 @@ const applyV2 = (context: QueryStringContext): void => {
         console.warn("No event/environment specified, Only pageview is active");
         return;
       }
-      import("./imports/carts").then(({ default: load }): void => load(context, segments));
+      console.log("Removed");
       console.warn(`No event specified, Loading ${context.environment} }`);
   }
 };
