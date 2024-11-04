@@ -1,7 +1,7 @@
 import { datalayerSource } from "src/shared/sources/google-datalayer-source";
 import observable from "src/shared/utils/create-events-observable";
 
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import { TransactionCartItem } from "../types";
 
 const dutchiePlusDataSource = () => {
   // IMPORTANT NOTE: dutchieplus cart CURALEAF is Paid search only & greenvalleydispensary is display

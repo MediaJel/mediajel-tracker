@@ -6,6 +6,7 @@ import { datalayerSource } from "../sources/google-datalayer-source";
 import { runOncePerPageLoad } from "../sources/utils/trans-deduplicator";
 import { TransactionCartItem } from "../types";
 
+// TODO: Remove Transaction Cache in favor of Higher Order Function extension
 const TransactionCache = (ttl: number) => {
   let success = false;
 

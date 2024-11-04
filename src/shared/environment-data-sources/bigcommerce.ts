@@ -5,6 +5,7 @@ import { xhrResponseSource } from "../sources/xhr-response-source";
 import { TransactionCartItem } from "../types";
 
 // TODO: Remove the success evaluation, doesn't really do anything
+// TODO: Use HOC for transactions dedpulication for all data sources
 const bigcommerceDataSource = () => {
   let success = false;
 

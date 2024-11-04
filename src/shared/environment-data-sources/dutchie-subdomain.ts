@@ -1,9 +1,10 @@
-import logger from "src/shared/logger";
-import observable from "src/shared/utils/create-events-observable";
+import logger from 'src/shared/logger';
+import observable from 'src/shared/utils/create-events-observable';
 
-import { datalayerSource } from "../sources/google-datalayer-source";
-import { TransactionCartItem } from "../types";
+import { datalayerSource } from '../sources/google-datalayer-source';
+import { TransactionCartItem } from '../types';
 
+// TODO: Create wrapper for handling multiple data sources configurations
 const dutchieSubdomainDataSource = () => {
   datalayerSource((data) => {
     logger.debug("Dutchie Subdomain Data Source Events: ", { data });
