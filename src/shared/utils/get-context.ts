@@ -1,6 +1,4 @@
-import logger from 'src/shared/logger';
-
-import { QueryStringContext, QueryStringParams } from '../types';
+import { QueryStringContext, QueryStringParams } from "../types";
 
 // Locates our tag
 
@@ -29,10 +27,14 @@ const getContext = (): QueryStringContext => {
 
   // logger.debug("Resolved Version", resolvedVersion);
 
+  console.log(target);
+
   return {
     appId: appId || mediajelAppId, // Legacy support for old universal tag
     version: version || "1", // tracker version
     collector: params.test ? process.env.MJ_STAGING_COLLECTOR_URL : process.env.MJ_PRODUCTION_COLLECTOR_URL,
+    // Regex mainly used to remove the "&amp;" and the '\\"' from the outerHTML
+    tag: target.outerHTML.replace(/&amp;/g, "&").replace(/\\"/g, '"'),
     ...params,
   };
 };

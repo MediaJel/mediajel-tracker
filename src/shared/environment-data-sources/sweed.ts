@@ -1,7 +1,9 @@
-import { datalayerSource } from '../sources/google-datalayer-source';
-import { EnvironmentEvents, TransactionCartItem } from '../types';
+import observable from "src/shared/utils/create-events-observable";
 
-const sweedDataSource = ({ transactionEvent, removeFromCartEvent, addToCartEvent }: Partial<EnvironmentEvents>) => {
+import { datalayerSource } from "../sources/google-datalayer-source";
+import { EnvironmentEvents, TransactionCartItem } from "../types";
+
+const sweedDataSource = () => {
   datalayerSource((data: any): void => {
     if (data.event === "purchase") {
       console.log("Purchase Event: ", data);
@@ -10,27 +12,30 @@ const sweedDataSource = ({ transactionEvent, removeFromCartEvent, addToCartEvent
         const products = transaction.items;
         const { value, shipping, tax } = transaction;
         const transactionId = transaction && transaction.transaction_id && transaction.transaction_id.toString();
-        transactionEvent({
-          id: transactionId,
-          total: parseFloat(value),
-          tax: parseFloat(tax),
-          city: "N/A",
-          country: "USA",
-          currency: "USD",
-          shipping: shipping,
-          state: "N/A",
-          items: products.map((items: any) => {
-            const { item_id, item_name, item_category, price, quantity } = items;
-            return {
-              orderId: transactionId,
-              category: item_category,
-              currency: "USD",
-              name: item_name,
-              quantity,
-              sku: item_id,
-              unitPrice: parseFloat(price) || 0,
-            } as TransactionCartItem;
-          }),
+
+        observable.notify({
+          transactionEvent: {
+            id: transactionId,
+            total: parseFloat(value),
+            tax: parseFloat(tax),
+            city: "N/A",
+            country: "USA",
+            currency: "USD",
+            shipping: shipping,
+            state: "N/A",
+            items: products.map((items: any) => {
+              const { item_id, item_name, item_category, price, quantity } = items;
+              return {
+                orderId: transactionId,
+                category: item_category,
+                currency: "USD",
+                name: item_name,
+                quantity,
+                sku: item_id,
+                unitPrice: parseFloat(price) || 0,
+              } as TransactionCartItem;
+            }),
+          },
         });
       } catch (error) {
         console.log("Log Warn Purchase Event: ", error);
@@ -52,7 +57,7 @@ const sweedDataSource = ({ transactionEvent, removeFromCartEvent, addToCartEvent
     //       quantity: parseInt(products?.quantity || 1),
     //       currency: "USD",
     //     });
-    //   } catch (error) { 
+    //   } catch (error) {
     //     console.log("Log Warn Add to Cart Event: ", error);
     //   }
     // }
@@ -70,7 +75,7 @@ const sweedDataSource = ({ transactionEvent, removeFromCartEvent, addToCartEvent
     //       quantity: parseInt(products?.quantity || 1),
     //       currency: "USD",
     //     });
-    //   } catch (error) { 
+    //   } catch (error) {
     //     console.log("Log Warn Remove from Cart Event: ", error);
     //   }
     // }

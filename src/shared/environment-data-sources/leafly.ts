@@ -1,9 +1,9 @@
-import logger from 'src/shared/logger';
+import logger from "src/shared/logger";
+import observable from "src/shared/utils/create-events-observable";
 
-import { pollForElement } from '../sources/utils/poll-for-element';
-import { EnvironmentEvents, TransactionCartItem } from '../types';
+import { pollForElement } from "../sources/utils/poll-for-element";
 
-const leaflyDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
+const leaflyDataSource = () => {
   //TODO: Research on identifying per advertiser on leafly
   try {
     const isTrackerLoaded = (callback) => {
@@ -26,16 +26,18 @@ const leaflyDataSource = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
         var total = totalElement.textContent.replace("$", "");
 
         isTrackerLoaded(() => {
-          transactionEvent({
-            id: id.toString(),
-            total: parseFloat(total) || 0,
-            tax: 0,
-            shipping: 0,
-            city: "N/A",
-            state: "N/A",
-            country: "N/A",
-            currency: "USD",
-            items: [],
+          observable.notify({
+            transactionEvent: {
+              id: id.toString(),
+              total: parseFloat(total) || 0,
+              tax: 0,
+              shipping: 0,
+              city: "N/A",
+              state: "N/A",
+              country: "N/A",
+              currency: "USD",
+              items: [],
+            },
           });
         });
       }

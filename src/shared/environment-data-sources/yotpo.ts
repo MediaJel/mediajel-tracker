@@ -1,9 +1,9 @@
-import logger from 'src/shared/logger';
+import observable from "src/shared/utils/create-events-observable";
 
-import { datalayerSource } from '../sources/google-datalayer-source';
-import { EnvironmentEvents, TransactionCartItem } from '../types';
+import { datalayerSource } from "../sources/google-datalayer-source";
+import { TransactionCartItem } from "../types";
 
-const yotpoDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>) => {
+const yotpoDataSource = () => {
   datalayerSource((data: any) => {
     // do not  remove commented code
     // if (data.event === "addToCart") {
@@ -41,27 +41,28 @@ const yotpoDataSource = ({ addToCartEvent, removeFromCartEvent, transactionEvent
         const transaction = data.ecommerce;
         const products = data.ecommerce.items;
         const { transaction_id, value, tax } = transaction;
-
-        transactionEvent({
-          id: transaction_id.toString(),
-          total: parseFloat(value),
-          tax: parseFloat(tax),
-          shipping: 0,
-          city: "N/A",
-          state: "N/A",
-          country: "N/A",
-          currency: "USD",
-          items: products.map((item) => {
-            return {
-              orderId: transaction_id.toString(),
-              sku: item.item_id.toString(),
-              name: (item.item_name || "N/A").toString(),
-              category: (item.item_category || "N/A").toString(),
-              unitPrice: parseFloat(item.price || 0),
-              quantity: parseInt(item.quantity || 1),
-              currency: "USD",
-            } as TransactionCartItem;
-          }),
+        observable.notify({
+          transactionEvent: {
+            id: transaction_id.toString(),
+            total: parseFloat(value),
+            tax: parseFloat(tax),
+            shipping: 0,
+            city: "N/A",
+            state: "N/A",
+            country: "N/A",
+            currency: "USD",
+            items: products.map((item) => {
+              return {
+                orderId: transaction_id.toString(),
+                sku: item.item_id.toString(),
+                name: (item.item_name || "N/A").toString(),
+                category: (item.item_category || "N/A").toString(),
+                unitPrice: parseFloat(item.price || 0),
+                quantity: parseInt(item.quantity || 1),
+                currency: "USD",
+              } as TransactionCartItem;
+            }),
+          },
         });
       } catch (error) {
         // window.tracker('trackError', JSON.stringify(error), 'YOTPO');

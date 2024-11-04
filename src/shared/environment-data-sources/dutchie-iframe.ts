@@ -1,14 +1,10 @@
-import logger from 'src/shared/logger';
+import observable from "src/shared/utils/create-events-observable";
 
-import { postMessageSource } from '../sources/post-message-source';
-import { EnvironmentEvents, TransactionCartItem } from '../types';
-import { tryParseJSONObject } from '../utils/try-parse-json';
+import { postMessageSource } from "../sources/post-message-source";
+import { TransactionCartItem } from "../types";
+import { tryParseJSONObject } from "../utils/try-parse-json";
 
-const dutchieIframeDataSource = ({
-  addToCartEvent,
-  removeFromCartEvent,
-  transactionEvent,
-}: Partial<EnvironmentEvents>) => {
+const dutchieIframeDataSource = () => {
   postMessageSource((event: MessageEvent<any>) => {
     const rawData = tryParseJSONObject(event.data);
     const payload = rawData?.payload?.payload || null;
@@ -17,13 +13,15 @@ const dutchieIframeDataSource = ({
       const products = payload.ecommerce.items;
       const { item_id, item_name, item_category, price, quantity } = products[0];
 
-      addToCartEvent({
-        sku: item_id.toString(),
-        name: (item_name || "N/A").toString(),
-        category: (item_category || "N/A").toString(),
-        unitPrice: parseFloat(price || 0),
-        quantity: parseInt(quantity || 1),
-        currency: "USD",
+      observable.notify({
+        addToCartEvent: {
+          sku: item_id.toString(),
+          name: item_name?.toString() || "N/A",
+          category: item_category?.toString() || "N/A",
+          unitPrice: parseFloat(price || "0"),
+          quantity: parseInt(quantity || "1"),
+          currency: "USD",
+        },
       });
     }
 
@@ -31,13 +29,15 @@ const dutchieIframeDataSource = ({
       const products = payload.ecommerce.items;
       const { item_id, item_name, item_category, price, quantity } = products[0];
 
-      removeFromCartEvent({
-        sku: item_id.toString(),
-        name: (item_name || "N/A").toString(),
-        category: (item_category || "N/A").toString(),
-        unitPrice: parseFloat(price || 0),
-        quantity: parseInt(quantity || 1),
-        currency: "USD",
+      observable.notify({
+        removeFromCartEvent: {
+          sku: item_id.toString(),
+          name: item_name?.toString() || "N/A",
+          category: item_category?.toString() || "N/A",
+          unitPrice: parseFloat(price || "0"),
+          quantity: parseInt(quantity || "1"),
+          currency: "USD",
+        },
       });
     }
 
@@ -46,28 +46,31 @@ const dutchieIframeDataSource = ({
         const transaction = rawData.payload.payload["2"];
         const products = transaction.items;
         const { transaction_id, value } = transaction;
-        transactionEvent({
-          id: transaction_id.toString(),
-          total: parseFloat(value || 0),
-          tax: 0,
-          shipping: 0,
-          city: "N/A",
-          state: "N/A",
-          country: "N/A",
-          currency: "USD",
-          items: products.map((product) => {
-            const { item_id, item_name, item_category, price, quantity } = product;
-            return {
-              orderId: transaction_id.toString(),
-              productId: item_id.toString(),
-              sku: item_id.toString(),
-              name: (item_name || "N/A").toString(),
-              category: (item_category || "N/A").toString(),
-              unitPrice: parseFloat(price || 0),
-              quantity: parseInt(quantity || 1),
-              currency: "USD",
-            } as TransactionCartItem;
-          }),
+
+        observable.notify({
+          transactionEvent: {
+            id: transaction_id.toString(),
+            total: parseFloat(value || 0),
+            tax: 0,
+            shipping: 0,
+            city: "N/A",
+            state: "N/A",
+            country: "N/A",
+            currency: "USD",
+            items: products.map((product) => {
+              const { item_id, item_name, item_category, price, quantity } = product;
+              return {
+                orderId: transaction_id.toString(),
+                productId: item_id.toString(),
+                sku: item_id.toString(),
+                name: (item_name || "N/A").toString(),
+                category: (item_category || "N/A").toString(),
+                unitPrice: parseFloat(price || 0),
+                quantity: parseInt(quantity || 1),
+                currency: "USD",
+              } as TransactionCartItem;
+            }),
+          },
         });
       } catch (error) {
         // window.tracker("trackError", JSON.stringify(error), "DUTCHIEIFRAME");
@@ -80,28 +83,30 @@ const dutchieIframeDataSource = ({
         const products = transaction.items;
         const { transaction_id, value } = transaction;
 
-        transactionEvent({
-          id: transaction_id.toString(),
-          total: parseFloat(value || 0),
-          tax: 0,
-          shipping: 0,
-          city: "N/A",
-          state: "N/A",
-          country: "N/A",
-          currency: "USD",
-          items: products.map((product) => {
-            const { item_id, item_name, item_category, price, quantity } = product;
-            return {
-              orderId: transaction_id.toString(),
-              productId: item_id.toString(),
-              sku: item_id.toString(),
-              name: (item_name || "N/A").toString(),
-              category: (item_category || "N/A").toString(),
-              unitPrice: parseFloat(price || 0),
-              quantity: parseInt(quantity || 1),
-              currency: "USD",
-            } as TransactionCartItem;
-          }),
+        observable.notify({
+          transactionEvent: {
+            id: transaction_id.toString(),
+            total: parseFloat(value || 0),
+            tax: 0,
+            shipping: 0,
+            city: "N/A",
+            state: "N/A",
+            country: "N/A",
+            currency: "USD",
+            items: products.map((product) => {
+              const { item_id, item_name, item_category, price, quantity } = product;
+              return {
+                orderId: transaction_id.toString(),
+                productId: item_id.toString(),
+                sku: item_id.toString(),
+                name: (item_name || "N/A").toString(),
+                category: (item_category || "N/A").toString(),
+                unitPrice: parseFloat(price || 0),
+                quantity: parseInt(quantity || 1),
+                currency: "USD",
+              } as TransactionCartItem;
+            }),
+          },
         });
       } catch (error) {
         // window.tracker("trackError", JSON.stringify(error), "DUTCHIEIFRAME");
