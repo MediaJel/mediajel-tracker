@@ -68,9 +68,17 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
     case "square":
       import("../shared/environment-data-sources/square").then(({ default: load }): void => load());
       break;
-
     case "sticky-leaf":
       import("../shared/environment-data-sources/sticky-leaf").then(({ default: load }): void => load());
+      break;
+    case "sweed":
+      import("../shared/environment-data-sources/sweed").then(({ default: load }): void => load());
+      break;
+    case "tymber":
+      import("../shared/environment-data-sources/tymber").then(({ default: load }): void => load());
+      break;
+    case "weave":
+      import("../shared/environment-data-sources/weave").then(({ default: load }): void => load());
       break;
 
     default:
