@@ -1,4 +1,10 @@
-import { CartEvent, QueryStringContext, SignupParams, TransactionEvent } from "src/shared/types";
+import {
+  CartEvent,
+  ImpressionsMacrosParams,
+  QueryStringContext,
+  SignupParams,
+  TransactionEvent,
+} from "src/shared/types";
 
 export interface SnowplowTrackerInitializeInput {
   appId: string;
@@ -22,8 +28,8 @@ export interface SnowplowTrackerEcommerceEvents {
 }
 
 export interface SnowplowTrackerImpressionEvents {
-  trackLiquidmImpression: () => void;
-  trackMantisImpression: () => void;
+  trackLiquidmImpression: (input: Partial<ImpressionsMacrosParams>) => void;
+  trackMantisImpression: (input: Partial<ImpressionsMacrosParams>) => void;
 }
 
 export interface CreateSnowplowTrackerInput extends QueryStringContext {}

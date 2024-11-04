@@ -1,4 +1,4 @@
-import { ImpressionsMacrosParams } from "../../../shared/types";
+import { ImpressionsMacrosParams } from '../../../shared/types';
 
 /**
  * ! Note: Please do not change the order of the how the mjcx array is structured.

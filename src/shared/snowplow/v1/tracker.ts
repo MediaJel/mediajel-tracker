@@ -8,7 +8,7 @@ const createSnowplowV1Tracker = (input: CreateSnowplowTrackerInput): SnowplowTra
     context: input,
     initialize,
     ecommerce: createSnowplowV1TrackerEcommerceEventsHandlers(input),
-    impressions: createSnowplowV1TrackerImpressionEventsHandlers(input),
+    impressions: createSnowplowV1TrackerImpressionEventsHandlers(),
     record: (input) => {
       window.tracker("trackSelfDescribingEvent", {
         schema: "iglu:com.mediajel.events/record/jsonschema/1-0-2",

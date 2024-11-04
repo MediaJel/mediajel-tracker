@@ -1,4 +1,5 @@
 import withSnowplowSegmentsExtension from "src/shared/extensions/segments";
+import logger from "src/shared/logger";
 import { createSnowplowTracker, SnowplowTracker } from "src/shared/snowplow";
 
 import { QueryStringContext } from "../shared/types";
@@ -17,7 +18,9 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   // Apply extensions to the tracker
   const tracker = applyExtensions(snowplow, [
     withSnowplowSegmentsExtension,
+    /** Dynamically add Google Ads plugin/extension */
     plugins.includes("googleAds") && (await import("src/shared/extensions/google-ads").then(({ default: ext }) => ext)),
+    /** Dynamically add Bing Ads plugin/extension */
     plugins.includes("bingAds") && (await import("src/shared/extensions/bing-ads").then(({ default: ext }) => ext)),
   ]);
 
@@ -26,18 +29,18 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
       import("./ecommerce").then(({ default: load }): Promise<void> => load(tracker));
       break;
     case "impression":
-      // import("./imports/impression").then(({ default: load }): Promise<void> => load(context));
+      import("./impressions").then(({ default: load }): Promise<void> => load(tracker));
       break;
     case "signup":
       // import("./snowplow/events/signup").then(({ default: load }): void => load(context));
       break;
     default:
       if (!context.environment) {
-        console.warn("No event/environment specified, Only pageview is active");
+        logger.warn("No event/environment specified, Only pageview is active");
         return;
       }
       import("./ecommerce").then(({ default: load }): Promise<void> => load(tracker));
-      console.warn(`No event specified, Loading ${context.environment}`);
+      logger.warn(`No event specified, Loading ${context.environment}`);
   }
 };
 

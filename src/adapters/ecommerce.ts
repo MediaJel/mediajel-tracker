@@ -2,8 +2,6 @@ import logger from "src/shared/logger";
 import { SnowplowTracker } from "src/shared/snowplow";
 import observable from "src/shared/utils/create-events-observable";
 
-// TODO: Apply observable pattern to the transaction adapter
-
 export default async (tracker: SnowplowTracker): Promise<void> => {
   const { context } = tracker;
 
