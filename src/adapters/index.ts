@@ -1,18 +1,19 @@
-import withSnowplowBingAdsExtension from "src/shared/extensions/bing-ads";
-import withSnowplowGoogleAdsExtension from "src/shared/extensions/google-ads";
 import withSnowplowSegmentsExtension from "src/shared/extensions/segments";
-import { createSnowplowTracker } from "src/shared/snowplow";
+import { createSnowplowTracker, SnowplowTracker } from "src/shared/snowplow";
 
 import { QueryStringContext } from "../shared/types";
 
-const applyExtensions = (tracker: any, extensions: ((tracker: any) => any)[]): any => {
+const applyExtensions = (
+  tracker: SnowplowTracker,
+  extensions: ((tracker: SnowplowTracker) => SnowplowTracker)[]
+): SnowplowTracker => {
   return extensions.reduce((currentTracker, extension) => extension(currentTracker), tracker);
 };
 
-// TODO: Better function name?
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   const plugins = context.plugin.split(",");
 
+  // Apply extensions to the tracker
   const tracker = applyExtensions(createSnowplowTracker(context), [
     withSnowplowSegmentsExtension,
     plugins.includes("googleAds") && (await import("src/shared/extensions/google-ads").then(({ default: ext }) => ext)),
