@@ -1,7 +1,7 @@
 import { S3 } from "aws-sdk";
+import withSnowplowSegmentsExtension from "src/shared/extensions/segments";
 import { createSegments, DstillerySegmentBuilderInput, NexxenSegmentBuilderInput } from "src/shared/segment-builder";
 import { createSnowplowTracker } from "src/shared/snowplow";
-import withSnowplowSegmentsExtension from "src/shared/snowplow-extensions.ts/segments";
 
 import { QueryStringContext } from "../shared/types";
 import createTracker from "./snowplow/events/create-tracker";

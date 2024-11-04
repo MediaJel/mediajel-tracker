@@ -1,7 +1,7 @@
+import withSnowplowBingAdsExtension from "src/shared/extensions/bing-ads";
+import withSnowplowGoogleAdsExtension from "src/shared/extensions/google-ads";
+import withSnowplowSegmentsExtension from "src/shared/extensions/segments";
 import { createSnowplowTracker } from "src/shared/snowplow";
-import withSnowplowBingAdsExtension from "src/shared/snowplow-extensions.ts/bing-ads";
-import withSnowplowGoogleAdsExtension from "src/shared/snowplow-extensions.ts/google-ads";
-import withSnowplowSegmentsExtension from "src/shared/snowplow-extensions.ts/segments";
 
 import { QueryStringContext } from "../shared/types";
 
