@@ -22,7 +22,7 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
 
   switch (context.event) {
     case "transaction":
-      import("./transaction").then(({ default: load }): Promise<void> => load(tracker));
+      import("./ecommerce").then(({ default: load }): Promise<void> => load(tracker));
       break;
     case "impression":
       // import("./imports/impression").then(({ default: load }): Promise<void> => load(context));
@@ -35,7 +35,7 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
         console.warn("No event/environment specified, Only pageview is active");
         return;
       }
-      import("./transaction").then(({ default: load }): Promise<void> => load(tracker));
+      import("./ecommerce").then(({ default: load }): Promise<void> => load(tracker));
       console.warn(`No event specified, Loading ${context.environment}`);
   }
 };
