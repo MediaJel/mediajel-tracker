@@ -1,6 +1,6 @@
-import { S3 } from 'aws-sdk';
-import * as fs from 'fs';
-import * as path from 'path';
+import { S3 } from "aws-sdk";
+import * as fs from "fs";
+import * as path from "path";
 
 require("dotenv").config();
 
@@ -46,52 +46,52 @@ const uploadToS3 = (filePath: string, bucket: string, key: string) => {
 };
 
 // Read the content of index.ts file
-fs.readFile(indexPath, "utf8", (err, data) => {
-  if (err) {
-    console.error("Error reading index.ts file:", err);
-    return;
-  }
+// fs.readFile(indexPath, "utf8", (err, data) => {
+//   if (err) {
+//     console.error("Error reading index.ts file:", err);
+//     return;
+//   }
 
-  // Regular expression to match case values, descriptions, and events-tracked
-  const caseRegex =
-    /case\s+"(.*?)":\s+import\(".*?"\)\.then\(.*?\);\s*\/\/\s*description:\s*"(.*?)"\s*\/\/\s*events-tracked:\s*(\[.*?\])/gs;
-  let match;
-  const environments = [];
+//   // Regular expression to match case values, descriptions, and events-tracked
+//   const caseRegex =
+//     /case\s+"(.*?)":\s+import\(".*?"\)\.then\(.*?\);\s*\/\/\s*description:\s*"(.*?)"\s*\/\/\s*events-tracked:\s*(\[.*?\])/gs;
+//   let match;
+//   const environments = [];
 
-  // Extract case values, descriptions, and events-tracked
-  while ((match = caseRegex.exec(data)) !== null) {
-    const value = match[1];
-    const description = match[2];
-    const eventsTracked = JSON.parse(match[3].replace(/([\w-]+):/g, '"$1":'));
+//   // Extract case values, descriptions, and events-tracked
+//   while ((match = caseRegex.exec(data)) !== null) {
+//     const value = match[1];
+//     const description = match[2];
+//     const eventsTracked = JSON.parse(match[3].replace(/([\w-]+):/g, '"$1":'));
 
-    // Convert to label format (capitalize first letter and replace hyphens with spaces)
-    const label = value
-      .split("-")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
+//     // Convert to label format (capitalize first letter and replace hyphens with spaces)
+//     const label = value
+//       .split("-")
+//       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+//       .join(" ");
 
-    environments.push({ label, value, description, eventsTracked });
-  }
+//     environments.push({ label, value, description, eventsTracked });
+//   }
 
-  // Create the formatted string for the environment.js file
-  const output = `[\n${environments
-    .map(
-      (env) =>
-        `  {\n    "label": "${env.label}",\n    "value": "${env.value}",\n    "description": "${
-          env.description
-        }",\n    "eventsTracked": ${JSON.stringify(env.eventsTracked, null, 4)}\n  }`
-    )
-    .join(",\n")}\n]`;
+//   // Create the formatted string for the environment.js file
+//   const output = `[\n${environments
+//     .map(
+//       (env) =>
+//         `  {\n    "label": "${env.label}",\n    "value": "${env.value}",\n    "description": "${
+//           env.description
+//         }",\n    "eventsTracked": ${JSON.stringify(env.eventsTracked, null, 4)}\n  }`
+//     )
+//     .join(",\n")}\n]`;
 
-  // Write the formatted data to environment.js
-  fs.writeFile(environmentPath, output, "utf8", (writeErr) => {
-    if (writeErr) {
-      console.error("Error writing environment.js file:", writeErr);
-      return;
-    }
-    console.info("environment.js file created successfully!");
+// Write the formatted data to environment.js
+// fs.writeFile(environmentPath, output, "utf8", (writeErr) => {
+//   if (writeErr) {
+//     console.error("Error writing environment.js file:", writeErr);
+//     return;
+//   }
+//   console.info("environment.js file created successfully!");
 
-    // Upload the file to S3
-    uploadToS3(environmentPath, bucketName, s3Key);
-  });
-});
+//   // Upload the file to S3
+//   uploadToS3(environmentPath, bucketName, s3Key);
+// });
+// });
