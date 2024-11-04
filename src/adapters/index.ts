@@ -15,8 +15,8 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
 
   const tracker = applyExtensions(createSnowplowTracker(context), [
     withSnowplowSegmentsExtension,
-    plugins.includes("googleAds") && withSnowplowGoogleAdsExtension,
-    plugins.includes("bingAds") && withSnowplowBingAdsExtension,
+    plugins.includes("googleAds") && (await import("src/shared/extensions/google-ads").then(({ default: ext }) => ext)),
+    plugins.includes("bingAds") && (await import("src/shared/extensions/bing-ads").then(({ default: ext }) => ext)),
   ]);
 
   switch (context.event) {
