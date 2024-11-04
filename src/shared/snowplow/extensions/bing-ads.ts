@@ -13,7 +13,6 @@ const setupExtension = (context: QueryStringContext): void => {
 };
 
 const withSnowplowBingAdsExtension = (snowplow: SnowplowTracker) => {
-  const { conversionId, conversionLabel } = snowplow.context;
   setupExtension(snowplow.context);
 
   // Original trackTransaction method

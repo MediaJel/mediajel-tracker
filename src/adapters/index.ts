@@ -1,8 +1,8 @@
-import withSnowplowSegmentsExtension from "src/shared/extensions/segments";
-import logger from "src/shared/logger";
-import { createSnowplowTracker, SnowplowTracker } from "src/shared/snowplow";
+import logger from 'src/shared/logger';
+import { createSnowplowTracker, SnowplowTracker } from 'src/shared/snowplow';
+import withSnowplowSegmentsExtension from 'src/shared/snowplow/extensions/segments';
 
-import { QueryStringContext } from "../shared/types";
+import { QueryStringContext } from '../shared/types';
 
 const applyExtensions = (
   tracker: SnowplowTracker,
@@ -19,9 +19,9 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   const tracker = applyExtensions(snowplow, [
     withSnowplowSegmentsExtension,
     /** Dynamically add Google Ads plugin/extension */
-    plugins.includes("googleAds") && (await import("src/shared/extensions/google-ads").then(({ default: ext }) => ext)),
+    plugins.includes("googleAds") && (await import("src/shared/snowplow/extensions/google-ads").then(({ default: ext }) => ext)),
     /** Dynamically add Bing Ads plugin/extension */
-    plugins.includes("bingAds") && (await import("src/shared/extensions/bing-ads").then(({ default: ext }) => ext)),
+    plugins.includes("bingAds") && (await import("src/shared/snowplow/extensions/bing-ads").then(({ default: ext }) => ext)),
   ]);
 
   switch (context.event) {
