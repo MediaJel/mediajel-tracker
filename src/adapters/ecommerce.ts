@@ -1,5 +1,5 @@
-import { SnowplowTracker } from "src/shared/snowplow";
-import observable from "src/shared/utils/create-events-observable";
+import { SnowplowTracker } from 'src/shared/snowplow';
+import observable from 'src/shared/utils/create-events-observable';
 
 // TODO: Apply observable pattern to the transaction adapter
 
@@ -40,6 +40,9 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       break;
     case "grassdoor":
       import("../shared/environment-data-sources/grassdoor").then(({ default: load }): void => load());
+      break;
+    case "greenrush":
+      import("../shared/environment-data-sources/greenrush").then(({ default: load }): void => load());
       break;
     default:
       console.warn("No event/environment specified, Only pageview is active");
