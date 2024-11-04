@@ -14,7 +14,6 @@ const setupExtension = (context: QueryStringContext): void => {
   }
 
   logger.info(`🚀🚀🚀 Google Ads Plugin loaded for ${context.environment}`);
-  logger.info(`🚀🚀🚀 Google Ads Plugin params: ${JSON.stringify(context, null, 2)}`);
 
   document.createElement("script").src = `https://www.googletagmanager.com/gtag/js?id=${context.conversionId}`;
 
