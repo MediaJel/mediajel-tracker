@@ -15,7 +15,7 @@ const createSnowplowTracker = async (input: CreateSnowplowTrackerInput): Promise
     ({ default: createSnowplowV2Tracker }) => createSnowplowV2Tracker
   );
 
-  const tracker = isLegacyTracker ? createSnowplowV1Tracker(input) : createSnowplowV2Tracker(input);
+  const tracker = isLegacyTracker ? await createSnowplowV1Tracker(input) : await createSnowplowV2Tracker(input);
 
   tracker.initialize({ appId, collector, event });
   tracker.record(input);

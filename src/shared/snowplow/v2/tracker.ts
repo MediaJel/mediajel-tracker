@@ -1,14 +1,20 @@
-import { CreateSnowplowTrackerInput, SnowplowTracker } from "src/shared/snowplow/types";
-import createSnowplowV2TrackerEcommerceEventsHandlers from "src/shared/snowplow/v2/ecommerce";
-import createSnowplowV2TrackerImpressionEventsHandlers from "src/shared/snowplow/v2/impressions";
-import { initialize } from "src/shared/snowplow/v2/init";
+import { CreateSnowplowTrackerInput, SnowplowTracker } from 'src/shared/snowplow/types';
+import { initialize } from 'src/shared/snowplow/v2/init';
 
-const createSnowplowV2Tracker = (input: CreateSnowplowTrackerInput): SnowplowTracker => {
+const createSnowplowV2Tracker = async (input: CreateSnowplowTrackerInput): Promise<SnowplowTracker> => {
+  const loadImpressionHandler = async () => {
+    return await import(`src/shared/snowplow/v2/impressions`).then(({ default: load }) => load());
+  };
+  const loadEcommerceHandler = async () => {
+    return await import(`src/shared/snowplow/v2/ecommerce`).then(({ default: load }) => load(input));
+  };
+
   return {
     context: input,
     initialize,
-    ecommerce: createSnowplowV2TrackerEcommerceEventsHandlers(input),
-    impressions: createSnowplowV2TrackerImpressionEventsHandlers(input),
+    // Load ecommerce handler only if the event is a transaction or if no event is specified
+    ecommerce: (input.event === "transaction" || !input.event) && (await loadEcommerceHandler()),
+    impressions: input.event === "impression" && (await loadImpressionHandler()),
     trackSignup(input) {
       const {
         uuid,

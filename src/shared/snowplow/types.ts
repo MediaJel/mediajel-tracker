@@ -1,10 +1,6 @@
 import {
-  CartEvent,
-  ImpressionsMacrosParams,
-  QueryStringContext,
-  SignupParams,
-  TransactionEvent,
-} from "src/shared/types";
+    CartEvent, ImpressionsMacrosParams, QueryStringContext, SignupParams, TransactionEvent
+} from 'src/shared/types';
 
 export interface SnowplowTrackerInitializeInput {
   appId: string;
@@ -16,7 +12,7 @@ export interface SnowplowTracker {
   /** Mainly used for book-keeping purposes so we can document params & the tag itself */
   record: (input: QueryStringContext) => void;
   ecommerce: SnowplowTrackerEcommerceEvents;
-  impressions: SnowplowTrackerImpressionEvents;
+  impressions?: SnowplowTrackerImpressionEvents;
   /** Used for tracking a signup when rendering the tag, acts like an image tag */
   trackSignup: (input: Partial<SignupParams>) => void;
   /** Properties of the integration tracker url */
