@@ -1,5 +1,5 @@
-import { SnowplowTracker } from 'src/shared/snowplow';
-import observable from 'src/shared/utils/create-events-observable';
+import { SnowplowTracker } from "src/shared/snowplow";
+import observable from "src/shared/utils/create-events-observable";
 
 // TODO: Apply observable pattern to the transaction adapter
 
@@ -55,6 +55,12 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       break;
     case "magento":
       import("../shared/environment-data-sources/magento").then(({ default: load }): void => load());
+      break;
+    case "meadow":
+      import("../shared/environment-data-sources/meadow").then(({ default: load }): void => load());
+      break;
+    case "olla":
+      import("../shared/environment-data-sources/olla").then(({ default: load }): void => load());
       break;
     default:
       console.warn("No event/environment specified, Only pageview is active");
