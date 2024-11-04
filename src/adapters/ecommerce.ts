@@ -1,3 +1,4 @@
+import logger from "src/shared/logger";
 import { SnowplowTracker } from "src/shared/snowplow";
 import observable from "src/shared/utils/create-events-observable";
 
@@ -80,9 +81,24 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
     case "weave":
       import("../shared/environment-data-sources/weave").then(({ default: load }): void => load());
       break;
+    case "webjoint":
+      import("../shared/environment-data-sources/webjoint").then(({ default: load }): void => load());
+      break;
+    case "wefunder":
+      import("../shared/environment-data-sources/wefunder").then(({ default: load }): void => load());
+      break;
+    case "wix":
+      import("../shared/environment-data-sources/wix").then(({ default: load }): void => load());
+      break;
+    case "woocommerce":
+      import("../shared/environment-data-sources/woocommerce").then(({ default: load }): void => load());
+      break;
+    case "yotpo":
+      import("../shared/environment-data-sources/yotpo").then(({ default: load }): void => load());
+      break;
 
     default:
-      console.warn("No event/environment specified, Only pageview is active");
+      logger.warn("No event/environment specified, Only pageview is active");
       break;
   }
 };
