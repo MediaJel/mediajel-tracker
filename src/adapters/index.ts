@@ -12,9 +12,10 @@ const applyExtensions = (
 
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   const plugins = context.plugin.split(",");
+  const snowplow = await createSnowplowTracker(context);
 
   // Apply extensions to the tracker
-  const tracker = applyExtensions(createSnowplowTracker(context), [
+  const tracker = applyExtensions(snowplow, [
     withSnowplowSegmentsExtension,
     plugins.includes("googleAds") && (await import("src/shared/extensions/google-ads").then(({ default: ext }) => ext)),
     plugins.includes("bingAds") && (await import("src/shared/extensions/bing-ads").then(({ default: ext }) => ext)),

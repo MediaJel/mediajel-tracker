@@ -2,11 +2,11 @@ import logger from "src/shared/logger";
 import observable from "src/shared/utils/create-events-observable";
 
 import { pollForElement } from "../sources/utils/poll-for-element";
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import { TransactionCartItem } from "../types";
 import { tryParseJSONObject } from "../utils/try-parse-json";
 
 // TODO: Maybe remove the success = true; and the if (!success) block
-const ecwidTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
+const ecwidTracker = () => {
   let success = false;
 
   try {
@@ -86,16 +86,18 @@ const ecwidTracker = ({ transactionEvent }: Partial<EnvironmentEvents>) => {
               },
             ];
 
-            transactionEvent({
-              id: id.toString(),
-              total: parseFloat(total),
-              tax: 0,
-              shipping: 0,
-              city: "N/A",
-              state: "N/A",
-              country: "USA",
-              currency: "USD",
-              items: products,
+            observable.notify({
+              transactionEvent: {
+                id: id.toString(),
+                total: parseFloat(total),
+                tax: 0,
+                shipping: 0,
+                city: "N/A",
+                state: "N/A",
+                country: "USA",
+                currency: "USD",
+                items: products,
+              },
             });
           }
         }
