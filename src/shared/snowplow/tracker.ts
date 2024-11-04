@@ -1,3 +1,4 @@
+import { create } from "cypress/types/lodash";
 import logger from "src/shared/logger";
 import { CreateSnowplowTrackerInput, SnowplowTracker } from "src/shared/snowplow/types";
 
@@ -7,15 +8,19 @@ const createSnowplowTracker = async (input: CreateSnowplowTrackerInput): Promise
   logger.info(`Creating Snowplow tracker for version ${input.version}`);
   const isLegacyTracker = input.version === "v1";
 
-  const createSnowplowV1Tracker = await import(`src/shared/snowplow/v1/tracker`).then(
-    ({ default: createSnowplowV1Tracker }) => createSnowplowV1Tracker
-  );
+  const createSnowplowV1Tracker = async () => {
+    return await import(`src/shared/snowplow/v1/tracker`).then(
+      async ({ default: createSnowplowV1Tracker }) => await createSnowplowV1Tracker(input)
+    );
+  };
 
-  const createSnowplowV2Tracker = await import(`src/shared/snowplow/v2/tracker`).then(
-    ({ default: createSnowplowV2Tracker }) => createSnowplowV2Tracker
-  );
+  const createSnowplowV2Tracker = async () => {
+    return await import(`src/shared/snowplow/v2/tracker`).then(
+      async ({ default: createSnowplowV2Tracker }) => await createSnowplowV2Tracker(input)
+    );
+  };
 
-  const tracker = isLegacyTracker ? await createSnowplowV1Tracker(input) : await createSnowplowV2Tracker(input);
+  const tracker = isLegacyTracker ? await createSnowplowV1Tracker() : await createSnowplowV2Tracker();
 
   tracker.initialize({ appId, collector, event });
   tracker.record(input);
