@@ -62,6 +62,17 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
     case "olla":
       import("../shared/environment-data-sources/olla").then(({ default: load }): void => load());
       break;
+    case "shopify":
+      import("../shared/environment-data-sources/shopify").then(({ default: load }): void => load());
+      break;
+    case "square":
+      import("../shared/environment-data-sources/square").then(({ default: load }): void => load());
+      break;
+
+    case "sticky-leaf":
+      import("../shared/environment-data-sources/sticky-leaf").then(({ default: load }): void => load());
+      break;
+
     default:
       console.warn("No event/environment specified, Only pageview is active");
       break;
