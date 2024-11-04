@@ -102,6 +102,36 @@
             ],
           },
         });
+
+        window.dataLayer.push({
+          event: "add_to_cart",
+          ecommerce: {
+            items: [
+              {
+                item_id: "SKU12345", // unique ID for the product
+                item_name: "T-Shirt", // product name
+                item_category: "Apparel", // category of the product
+                full_price: 20.0, // price per item
+                quantity: 2, // quantity of the item
+              },
+            ],
+          },
+        });
+
+        window.dataLayer.push({
+          event: "remove_from_cart",
+          ecommerce: {
+            items: [
+              {
+                item_id: "SKU12345", // unique ID for the product
+                item_name: "T-Shirt", // product name
+                item_category: "Apparel", // category of the product
+                full_price: 20.0, // price per item
+                quantity: 2, // quantity of the item
+              },
+            ],
+          },
+        });
       }, 2000);
     </script>
   </body>
