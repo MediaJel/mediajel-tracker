@@ -31,6 +31,7 @@
   "homepage": "https://github.com/MediaJel/mediajel-tracker#readme",
   "devDependencies": {
     "@parcel/reporter-bundle-analyzer": "^2.12.0",
+    "@parcel/reporter-bundle-buddy": "^2.12.0",
     "@types/cypress": "^1.1.3",
     "@types/express": "^5.0.0",
     "@types/node": "^22.9.0",

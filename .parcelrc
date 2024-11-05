@@ -1,8 +1,6 @@
 {
-    "compressors": {
-        "*.{html,css,js,svg,map,ts}": [
-            "@parcel/compressor-gzip",
-            "@parcel/compressor-brotli"
-        ]
-    }
+    "reporters": [
+        "@parcel/reporter-bundle-analyzer",
+        "@parcel/reporter-bundle-buddy"
+    ]
 }

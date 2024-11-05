@@ -916,6 +916,13 @@
     "@parcel/utils" "2.12.0"
     nullthrows "^1.1.1"
 
+"@parcel/reporter-bundle-buddy@^2.12.0":
+  version "2.12.0"
+  resolved "https://registry.yarnpkg.com/@parcel/reporter-bundle-buddy/-/reporter-bundle-buddy-2.12.0.tgz#229cb1f0f916b954ea105bcb186f9e6463e6ffaa"
+  integrity sha512-++I/vqduL4mTEvTZFWtBcXhj5EIgUZ/ahlvpdaxEq+XoqTXT8wz3xIsLnTdDjHn+VRj3ry7SYWioxmlKYSwM2w==
+  dependencies:
+    "@parcel/plugin" "2.12.0"
+
 "@parcel/reporter-cli@2.12.0":
   version "2.12.0"
   resolved "https://registry.yarnpkg.com/@parcel/reporter-cli/-/reporter-cli-2.12.0.tgz#e067b4eeca49c7120d3455d99810bed5bc825920"
