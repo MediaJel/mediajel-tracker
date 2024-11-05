@@ -6,7 +6,8 @@ export {default as withBingAdsExtension} from './bing-ads';
 
 export const applyExtensions = (
   tracker: SnowplowTracker,
-  extensions: ((tracker: SnowplowTracker) => SnowplowTracker)[]
+  // Either load a function or undefined for dynamic loading
+  extensions: ((tracker: SnowplowTracker) => SnowplowTracker)[] | undefined
 ): SnowplowTracker => {
   return extensions.reduce((currentTracker, extension) => extension ? extension(currentTracker): currentTracker, tracker);
 };
