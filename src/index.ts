@@ -13,7 +13,7 @@ import { getCustomTags } from './shared/utils/get-custom-tags';
     // Validations
     if (!context.appId) throw new Error("appId is required");
 
-    // getCustomTags();
+    getCustomTags();
 
     await import("src/adapters").then(({ default: load }) => load(context));
   } catch (err) {
