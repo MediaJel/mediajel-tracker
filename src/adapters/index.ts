@@ -8,7 +8,7 @@ const applyExtensions = (
   tracker: SnowplowTracker,
   extensions: ((tracker: SnowplowTracker) => SnowplowTracker)[]
 ): SnowplowTracker => {
-  return extensions.reduce((currentTracker, extension) => extension(currentTracker), tracker);
+  return extensions.reduce((currentTracker, extension) => extension ? extension(currentTracker): currentTracker, tracker);
 };
 
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {

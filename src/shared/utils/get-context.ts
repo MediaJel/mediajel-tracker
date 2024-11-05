@@ -1,4 +1,4 @@
-import { QueryStringContext, QueryStringParams } from "../types";
+import { QueryStringContext, QueryStringParams } from '../types';
 
 // Locates our tag
 
@@ -27,7 +27,7 @@ const getContext = (): QueryStringContext => {
 
   // logger.debug("Resolved Version", resolvedVersion);
 
-  console.log(target);
+  
 
   return {
     appId: appId || mediajelAppId, // Legacy support for old universal tag

@@ -1,5 +1,5 @@
-import { CreateSnowplowTrackerInput, SnowplowTracker } from "src/shared/snowplow/types";
-import { initialize } from "src/shared/snowplow/v1/init";
+import { CreateSnowplowTrackerInput, SnowplowTracker } from 'src/shared/snowplow/types';
+import { initialize } from 'src/shared/snowplow/v1/init';
 
 const createSnowplowV1Tracker = async (input: CreateSnowplowTrackerInput): Promise<SnowplowTracker> => {
   // We only load the impressions handler if the event is an impression
@@ -10,6 +10,7 @@ const createSnowplowV1Tracker = async (input: CreateSnowplowTrackerInput): Promi
   const loadEcommerceHandler = async () => {
     return await import(`src/shared/snowplow/v1/ecommerce`).then(({ default: load }) => load(input));
   };
+
 
   return {
     context: input,

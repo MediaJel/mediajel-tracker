@@ -1,6 +1,6 @@
-import logger from "src/shared/logger";
-import { SnowplowTracker } from "src/shared/snowplow";
-import observable from "src/shared/utils/create-events-observable";
+import logger from 'src/shared/logger';
+import { SnowplowTracker } from 'src/shared/snowplow';
+import observable from 'src/shared/utils/create-events-observable';
 
 export default async (tracker: SnowplowTracker): Promise<void> => {
   const { context } = tracker;
@@ -12,7 +12,6 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
     removeFromCartEvent && tracker.ecommerce.trackRemoveFromCart(removeFromCartEvent);
   });
 
-  // TODO: Add comments for dynamic tracking of events tracked
   // We are dynamically loading the data source publisher/notifier based on the environment
   //* WARNING: Do not use absolute imports when dynamically loading modules
   switch (context.environment) {
