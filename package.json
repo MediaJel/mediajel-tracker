@@ -6,7 +6,7 @@
     "start": "rimraf dist && rimraf .parcel-cache && concurrently --kill-others \"parcel watch --port 1235 src/index.ts\" \"ts-node ./server/index.ts\" \"tsc --noEmit --watch\" \"parcel --no-cache ./public/index.html\" ",
     "predeploy": "node -r dotenv/config deploy/predeploy.js",
     "check": "tsc --noEmit",
-    "deploy": "parcel build src/index.ts",
+    "deploy": "parcel build src/index.ts --no-scope-hoist",
     "postdeploy": "node -r dotenv/config deploy/postdeploy.js",
     "build": "parcel build src/index.ts",
     "cy:open": "cypress open",
