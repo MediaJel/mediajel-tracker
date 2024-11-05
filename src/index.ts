@@ -1,4 +1,3 @@
-import loadAdapters from 'src/adapters';
 import logger from 'src/shared/logger';
 
 import { QueryStringContext } from './shared/types';
@@ -16,8 +15,7 @@ import { getCustomTags } from './shared/utils/get-custom-tags';
 
     getCustomTags();
 
-    loadAdapters(context);
-    // await import("src/adapters").then(({ default: load }) => load(context));
+    await import("src/adapters").then(({ default: load }) => load(context));
   } catch (err) {
     const clientError = `An error has occured, please contact your pixel provider: `;
     console.error(clientError + err.message);
