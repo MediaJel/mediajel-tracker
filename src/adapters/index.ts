@@ -12,7 +12,7 @@ const applyExtensions = (
 };
 
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
-  const plugins = context.plugin.split(",");
+  const plugins = context?.plugin?.split(",") || []
   const snowplow = await createSnowplowTracker(context);
 
   // Apply extensions to the tracker
