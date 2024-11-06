@@ -1,6 +1,6 @@
-import { SnowplowTracker } from "../types";
+import { SnowplowTracker } from '../types';
 
-export const handleTransactionsDeduplication = (snowplow: SnowplowTracker) => {
+export const withTransactionDeduplicationExtension = (snowplow: SnowplowTracker) => {
     
     const trackTransaction = snowplow.ecommerce.trackTransaction;
 

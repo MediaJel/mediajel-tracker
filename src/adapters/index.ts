@@ -1,6 +1,7 @@
 import logger from 'src/shared/logger';
 import { createSnowplowTracker } from 'src/shared/snowplow';
 import { applyExtensions, withSnowplowSegmentsExtension } from 'src/shared/snowplow/extensions';
+import { withTransactionDeduplicationExtension } from 'src/shared/snowplow/extensions/deduplicator';
 import { QueryStringContext } from 'src/shared/types';
 
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
@@ -9,6 +10,7 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
 
   // Apply extensions to the tracker
   const tracker = applyExtensions(snowplow, [
+    withTransactionDeduplicationExtension,
     withSnowplowSegmentsExtension,
     /** Dynamically add Google Ads plugin/extension */
     plugins.includes("googleAds") && (await import("src/shared/snowplow/extensions").then(({ withGoogleAdsExtension }) => withGoogleAdsExtension)),
