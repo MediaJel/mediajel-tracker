@@ -1,7 +1,7 @@
 import logger from 'src/shared/logger';
 import { createSnowplowTracker } from 'src/shared/snowplow';
 import { applyExtensions, withSnowplowSegmentsExtension } from 'src/shared/snowplow/extensions';
-import { QueryStringContext, Window } from 'src/shared/types';
+import { QueryStringContext } from 'src/shared/types';
 
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   const plugins = context?.plugin?.split(",") || []
