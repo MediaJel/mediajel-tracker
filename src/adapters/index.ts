@@ -16,6 +16,8 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
     plugins.includes("bingAds") && (await import("src/shared/snowplow/extensions").then(({ withBingAdsExtension }) => withBingAdsExtension)),
   ]);
 
+  window.trackTrans = tracker.ecommerce.trackTransaction;
+
   switch (context.event) {
     case "transaction":
       import("./ecommerce").then(({ default: load }): Promise<void> => load(tracker));
