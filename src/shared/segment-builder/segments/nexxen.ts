@@ -1,5 +1,5 @@
-import logger from 'src/shared/logger';
-import { NexxenSegmentBuilderInput } from 'src/shared/segment-builder/types';
+import logger from "src/shared/logger";
+import { NexxenSegmentBuilderInput } from "src/shared/segment-builder/types";
 
 interface EmitPurchaseInput {
   cid: string;

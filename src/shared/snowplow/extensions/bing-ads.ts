@@ -21,7 +21,20 @@ const withSnowplowBingAdsExtension = (snowplow: SnowplowTracker) => {
   //* Override the trackTransaction method
   snowplow.ecommerce.trackTransaction = (input) => {
     trackTransaction(input);
-    logger.info(`🚀🚀🚀 Bing Ads Plugin Transaction Event`);
+
+    logger.info(`🚀🚀🚀 Bing Ads Extension Transaction Event`, {
+      transaction_id: input.id,
+      ecomm_prodid: input.items.map((item) => item.sku),
+      ecomm_pagetype: "purchase",
+      ecomm_totalvalue: input.total,
+      revenue_value: input.total,
+      currency: "USD",
+      items: input.items.map((item) => ({
+        id: item.sku,
+        quantity: item.quantity,
+        price: item.unitPrice,
+      })),
+    });
 
     window.uetq.push("event", "purchase", {
       transaction_id: input.id,

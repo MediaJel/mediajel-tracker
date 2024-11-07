@@ -50,7 +50,13 @@ const withSnowplowGoogleAdsExtension = (snowplow: SnowplowTracker) => {
   snowplow.ecommerce.trackTransaction = (input) => {
     trackTransaction(input);
 
-    logger.info(`🚀🚀🚀 Google Ads Plugin Transaction Event`);
+    logger.info(`🚀🚀🚀 Google Ads Extension Transaction Event`, {
+      send_to: `${conversionId}/${conversionLabel}`,
+      value: input.total,
+      currency: input.currency,
+      transaction_id: input.id,
+    });
+
     window.gtag("event", "conversion", {
       send_to: `${conversionId}/${conversionLabel}`,
       value: input.total,
