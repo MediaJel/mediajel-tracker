@@ -6,7 +6,7 @@ const createSnowplowV2TrackerEcommerceEventsHandlers = (
   const { appId, retailId } = input;
   return {
     trackTransaction(input) {
-      window.tracker("addTrans", {
+      window.tracker(`addTrans:${appId}`, {
         orderId: input.id,
         affiliation: retailId ?? appId,
         total: input.total,
