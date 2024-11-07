@@ -3,7 +3,9 @@ import logger from 'src/shared/logger';
 import { SnowplowTracker } from '../types';
 
 /**
- * This extension will prevent duplicate events (I.E. transactions) from being tracked
+ * *This extension will prevent duplicate events (I.E. transactions) from being tracked
+ * TODO: Add appId to appropriate events
+ * TODO: Implement deduplication for other events (remove from cart, add to cart, etc.)
  */
 const withTransactionDeduplicationExtension = (snowplow: SnowplowTracker) => {
   const trackTransaction = snowplow.ecommerce.trackTransaction;
