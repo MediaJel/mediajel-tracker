@@ -1,11 +1,14 @@
-import logger from 'src/shared/logger';
-import { createSnowplowTracker } from 'src/shared/snowplow';
-import { applyExtensions, withSnowplowSegmentsExtension } from 'src/shared/snowplow/extensions';
-import { withTransactionDeduplicationExtension } from 'src/shared/snowplow/extensions/deduplicator';
-import { QueryStringContext } from 'src/shared/types';
+import logger from "src/shared/logger";
+import { createSnowplowTracker } from "src/shared/snowplow";
+import {
+  applyExtensions,
+  withSnowplowSegmentsExtension,
+  withTransactionDeduplicationExtension,
+} from "src/shared/snowplow/extensions";
+import { QueryStringContext } from "src/shared/types";
 
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
-  const plugins = context?.plugin?.split(",") || []
+  const plugins = context?.plugin?.split(",") || [];
   const snowplow = await createSnowplowTracker(context);
 
   // Apply extensions to the tracker
@@ -13,9 +16,11 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
     withTransactionDeduplicationExtension,
     withSnowplowSegmentsExtension,
     /** Dynamically add Google Ads plugin/extension */
-    plugins.includes("googleAds") && (await import("src/shared/snowplow/extensions").then(({ withGoogleAdsExtension }) => withGoogleAdsExtension)),
+    plugins.includes("googleAds") &&
+      (await import("src/shared/snowplow/extensions").then(({ withGoogleAdsExtension }) => withGoogleAdsExtension)),
     /** Dynamically add Bing Ads plugin/extension */
-    plugins.includes("bingAds") && (await import("src/shared/snowplow/extensions").then(({ withBingAdsExtension }) => withBingAdsExtension)),
+    plugins.includes("bingAds") &&
+      (await import("src/shared/snowplow/extensions").then(({ withBingAdsExtension }) => withBingAdsExtension)),
   ]);
 
   window.trackTrans = tracker.ecommerce.trackTransaction;

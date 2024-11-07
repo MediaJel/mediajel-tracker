@@ -2,7 +2,7 @@ import logger from "src/shared/logger";
 
 import { SnowplowTracker } from "../types";
 
-export const withTransactionDeduplicationExtension = (snowplow: SnowplowTracker) => {
+const withTransactionDeduplicationExtension = (snowplow: SnowplowTracker) => {
   const trackTransaction = snowplow.ecommerce.trackTransaction;
 
   snowplow.ecommerce.trackTransaction = (input) => {
@@ -20,3 +20,5 @@ export const withTransactionDeduplicationExtension = (snowplow: SnowplowTracker)
   };
   return snowplow;
 };
+
+export default withTransactionDeduplicationExtension;
