@@ -1,6 +1,7 @@
+import { SnowplowTrackerImpressionEvents } from "src/shared/snowplow/types";
 import { ImpressionsMacrosParams } from "src/shared/types";
 
-const createSnowplowV1TrackerImpressionEventsHandlers = () => {
+const createSnowplowV1TrackerImpressionEventsHandlers = (): SnowplowTrackerImpressionEvents => {
   return {
     /**
      * ! Note: Please do not change the order of the how the mjcx array is structured.

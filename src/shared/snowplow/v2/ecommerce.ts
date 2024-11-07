@@ -1,6 +1,8 @@
-import { CreateSnowplowTrackerInput } from "src/shared/snowplow/types";
+import { CreateSnowplowTrackerInput, SnowplowTrackerEcommerceEvents } from "src/shared/snowplow/types";
 
-const createSnowplowV2TrackerEcommerceEventsHandlers = (input: CreateSnowplowTrackerInput) => {
+const createSnowplowV2TrackerEcommerceEventsHandlers = (
+  input: CreateSnowplowTrackerInput,
+): SnowplowTrackerEcommerceEvents => {
   const { appId, retailId } = input;
   return {
     trackTransaction(input) {
