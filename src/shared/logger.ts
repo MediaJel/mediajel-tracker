@@ -1,9 +1,9 @@
 export interface CreateLoggerOptionsInput {
-  label?: string;
   level?: string;
 }
 
 export interface Logger {
+  setLabel: (label: string) => void;
   debug: (...message: unknown[]) => void;
   info: (...message: unknown[]) => void;
   warn: (...message: unknown[]) => void;
@@ -27,20 +27,24 @@ const parseMsgToString = (message: unknown | unknown[]): string => {
   }
 };
 
-const formatMessage = (level: string, name: string, label: string | undefined, message: string): string => {
+const formatMessage = (level: string, name: string, label: string, message: string): string => {
   const timestamp = new Date().toISOString();
   const identifier = label ? `${name} - ${label}` : name;
   return `${timestamp} [${identifier}] ${level.toUpperCase()} : ${message}`;
 };
 
-const createLogger = (name: string, options?: CreateLoggerOptionsInput): Logger => {
+const createLogger = (name: string): Logger => {
+  let label = null;
   const log = (level: string, ...message: unknown[]) => {
-    const formattedMessage = formatMessage(level, name, options?.label, parseMsgToString(message));
+    const formattedMessage = formatMessage(level, name, label, parseMsgToString(message));
     const colorStyle = colors[level as keyof typeof colors] || "";
     console.log(`%c${formattedMessage}`, colorStyle);
   };
 
   return {
+    setLabel: (newLabel: string) => {
+      label = newLabel;
+    },
     debug: (...message: unknown[]) => log("debug", ...message),
     info: (...message: unknown[]) => log("info", ...message),
     warn: (...message: unknown[]) => log("warn", ...message),
