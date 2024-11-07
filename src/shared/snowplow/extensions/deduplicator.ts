@@ -1,18 +1,22 @@
-import { SnowplowTracker } from '../types';
+import logger from "src/shared/logger";
+
+import { SnowplowTracker } from "../types";
 
 export const withTransactionDeduplicationExtension = (snowplow: SnowplowTracker) => {
-    
-    const trackTransaction = snowplow.ecommerce.trackTransaction;
+  const trackTransaction = snowplow.ecommerce.trackTransaction;
 
-    snowplow.ecommerce.trackTransaction = (input) => {
-        const transactionStorage = localStorage.getItem(snowplow.context.appId);
-        
-        if (transactionStorage === input.id) {
-            return;
-        }
+  snowplow.ecommerce.trackTransaction = (input) => {
+    logger.debug("Triggering Transaction Deduplication Extension");
+    const transactionStorage = localStorage.getItem(snowplow.context.appId);
 
-        trackTransaction(input);
-        localStorage.setItem(snowplow.context.appId, input.id);
+    logger.debug("Transaction Storage", transactionStorage);
+
+    if (transactionStorage === input.id) {
+      return logger.warn(`Transaction with id ${input.id} already tracked`);
     }
-    return snowplow;
-}
+
+    trackTransaction(input);
+    localStorage.setItem(snowplow.context.appId, input.id);
+  };
+  return snowplow;
+};
