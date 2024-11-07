@@ -21,7 +21,7 @@ const createSnowplowV1TrackerEcommerceEventsHandlers = (
 
       input.items.forEach((item) => {
         window.tracker(
-          "addItem",
+          `addItem:${appId}`,
           input.id,
           item.sku,
           item.name,
@@ -31,7 +31,7 @@ const createSnowplowV1TrackerEcommerceEventsHandlers = (
           input.currency,
         );
       });
-      window.tracker("trackTrans");
+      window.tracker(`trackTrans:${appId}`);
     },
     trackAddToCart: (input) => {
       window.tracker(

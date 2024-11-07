@@ -19,7 +19,7 @@ const createSnowplowV2TrackerEcommerceEventsHandlers = (
       });
 
       input.items.forEach((item) => {
-        window.tracker("addItem", {
+        window.tracker(`addItem:${appId}`, {
           orderId: item.orderId,
           sku: item.sku,
           name: item.name,
@@ -30,7 +30,7 @@ const createSnowplowV2TrackerEcommerceEventsHandlers = (
         });
       });
 
-      window.tracker("trackTrans");
+      window.tracker(`trackTrans:${appId}`);
     },
     trackAddToCart(input) {
       window.tracker("trackAddToCart", {
