@@ -12,6 +12,10 @@ const setupExtension = (context: QueryStringContext): void => {
   window.uetq = window.uetq || [];
 };
 
+/**
+ * This extension will send Bing Ads conversion events when a transaction is tracked
+ */
+
 const withSnowplowBingAdsExtension = (snowplow: SnowplowTracker) => {
   setupExtension(snowplow.context);
 

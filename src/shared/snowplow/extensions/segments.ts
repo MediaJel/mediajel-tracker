@@ -36,6 +36,10 @@ const setupExtension = (context: QueryStringContext): ReturnType<typeof createSe
   return segments;
 };
 
+/**
+ * This extension will send transaction events to our partner segments when a transaction is tracked
+ */
+
 const withSnowplowSegmentsExtension = (snowplow: SnowplowTracker) => {
   const segments = setupExtension(snowplow.context);
 

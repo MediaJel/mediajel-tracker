@@ -1,7 +1,10 @@
-import logger from "src/shared/logger";
+import logger from 'src/shared/logger';
 
-import { SnowplowTracker } from "../types";
+import { SnowplowTracker } from '../types';
 
+/**
+ * This extension will prevent duplicate events (I.E. transactions) from being tracked
+ */
 const withTransactionDeduplicationExtension = (snowplow: SnowplowTracker) => {
   const trackTransaction = snowplow.ecommerce.trackTransaction;
 

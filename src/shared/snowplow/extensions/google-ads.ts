@@ -39,6 +39,9 @@ const setupExtension = (context: QueryStringContext): void => {
   }
 };
 
+/**
+ * This extension will send Google ads conversion events when a transaction is tracked
+ */
 const withSnowplowGoogleAdsExtension = (snowplow: SnowplowTracker) => {
   const { conversionId, conversionLabel } = snowplow.context;
   setupExtension(snowplow.context);
