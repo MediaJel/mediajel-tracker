@@ -9,6 +9,7 @@ import { getCustomTags } from './shared/utils/get-custom-tags';
     const context: QueryStringContext = getContext();
 
     logger.debug("MJ Tag Context", context);
+    logger.debug("Integrations In Progress");
 
     // Validations
     if (!context.appId) throw new Error("appId is required");
