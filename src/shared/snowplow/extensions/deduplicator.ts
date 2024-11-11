@@ -11,14 +11,14 @@ const withTransactionDeduplicationExtension = (snowplow: SnowplowTracker) => {
   const trackTransaction = snowplow.ecommerce.trackTransaction;
 
   snowplow.ecommerce.trackTransaction = (input) => {
-    const transactionStorage = localStorage.getItem(snowplow.context.appId);
+    const transactionStorage = sessionStorage.getItem(snowplow.context.appId);
 
     if (transactionStorage === input.id) {
       return logger.warn(`Transaction with id ${input.id} already tracked, Disccarding duplicate transaction`);
     }
 
     trackTransaction(input);
-    localStorage.setItem(snowplow.context.appId, input.id);
+    sessionStorage.setItem(snowplow.context.appId, input.id);
   };
   return snowplow;
 };
