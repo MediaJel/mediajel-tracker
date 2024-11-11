@@ -50,6 +50,11 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       // description: "ecwid is a just a test description"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
+    case "foxy":
+      import("../shared/environment-data-sources/foxy").then(({ default: load }): void => load());
+      // description: "foxy is a just a test description"
+      // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+      break;
     case "grassdoor":
       import("../shared/environment-data-sources/grassdoor").then(({ default: load }): void => load());
       // description: "grassdoor is a just a test description"
