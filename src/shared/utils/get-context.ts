@@ -2,13 +2,16 @@ import { QueryStringContext, QueryStringParams } from '../types';
 
 // Locates our tag
 
+//* v2
+//* v1
+
 const getContext = (): QueryStringContext => {
   const scripts: HTMLCollectionOf<HTMLScriptElement> = document.getElementsByTagName("script");
   const target: HTMLScriptElement = (document.currentScript as HTMLScriptElement) || scripts[scripts.length - 1];
   const substring: string = target.src.substring(target.src.indexOf("?"));
   const urlSearchParams: URLSearchParams = new URLSearchParams(substring);
   const { mediajelAppId, appId, version, ...params } = Object.fromEntries(
-    urlSearchParams.entries()
+    urlSearchParams.entries(),
   ) as unknown as QueryStringParams;
 
   // let storedVersion = localStorage.getItem("mj-tag-version");
@@ -26,8 +29,6 @@ const getContext = (): QueryStringContext => {
   // const resolvedVersion = storedVersion;
 
   // logger.debug("Resolved Version", resolvedVersion);
-
-  
 
   return {
     appId: appId || mediajelAppId, // Legacy support for old universal tag

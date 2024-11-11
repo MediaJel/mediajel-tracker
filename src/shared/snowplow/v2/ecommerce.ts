@@ -1,4 +1,6 @@
-import { CreateSnowplowTrackerInput, SnowplowTrackerEcommerceEvents } from "src/shared/snowplow/types";
+import {
+    CreateSnowplowTrackerInput, SnowplowTrackerEcommerceEvents
+} from 'src/shared/snowplow/types';
 
 const createSnowplowV2TrackerEcommerceEventsHandlers = (
   input: CreateSnowplowTrackerInput,
@@ -6,7 +8,7 @@ const createSnowplowV2TrackerEcommerceEventsHandlers = (
   const { appId, retailId } = input;
   return {
     trackTransaction(input) {
-      window.tracker(`addTrans:${appId}`, {
+      window.tracker(`addTrans`, {
         orderId: input.id,
         affiliation: retailId ?? appId,
         total: input.total,
@@ -19,7 +21,7 @@ const createSnowplowV2TrackerEcommerceEventsHandlers = (
       });
 
       input.items.forEach((item) => {
-        window.tracker(`addItem:${appId}`, {
+        window.tracker(`addItem`, {
           orderId: item.orderId,
           sku: item.sku,
           name: item.name,
@@ -30,7 +32,7 @@ const createSnowplowV2TrackerEcommerceEventsHandlers = (
         });
       });
 
-      window.tracker(`trackTrans:${appId}`);
+      window.tracker(`trackTrans`);
     },
     trackAddToCart(input) {
       window.tracker("trackAddToCart", {
