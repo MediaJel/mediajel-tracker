@@ -1,8 +1,5 @@
 <html lang="en">
   <head>
-    <link rel="stylesheet" href="index.css" />
-
-
     <!-- AWS Production Tracker START -->
     <!-- <script src="https://tag.cnna.io/?mediajelAppId=universal-tag-production&environment=jane&test"></script> -->
     <!-- AWS Production Tracker END -->
@@ -48,12 +45,12 @@
     <!-- <script src="http://localhost:3000/index.js?appId=staging-s3-test&test=true&test=true"></script> -->
     <!-- <script src="http://localhost:3000/index.js?appId=test&s2=MvJegWkaPIV2qutFH57lslPA6w3VXMhZM28eTrt9xP9mtcPrqfSc6KIChYwtyot4fVeW7C-bgD6Pu7KbxlxWFw"></script> -->
     <!-- <script src="http://localhost:3000/index.js?appId=Example2&s2.pv={BEACON_ID_FOR_VISITORS}&s2.tr={BEACON_ID_FOR_TRANSACTIONS_TRACKING}"></script> -->
-    <script src="https://tags.mediajel.ninja/?appId=Example2&version=2&test=true" type="text/javascript"></script>
-    <script src="https://tags.mediajel.ninja/?appId=Example&version=1&test=true" type="text/javascript"></script>
+    <!-- <script
+      src="http://tags.mediajel.ninja/?appId=ExampleVersion1&environment=dutchieplus&test=true&plugin=googleAds,bingAds&conversionId=AW-10963714894&conversionLabel=XXXXXXXXXX&tagId=12346"
+      type="text/javascript"
+    ></script> -->
 
-
-
-
+    <script src="http://localhost:3000/index.js?appId=Staging&environment=weave"></script>
 
     <title>App</title>
   </head>
@@ -61,21 +58,81 @@
     <a href="https://youtube.com/" target="_blank">link</a>
     <script type="text/javascript">
       window.setTimeout(function () {
-        // window.tracker("addTrans", "1234", "Acme Clothing", 11.99, 1.29, 5, "San Jose", "CA", "USA");
+        window.dataLayer = window.dataLayer || [];
 
-        window.tracker("addTrans", {
-          orderId: "1234",
-          store: "Acme Clothing",
-          total: 11.99,
-          tax: 1.29,
-          shipping: 5,
-          city: "San Jose",
-          state: "CA",
-          country: "USA",
+        window.dataLayer.push({
+          event: "purchase",
+          ecommerce: {
+            transaction_id: "12345", // unique ID for the transaction
+            affiliation: "Online Store", // source or affiliate
+            value: 59.99, // total transaction value
+            currency: "USD", // currency code
+            tax: 4.5, // tax amount
+            shipping: 5.0, // shipping cost
+            coupon: "SUMMER_SALE", // coupon code used
+            items: [
+              {
+                item_id: "SKU12345", // unique ID for the product
+                item_name: "T-Shirt", // product name
+                affiliation: "Online Store",
+                coupon: "SUMMER_SALE",
+                currency: "USD",
+                discount: 5.0, // discount applied to the item
+                index: 0, // position of the item in the list
+                item_brand: "BrandX", // brand of the product
+                item_category: "Apparel", // category of the product
+                item_variant: "Blue", // variant of the product
+                price: 20.0, // price per item
+                quantity: 2, // quantity of the item
+              },
+              {
+                item_id: "SKU67890",
+                item_name: "Shoes",
+                affiliation: "Online Store",
+                coupon: "SUMMER_SALE",
+                currency: "USD",
+                discount: 3.0,
+                index: 1,
+                item_brand: "BrandY",
+                item_category: "Footwear",
+                item_variant: "Red",
+                price: 19.99,
+                quantity: 1,
+              },
+            ],
+          },
         });
 
-        window.tracker("trackTrans");
-      }, 1000);
+        window.dataLayer.push({
+          event: "add_to_cart",
+          ecommerce: {
+            items: [
+              {
+                item_id: "SKU12345", // unique ID for the product
+                item_name: "T-Shirt", // product name
+                item_category: "Apparel", // category of the product
+                full_price: 20.0, // price per item
+                quantity: 2, // quantity of the item
+              },
+            ],
+          },
+        });
+
+        window.dataLayer.push({
+          event: "remove_from_cart",
+          ecommerce: {
+            items: [
+              {
+                item_id: "SKU12345", // unique ID for the product
+                item_name: "T-Shirt", // product name
+                item_category: "Apparel", // category of the product
+                full_price: 20.0, // price per item
+                quantity: 2, // quantity of the item
+              },
+            ],
+          },
+        });
+      }, 2000);
     </script>
   </body>
 </html>

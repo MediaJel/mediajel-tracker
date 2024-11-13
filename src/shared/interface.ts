@@ -1,3 +1,5 @@
+import { TransactionEvent } from "./snowplow/types";
+
 export {};
 
 declare global {
@@ -17,6 +19,7 @@ declare global {
     dataLayer: any;
     gtag: any;
     uetq: any;
+    trackTrans: (input: TransactionEvent) => void;
     gtmDataLayer: any;
   }
 }

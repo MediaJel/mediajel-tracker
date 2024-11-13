@@ -31,6 +31,12 @@ export interface EnvironmentEvents {
   transactionEvent: (transactionData: TransactionEvent) => void;
 }
 
+export interface EventsObservableEvents {
+  transactionEvent: TransactionEvent;
+  addToCartEvent: CartEvent;
+  removeFromCartEvent: CartEvent;
+}
+
 // Data structure of the tag after parsing
 export type TransactionParams = {
   environment: string;
@@ -52,12 +58,13 @@ export type SignupParams = {
 };
 
 export type SnowplowParams = {
-  appId?: string;
+  appId: string;
   mediajelAppId?: string;
   environment: string;
   event: "impression" | "transaction" | "signup" | "googleAds";
   test: string;
   version: string;
+  tag: string;
 };
 
 export type SnowplowPluginParams = {
@@ -142,3 +149,7 @@ export type QueryStringParams = Partial<TransactionParams> &
 
 // Params available to the tag's query string
 export type QueryStringContext = QueryStringParams & { collector: string };
+
+export interface Window {
+  trackTrans: (input: TransactionEvent) => void;
+}

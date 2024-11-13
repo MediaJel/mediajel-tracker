@@ -1,9 +1,9 @@
-import logger from 'src/shared/logger';
+import observable from "src/shared/utils/create-events-observable";
 
-import { xhrResponseSource } from '../sources/xhr-response-source';
-import { EnvironmentEvents, TransactionCartItem } from '../types';
+import { xhrResponseSource } from "../sources/xhr-response-source";
+import { TransactionCartItem } from "../types";
 
-const buddiTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }: Partial<EnvironmentEvents>): void => {
+const buddiDataSource = (): void => {
   xhrResponseSource((xhr: XMLHttpRequest): void => {
     const response = JSON.parse(xhr.responseText);
     const cartList = [];
@@ -13,13 +13,15 @@ const buddiTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }:
 
       cartList.push(product);
 
-      addToCartEvent({
-        sku: product.id.toString(),
-        name: product.name.toString() || "N/A",
-        category: "N/A",
-        unitPrice: parseFloat(product.price) || 0,
-        quantity: parseInt(product.qty) || 1,
-        currency: "USD",
+      observable.notify({
+        addToCartEvent: {
+          sku: product.id.toString(),
+          name: product.name.toString() || "N/A",
+          category: "N/A",
+          unitPrice: parseFloat(product.price) || 0,
+          quantity: parseInt(product.qty) || 1,
+          currency: "USD",
+        },
       });
     } else if (xhr.responseURL.includes("delete-product-from-cart")) {
       const product = response.items;
@@ -36,13 +38,15 @@ const buddiTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }:
 
       try {
         for (let i = removedItem.length; i > 0; i--) {
-          removeFromCartEvent({
-            sku: removedItem[i - 1].id.toString(),
-            name: removedItem[i - 1].name.toString() || "N/A",
-            category: "N/A",
-            unitPrice: parseFloat(removedItem[i - 1].price) || 0,
-            quantity: parseInt(removedItem[i - 1].qty) || 1,
-            currency: "USD",
+          observable.notify({
+            removeFromCartEvent: {
+              sku: removedItem[i - 1].id.toString(),
+              name: removedItem[i - 1].name.toString() || "N/A",
+              category: "N/A",
+              unitPrice: parseFloat(removedItem[i - 1].price) || 0,
+              quantity: parseInt(removedItem[i - 1].qty) || 1,
+              currency: "USD",
+            },
           });
 
           removedItem.length -= 1;
@@ -56,28 +60,30 @@ const buddiTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }:
         const transaction = response;
         const products = transaction.products;
 
-        transactionEvent({
-          id: transaction.id.toString(),
-          total: parseFloat(transaction.total),
-          tax: parseFloat(transaction.tax) || 0,
-          shipping: parseFloat(transaction.delivery_fee) || 0,
-          city: "N/A",
-          state: "N/A",
-          country: "USA",
-          currency: "USD",
-          items: products.map((product) => {
-            const { item_id, item_name, item_category, price, quantity } = product;
-            return {
-              orderId: transaction.id.toString(),
-              productId: item_id.toString(),
-              sku: item_id.toString(),
-              name: (item_name || "N/A").toString(),
-              category: (item_category || "N/A").toString(),
-              unitPrice: parseFloat(price || 0),
-              quantity: parseInt(quantity || 1),
-              currency: "USD",
-            } as TransactionCartItem;
-          }),
+        observable.notify({
+          transactionEvent: {
+            id: transaction.id.toString(),
+            total: parseFloat(transaction.total),
+            tax: parseFloat(transaction.tax) || 0,
+            shipping: parseFloat(transaction.delivery_fee) || 0,
+            city: "N/A",
+            state: "N/A",
+            country: "USA",
+            currency: "USD",
+            items: products.map((product) => {
+              const { item_id, item_name, item_category, price, quantity } = product;
+              return {
+                orderId: transaction.id.toString(),
+                productId: item_id.toString(),
+                sku: item_id.toString(),
+                name: (item_name || "N/A").toString(),
+                category: (item_category || "N/A").toString(),
+                unitPrice: parseFloat(price || 0),
+                quantity: parseInt(quantity || 1),
+                currency: "USD",
+              } as TransactionCartItem;
+            }),
+          },
         });
       } catch (e) {
         // window.tracker("trackError", JSON.stringify(e), "BUDDI");
@@ -86,4 +92,4 @@ const buddiTracker = ({ addToCartEvent, removeFromCartEvent, transactionEvent }:
   });
 };
 
-export default buddiTracker;
+export default buddiDataSource;

@@ -9,28 +9,14 @@ import { getCustomTags } from './shared/utils/get-custom-tags';
     const context: QueryStringContext = getContext();
 
     logger.debug("MJ Tag Context", context);
-
-    // Load plugin
-    if (context.plugin) {
-      import("./plugins").then(({ default: load }): void => load(context));
-    }
-
-    // Return early if the appId is not specified
-    if (context.plugin && !context.appId) return;
+    logger.debug("Integrations In Progress");
 
     // Validations
     if (!context.appId) throw new Error("appId is required");
 
     getCustomTags();
 
-    switch (context.version) {
-      case "1":
-        import("./v1").then(({ default: load }) => load(context));
-        break;
-      case "2":
-        import("./v2").then(({ default: load }) => load(context));
-        break;
-    }
+    await import("src/adapters").then(({ default: load }) => load(context));
   } catch (err) {
     const clientError = `An error has occured, please contact your pixel provider: `;
     console.error(clientError + err.message);

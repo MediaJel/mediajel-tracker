@@ -1,6 +1,6 @@
-import { S3 } from 'aws-sdk';
-import * as fs from 'fs';
-import * as path from 'path';
+import { S3 } from "aws-sdk";
+import * as fs from "fs";
+import * as path from "path";
 
 require("dotenv").config();
 
@@ -12,7 +12,7 @@ const s3 = new S3({
 });
 
 // Path to the index.ts file
-const indexPath = path.join(__dirname, "../v1/imports/carts/index.ts");
+const indexPath = path.join(__dirname, "../adapters/ecommerce.ts");
 // Path to the environment.js file
 const environmentPath = path.join(__dirname, "environment.js");
 
@@ -53,8 +53,7 @@ fs.readFile(indexPath, "utf8", (err, data) => {
   }
 
   // Regular expression to match case values, descriptions, and events-tracked
-  const caseRegex =
-    /case\s+"(.*?)":\s+import\(".*?"\)\.then\(.*?\);\s*\/\/\s*description:\s*"(.*?)"\s*\/\/\s*events-tracked:\s*(\[.*?\])/gs;
+  const caseRegex = /case\s+"(.*?)":\s+import\(".*?"\)\.then\([\s\S]*?\);\s*\/\/\s*description:\s*"(.*?)"\s*\/\/\s*events-tracked:\s*(\[.*?\])/g;
   let match;
   const environments = [];
 
@@ -83,15 +82,15 @@ fs.readFile(indexPath, "utf8", (err, data) => {
     )
     .join(",\n")}\n]`;
 
-  // Write the formatted data to environment.js
-  fs.writeFile(environmentPath, output, "utf8", (writeErr) => {
-    if (writeErr) {
-      console.error("Error writing environment.js file:", writeErr);
-      return;
-    }
-    console.info("environment.js file created successfully!");
+// Write the formatted data to environment.js
+fs.writeFile(environmentPath, output, "utf8", (writeErr) => {
+  if (writeErr) {
+    console.error("Error writing environment.js file:", writeErr);
+    return;
+  }
+  console.info("environment.js file created successfully!");
 
-    // Upload the file to S3
-    uploadToS3(environmentPath, bucketName, s3Key);
-  });
+  // Upload the file to S3
+  uploadToS3(environmentPath, bucketName, s3Key);
+});
 });
