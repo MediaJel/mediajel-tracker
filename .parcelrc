@@ -1,7 +1,4 @@
 {
     "extends": "@parcel/config-default",
-    "reporters": [
-        "@parcel/reporter-bundle-analyzer",
-        "@parcel/reporter-bundle-buddy"
-    ]
+    "reporters": []
 }
