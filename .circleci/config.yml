@@ -48,10 +48,10 @@ jobs:
       - checkout
       - run:
           name: Install project dependencies
-          command: npm install
+          command: yarn install
       - run:
           name: type checking
-          command: npm run check
+          command: yarn check
       #   TODO: UNCOMMENT LATER
       # - run:
       #     name: Cypress Install
@@ -61,7 +61,7 @@ jobs:
       #     command: npm run test
       - run:
           name: Build
-          command: npm run deploy
+          command: yarn deploy
       - aws-s3/sync:
           from: dist/
           to: "s3://mediajel-tracker-production"
