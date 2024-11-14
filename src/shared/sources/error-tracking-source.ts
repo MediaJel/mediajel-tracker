@@ -3,7 +3,7 @@ export const errorTrackingSource = (callback: () => void) => {
     callback();
   } catch (error) {
     window.tracker("trackError", {
-      message: error?.message,
+      message: "",
       error: error,
     });
   }
