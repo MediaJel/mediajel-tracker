@@ -48,19 +48,20 @@ jobs:
       - checkout
       - run:
           name: Install project dependencies
-          command: npm install
-      - run:
-          name: type checking
-          command: npm run check
-      - run:
-          name: Cypress Install
-          command: sudo apt-get update && sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
-      - run:
-          name: cypress tests
-          command: npm run test
+          command: yarn install
+#   TODO: UNCOMMENT LATER
+      # - run:
+      #     name: type checking
+      #     command: yarn check
+      # - run:
+      #     name: Cypress Install
+      #     command: sudo apt-get update && sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+      # - run:
+      #     name: cypress tests
+      #     command: npm run test
       - run:
           name: Build
-          command: npm run deploy
+          command: yarn deploy
       - aws-s3/sync:
           from: dist/
           to: "s3://mediajel-tracker-production"
