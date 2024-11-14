@@ -146,7 +146,7 @@ const createSnowplowV1TrackerImpressionEventsHandlers = (): SnowplowTrackerImpre
           advertiserId: advertiserId || "N/A",
           advertiserName: advertiserName || "N/A",
           insertionOrder: insertionOrder || "N/A",
-          lineItemId: lineItemId || "LiquidM_MAIN",
+          lineItemId: lineItemId || "Simplifi_MAIN",
           creativeId: creativeId || "N/A",
           publisherId: publisherId || "N/A",
           publisherName: publisherName || "N/A",
