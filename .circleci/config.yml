@@ -20,10 +20,10 @@ jobs:
       - checkout
       - run:
           name: Install project dependencies
-          command: npm install
+          command: yarn install
       - run:
           name: type checking
-          command: npm run check
+          command: yarn tsc --noEmit
         #   TODO: UNCOMMENT LATER
     #   - run:
     #       name: Cypress Install
@@ -49,10 +49,10 @@ jobs:
       - run:
           name: Install project dependencies
           command: yarn install
-#   TODO: UNCOMMENT LATER
-      # - run:
-      #     name: type checking
-      #     command: yarn check
+  
+      - run:
+          name: type checking
+          command: yarn tsc --noEmit
       # - run:
       #     name: Cypress Install
       #     command: sudo apt-get update && sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
