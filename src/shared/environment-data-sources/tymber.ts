@@ -107,14 +107,15 @@ const tymberDataSource = () => {
     };
 
     xhrResponseSource((xhr) => {
-      const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
-      if (transaction.status && transaction.orderAmount > 0) {
-        try {
+      try {
+        const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
+        if (transaction.status && transaction.orderAmount > 0) {
+
           isTrackerLoaded(() => {
             trackTransaction(transaction);
           });
-        } catch (error) {}
-      }
+        }
+      } catch (error) { }
     });
   }
 };
