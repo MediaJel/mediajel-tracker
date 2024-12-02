@@ -164,7 +164,6 @@ const createSnowplowV1TrackerImpressionEventsHandlers = (): SnowplowTrackerImpre
           IDFA: IDFA || "N/A",
           IDFA_MD5: IDFA_MD5 || "N/A",
           IDFA_SHA1: IDFA_SHA1 || "N/A",
-          MAXMIND_GEO_IDS: MAXMIND_GEO_IDS || "N/A",
         },
       };
 
