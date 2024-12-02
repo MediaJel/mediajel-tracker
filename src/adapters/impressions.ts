@@ -11,5 +11,8 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
     case "mantis":
       tracker.impressions.trackMantisImpression({ ...tracker.context });
       break;
+    case "simplifi":
+      tracker.impressions.trackSimplifiImpression({ ...tracker.context });
+      break;
   }
 };
