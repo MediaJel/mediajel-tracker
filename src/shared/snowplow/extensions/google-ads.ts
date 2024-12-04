@@ -1,4 +1,3 @@
-import { lte } from "cypress/types/lodash";
 import logger from "src/shared/logger";
 import { createSegments, DstillerySegmentBuilderInput, NexxenSegmentBuilderInput } from "src/shared/segment-builder";
 import { SnowplowTracker } from "src/shared/snowplow/types";
