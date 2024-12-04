@@ -1,3 +1,4 @@
+import { lte } from "cypress/types/lodash";
 import logger from "src/shared/logger";
 import { createSegments, DstillerySegmentBuilderInput, NexxenSegmentBuilderInput } from "src/shared/segment-builder";
 import { SnowplowTracker } from "src/shared/snowplow/types";
@@ -43,7 +44,12 @@ const setupExtension = (context: QueryStringContext): void => {
  * This extension will send Google ads conversion events when a transaction is tracked
  */
 const withSnowplowGoogleAdsExtension = (snowplow: SnowplowTracker) => {
-  const { conversionId, conversionLabel } = snowplow.context;
+  let { conversionId, conversionLabel } = snowplow.context;
+
+  if (!conversionId.includes("AW-")) {
+    conversionId = `AW-${conversionId}`;
+  }
+
   setupExtension(snowplow.context);
 
   // Original trackTransaction method
