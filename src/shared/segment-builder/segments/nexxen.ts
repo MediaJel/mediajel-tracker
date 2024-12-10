@@ -12,9 +12,8 @@ const nexxenSegmentBuilder = (beacons: NexxenSegmentBuilderInput) => {
     emit: () => {
       if (!pageVisitorBeaconId) return;
       logger.info("Building s2 segment with segmentId: ", pageVisitorBeaconId);
-
       const pix = createImagePixel(`https://r.turn.com/r/beacon?b2=${pageVisitorBeaconId}`);
-      document.body.appendChild(pix);
+      document.head.appendChild(pix);
     },
 
     emitPurchase: (input: EmitPurchaseInput) => {
@@ -27,9 +26,8 @@ const nexxenSegmentBuilder = (beacons: NexxenSegmentBuilderInput) => {
 
       logger.info("Emitting purchase event for segmentId: ", transactionBeaconId);
 
-      const pix = createImagePixel(`https://r.turn.com/r/beacon?b2=${transactionBeaconId}&cid=${cid}&bprice=${bprice}`);
-
-      document.body.appendChild(pix);
+      const pix =createImagePixel(`https://r.turn.com/r/beacon?b2=${transactionBeaconId}&cid=${cid}&bprice=${bprice}`);
+      document.head.appendChild(pix);
     },
   };
 };
