@@ -150,7 +150,11 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       // description: "yotpo is a just a test description"
       // events-tracked: [{ value: "add_to_cart", label: "Add to Cart" }, { value: "remove_from_cart", label: "Remove from Cart" }, { "value": "transaction", "label": "Transaction" }]
       break;
-
+    case "thirdparty":
+      import("../shared/environment-data-sources/thirdparty").then(({ default: load }): void => load());
+      // description: "thirdparty is a just a test descriptions"
+      // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+      break;
     default:
       logger.warn("No event/environment specified, Only pageview is active");
       break;
