@@ -17,9 +17,10 @@ const DstillerySegmentBuilderInput = (input: DstillerySegmentBuilderInput) => {
       logger.info("Building s3 segment with segmentId: ", siteVisitorNC);
 
       const pix = createImagePixel(
-        `https://action.dstillery.com/orbserv/nsjs?adv=cl172365597545365&ns=8779&nc=${siteVisitorNC}&ncv=76`,
+        `https://action.dstillery.com/orbserv/nsjs?adv=cl172365597545365&ns=8779&nc=${siteVisitorNC}&ncv=76`
       );
-      document.body.appendChild(pix);
+
+      document.head.appendChild(pix);
     },
 
     emitPurchase: (input: DstilleryInput) => {
@@ -33,10 +34,10 @@ const DstillerySegmentBuilderInput = (input: DstillerySegmentBuilderInput) => {
       logger.info("Emitting dstillery purchase event for segmentId: ", purchaseNC);
 
       const pix = createImagePixel(
-        `https://action.dstillery.com/orbserv/nsjs?adv=cl172365597545365&ns=8779&nc=${purchaseNC}&ncv=76&dstOrderId=${orderId}&dstOrderAmount=${amount}`,
+        `https://action.dstillery.com/orbserv/nsjs?adv=cl172365597545365&ns=8779&nc=${purchaseNC}&ncv=76&dstOrderId=${orderId}&dstOrderAmount=${amount}`
       );
 
-      document.body.appendChild(pix);
+      document.head.appendChild(pix);
     },
   };
 };
