@@ -28,6 +28,7 @@ export interface SnowplowTrackerEcommerceEvents {
 export interface SnowplowTrackerImpressionEvents {
   trackLiquidmImpression: (input: Partial<ImpressionsMacrosParams>) => void;
   trackMantisImpression: (input: Partial<ImpressionsMacrosParams>) => void;
+  trackSimplifiImpression: (input: Partial<ImpressionsMacrosParams>) => void;
 }
 
 export interface CreateSnowplowTrackerInput extends QueryStringContext {}

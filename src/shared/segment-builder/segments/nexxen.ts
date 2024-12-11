@@ -1,5 +1,6 @@
 import logger from "src/shared/logger";
 import { NexxenSegmentBuilderInput } from "src/shared/segment-builder/types";
+import createImagePixel from "src/shared/utils/create-image-pixel";
 
 interface EmitPurchaseInput {
   cid: string;
@@ -11,11 +12,8 @@ const nexxenSegmentBuilder = (beacons: NexxenSegmentBuilderInput) => {
     emit: () => {
       if (!pageVisitorBeaconId) return;
       logger.info("Building s2 segment with segmentId: ", pageVisitorBeaconId);
-
-      const pixel = document.createElement("img");
-      pixel.src = `https://r.turn.com/r/beacon?b2=${pageVisitorBeaconId}`;
-      pixel.border = "0";
-      document.body.appendChild(pixel);
+      const pix = createImagePixel(`https://r.turn.com/r/beacon?b2=${pageVisitorBeaconId}`);
+      document.head.appendChild(pix);
     },
 
     emitPurchase: (input: EmitPurchaseInput) => {
@@ -28,10 +26,8 @@ const nexxenSegmentBuilder = (beacons: NexxenSegmentBuilderInput) => {
 
       logger.info("Emitting purchase event for segmentId: ", transactionBeaconId);
 
-      const pixel = document.createElement("img");
-      pixel.src = `https://r.turn.com/r/beacon?b2=${transactionBeaconId}&cid=${cid}&bprice=${bprice}`;
-      pixel.border = "0";
-      document.body.appendChild(pixel);
+      const pix =createImagePixel(`https://r.turn.com/r/beacon?b2=${transactionBeaconId}&cid=${cid}&bprice=${bprice}`);
+      document.head.appendChild(pix);
     },
   };
 };
