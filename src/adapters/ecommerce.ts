@@ -35,6 +35,11 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       // description: "dispense is a just a test description"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
+    case "drupal":
+      import("../shared/environment-data-sources/drupal").then(({ default: load }): void => load());
+      // description: "drupal is just a test description"
+      // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+      break;
     case "dutchie-iframe":
       import("../shared/environment-data-sources/dutchie-iframe").then(({ default: load }): void => load());
       // description: "dutchie-iframe is a just a test description"
