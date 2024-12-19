@@ -70,6 +70,11 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       // description: "greenrush is a just a test description"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
+    case "iqmetrix":
+      import("../shared/environment-data-sources/greenrush").then(({ default: load }): void => load());
+      // description: "iqmetrix is a just a test description"
+      // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+      break;
     case "jane":
       import("../shared/environment-data-sources/jane").then(({ default: load }): void => load());
       // description: "jane is a just a test description"
