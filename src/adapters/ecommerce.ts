@@ -20,6 +20,11 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       // description: "bigcommerce is a just a test description"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
+    case "blaze":
+      import("../shared/environment-data-sources/blaze").then(({ default: load }): void => load());
+      // description: "blaze is a just a test description"
+      // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+      break;
     case "buddi":
       import("../shared/environment-data-sources/buddi").then(({ default: load }): void => load());
       // description: "buddi is a just a test description"
@@ -63,6 +68,11 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
     case "greenrush":
       import("../shared/environment-data-sources/greenrush").then(({ default: load }): void => load());
       // description: "greenrush is a just a test description"
+      // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+      break;
+    case "iqmetrix":
+      import("../shared/environment-data-sources/greenrush").then(({ default: load }): void => load());
+      // description: "iqmetrix is a just a test description"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
     case "jane":
