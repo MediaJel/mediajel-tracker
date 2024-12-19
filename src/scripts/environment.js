@@ -11,17 +11,6 @@
 ]
   },
   {
-    "label": "Blaze",
-    "value": "blaze",
-    "description": "blaze is a just a test description",
-    "eventsTracked": [
-    {
-        "value": "transaction",
-        "label": "Transaction"
-    }
-]
-  },
-  {
     "label": "Buddi",
     "value": "buddi",
     "description": "buddi is a just a test description",
@@ -153,17 +142,6 @@
     "label": "Greenrush",
     "value": "greenrush",
     "description": "greenrush is a just a test description",
-    "eventsTracked": [
-    {
-        "value": "transaction",
-        "label": "Transaction"
-    }
-]
-  },
-  {
-    "label": "Iqmetrix",
-    "value": "iqmetrix",
-    "description": "iqmetrix is a just a test description",
     "eventsTracked": [
     {
         "value": "transaction",
