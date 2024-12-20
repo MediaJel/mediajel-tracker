@@ -9,11 +9,11 @@ const blazeDataSource = () => {
                 const getData = JSON.parse(xhr.responseText);
                 console.log("getData: ", getData);
                 if (getData.data.type === "orders") {
-                    
+
                     const transaction = getData.data.attributes;
                     console.log("transaction: ", transaction);
-                    const amount = (transaction.total.amount/100).toString();
-                    const tax = (transaction.tax_total.amount/100).toString();
+                    const amount = (transaction.total.amount / 100).toString();
+                    const tax = (transaction.tax_total.amount / 100).toString();
                     const products = getData.included;
                     const address = transaction.delivery_address;
 
@@ -27,25 +27,25 @@ const blazeDataSource = () => {
                             state: (address.state || "N/A").toString(),
                             country: (address.country || "N/A").toString(),
                             currency: "USD",
-                            items: products.map((product) => {
-                            if (product.type === "order_items") {
-                                const price = product.attributes.final_price.amount;
-                                return {
-                                    orderId: transaction.order_number.toString(),
-                                    sku: product.id.toString(),
-                                    name: "N/A",
-                                    category: "N/A",
-                                    unitPrice: price/100 || 0,
-                                    quantity: parseInt(product.attributes.quantity || 1),
-                                    currency: "USD",
-                                } as TransactionCartItem;
-                            }
-                            }),
+                            items: products
+                                .filter((product) => product.type === "order_items")
+                                .map((product) => {
+                                    const price = product.attributes.final_price.amount;
+                                    return {
+                                        orderId: transaction.order_number.toString(),
+                                        sku: product.id.toString(),
+                                        name: "N/A",
+                                        category: "N/A",
+                                        unitPrice: price / 100 || 0,
+                                        quantity: parseInt(product.attributes.quantity || 1),
+                                        currency: "USD",
+                                    } as TransactionCartItem;
+                                }),
                         },
-                        });
+                    });
                 }
-            } 
-            catch (error) {}
+            }
+            catch (error) { }
         });
     }
 
