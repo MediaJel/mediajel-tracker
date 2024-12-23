@@ -52,6 +52,17 @@
 ]
   },
   {
+    "label": "Drupal",
+    "value": "drupal",
+    "description": "drupal is just a test description",
+    "eventsTracked": [
+    {
+        "value": "transaction",
+        "label": "Transaction"
+    }
+]
+  },
+  {
     "label": "Dutchie Iframe",
     "value": "dutchie-iframe",
     "description": "dutchie-iframe is a just a test description",
