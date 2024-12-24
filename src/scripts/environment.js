@@ -11,6 +11,17 @@
 ]
   },
   {
+    "label": "Blaze",
+    "value": "blaze",
+    "description": "blaze is a just a test description",
+    "eventsTracked": [
+    {
+        "value": "transaction",
+        "label": "Transaction"
+    }
+]
+  },
+  {
     "label": "Buddi",
     "value": "buddi",
     "description": "buddi is a just a test description",
@@ -33,6 +44,17 @@
     "label": "Dispense",
     "value": "dispense",
     "description": "dispense is a just a test description",
+    "eventsTracked": [
+    {
+        "value": "transaction",
+        "label": "Transaction"
+    }
+]
+  },
+  {
+    "label": "Drupal",
+    "value": "drupal",
+    "description": "drupal is just a test description",
     "eventsTracked": [
     {
         "value": "transaction",
