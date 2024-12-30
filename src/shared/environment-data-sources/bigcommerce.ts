@@ -10,7 +10,7 @@ const bigcommerceDataSource = () => {
   let success = false;
 
   xhrResponseSource((xhr) => {
-  //if (window.location.pathname.includes('/checkout')) {
+    //if (window.location.pathname.includes('/checkout')) {
     const transaction = JSON.parse(JSON.stringify(JSON.parse(xhr.responseText)));
     const products = transaction?.lineItems?.physicalItems;
     const getLatestOrder = localStorage.getItem("latestOrder");
