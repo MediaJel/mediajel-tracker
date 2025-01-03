@@ -7,11 +7,10 @@ const blazeDataSource = () => {
         xhrResponseSource((xhr) => {
             try {
                 const getData = JSON.parse(xhr.responseText);
-                console.log("getData: ", getData);
                 if (getData.data.type === "orders") {
 
                     const transaction = getData.data.attributes;
-                    console.log("transaction: ", transaction);
+
                     const amount = (transaction.total.amount / 100).toString();
                     const tax = (transaction.tax_total.amount / 100).toString();
                     const products = getData.included;

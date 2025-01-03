@@ -172,17 +172,6 @@
 ]
   },
   {
-    "label": "Iqmetrix",
-    "value": "iqmetrix",
-    "description": "iqmetrix is a just a test description",
-    "eventsTracked": [
-    {
-        "value": "transaction",
-        "label": "Transaction"
-    }
-]
-  },
-  {
     "label": "Jane",
     "value": "jane",
     "description": "jane is a just a test description",
