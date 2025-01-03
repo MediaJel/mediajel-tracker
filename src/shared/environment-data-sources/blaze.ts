@@ -10,6 +10,7 @@ const blazeDataSource = () => {
                 if (getData.data.type === "orders") {
 
                     const transaction = getData.data.attributes;
+
                     const amount = (transaction.total.amount / 100).toString();
                     const tax = (transaction.tax_total.amount / 100).toString();
                     const products = getData.included;
