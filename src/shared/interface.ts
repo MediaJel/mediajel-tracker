@@ -21,5 +21,6 @@ declare global {
     uetq: any;
     trackTrans: (input: TransactionEvent) => void;
     gtmDataLayer: any;
+    registerThirdPartyTags: () => void;
   }
 }

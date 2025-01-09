@@ -12,6 +12,74 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
     removeFromCartEvent && tracker.ecommerce.trackRemoveFromCart(removeFromCartEvent);
   });
 
+  const extractQueryParams = (tag: string): Record<string, string | null> => {
+    try {
+      const queryString = tag.split("?")[1];
+      const params = new URLSearchParams(queryString);
+      return Object.fromEntries(params.entries());
+    } catch (error) {
+      console.error("Failed to extract query parameters from tag:", tag);
+      return {};
+    }
+  };
+
+  observable.subscribe(
+    ({ onTransaction, onAddToCart, onRemoveFromCart, onSignup }) => {
+
+      onTransaction && onTransaction?.forEach((tag) => {
+        const params = extractQueryParams(tag.tag);
+        const transactionId = params.bb_transaction_id || null;
+        const transactionTotal = parseFloat(params.bb_transaction_total || "0");
+        tracker.ecommerce.trackTransaction({
+          id: transactionId,
+          total: transactionTotal,
+          shipping: 0,
+          state: "N/A",
+          tax: 0,
+          city: "N/A",
+          country: "N/A",
+          currency: "USD",
+          items: [],
+        });
+      });
+
+      onAddToCart && onAddToCart?.forEach((tag) => {
+        const params = extractQueryParams(tag.tag);
+        const cartId = params.bb_cart_id || null;
+
+        tracker.ecommerce.trackAddToCart({
+          sku: cartId,
+          name: cartId,
+          category: "",
+          unitPrice: 0,
+          quantity: 1,
+          currency: "USD",
+        });
+      });
+
+      onRemoveFromCart && onRemoveFromCart?.forEach((tag) => {
+        const params = extractQueryParams(tag.tag);
+        const cartId = params.bb_cart_id || null;
+        tracker.ecommerce.trackRemoveFromCart({
+          sku: cartId,
+          name: cartId,
+          category: "",
+          unitPrice: 0,
+          quantity: 1,
+          currency: "USD",
+        });
+      });
+
+      onSignup && onSignup?.forEach((tag) => {
+        const params = extractQueryParams(tag.tag);
+        const userId = params.bb_first_name || null;
+        tracker.trackSignup({
+          uuid: userId,
+        });
+      });
+    }
+  );
+
   // We are dynamically loading the data source publisher/notifier based on the environment
   //* WARNING: Do not use absolute imports when dynamically loading modules
   switch (context.environment) {

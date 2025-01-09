@@ -35,7 +35,18 @@ export interface EventsObservableEvents {
   transactionEvent: TransactionEvent;
   addToCartEvent: CartEvent;
   removeFromCartEvent: CartEvent;
+  onPageview?: ThirdPartyTags[];
+  onTransaction?: ThirdPartyTags[];
+  onSignup?: ThirdPartyTags[];
+  onAddToCart?: ThirdPartyTags[];
+  onRemoveFromCart?: ThirdPartyTags[];
 }
+
+export interface ThirdPartyTags {
+  type: "image" | "script";
+  tag: string;
+}
+
 
 // Data structure of the tag after parsing
 export type TransactionParams = {
@@ -152,4 +163,5 @@ export type QueryStringContext = QueryStringParams & { collector: string };
 
 export interface Window {
   trackTrans: (input: TransactionEvent) => void;
+  registerThirdPartyTags: () => void;
 }
