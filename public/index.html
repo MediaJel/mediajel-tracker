@@ -50,7 +50,21 @@
       type="text/javascript"
     ></script> -->
 
-    <script src="http://localhost:3000/index.js?appId=Staging&environment=weave&s2.pv=TestPV&s2.tr=TestTR&s3.pv=S3PV&s3.tr=S3TR&version=2"></script>
+    <script src="http://localhost:3000/index.js?appId=Staging&environment=dutchieplus&s2.pv=TestPV&s2.tr=TestTR&s3.pv=S3PV&s3.tr=S3TR&version=2"></script>
+    <script>
+      setTimeout(()=> {
+        console.log("Calling registerThirdPartyTags from index.html");
+        window.registerThirdPartyTags({
+              onTransaction: [{ type: "image", tag: `https://thirdparty.example.com/?bb_transaction_id={transaction_id}&bb_transaction_total={transaction_total}&bb_transaction_shipping={transaction_shipping}` }, { type: "script", tag: `https://thirdparty.example2.com/?bb_transaction_id={transaction_id}&bb_transaction_total={transaction_total}` }],
+              onSignup: [{ type: "image", tag: `https://thirdparty.example.com/?bb_first_name={signup_firstName}` }],
+              onAddToCart: [{ type: "image", tag: `https://thirdparty.example.com/?bb_cart_id={cart_id}&bb_cart_category={cart_category}` }, { type: "script", tag: `https://thirdparty.example.com/?bb_cart_id={cart_id}` }],
+              onRemoveFromCart: [{ type: "script", tag: `https://thirdparty.example.com/?bb_cart_id={cart_id}` }, { type: "image", tag: `https://thirdparty.example.com/?bb_cart_id={cart_id}` }],
+          });
+
+      }, 2000);
+    
+    </script>
+
 
     <title>App</title>
   </head>

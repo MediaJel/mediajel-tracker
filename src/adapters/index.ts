@@ -1,12 +1,10 @@
-import logger from "src/shared/logger";
-import { createSnowplowTracker } from "src/shared/snowplow";
+import logger from 'src/shared/logger';
+import { createSnowplowTracker } from 'src/shared/snowplow';
 import {
-  applyExtensions,
-  withSnowplowSegmentsExtension,
-  withTransactionDeduplicationExtension,
-} from "src/shared/snowplow/extensions";
-import { QueryStringContext, ThirdPartyTags } from "src/shared/types";
-import observable from "src/shared/utils/create-events-observable";
+    applyExtensions, withSnowplowSegmentsExtension, withTransactionDeduplicationExtension
+} from 'src/shared/snowplow/extensions';
+import withRegisterThirdPartyTagsExtension from 'src/shared/snowplow/extensions/register-third-party-tags';
+import { QueryStringContext } from 'src/shared/types';
 
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   const plugins = context?.plugin?.split(",") || [];
@@ -15,6 +13,7 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   // Apply extensions to the tracker
   const tracker = applyExtensions(snowplow, [
     withTransactionDeduplicationExtension,
+    withRegisterThirdPartyTagsExtension,
     withSnowplowSegmentsExtension,
     /** Dynamically add Google Ads plugin/extension */
     plugins.includes("googleAds") &&
@@ -25,17 +24,6 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   ]);
 
   window.trackTrans = tracker.ecommerce.trackTransaction;
-
-  const registerThirdPartyTags = (events: {
-    onTransaction?: ThirdPartyTags[];
-    onAddToCart?: ThirdPartyTags[];
-    onRemoveFromCart?: ThirdPartyTags[];
-    onSignup?: ThirdPartyTags[];
-  }) => {
-    observable.notify(events);
-  };
-  
-  (window as any).registerThirdPartyTags = registerThirdPartyTags;
 
   switch (context.event) {
     case "transaction":

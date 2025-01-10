@@ -161,7 +161,9 @@ export type QueryStringParams = Partial<TransactionParams> &
 // Params available to the tag's query string
 export type QueryStringContext = QueryStringParams & { collector: string };
 
-export interface Window {
-  trackTrans: (input: TransactionEvent) => void;
-  registerThirdPartyTags: () => void;
+export interface RegisterThirdPartyTagsInput {
+    onTransaction?: ThirdPartyTags[];
+    onAddToCart?: ThirdPartyTags[];
+    onRemoveFromCart?: ThirdPartyTags[];
+    onSignup?: ThirdPartyTags[];
 }
