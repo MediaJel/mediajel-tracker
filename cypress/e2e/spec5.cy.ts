@@ -23,10 +23,16 @@ describe("spec5.cy", () => {
     cy.get("#shipping-postcode").type("33705");
     cy.get("div.wc-block-checkout__actions span").click();
     cy.get("div.wc-block-checkout__actions span").click();
-    cy.location("pathname", { timeout: 10000 })
-      .should("include", "/checkout/order-received/");
+
+    cy.intercept("POST", "http://collector-azsx401.dmp.cnna.io/com.snowplowanalytics.snowplow/tp2").as("production");
+
+    cy.location("pathname", { timeout: 10000 }).should("include", "/checkout/order-received/");
     cy.location("search").should("include", "key=wc_order_");
 
+    cy.wait("@production").then((intercept) => {
+      expect(intercept.response.statusCode).to.equal(200);
+      expect(intercept.request.body.data[0].aid).to.equal("universal-tag-staging-test");
+    });
     cy.location("href").then((currentUrl) => {
       const orderId = currentUrl.split("/order-received/")[1].split("/")[0];
       const orderKey = new URL(currentUrl).searchParams.get("key");
