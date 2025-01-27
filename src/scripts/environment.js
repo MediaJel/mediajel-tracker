@@ -325,6 +325,17 @@
 ]
   },
   {
+    "label": "Ticketmaster",
+    "value": "ticketmaster",
+    "description": "ticketmaster is a just a test descriptions",
+    "eventsTracked": [
+    {
+        "value": "transaction",
+        "label": "Transaction"
+    }
+]
+  },
+  {
     "label": "Tymber",
     "value": "tymber",
     "description": "tymber is a just a test description",

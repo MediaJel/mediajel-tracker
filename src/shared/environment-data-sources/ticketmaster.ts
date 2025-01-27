@@ -93,8 +93,6 @@ const ticketMasterDataSource = () => {
         }
     }
 
-
-
     datalayerSource((data) => {
         // option 1
         runTicketMaster();

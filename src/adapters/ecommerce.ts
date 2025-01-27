@@ -130,6 +130,11 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       // description: "sweed is a just a test description"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
+    case "ticketmaster":
+      import("../shared/environment-data-sources/ticketmaster").then(({ default: load }): void => load());
+      // description: "ticketmaster is a just a test descriptions"
+      // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+      break;
     case "tymber":
       import("../shared/environment-data-sources/tymber").then(({ default: load }): void => load());
       // description: "tymber is a just a test description"
@@ -175,6 +180,7 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       // description: "thirdparty is a just a test descriptions"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
+
     default:
       logger.warn("No event/environment specified, Only pageview is active");
       break;
