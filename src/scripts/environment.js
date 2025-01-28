@@ -172,6 +172,17 @@
 ]
   },
   {
+    "label": "Iqmetrix",
+    "value": "iqmetrix",
+    "description": "iqmetrix is a just a test description",
+    "eventsTracked": [
+    {
+        "value": "transaction",
+        "label": "Transaction"
+    }
+]
+  },
+  {
     "label": "Jane",
     "value": "jane",
     "description": "jane is a just a test description",
@@ -326,6 +337,17 @@
         "value": "remove_from_cart",
         "label": "Remove from Cart"
     },
+    {
+        "value": "transaction",
+        "label": "Transaction"
+    }
+]
+  },
+  {
+    "label": "Ticketmaster",
+    "value": "ticketmaster",
+    "description": "ticketmaster is a just a test description",
+    "eventsTracked": [
     {
         "value": "transaction",
         "label": "Transaction"
