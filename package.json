@@ -4,10 +4,12 @@
   "description": "Mediajel Tracker",
   "scripts": {
     "start": "rimraf dist && rimraf .parcel-cache && concurrently --kill-others \"parcel watch --port 1235 src/index.ts\" \"ts-node ./server/index.ts\" \"tsc --noEmit --watch\" \"parcel --no-cache ./public/index.html\" ",
+    "start:bun": "rimraf dist && concurrently --kill-others \"bun build --entrypoints ./src/index.ts --outdir ./dist --target browser --splitting --sourcemap=linked --minify --watch\" \"bun ts-node server/index.ts\" \"parcel --no-cache ./public/index.html\" ",
     "predeploy": "node -r dotenv/config deploy/predeploy.js",
     "check": "tsc --noEmit",
     "deploy": "parcel build src/index.ts",
     "postdeploy": "node -r dotenv/config deploy/postdeploy.js",
+    "bun:build": "bun build --entrypoints ./src/index.ts --outdir ./bun-dist --target browser --splitting --sourcemap=linked --minify",
     "build": "parcel build src/index.ts",
     "cy:open": "cypress open",
     "cy:run": "cypress run --spec 'cypress/e2e/spec.cy.ts'",
@@ -53,7 +55,8 @@
     "prettier": "^3.3.3",
     "start-server-and-test": "^2.0.8",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "@types/bun": "latest"
   },
   "browserslist": [
     "since 2017-06"
