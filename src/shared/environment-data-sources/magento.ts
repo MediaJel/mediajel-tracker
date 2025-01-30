@@ -39,9 +39,9 @@ const magentoDataSource = () => {
                     items: ecommerce.items.map((item: any) => {
                       return {
                         orderId: ecommerce.transaction_id.toString(),
-                        sku: item.id.toString(),
-                        name: (item.name || "N/A").toString(),
-                        category: (item.category || "N/A").toString(),
+                        sku: item.item_id.toString(),
+                        name: (item.item_name || "N/A").toString(),
+                        category: (item.item_category || "N/A").toString(),
                         unitPrice: parseFloat(item.price || 0),
                         quantity: parseInt(item.quantity || 1),
                         currency: "USD",
@@ -87,6 +87,7 @@ const magentoDataSource = () => {
         // });
       // });
     });
+    console.log("End of Thank you Page");
   }
 
   if (!sessionStorage.getItem("key")) { // datalayer
