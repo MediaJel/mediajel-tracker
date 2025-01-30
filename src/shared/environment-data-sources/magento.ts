@@ -11,7 +11,7 @@ import { pollForElement } from "../sources/utils/poll-for-element";
 // TODO: Use dataLayerSource?
 // TODO: Don't use 'key' for storage, use HOC extension
 const magentoDataSource = () => {
-  if (window.location.href.includes("/thank-you")) {
+  if (window.location.href.includes("/thank-you")) { // ilgm implementation
     const elements = [".flex.flex-col.lg\\:flex-row.lg\\:space-x-8"]; // Waits for inner div to load (it loads the purchase data)
 
     pollForElement(elements, () => {
@@ -50,45 +50,47 @@ const magentoDataSource = () => {
     });
   }
 
-  // window.dataLayer = window.dataLayer || [];
+  if (!sessionStorage.getItem("key")) { // datalayer
+    window.dataLayer = window.dataLayer || [];
 
-  // for (let i = 0; i < window.dataLayer.length; i++) {
-  //   const data = window.dataLayer[i];
+    for (let i = 0; i < window.dataLayer.length; i++) {
+      const data = window.dataLayer[i];
 
-  //   if (data.event === "purchase") {
-  //     const ecommerce = data.ecommerce;
+      if (data.event === "purchase") {
+        const ecommerce = data.ecommerce;
 
-  //     isTrackerLoaded(() => {
-  //       runOncePerPageLoad(() => {
-  //         observable.notify({
-  //           transactionEvent: {
-  //             id: ecommerce.transaction_id.toString(),
-  //             total: parseFloat(ecommerce.value),
-  //             tax: parseFloat(ecommerce.tax) || 0,
-  //             shipping: parseFloat(ecommerce.shipping) || 0,
-  //             city: "N/A",
-  //             country: "USA",
-  //             currency: "USD",
-  //             state: "N/A",
-  //             items: ecommerce.items.map((item: any) => {
-  //               return {
-  //                 orderId: ecommerce.transaction_id.toString(),
-  //                 sku: item.id.toString(),
-  //                 name: (item.name || "N/A").toString(),
-  //                 category: (item.category || "N/A").toString(),
-  //                 unitPrice: parseFloat(item.price || 0),
-  //                 quantity: parseInt(item.quantity || 1),
-  //                 currency: "USD",
-  //               } as TransactionCartItem;
-  //             }),
-  //           },
-  //         });
+        isTrackerLoaded(() => {
+          runOncePerPageLoad(() => {
+            observable.notify({
+              transactionEvent: {
+                id: ecommerce.transaction_id.toString(),
+                total: parseFloat(ecommerce.value),
+                tax: parseFloat(ecommerce.tax) || 0,
+                shipping: parseFloat(ecommerce.shipping) || 0,
+                city: "N/A",
+                country: "USA",
+                currency: "USD",
+                state: "N/A",
+                items: ecommerce.items.map((item: any) => {
+                  return {
+                    orderId: ecommerce.transaction_id.toString(),
+                    sku: item.id.toString(),
+                    name: (item.name || "N/A").toString(),
+                    category: (item.category || "N/A").toString(),
+                    unitPrice: parseFloat(item.price || 0),
+                    quantity: parseInt(item.quantity || 1),
+                    currency: "USD",
+                  } as TransactionCartItem;
+                }),
+              },
+            });
 
-  //         sessionStorage.setItem("key", "loaded");
-  //       });
-  //     });
-  //   }
-  // }
+            sessionStorage.setItem("key", "loaded");
+          });
+        });
+      }
+    }
+  }
 
   xhrResponseSource((xhr) => {
     try {
