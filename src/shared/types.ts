@@ -37,6 +37,18 @@ export interface EventsObservableEvents {
   removeFromCartEvent: CartEvent;
 }
 
+export interface ThirdPartyTags {
+  type: "image" | "script";
+  tag: string;
+}
+
+export interface RegisterThirdPartyTagsInput {
+  onTransaction?: ThirdPartyTags[];
+  onAddToCart?: ThirdPartyTags[];
+  onRemoveFromCart?: ThirdPartyTags[];
+  onSignup?: ThirdPartyTags[];
+}
+
 // Data structure of the tag after parsing
 export type TransactionParams = {
   environment: string;
