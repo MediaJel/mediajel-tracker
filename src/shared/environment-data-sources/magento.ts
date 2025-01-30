@@ -16,7 +16,6 @@ const magentoDataSource = () => {
 
     pollForElement(elements, () => {
       // isTrackerLoaded(() => {
-        console.log("thank you page loaded");
         window.dataLayer = window.dataLayer || [];
         for (let i = 0; i < window.dataLayer.length; i++) {
           const data = window.dataLayer[i];
@@ -87,7 +86,6 @@ const magentoDataSource = () => {
         // });
       // });
     });
-    console.log("End of Thank you Page");
   }
 
   if (!sessionStorage.getItem("key")) { // datalayer
