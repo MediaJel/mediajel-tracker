@@ -15,38 +15,77 @@ const magentoDataSource = () => {
     const elements = [".flex.flex-col.lg\\:flex-row.lg\\:space-x-8"]; // Waits for inner div to load (it loads the purchase data)
 
     pollForElement(elements, () => {
-      isTrackerLoaded(() => {
-        datalayerSource((data: any): void => {
+      // isTrackerLoaded(() => {
+        console.log("thank you page loaded");
+        window.dataLayer = window.dataLayer || [];
+        for (let i = 0; i < window.dataLayer.length; i++) {
+          const data = window.dataLayer[i];
+      
           if (data.event === "purchase") {
             const ecommerce = data.ecommerce;
-            observable.notify({
-              transactionEvent: {
-                id: ecommerce.transaction_id.toString(),
-                total: parseFloat(ecommerce.value),
-                tax: parseFloat(ecommerce.tax) || 0,
-                shipping: parseFloat(ecommerce.shipping) || 0,
-                city: "N/A",
-                country: "USA",
-                currency: "USD",
-                state: "N/A",
-                items: ecommerce.items.map((item: any) => {
-                  return {
-                    orderId: ecommerce.transaction_id.toString(),
-                    sku: item.item_id.toString(),
-                    name: (item.item_name || "N/A").toString(),
-                    category: (item.item_category || "N/A").toString(),
-                    unitPrice: parseFloat(item.price || 0),
-                    quantity: parseInt(item.quantity || 1),
+      
+            isTrackerLoaded(() => {
+              runOncePerPageLoad(() => {
+                observable.notify({
+                  transactionEvent: {
+                    id: ecommerce.transaction_id.toString(),
+                    total: parseFloat(ecommerce.value),
+                    tax: parseFloat(ecommerce.tax) || 0,
+                    shipping: parseFloat(ecommerce.shipping) || 0,
+                    city: "N/A",
+                    country: "USA",
                     currency: "USD",
-                  } as TransactionCartItem;
-                }),
-              },
+                    state: "N/A",
+                    items: ecommerce.items.map((item: any) => {
+                      return {
+                        orderId: ecommerce.transaction_id.toString(),
+                        sku: item.id.toString(),
+                        name: (item.name || "N/A").toString(),
+                        category: (item.category || "N/A").toString(),
+                        unitPrice: parseFloat(item.price || 0),
+                        quantity: parseInt(item.quantity || 1),
+                        currency: "USD",
+                      } as TransactionCartItem;
+                    }),
+                  },
+                });
+      
+                sessionStorage.setItem("key", "loaded");
+              });
             });
-
-            sessionStorage.setItem("key", "loaded");
           }
-        });
-      });
+        }
+        // datalayerSource((data: any): void => {
+        //   if (data.event === "purchase") {
+        //     const ecommerce = data.ecommerce;
+        //     observable.notify({
+        //       transactionEvent: {
+        //         id: ecommerce.transaction_id.toString(),
+        //         total: parseFloat(ecommerce.value),
+        //         tax: parseFloat(ecommerce.tax) || 0,
+        //         shipping: parseFloat(ecommerce.shipping) || 0,
+        //         city: "N/A",
+        //         country: "USA",
+        //         currency: "USD",
+        //         state: "N/A",
+        //         items: ecommerce.items.map((item: any) => {
+        //           return {
+        //             orderId: ecommerce.transaction_id.toString(),
+        //             sku: item.item_id.toString(),
+        //             name: (item.item_name || "N/A").toString(),
+        //             category: (item.item_category || "N/A").toString(),
+        //             unitPrice: parseFloat(item.price || 0),
+        //             quantity: parseInt(item.quantity || 1),
+        //             currency: "USD",
+        //           } as TransactionCartItem;
+        //         }),
+        //       },
+        //     });
+
+        //     sessionStorage.setItem("key", "loaded");
+        //   }
+        // });
+      // });
     });
   }
 
