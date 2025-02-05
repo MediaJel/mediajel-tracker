@@ -21,8 +21,8 @@ declare global {
     gtag: any;
     uetq: any;
     trackTrans: (input: TransactionEvent) => void;
-    AddToCart: (input: CartEvent) => void;
-    RemoveFromCart: (input: CartEvent) => void;
+    addToCart: (input: CartEvent) => void;
+    removeFromCart: (input: CartEvent) => void;
     gtmDataLayer: any;
     registerThirdPartyTags: (input: RegisterThirdPartyTagsInput) => void;
   }

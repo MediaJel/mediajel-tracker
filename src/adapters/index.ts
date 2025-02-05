@@ -26,8 +26,8 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   ]);
 
   window.trackTrans = tracker.ecommerce.trackTransaction;
-  window.AddToCart = tracker.ecommerce.trackAddToCart;
-  window.RemoveFromCart = tracker.ecommerce.trackRemoveFromCart;
+  window.addToCart = tracker.ecommerce.trackAddToCart;
+  window.removeFromCart = tracker.ecommerce.trackRemoveFromCart;
 
   switch (context.event) {
     case "transaction":
