@@ -112,7 +112,7 @@ const dutchieSubdomainDataSource = () => {
         transactionEvent: {
           total: parseFloat(transaction_total),
           id: transaction_id.toString(),
-          tax: transaction_tax || 0,
+          tax: transaction_tax === "N/A" || isNaN(transaction_tax) ? 0 : parseFloat(transaction_tax),
           shipping: 0,
           city: "N/A",
           state: "N/A",
