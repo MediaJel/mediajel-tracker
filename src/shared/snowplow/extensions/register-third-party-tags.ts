@@ -39,57 +39,56 @@ const withRegisterThirdPartyTagsExtension = (snowplow: SnowplowTracker) => {
   snowplow.ecommerce.trackTransaction = (input) => {
     trackTransaction(input);
     processTags(thirdPartyTags.onTransaction, {
-      "{transaction_id}": input?.id?.toString() || "",
+      "{transaction_id}": input?.id?.toString() || "null",
       "{transaction_total}": input?.total?.toString() || "0",
       "{transaction_tax}": input?.tax?.toString() || "0",
       "{transaction_shipping}": input?.shipping?.toString() || "0",
-      "{transaction_city}": input?.city || "",
-      "{transaction_state}": input?.state || "",
-      "{transaction_country}": input?.country || "",
-      "{transaction_currency}": input?.currency || "",
-      "{transaction_userId}": input?.userId?.toString() || "",
+      "{transaction_city}": input?.city || "null",
+      "{transaction_state}": input?.state || "null",
+      "{transaction_country}": input?.country || "null",
+      "{transaction_currency}": input?.currency || "null",
+      "{transaction_userId}": input?.userId?.toString() || "null",
     });
   };
 
   snowplow.ecommerce.trackAddToCart = (input) => {
     trackAddToCart(input);
     processTags(thirdPartyTags.onAddToCart, {
-      "{cart_id}": input?.sku || "",
-      "{cart_name}": input?.name || "",
-      "{cart_category}": input?.category || "",
+      "{cart_id}": input?.sku || "null",
+      "{cart_name}": input?.name || "null",
+      "{cart_category}": input?.category || "null",
       "{cart_unitPrice}": input?.unitPrice?.toString() || "0",
       "{cart_quantity}": input?.quantity?.toString() || "0",
-      "{cart_currency}": input?.currency || "",
-      "{cart_userId}": input?.userId?.toString() || "",
+      "{cart_currency}": input?.currency || "null",
+      "{cart_userId}": input?.userId?.toString() || "null",
     });
   };
 
   snowplow.ecommerce.trackRemoveFromCart = (input) => {
     trackRemoveFromCart(input);
     processTags(thirdPartyTags.onRemoveFromCart, {
-      "{cart_id}": input?.sku || "",
-      "{cart_name}": input?.name || "",
-      "{cart_category}": input?.category || "",
+      "{cart_id}": input?.sku || "null",
+      "{cart_name}": input?.name || "null",
+      "{cart_category}": input?.category || "null",
       "{cart_unitPrice}": input?.unitPrice?.toString() || "0",
       "{cart_quantity}": input?.quantity?.toString() || "0",
-      "{cart_currency}": input?.currency || "",
-      "{cart_userId}": input?.userId?.toString() || "",
+      "{cart_currency}": input?.currency || "null",
+      "{cart_userId}": input?.userId?.toString() || "null",
     });
   };
 
   snowplow.trackSignup = (input) => {
     trackSignup(input);
     processTags(thirdPartyTags.onSignup, {
-      "{signup_firstName}": input?.firstName || "",
-      "{signup_lastName}": input?.lastName || "",
-      "{signup_uuid}": input?.uuid || "",
-      "{signup_email}": input?.emailAddress || "",
-      "{signup_hashedEmailAddress}": input?.hashedEmailAddress || "",
-      "{signup_address}": input?.address || "",
-      "{signup_city}": input?.city || "",
-      "{signup_state}": input?.state || "",
-      "{signup_phone}": input?.phoneNumber || "",
-      "{signup_advertiser}": input?.advertiser || "",
+      "{signup_firstName}": input?.firstName || "null",
+      "{signup_lastName}": input?.lastName || "null",
+      "{signup_uuid}": input?.uuid || "null",
+      "{signup_email}": input?.emailAddress || "null",
+      "{signup_address}": input?.address || "null",
+      "{signup_city}": input?.city || "null",
+      "{signup_state}": input?.state || "null",
+      "{signup_phone}": input?.phoneNumber || "null",
+      "{signup_advertiser}": input?.advertiser || "null",
     });
   };
 
