@@ -48,8 +48,6 @@ const magentoDataSource = () => {
                     }),
                   },
                 });
-      
-                sessionStorage.setItem("key", "loaded");
               });
             });
           }
@@ -88,7 +86,6 @@ const magentoDataSource = () => {
     });
   }
 
-  if (!sessionStorage.getItem("key")) { // datalayer
     window.dataLayer = window.dataLayer || [];
 
     for (let i = 0; i < window.dataLayer.length; i++) {
@@ -122,13 +119,10 @@ const magentoDataSource = () => {
                 }),
               },
             });
-
-            sessionStorage.setItem("key", "loaded");
           });
         });
       }
     }
-  }
 
   xhrResponseSource((xhr) => {
     try {
@@ -143,7 +137,6 @@ const magentoDataSource = () => {
     } catch (e) {}
   });
 
-  if (!sessionStorage.getItem("key")) {
     if (
       window.location.pathname.includes("/checkout/onepage/success/") ||
       window.location.pathname.includes("/success/")
@@ -186,14 +179,8 @@ const magentoDataSource = () => {
         } catch (error) {
           // window.tracker("trackError", JSON.stringify(error), "MAGENTO");
         }
-        sessionStorage.setItem("pixelData", "0");
       }, 1000);
     }
-  }
-
-  if (sessionStorage.getItem("key")) {
-    sessionStorage.removeItem("key");
-  }
 };
 
 export default magentoDataSource;
