@@ -1,8 +1,6 @@
-import {
-    createSegments, DstillerySegmentBuilderInput, NexxenSegmentBuilderInput
-} from 'src/shared/segment-builder';
-import { SnowplowTracker } from 'src/shared/snowplow/types';
-import { QueryStringContext } from 'src/shared/types';
+import { createSegments, DstillerySegmentBuilderInput, NexxenSegmentBuilderInput } from "src/shared/segment-builder";
+import { SnowplowTracker } from "src/shared/snowplow/types";
+import { QueryStringContext } from "src/shared/types";
 
 const setupExtension = (context: QueryStringContext): ReturnType<typeof createSegments> => {
   const liquidm = context.segmentId || context.s1;
@@ -49,8 +47,6 @@ const withSnowplowSegmentsExtension = (snowplow: SnowplowTracker) => {
   //* Override the trackTransaction method
   snowplow.ecommerce.trackTransaction = (input) => {
     trackTransaction(input);
-
-    
 
     segments.nexxen.emitPurchase({
       bprice: input.total,
