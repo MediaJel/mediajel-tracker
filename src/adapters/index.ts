@@ -5,7 +5,8 @@ import {
   withSnowplowSegmentsExtension,
   withTransactionDeduplicationExtension,
 } from "src/shared/snowplow/extensions";
-import withRegisterThirdPartyTagsExtension from 'src/shared/snowplow/extensions/register-third-party-tags';
+import withEnsureBasketItemsOrderId from "src/shared/snowplow/extensions/ensure-basket-items-order-id";
+import withRegisterThirdPartyTagsExtension from "src/shared/snowplow/extensions/register-third-party-tags";
 import { QueryStringContext } from "src/shared/types";
 
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
@@ -15,6 +16,7 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   // Apply extensions to the tracker
   const tracker = applyExtensions(snowplow, [
     withTransactionDeduplicationExtension,
+    withEnsureBasketItemsOrderId,
     withRegisterThirdPartyTagsExtension,
     withSnowplowSegmentsExtension,
     /** Dynamically add Google Ads plugin/extension */
@@ -26,6 +28,8 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   ]);
 
   window.trackTrans = tracker.ecommerce.trackTransaction;
+  window.addToCart = tracker.ecommerce.trackAddToCart;
+  window.removeFromCart = tracker.ecommerce.trackRemoveFromCart;
 
   switch (context.event) {
     case "transaction":
