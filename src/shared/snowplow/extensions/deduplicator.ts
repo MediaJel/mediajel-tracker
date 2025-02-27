@@ -14,7 +14,7 @@ const withTransactionDeduplicationExtension = (snowplow: SnowplowTracker) => {
     const transactionStorage = sessionStorage.getItem(snowplow.context.appId);
 
     if (transactionStorage === input.id) {
-      return logger.warn(`Transaction with id ${input.id} already tracked, Disccarding duplicate transaction`);
+      return logger.warn(`Transaction with id ${input.id} already tracked, Discarding duplicate transaction`);
     }
 
     trackTransaction(input);

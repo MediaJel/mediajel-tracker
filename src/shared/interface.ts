@@ -1,4 +1,4 @@
-import { TransactionEvent } from "./snowplow/types";
+import { TransactionEvent, SignupParams } from "./snowplow/types";
 import { RegisterThirdPartyTagsInput } from './types';
 
 export {};
@@ -21,6 +21,7 @@ declare global {
     gtag: any;
     uetq: any;
     trackTrans: (input: TransactionEvent) => void;
+    trackSignUp: (input: SignupParams) => void;
     gtmDataLayer: any;
     registerThirdPartyTags: (input: RegisterThirdPartyTagsInput) => void;
   }

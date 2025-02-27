@@ -4,6 +4,7 @@ import {
   applyExtensions,
   withSnowplowSegmentsExtension,
   withTransactionDeduplicationExtension,
+  withSignUpDeduplicationExtension,
 } from "src/shared/snowplow/extensions";
 import withRegisterThirdPartyTagsExtension from 'src/shared/snowplow/extensions/register-third-party-tags';
 import { QueryStringContext } from "src/shared/types";
@@ -15,6 +16,7 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   // Apply extensions to the tracker
   const tracker = applyExtensions(snowplow, [
     withTransactionDeduplicationExtension,
+    withSignUpDeduplicationExtension,
     withRegisterThirdPartyTagsExtension,
     withSnowplowSegmentsExtension,
     /** Dynamically add Google Ads plugin/extension */
@@ -26,6 +28,7 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   ]);
 
   window.trackTrans = tracker.ecommerce.trackTransaction;
+  window.trackSignUp = tracker.trackSignup;
 
   switch (context.event) {
     case "transaction":

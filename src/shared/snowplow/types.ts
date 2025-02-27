@@ -32,5 +32,5 @@ export interface SnowplowTrackerImpressionEvents {
 }
 
 export interface CreateSnowplowTrackerInput extends QueryStringContext {}
-export { TransactionEvent };
+export { TransactionEvent, SignupParams };
 
