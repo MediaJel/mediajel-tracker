@@ -4,6 +4,7 @@ import {
   applyExtensions,
   withSnowplowSegmentsExtension,
   withTransactionDeduplicationExtension,
+  withSignUpDeduplicationExtension,
 } from "src/shared/snowplow/extensions";
 import withEnsureBasketItemsOrderId from "src/shared/snowplow/extensions/ensure-basket-items-order-id";
 import withRegisterThirdPartyTagsExtension from "src/shared/snowplow/extensions/register-third-party-tags";
@@ -16,6 +17,7 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   // Apply extensions to the tracker
   const tracker = applyExtensions(snowplow, [
     withTransactionDeduplicationExtension,
+    withSignUpDeduplicationExtension,
     withEnsureBasketItemsOrderId,
     withRegisterThirdPartyTagsExtension,
     withSnowplowSegmentsExtension,
@@ -28,6 +30,7 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   ]);
 
   window.trackTrans = tracker.ecommerce.trackTransaction;
+  window.trackSignUp = tracker.trackSignup;
   window.addToCart = tracker.ecommerce.trackAddToCart;
   window.removeFromCart = tracker.ecommerce.trackRemoveFromCart;
 
