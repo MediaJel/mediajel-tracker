@@ -1,26 +1,50 @@
 import logger from 'src/shared/logger';
-
 import { SnowplowTracker } from '../types';
 
-/**
- * *This extension will prevent duplicate events (I.E. transactions) from being tracked
- * TODO: Add appId to appropriate events
- * TODO: Implement deduplication for other events (remove from cart, add to cart, etc.)
- */
-const withTransactionDeduplicationExtension = (snowplow: SnowplowTracker) => {
-  const trackTransaction = snowplow.ecommerce.trackTransaction;
+const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
+  const { 
+    trackTransaction: originalTrackTransaction,
+    trackAddToCart: originalTrackAddToCart,
+    trackRemoveFromCart: originalTrackRemoveFromCart
+  } = snowplow.ecommerce;
+  
+  const { trackSignup: originalTrackSignup } = snowplow;
 
-  snowplow.ecommerce.trackTransaction = (input) => {
-    const transactionStorage = sessionStorage.getItem(snowplow.context.appId);
+  const getStorageKey = (eventType: string) => 
+    `${snowplow.context.appId}_${eventType}`;
 
-    if (transactionStorage === input.id) {
-      return logger.warn(`Transaction with id ${input.id} already tracked, Discarding duplicate transaction`);
+  const deduplicateEvent = (
+    originalMethod: (input: any) => void,
+    eventType: string,
+    input: any,
+    idField: string = 'id'
+  ) => {
+    const storageKey = getStorageKey(eventType);
+    const eventId = input[idField];
+    const storedId = sessionStorage.getItem(storageKey);
+
+    if (storedId === eventId) {
+      logger.warn(`${eventType} with id ${eventId} already tracked. Discarding duplicate event.`);
+      return;
     }
 
-    trackTransaction(input);
-    sessionStorage.setItem(snowplow.context.appId, input.id);
+    originalMethod(input);
+    sessionStorage.setItem(storageKey, eventId);
   };
+
+  snowplow.ecommerce.trackTransaction = (input) => 
+    deduplicateEvent(originalTrackTransaction, 'transaction', input);
+
+  snowplow.ecommerce.trackAddToCart = (input) => 
+    deduplicateEvent(originalTrackAddToCart, 'addToCart', input);
+
+  snowplow.ecommerce.trackRemoveFromCart = (input) => 
+    deduplicateEvent(originalTrackRemoveFromCart, 'removeFromCart', input);
+
+  snowplow.trackSignup = (input) => 
+    deduplicateEvent(originalTrackSignup, 'signUp', input, 'uuid');
+
   return snowplow;
 };
 
-export default withTransactionDeduplicationExtension;
+export default withDeduplicationExtension;
