@@ -3,7 +3,7 @@ import { SnowplowTracker } from 'src/shared/snowplow/types';
 export {default as withSnowplowSegmentsExtension} from './segments';
 export {default as withGoogleAdsExtension} from './google-ads';
 export {default as withBingAdsExtension} from './bing-ads';
-export {default as withTransactionDeduplicationExtension} from './deduplicator';
+export {default as withDeduplicationExtension} from './deduplicator';
 
 export const applyExtensions = (
   tracker: SnowplowTracker,
