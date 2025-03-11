@@ -12,9 +12,9 @@ const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
 
   const getStorageKey = (eventType: string) => `${snowplow.context.appId}_${eventType}`;
 
-  const deduplicateEvent = <T>(originalMethod: (input: T) => void, eventType: string, input: T, idField: keyof T) => {
+  const deduplicateEvent = <T>(originalMethod: (input: T) => void, eventType: string, input: T, idField: (keyof T)[]) => {
     const storageKey = getStorageKey(eventType);
-    const eventId = input[idField];
+    const eventId = idField.map((key) => input[key]).join(':');
     const storedId = sessionStorage.getItem(storageKey);
 
     if (storedId === eventId) {
@@ -27,17 +27,15 @@ const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
   };
 
   snowplow.ecommerce.trackTransaction = (input) =>
-    deduplicateEvent(originalTrackTransaction, "transaction", input, "id");
+    deduplicateEvent(originalTrackTransaction, "transaction", input, ["id"]);
 
   snowplow.ecommerce.trackAddToCart = (input) =>
-    // ! PLEASE UPDATE THE "NAME"
-    deduplicateEvent(originalTrackAddToCart, "addToCart", input, "name");
+    deduplicateEvent(originalTrackAddToCart, "addToCart", input, ["name", "quantity"]);
 
   snowplow.ecommerce.trackRemoveFromCart = (input) =>
-    // ! PLEASE UPDATE THE "NAME"
-    deduplicateEvent(originalTrackRemoveFromCart, "removeFromCart", input, "name");
+    deduplicateEvent(originalTrackRemoveFromCart, "removeFromCart", input, ["name", "quantity"]);
 
-  snowplow.trackSignup = (input) => deduplicateEvent(originalTrackSignup, "signUp", input, "uuid");
+  snowplow.trackSignup = (input) => deduplicateEvent(originalTrackSignup, "signUp", input, ["uuid", "emailAddress"]);
 
   return snowplow;
 };
