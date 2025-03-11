@@ -135,6 +135,11 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       // description: "ticketmaster is a just a test description"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
+    case "tnew":
+        import("../shared/environment-data-sources/tnew").then(({ default: load }): void => load());
+        // description: "tnew is a just a test description"
+        // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+        break;
     case "weave":
       import("../shared/environment-data-sources/weave").then(({ default: load }): void => load());
       // description: "weave is a just a test descriptions"
