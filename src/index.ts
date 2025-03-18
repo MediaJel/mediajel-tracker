@@ -3,6 +3,7 @@ import logger from 'src/shared/logger';
 import { QueryStringContext } from './shared/types';
 import getContext from './shared/utils/get-context';
 import { getCustomTags } from './shared/utils/get-custom-tags';
+import { datasourceLogger } from './shared/utils/datasource-logger';
 
 (async (): Promise<void> => {
   try {
@@ -13,6 +14,9 @@ import { getCustomTags } from './shared/utils/get-custom-tags';
 
     // Validations
     if (!context.appId) throw new Error("appId is required");
+    if (context.findSource && context.findSource === "true") {
+      datasourceLogger();
+    }
 
     getCustomTags();
 

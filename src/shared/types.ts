@@ -149,6 +149,10 @@ export type DstillerySegmentParams = {
 
 export type SegmentParams = LiquidmSegmentParams & NexxenSegmentParams & DstillerySegmentParams;
 
+export type DatasourceTrackerParam = {
+  findSource: string;
+};
+
 export type QueryStringParams = Partial<TransactionParams> &
   Partial<SignupParams> &
   Partial<SnowplowPluginParams> &
@@ -157,7 +161,8 @@ export type QueryStringParams = Partial<TransactionParams> &
   GoogleAdsPluginParams &
   BingAdsPluginParams &
   SnowplowParams &
-  SegmentParams;
+  SegmentParams &
+  DatasourceTrackerParam;
 
 // Params available to the tag's query string
 export type QueryStringContext = QueryStringParams & { collector: string };
