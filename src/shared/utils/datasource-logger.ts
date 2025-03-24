@@ -1,5 +1,5 @@
 import { datalayerSource } from "../sources/google-datalayer-source";
-import { xhrRequestSource } from "../sources/xhr-request-source";
+import { xhrRequestSource, formatXhrPayload } from "../sources/xhr-request-source";
 import {  xhrResponseSource } from "../sources/xhr-response-source";
 import { fetchSource } from "../sources/fetch-source";
 import Logger from "../logger";
@@ -15,9 +15,10 @@ export const datasourceLogger = (): void => {
         } catch  (e) {}
     });
 
-    xhrRequestSource((xhr) => { // DUN FORGET TO ADD parseMsgToString FROM THE LOGGER FILE
+    xhrRequestSource((xhr) => {
         try {
-            Logger.info('xhr Request Source Data: ', xhr);
+            const sanitizedData = formatXhrPayload(xhr);
+            Logger.info('xhr Request Source Data: ', sanitizedData);
         } catch (e) {}
     });
 
