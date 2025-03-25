@@ -1,12 +1,16 @@
-export const datalayerSource = (callback: (data: any) => void, dataLayer: any = window.dataLayer || []): void => {
+export const datalayerSource = (callback: (data: any) => void, layer: any = window.dataLayer || []): void => {
   // dataLayer is optional second param to handle dispense cart;
-  if (!dataLayer || typeof dataLayer.push !== 'function') {
-    console.error('dataLayer.push is not a function');
-    return;
+  const originalPush = layer.push;
+
+  // Process any existing items in the dataLayer
+  if (layer && layer.length > 0) {
+    layer.forEach((item: any) => {
+      callback(item);
+    });
   }
-  const originalPush = dataLayer.push.bind(dataLayer);;
-  dataLayer.push = (...args: any): void => {
+
+  layer.push = (...args: any): void => {
     originalPush(...args);
-    callback(dataLayer.slice(-1)[0]); // Gets the newest array member of dataLayer
+    callback(layer.slice(-1)[0]); // Gets the newest array member of dataLayer
   };
 };
