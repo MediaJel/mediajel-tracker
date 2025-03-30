@@ -1,5 +1,6 @@
 const dummyData = () => {
     const dummyData1 = [{
+        cart: 1,
         id: "1234",
         total: 100,
         tax: 10,
@@ -20,6 +21,7 @@ const dummyData = () => {
     }];
 
     const dummyData2 = [{
+        cart: 2,
         id: "5678",
         total: 50,
         tax: 5,
@@ -39,9 +41,11 @@ const dummyData = () => {
         ]
     }];
 
-    const randomizer = Math.random() < 0.5 ? dummyData1 : dummyData2;
-    console.log("Value of Randomizer: ", JSON.stringify(randomizer, null, 2));
-    return randomizer;
+    // const randomizer = Math.random() < 0.5 ? dummyData1 : dummyData2;
+    // const dummyDataValue = { randomizer, dummyData1, dummyData2 };
+    const randomizer = dummyData2;
+    const dummyDataValue = randomizer;
+    return dummyDataValue;
 }
 
 export default dummyData;
