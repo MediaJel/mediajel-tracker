@@ -98,11 +98,11 @@ const ticketMasterDataSource = () => {
     // option 2
     if (data[1] === "purchase") {
       const transaction = data[2];
-      const items = transaction.items;
+      const items = transaction?.items || []
 
       observable.notify({
         transactionEvent: {
-          total: parseFloat(transaction),
+          total: parseFloat(transaction.value),
           id: transaction.transaction_id.toString(),
           tax: 0,
           shipping: 0,
@@ -110,7 +110,7 @@ const ticketMasterDataSource = () => {
           state: "N/A",
           country: "USA",
           currency: "USD",
-          items: items.map((item) => {
+          items: items?.map((item) => {
             return {
               orderId: transaction.transaction_id.toString(),
               sku: item.item_id || "N/A",
@@ -119,8 +119,8 @@ const ticketMasterDataSource = () => {
               unitPrice: parseFloat(item.price || 0),
               quantity: parseInt(item.quantity || 1),
               currency: "USD",
-            } as TransactionCartItem;
-          }),
+            } as TransactionCartItem
+          }) || [],
         },
       });
 
