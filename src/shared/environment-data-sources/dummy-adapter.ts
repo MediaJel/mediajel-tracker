@@ -9,7 +9,19 @@ const dummyDataSource = () => {
     const data = rawData[0];
     const items = data.items;
     const handler = createAdapterHandler();
+
+    handler.add("Google Data Layer", () => {
+      return false
+    })
     
+    handler.add("Network request", () => {
+
+      return true // for tracking transaction
+    })
+
+    isTrackerLoaded(() => handler.execute())
+
+
     const trackData1 = () => {
         handler.track(1, () => {
             if (data.cart === 1) {

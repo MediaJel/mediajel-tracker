@@ -6,6 +6,17 @@ export const createAdapterHandler = () => {
     const storageKey = 'cnna_transaction_verified';
     let successLogged = false;
     let pendingResponses = new Set<() => void>();
+     const fns = []
+
+
+     const add = (name: string, func: () => boolean) => fns.push({name, func})
+
+     const execute = () => fns.map(({name, fn}) => {
+        console.log(`Calling ${name} handler` )
+        const isTracked = fn()
+        isTracked && console.log(`Successfully tracked transaction with ${name} handler`)
+        // How to evaluate if it succeeds
+     })
 
     const hasTransaction = () => sessionStorage.getItem(storageKey) !== null;
 
@@ -43,5 +54,5 @@ export const createAdapterHandler = () => {
         }
     };
 
-    return { track, finalCheck };
+    return { track, finalCheck, add, execute };
 } 
