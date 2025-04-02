@@ -14,7 +14,7 @@ import { datasourceLogger } from './shared/utils/datasource-logger';
 
     // Validations
     if (!context.appId) throw new Error("appId is required");
-    if (context.findSource && context.findSource === "true") {
+    if (context.debug && context.debug === "true") {
       datasourceLogger();
     }
 

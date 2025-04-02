@@ -150,7 +150,7 @@ export type DstillerySegmentParams = {
 export type SegmentParams = LiquidmSegmentParams & NexxenSegmentParams & DstillerySegmentParams;
 
 export type DatasourceTrackerParam = {
-  findSource: string;
+  debug: string;
 };
 
 export type QueryStringParams = Partial<TransactionParams> &
