@@ -33,7 +33,7 @@ const formatMessage = (level: string, name: string, label: string, message: stri
   return `${timestamp} [${identifier}] ${level.toUpperCase()} : ${message}`;
 };
 
-const createLogger = (name: string): Logger => {
+export const createLogger = (name: string): Logger => {
   let label = null;
   const log = (level: string, ...message: unknown[]) => {
     const formattedMessage = formatMessage(level, name, label, parseMsgToString(message));
