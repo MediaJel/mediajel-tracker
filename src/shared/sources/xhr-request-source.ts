@@ -7,3 +7,20 @@ export const xhrRequestSource = (callback: (xhrRequest: Document | XMLHttpReques
     send.apply(this, arguments);
   };
 };
+
+export const formatXhrPayload = (data: Document | XMLHttpRequestBodyInit): unknown => {
+  if (data instanceof FormData) {
+      return Object.fromEntries(Array.from(data as unknown as Iterable<[string, string]>));
+  }
+  if (data instanceof URLSearchParams) {
+      return Object.fromEntries(Array.from(data as unknown as Iterable<[string, string]>));
+  }
+  if (typeof data === "string") {
+      try {
+          return JSON.parse(data);
+      } catch {
+          return data;
+      }
+  }
+  return data;
+};
