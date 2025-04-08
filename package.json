@@ -10,7 +10,7 @@
     "postdeploy": "node -r dotenv/config deploy/postdeploy.js",
     "build": "parcel build src/index.ts",
     "cy:open": "cypress open",
-    "cy:run": "cypress run --spec 'cypress/e2e/spec.cy.ts'",
+    "cy:run": "cypress run --spec 'cypress/e2e/**/*.cy.ts'",
     "bootstrap-test-server": "rimraf dist && rimraf .parcel-cache && concurrently --kill-others \"parcel watch --port 1235 src/index.ts\" \"ts-node ./server/index.ts\" \"tsc --noEmit --watch\" \"parcel --no-cache ./public/index.test.html\" ",
     "test": "start-server-and-test bootstrap-test-server http://localhost:1234 cy:run",
     "docs": "jsdoc -c jsdoc.json",
