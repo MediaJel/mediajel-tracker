@@ -132,7 +132,7 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       break;
     case "ticketure":
       import("../shared/environment-data-sources/ticketure").then(({ default: load }): void => load());
-      // description: "ticketmaster is a just a test description"
+      // description: "ticketure is a just a test description"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
     case "tnew":
