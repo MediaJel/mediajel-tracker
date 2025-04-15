@@ -1,58 +1,72 @@
 import logger from "src/shared/logger";
+import observable from "./create-events-observable";
 
-export type TrackingFunction = (useCaseId: number, tracking: () => Promise<boolean> | boolean) => Promise<boolean>; 
+type HandlerFunction = () => boolean;
+
+interface AdapterHandler {
+    add: (name: string, fn: HandlerFunction) => void;
+    execute: () => void;
+}
 
 export const createAdapterHandler = () => {
     const storageKey = 'cnna_transaction_verified';
     let successLogged = false;
-    let pendingResponses = new Set<() => void>();
-     const fns = []
+    const fns: Array<{ name: string; fn: HandlerFunction }> = [];
 
-
-     const add = (name: string, func: () => boolean) => fns.push({name, func})
-
-     const execute = () => fns.map(({name, fn}) => {
-        console.log(`Calling ${name} handler` )
-        const isTracked = fn()
-        isTracked && console.log(`Successfully tracked transaction with ${name} handler`)
-        // How to evaluate if it succeeds
-     })
-
-    const hasTransaction = () => sessionStorage.getItem(storageKey) !== null;
-
-    const cleanupPending = () => {
-        pendingResponses.forEach(resolve => resolve());
-        pendingResponses.clear();
-    } 
-    
-    const track: TrackingFunction = async (useCaseId, tracking) => {
-        if (hasTransaction()) return false;
-
-        const result = await Promise.resolve(tracking());
-
-        if (result) {
-            sessionStorage.setItem(storageKey, 'true');
-            successLogged = true;
-            logger.info(`Adapter value ${useCaseId} was successful!`);
-            cleanupPending();
-            return true;
+    const checkTransaction = () => {
+        try {
+            return !!sessionStorage.getItem(storageKey);
+        } catch (error) {
+            logger.error('Error checking transaction');
+            return false;
         }
-        return false;
     }
 
-    const finalCheck = async () => {
-        await new Promise<void>(resolve => {
-            pendingResponses.add(resolve);
-            setTimeout(() => {
-                pendingResponses.delete(resolve);
-                resolve(null);
-            }, 1000);
-        });
+    return {
+        add: (name: string, fn: HandlerFunction) => {
+            fns.push({ name, fn });
+        },
+        execute: () => {
+            if (successLogged || checkTransaction()) return;
 
-        if (!successLogged && !hasTransaction()) {
-            logger.error('All use cases failed');
+            for (const { name, fn } of fns) {
+                try {
+                    logger.info(`Attempting transaction with ${name}`);
+                    const success = fn();
+
+                    if (success) {
+                        sessionStorage.setItem(storageKey, 'true');
+                        successLogged = true;
+                        logger.info(`Transaction successful with ${name}`);
+                        observable.notify({
+                            adapterEvent: {
+                                type: "transactionSuccess",
+                                payload: { handlerName: name }
+                            },
+                        });
+                        break;
+                    }
+                } catch (error) {
+                    logger.error(`Transaction Failed with ${name}`, error);
+                }
+            }
+
+            if (!successLogged) {
+                logger.error("All transaction attempts failed for the adapter.");
+                observable.notify({
+                    adapterEvent: {
+                        type: "transactionFailure",
+                    },
+                });
+            }
         }
-    };
-
-    return { track, finalCheck, add, execute };
+    } as AdapterHandler;
 } 
+
+let instance: AdapterHandler | null = null;
+export const getAdapterHandler = () => {
+    if (!instance) {
+        instance = createAdapterHandler();
+    }
+    return instance;
+}

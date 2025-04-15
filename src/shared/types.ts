@@ -1,3 +1,5 @@
+import { Adapter } from "aws-sdk/clients/textract";
+
 export interface CartEvent {
   sku: string;
   name: string;
@@ -31,10 +33,18 @@ export interface EnvironmentEvents {
   transactionEvent: (transactionData: TransactionEvent) => void;
 }
 
+interface adapterHandlerEvents {
+  type: string;
+  payload?: {
+    handlerName: string;
+  };
+}
+
 export interface EventsObservableEvents {
   transactionEvent: TransactionEvent;
   addToCartEvent: CartEvent;
   removeFromCartEvent: CartEvent;
+  adapterEvent: adapterHandlerEvents;
 }
 
 export interface ThirdPartyTags {
