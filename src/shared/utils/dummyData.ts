@@ -41,9 +41,51 @@ const dummyData = () => {
         ]
     }];
 
+    const dummyData3 = [{
+        cart: 3,
+        id: "5678",
+        total: 50,
+        tax: 5,
+        shipping: 7,
+        city: "Largo",
+        state: "Florida",
+        country: "USA",
+        currency: "USD",
+        items: [
+            {
+                sku: "123",
+                name: "Product 3",
+                category: "Category 3",
+                unitPrice: 10,
+                quantity: 1,
+            }
+        ]
+    }];
+
+    const dummyData4 = [{
+        cart: 4,
+        id: "5678",
+        total: 50,
+        tax: 5,
+        shipping: 7,
+        city: "Largo",
+        state: "Florida",
+        country: "USA",
+        currency: "USD",
+        items: [
+            {
+                sku: "123",
+                name: "Product 3",
+                category: "Category 3",
+                unitPrice: 10,
+                quantity: 1,
+            }
+        ]
+    }];
+
     // const randomizer = Math.random() < 0.5 ? dummyData1 : dummyData2;
     // const dummyDataValue = { randomizer, dummyData1, dummyData2 };
-    const randomizer = dummyData2;
+    const randomizer = dummyData4;
     const dummyDataValue = randomizer;
     return dummyDataValue;
 }

@@ -11,7 +11,12 @@ interface AdapterHandler {
 export const createAdapterHandler = () => {
     const storageKey = 'cnna_transaction_verified';
     let successLogged = false;
+    let counter = 0;
     const fns: Array<{ name: string; fn: HandlerFunction }> = [];
+
+    function isUnique (name: string) {
+        return fns.findIndex((fn) => fn.name === name) === -1;
+    }
 
     const checkTransaction = () => {
         try {
@@ -24,9 +29,13 @@ export const createAdapterHandler = () => {
 
     return {
         add: (name: string, fn: HandlerFunction) => {
+            if (!isUnique(name)) {
+                return;
+            }
             fns.push({ name, fn });
         },
         execute: () => {
+            if (counter === 1) return;
             if (successLogged || checkTransaction()) return;
 
             for (const { name, fn } of fns) {
@@ -38,6 +47,8 @@ export const createAdapterHandler = () => {
                         sessionStorage.setItem(storageKey, 'true');
                         successLogged = true;
                         logger.info(`Transaction successful with ${name}`);
+
+                        
                         observable.notify({
                             adapterEvent: {
                                 type: "transactionSuccess",
@@ -59,6 +70,7 @@ export const createAdapterHandler = () => {
                     },
                 });
             }
+            counter++;
         }
     } as AdapterHandler;
 } 
