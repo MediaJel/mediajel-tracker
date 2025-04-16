@@ -2,13 +2,13 @@ import observable from "../utils/create-events-observable";
 import { isTrackerLoaded } from "../sources/utils/is-tracker-loaded";
 import dummyData from "../utils/dummyData";
 import { TransactionCartItem } from "../types";
-import { getAdapterHandler } from "../utils/adapter-handler";
+import { createAdapterHandlerSingleton  } from "../utils/adapter-handler";
 
 const dummyDataSource = () => {
     const rawData = dummyData();
     const data = rawData[0];
     const items = data.items;
-    const handler = getAdapterHandler();
+    const handler = createAdapterHandlerSingleton();
 
     handler.add("Data Cart #1", () => {
       if (data.cart === 1) {
@@ -36,9 +36,7 @@ const dummyDataSource = () => {
               }),
             },
         });
-        return true;
       }
-      return false;
     });
 
     handler.add("Data Cart #2", () => {
@@ -67,9 +65,7 @@ const dummyDataSource = () => {
               }),
             },
         });
-        return true;
       }
-      return false;
     });
 
     handler.add("Data Cart #3", () => {
@@ -98,12 +94,11 @@ const dummyDataSource = () => {
               }),
             },
         });
-        return true;
       }
-      return false;
     });
 
-    isTrackerLoaded(() => handler.execute());
+    //isTrackerLoaded(() => handler.execute());
+    handler.execute();
 }
 
 dummyDataSource();

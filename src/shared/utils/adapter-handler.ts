@@ -1,7 +1,8 @@
 import logger from "src/shared/logger";
 import observable from "./create-events-observable";
+import { getStorageKey } from "../snowplow/extensions/deduplicator";
 
-type HandlerFunction = () => boolean;
+type HandlerFunction = () => void;
 
 interface AdapterHandler {
     add: (name: string, fn: HandlerFunction) => void;
@@ -39,46 +40,42 @@ export const createAdapterHandler = () => {
             if (successLogged || checkTransaction()) return;
 
             for (const { name, fn } of fns) {
+                let success = false;
+                observable.subscribe((event) => {
+                    if (event.transactionEvent) success = true
+                });
+
                 try {
                     logger.info(`Attempting transaction with ${name}`);
-                    const success = fn();
+                    fn();
 
                     if (success) {
                         sessionStorage.setItem(storageKey, 'true');
                         successLogged = true;
                         logger.info(`Transaction successful with ${name}`);
-
-                        
-                        observable.notify({
-                            adapterEvent: {
-                                type: "transactionSuccess",
-                                payload: { handlerName: name }
-                            },
-                        });
-                        break;
+                        return;
                     }
                 } catch (error) {
                     logger.error(`Transaction Failed with ${name}`, error);
                 }
             }
+            counter++;
 
             if (!successLogged) {
-                logger.error("All transaction attempts failed for the adapter.");
-                observable.notify({
-                    adapterEvent: {
-                        type: "transactionFailure",
-                    },
-                });
+                logger.error('Transaction Failed');
             }
-            counter++;
         }
     } as AdapterHandler;
 } 
 
-let instance: AdapterHandler | null = null;
-export const getAdapterHandler = () => {
+
+export const createAdapterHandlerSingleton = (() => {
+  let instance: ReturnType<typeof createAdapterHandler> | null = null;
+  return () => {
     if (!instance) {
-        instance = createAdapterHandler();
+      instance = createAdapterHandler();
     }
     return instance;
-}
+  };
+})();
+

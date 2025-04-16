@@ -85,7 +85,7 @@ const dummyData = () => {
 
     // const randomizer = Math.random() < 0.5 ? dummyData1 : dummyData2;
     // const dummyDataValue = { randomizer, dummyData1, dummyData2 };
-    const randomizer = dummyData4;
+    const randomizer = dummyData2;
     const dummyDataValue = randomizer;
     return dummyDataValue;
 }
