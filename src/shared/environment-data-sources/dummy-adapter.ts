@@ -3,12 +3,13 @@ import { isTrackerLoaded } from "../sources/utils/is-tracker-loaded";
 import dummyData from "../utils/dummyData";
 import { TransactionCartItem } from "../types";
 import { createAdapterHandlerSingleton  } from "../utils/adapter-handler";
+import { SnowplowTracker } from "../snowplow/types";
 
-const dummyDataSource = () => {
+const dummyDataSource = (snowplow: SnowplowTracker) => {
     const rawData = dummyData();
     const data = rawData[0];
     const items = data.items;
-    const handler = createAdapterHandlerSingleton();
+    const handler = createAdapterHandlerSingleton(snowplow);
 
     handler.add("Data Cart #1", () => {
       if (data.cart === 1) {
@@ -101,6 +102,6 @@ const dummyDataSource = () => {
     handler.execute();
 }
 
-dummyDataSource();
+//dummyDataSource(snowplowTracker);
 
 export default dummyDataSource;

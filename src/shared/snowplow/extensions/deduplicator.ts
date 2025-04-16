@@ -41,5 +41,3 @@ const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
 };
 
 export default withDeduplicationExtension;
-
-export const getStorageKey = (snowplow: SnowplowTracker, eventType: string) => `${snowplow.context.appId}_${eventType}`;

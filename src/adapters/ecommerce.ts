@@ -176,7 +176,7 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
     case "dummy-cart":
-      import("../shared/environment-data-sources/dummy-adapter").then(({ default: load }): void => load());
+      import("../shared/environment-data-sources/dummy-adapter").then(({ default: load }): void => load(tracker));
       break;
 
     default:

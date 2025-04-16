@@ -1,6 +1,6 @@
 import logger from "src/shared/logger";
 import observable from "./create-events-observable";
-import { getStorageKey } from "../snowplow/extensions/deduplicator";
+import { SnowplowTracker } from "../snowplow/types";
 
 type HandlerFunction = () => void;
 
@@ -9,8 +9,9 @@ interface AdapterHandler {
     execute: () => void;
 }
 
-export const createAdapterHandler = () => {
-    const storageKey = 'cnna_transaction_verified';
+export const createAdapterHandler = (snowplow: SnowplowTracker) => {
+    const snowplowContext = snowplow.context.appId;
+    const storageKey = `${snowplowContext}_transaction`;
     let successLogged = false;
     let counter = 0;
     const fns: Array<{ name: string; fn: HandlerFunction }> = [];
@@ -50,7 +51,7 @@ export const createAdapterHandler = () => {
                     fn();
 
                     if (success) {
-                        sessionStorage.setItem(storageKey, 'true');
+                        //sessionStorage.setItem(storageKey, 'true');
                         successLogged = true;
                         logger.info(`Transaction successful with ${name}`);
                         return;
@@ -71,9 +72,9 @@ export const createAdapterHandler = () => {
 
 export const createAdapterHandlerSingleton = (() => {
   let instance: ReturnType<typeof createAdapterHandler> | null = null;
-  return () => {
+  return (snowplow: SnowplowTracker) => {
     if (!instance) {
-      instance = createAdapterHandler();
+      instance = createAdapterHandler(snowplow);
     }
     return instance;
   };
