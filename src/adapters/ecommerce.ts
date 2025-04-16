@@ -16,7 +16,7 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
   //* WARNING: Do not use absolute imports when dynamically loading modules
   switch (context.environment) {
     case "bigcommerce":
-      import("../shared/environment-data-sources/bigcommerce").then(({ default: load }): void => load());
+      import("../shared/environment-data-sources/bigcommerce").then(({ default: load }): void => load(tracker));
       // description: "bigcommerce is a just a test description"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
@@ -31,7 +31,7 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       // events-tracked: [{ value: "add_to_cart", label: "Add to Cart" }, { value: "remove_from_cart", label: "Remove from Cart" }, { "value": "transaction", "label": "Transaction" }]
       break;
     case "dispense":
-      import("../shared/environment-data-sources/dispense").then(({ default: load }): void => load());
+      import("../shared/environment-data-sources/dispense").then(({ default: load }): void => load(tracker));
       // description: "dispense is a just a test description"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
@@ -174,9 +174,6 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       import("../shared/environment-data-sources/thirdparty").then(({ default: load }): void => load());
       // description: "thirdparty is a just a test descriptions"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
-      break;
-    case "dummy-cart":
-      import("../shared/environment-data-sources/dummy-adapter").then(({ default: load }): void => load(tracker));
       break;
 
     default:
