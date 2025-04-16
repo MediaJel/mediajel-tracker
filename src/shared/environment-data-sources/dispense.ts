@@ -5,6 +5,8 @@ import { fetchSource } from "../sources/fetch-source";
 import { datalayerSource } from "../sources/google-datalayer-source";
 import { runOncePerPageLoad } from "../sources/utils/trans-deduplicator";
 import { TransactionCartItem } from "../types";
+import { multiAdapterHandler } from "../utils/adapter-handler";
+import { SnowplowTracker } from "../snowplow/types";
 
 // TODO: Remove Transaction Cache in favor of Higher Order Function extension
 const TransactionCache = (ttl: number) => {
@@ -24,8 +26,10 @@ const TransactionCache = (ttl: number) => {
 
 const cache = TransactionCache(5000);
 
-const dispenseDataSource = () => {
-  const dataLayerCheck = () => {
+const dispenseDataSource = (snowplow: SnowplowTracker) => {
+  const handler = multiAdapterHandler(snowplow);
+
+  handler.add("DatalayerSource", () => {
     datalayerSource((data) => {
       if (cache.isTransactionRecorded()) {
         logger.info("Transaction has happened");
@@ -68,9 +72,9 @@ const dispenseDataSource = () => {
         }
       }
     }, window.gtmDataLayer); // special case for dispense; window.dataLayer is renamed to window.gtmDataLayer
-  };
+  });
 
-  const fetchSourceCheck = () => {
+  handler.add("FetchSource", () => {
     fetchSource(
       (request) => {},
       (reponse, responseBody) => {
@@ -117,26 +121,7 @@ const dispenseDataSource = () => {
         }
       }
     );
-  };
-
-  dataLayerCheck();
-  fetchSourceCheck();
-  // ALLOWS FOR MULTIPLE USE CASES FOR SCALABILITY
-
-  // switch (counter) {
-  //   case 1:
-  //     dataLayerCheck();
-  //     if (success) {
-  //       break;
-  //     }
-  //   case 2:
-  //     fetchSourceCheck();
-  //     if (success) {
-  //       break;
-  //     }
-  //   default:
-  //     logger.info("DISPENSE ENVIRONMENT ERROR AT CASE ", counter);
-  // }
+  });
 };
 
 export default dispenseDataSource;
