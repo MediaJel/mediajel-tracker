@@ -51,7 +51,6 @@ export const createAdapterHandler = (snowplow: SnowplowTracker) => {
                     fn();
 
                     if (success) {
-                        //sessionStorage.setItem(storageKey, 'true');
                         successLogged = true;
                         logger.info(`Transaction successful with ${name}`);
                         return;
@@ -63,14 +62,14 @@ export const createAdapterHandler = (snowplow: SnowplowTracker) => {
             counter++;
 
             if (!successLogged) {
-                logger.error('Transaction Failed');
+                logger.error('All transaction attempts failed for the adapter.');
             }
         }
     } as AdapterHandler;
 } 
 
 
-export const createAdapterHandlerSingleton = (() => {
+export const multiAdapterHandler = (() => {
   let instance: ReturnType<typeof createAdapterHandler> | null = null;
   return (snowplow: SnowplowTracker) => {
     if (!instance) {
