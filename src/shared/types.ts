@@ -1,5 +1,3 @@
-import { Adapter } from "aws-sdk/clients/textract";
-
 export interface CartEvent {
   sku: string;
   name: string;
