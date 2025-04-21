@@ -15,7 +15,7 @@ const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
   const deduplicateEvent = <T>(originalMethod: (input: T) => void, eventType: string, input: T, idField: (keyof T)[]) => {
     const storageKey = getStorageKey(eventType);
     const eventId = idField.map((key) => input[key]).join(':');
-    const storedId = sessionStorage.getItem(storageKey);
+    const storedId = localStorage.getItem(storageKey);
 
     if (storedId === eventId) {
       logger.warn(`${eventType} with id ${eventId} already tracked. Discarding duplicate event.`);
@@ -23,7 +23,7 @@ const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
     }
 
     originalMethod(input);
-    sessionStorage.setItem(storageKey, eventId as string);
+    localStorage.setItem(storageKey, eventId as string);
   };
 
   snowplow.ecommerce.trackTransaction = (input) =>
