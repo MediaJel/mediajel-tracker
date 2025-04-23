@@ -11,6 +11,7 @@ const withEnsureBasketItemsOrderId = (snowplow: SnowplowTracker) => {
   snowplow.ecommerce.trackTransaction = (input) => {
     trackTransaction({
       id: input.id,
+      affiliateId: input.affiliateId,
       total: input.total,
       tax: input.tax,
       shipping: input.shipping,
