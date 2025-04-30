@@ -11,7 +11,7 @@ const createSnowplowV1TrackerEcommerceEventsHandlers = (
       window.tracker(
         `addTrans`,
         input.id,
-        retailId ?? appId,
+        input.affiliateId || (retailId ?? appId),
         input.total,
         input.tax,
         input.shipping,
