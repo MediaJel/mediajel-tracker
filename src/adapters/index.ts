@@ -3,7 +3,8 @@ import { createSnowplowTracker } from "src/shared/snowplow";
 import {
   applyExtensions,
   withSnowplowSegmentsExtension,
-  withDeduplicationExtension
+  withDeduplicationExtension,
+  withEventRules,
 } from "src/shared/snowplow/extensions";
 import withEnsureBasketItemsOrderId from "src/shared/snowplow/extensions/ensure-basket-items-order-id";
 import withRegisterThirdPartyTagsExtension from "src/shared/snowplow/extensions/register-third-party-tags";
@@ -15,6 +16,7 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
 
   // Apply extensions to the tracker
   const tracker = applyExtensions(snowplow, [
+    withEventRules,
     withDeduplicationExtension,
     withEnsureBasketItemsOrderId,
     withRegisterThirdPartyTagsExtension,
