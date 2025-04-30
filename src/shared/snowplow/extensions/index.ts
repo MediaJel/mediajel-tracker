@@ -4,6 +4,7 @@ export {default as withSnowplowSegmentsExtension} from './segments';
 export {default as withGoogleAdsExtension} from './google-ads';
 export {default as withBingAdsExtension} from './bing-ads';
 export {default as withDeduplicationExtension} from './deduplicator';
+export {default as withEventRules} from './event-rules';
 
 export const applyExtensions = (
   tracker: SnowplowTracker,
