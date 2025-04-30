@@ -10,21 +10,30 @@ const bigcommerceDataSource = (snowplow: SnowplowTracker) => {
 
   handler.add("XHR Response Source #1", () => {
     xhrResponseSource((xhr) => {
+      if (!xhr?.responseText) {
+        return;
+      }
+
       let transaction;
       try {
-        transaction = JSON.parse(xhr.responseText);
+        const parsedData = JSON.parse(xhr.responseText);
+        // Verify parsed data is actually an object
+        if (!parsedData || typeof parsedData !== "object") {
+          return;
+        }
+        transaction = parsedData;
       } catch (e) {
         // Silent fail if JSON parsing fails
         return;
       }
-  
+
       const products = transaction?.lineItems?.physicalItems;
       const getLatestOrder = localStorage.getItem("latestOrder");
-  
+
       if (!transaction?.orderId) return;
       if (transaction?.status !== "AWAITING_FULFILLMENT") return;
       if (getLatestOrder === transaction.orderId.toString()) return;
-  
+
       try {
         observable.notify({
           transactionEvent: {
@@ -36,18 +45,19 @@ const bigcommerceDataSource = (snowplow: SnowplowTracker) => {
             state: (transaction?.billingAddress?.stateOrProvinceCode || "N/A").toString(),
             country: (transaction?.billingAddress?.countryCode || "N/A").toString(),
             currency: "USD",
-            items: products?.map((product) => {
-              const { sku, name, listPrice, quantity } = product;
-              return {
-                orderId: transaction.orderId.toString(),
-                sku: sku?.toString() || "N/A",
-                name: (name || "N/A").toString(),
-                category: "N/A",
-                unitPrice: parseFloat(listPrice || 0),
-                quantity: parseInt(quantity || 1),
-                currency: "USD",
-              } as TransactionCartItem;
-            }) || [],
+            items:
+              products?.map((product) => {
+                const { sku, name, listPrice, quantity } = product;
+                return {
+                  orderId: transaction.orderId.toString(),
+                  sku: sku?.toString() || "N/A",
+                  name: (name || "N/A").toString(),
+                  category: "N/A",
+                  unitPrice: parseFloat(listPrice || 0),
+                  quantity: parseInt(quantity || 1),
+                  currency: "USD",
+                } as TransactionCartItem;
+              }) || [],
           },
         });
         localStorage.setItem("latestOrder", transaction.orderId.toString());
@@ -66,7 +76,7 @@ const bigcommerceDataSource = (snowplow: SnowplowTracker) => {
         // Silent fail if JSON parsing fails
         return;
       }
-  
+
       if (transaction?.status && transaction?.orderAmount > 0) {
         try {
           isTrackerLoaded(() => {
@@ -80,15 +90,16 @@ const bigcommerceDataSource = (snowplow: SnowplowTracker) => {
                 state: (transaction?.billingAddress?.stateOrProvinceCode || "N/A").toString(),
                 country: (transaction?.billingAddress?.countryCode || "N/A").toString(),
                 currency: "USD",
-                items: transaction?.lineItems?.physicalItems?.map((item) => ({
-                  orderId: transaction?.orderId?.toString() || "",
-                  sku: item?.sku?.toString() || "N/A",
-                  name: (item?.name || "N/A").toString(),
-                  category: "N/A",
-                  unitPrice: parseFloat(item?.listPrice || 0),
-                  quantity: parseInt(item?.quantity || 1),
-                  currency: "USD",
-                })) || [],
+                items:
+                  transaction?.lineItems?.physicalItems?.map((item) => ({
+                    orderId: transaction?.orderId?.toString() || "",
+                    sku: item?.sku?.toString() || "N/A",
+                    name: (item?.name || "N/A").toString(),
+                    category: "N/A",
+                    unitPrice: parseFloat(item?.listPrice || 0),
+                    quantity: parseInt(item?.quantity || 1),
+                    currency: "USD",
+                  })) || [],
               },
             });
           });

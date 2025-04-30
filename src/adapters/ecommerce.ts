@@ -1,6 +1,6 @@
-import logger from 'src/shared/logger';
-import { SnowplowTracker } from 'src/shared/snowplow';
-import observable from 'src/shared/utils/create-events-observable';
+import logger from "src/shared/logger";
+import { SnowplowTracker } from "src/shared/snowplow";
+import observable from "src/shared/utils/create-events-observable";
 
 export default async (tracker: SnowplowTracker): Promise<void> => {
   const { context } = tracker;
@@ -39,6 +39,21 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       import("../shared/environment-data-sources/drupal").then(({ default: load }): void => load());
       // description: "drupal is just a test description"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+      break;
+    case "dutchie-iframe":
+      import("../shared/environment-data-sources/dutchie-iframe").then(({ default: load }): void => load());
+      // description: "dutchie is a just a test description"
+      // events-tracked: [{ value: "add_to_cart", label: "Add to Cart" }, { value: "remove_from_cart", label: "Remove from Cart" }, { "value": "transaction", "label": "Transaction" }]
+      break;
+    case "dutchie-subdomain":
+      import("../shared/environment-data-sources/dutchie-subdomain").then(({ default: load }): void => load());
+      // description: "dutchie is a just a test description"
+      // events-tracked: [{ value: "add_to_cart", label: "Add to Cart" }, { value: "remove_from_cart", label: "Remove from Cart" }, { "value": "transaction", "label": "Transaction" }]
+      break;
+    case "dutchieplus":
+      import("../shared/environment-data-sources/dutchie-plus").then(({ default: load }): void => load());
+      // description: "dutchieplus is a just a test description"
+      // events-tracked: [{ value: "add_to_cart", label: "Add to Cart" }, { value: "remove_from_cart", label: "Remove from Cart" }, { "value": "transaction", "label": "Transaction" }]
       break;
     case "dutchie":
       import("../shared/environment-data-sources/dutchie").then(({ default: load }): void => load());
