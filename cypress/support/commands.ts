@@ -1,4 +1,7 @@
 /// <reference types="cypress" />
+// Import Testing Library commands
+import '@testing-library/cypress';
+
 // ***********************************************
 // This example commands.ts shows you how to
 // create various custom commands and overwrite
