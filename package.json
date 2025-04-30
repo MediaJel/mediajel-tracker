@@ -10,7 +10,7 @@
     "postdeploy": "node -r dotenv/config deploy/postdeploy.js",
     "build": "parcel build src/index.ts",
     "cy:open": "cypress open",
-    "cy:run": "cypress run --spec 'cypress/e2e/spec.cy.ts'",
+    "cy:run": "cypress run ",
     "bootstrap-test-server": "rimraf dist && rimraf .parcel-cache && concurrently --kill-others \"parcel watch --port 1235 src/index.ts\" \"ts-node ./server/index.ts\" \"tsc --noEmit --watch\" \"parcel --no-cache ./public/index.test.html\" ",
     "test": "start-server-and-test bootstrap-test-server http://localhost:1234 cy:run",
     "docs": "jsdoc -c jsdoc.json",
@@ -43,6 +43,7 @@
     "better-docs": "^2.7.3",
     "buffer": "^6.0.3",
     "concurrently": "^9.1.0",
+    "cypress": "^14.3.2",
     "dotenv": "^16.4.5",
     "eslint": "^9.14.0",
     "eslint-config-prettier": "^9.1.0",
@@ -59,7 +60,5 @@
   "browserslist": [
     "since 2017-06"
   ],
-  "dependencies": {
-    "cypress": "^14.3.2"
-  }
+  "dependencies": {}
 }
