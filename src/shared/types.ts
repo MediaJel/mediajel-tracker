@@ -14,6 +14,7 @@ export interface TransactionCartItem extends CartEvent {
 
 export interface TransactionEvent {
   id: string;
+  affiliateId?: string;
   total: number;
   tax: number;
   shipping: number;
@@ -149,6 +150,10 @@ export type DstillerySegmentParams = {
 
 export type SegmentParams = LiquidmSegmentParams & NexxenSegmentParams & DstillerySegmentParams;
 
+export type DatasourceTrackerParam = {
+  debug: string;
+};
+
 export type QueryStringParams = Partial<TransactionParams> &
   Partial<SignupParams> &
   Partial<SnowplowPluginParams> &
@@ -157,7 +162,8 @@ export type QueryStringParams = Partial<TransactionParams> &
   GoogleAdsPluginParams &
   BingAdsPluginParams &
   SnowplowParams &
-  SegmentParams;
+  SegmentParams &
+  DatasourceTrackerParam;
 
 // Params available to the tag's query string
 export type QueryStringContext = QueryStringParams & { collector: string };

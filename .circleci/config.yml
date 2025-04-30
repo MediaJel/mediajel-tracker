@@ -25,12 +25,12 @@ jobs:
           name: type checking
           command: yarn tsc --noEmit
         #   TODO: UNCOMMENT LATER
-    #   - run:
-    #       name: Cypress Install
-    #       command: sudo apt-get update && sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
-    #   - run:
-    #       name: cypress tests
-    #       command: npm run test
+      - run:
+          name: Cypress Install
+          command: sudo apt-get update && sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+      - run:
+          name: cypress tests
+          command: npm run test
       - run:
           name: Build
           command: npm run deploy
