@@ -1,6 +1,7 @@
 import observable from "src/shared/utils/create-events-observable";
 import { isTrackerLoaded } from "../sources/utils/is-tracker-loaded";
 import { xhrResponseSource } from "../sources/xhr-response-source";
+import { datalayerSource } from "../sources/google-datalayer-source";
 import { TransactionCartItem } from "../types";
 import { multiAdapterHandler } from "../utils/adapter-handler";
 import { SnowplowTracker } from "../snowplow/types";
@@ -106,6 +107,37 @@ const bigcommerceDataSource = (snowplow: SnowplowTracker) => {
         } catch (error) {
           // Silent fail for tracker errors
         }
+      }
+    });
+  });
+
+  handler.add("Datalayer Source", () => {
+    datalayerSource((data) => {
+      const purchase = data[2];
+      const items = purchase?.items || [];
+
+      if (data[1] === "purchase") {
+        observable.notify({
+          transactionEvent: {
+            id: purchase.transaction_id.toString(),
+            total: parseFloat(purchase.value || 0),
+            tax: parseFloat(purchase.tax || 0),
+            shipping: parseFloat(purchase.shipping || 0),
+            city: "N/A",
+            state: "N/A",
+            country: "N/A",
+            currency: "USD",
+            items: items.map((item) => ({
+                orderId: purchase.transaction_id.toString(),
+                sku: item.item_id.toString() || "N/A",
+                name: (item.item_name || "N/A").toString(),
+                category: item.item_category.toString() || "N/A",
+                unitPrice: parseFloat(item.price || 0),
+                quantity: parseInt(item.quantity || 1),
+                currency: "USD",
+              })),
+          },
+        });
       }
     });
   });
