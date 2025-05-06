@@ -22,7 +22,7 @@ export const createAdapterHandler = (snowplow: SnowplowTracker) => {
 
     const checkTransaction = () => {
         try {
-            return !!sessionStorage.getItem(storageKey);
+            return !!localStorage.getItem(storageKey);
         } catch (error) {
             logger.error('Error checking transaction');
             return false;
