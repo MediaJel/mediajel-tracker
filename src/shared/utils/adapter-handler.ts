@@ -11,9 +11,7 @@ interface AdapterHandler {
 
 export const createAdapterHandler = (snowplow: SnowplowTracker) => {
   const snowplowContext = snowplow.context.appId;
-  const storageKey = `${snowplowContext}_transaction`;
   let successLogged = false;
-  let counter = 0;
   const fns: Array<{ name: string; fn: HandlerFunction }> = [];
 
   function isUnique(name: string) {
@@ -27,11 +25,6 @@ export const createAdapterHandler = (snowplow: SnowplowTracker) => {
     },
     execute: () => {
       logger.info(`Executing adapter handler...`);
-
-      if (counter === 1) {
-        logger.info("Transaction already executed, skipping...");
-        return;
-      }
 
       for (const { name, fn } of fns) {
         let success = false;
@@ -52,7 +45,7 @@ export const createAdapterHandler = (snowplow: SnowplowTracker) => {
           logger.error(`Transaction Failed with ${name}`, error);
         }
       }
-      counter++;
+
 
       if (!successLogged) {
         logger.error("All transaction attempts failed for the adapter.");
