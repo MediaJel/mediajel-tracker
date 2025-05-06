@@ -141,6 +141,8 @@ const bigcommerceDataSource = (snowplow: SnowplowTracker) => {
       }
     });
   });
+
+  handler.execute();
 };
 
 export default bigcommerceDataSource;

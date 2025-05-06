@@ -93,6 +93,8 @@ const dispenseDataSource = (snowplow: SnowplowTracker) => {
       },
     );
   });
+
+  handler.execute();
 };
 
 export default dispenseDataSource;
