@@ -20,15 +20,6 @@ export const createAdapterHandler = (snowplow: SnowplowTracker) => {
     return fns.findIndex((fn) => fn.name === name) === -1;
   }
 
-  const checkTransaction = () => {
-    try {
-      return !!localStorage.getItem(storageKey);
-    } catch (error) {
-      logger.error("Error checking transaction");
-      return false;
-    }
-  };
-
   return {
     add: (name: string, fn: HandlerFunction) => {
       logger.info(`Adding ${name} to the adapter handler...`);
@@ -37,13 +28,8 @@ export const createAdapterHandler = (snowplow: SnowplowTracker) => {
     execute: () => {
       logger.info(`Executing adapter handler...`);
 
-
       if (counter === 1) {
         logger.info("Transaction already executed, skipping...");
-        return;
-      }
-      if (successLogged || checkTransaction()) {
-        logger.info("SuccessLogedTransaction already executed, skipping...");
         return;
       }
 
