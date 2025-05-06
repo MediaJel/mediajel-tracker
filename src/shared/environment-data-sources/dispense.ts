@@ -9,33 +9,12 @@ import { multiAdapterHandler } from "../utils/adapter-handler";
 import { SnowplowTracker } from "../snowplow/types";
 
 // TODO: Remove Transaction Cache in favor of Higher Order Function extension
-const TransactionCache = (ttl: number) => {
-  let success = false;
-
-  return {
-    recordTransaction: () => {
-      success = true;
-
-      setTimeout(() => {
-        success = false;
-      }, ttl);
-    },
-    isTransactionRecorded: () => success,
-  };
-};
-
-const cache = TransactionCache(5000);
 
 const dispenseDataSource = (snowplow: SnowplowTracker) => {
   const handler = multiAdapterHandler(snowplow);
 
   handler.add("DatalayerSource", () => {
     datalayerSource((data) => {
-      if (cache.isTransactionRecorded()) {
-        logger.info("Transaction has happened");
-        return;
-      }
-
       if (data[1] === "purchase") {
         try {
           const { transaction_id, tax, value, items } = data[2];
@@ -65,8 +44,6 @@ const dispenseDataSource = (snowplow: SnowplowTracker) => {
               }),
             },
           });
-
-          cache.recordTransaction(); // Allows the IF case to execute break on the switch case
         } catch (error) {
           // window.tracker('trackError', JSON.stringify(error), 'DISPENSE')
         }
@@ -78,11 +55,6 @@ const dispenseDataSource = (snowplow: SnowplowTracker) => {
     fetchSource(
       (request) => {},
       (reponse, responseBody) => {
-        if (cache.isTransactionRecorded()) {
-          logger.info("Transaction has happened");
-          return;
-        }
-
         window.addEventListener("beforeunload", () => {
           sessionStorage.removeItem("key");
         });
@@ -115,11 +87,10 @@ const dispenseDataSource = (snowplow: SnowplowTracker) => {
               });
             });
 
-            cache.recordTransaction(); // Allows the IF case to execute break on the switch case
             // success = true; // Allows the IF case to execute break on the switch case
           } catch (error) {}
         }
-      }
+      },
     );
   });
 };

@@ -31,11 +31,21 @@ export const createAdapterHandler = (snowplow: SnowplowTracker) => {
 
   return {
     add: (name: string, fn: HandlerFunction) => {
+      logger.info(`Adding ${name} to the adapter handler...`);
       fns.push({ name, fn });
     },
     execute: () => {
-      if (counter === 1) return;
-      if (successLogged || checkTransaction()) return;
+      logger.info(`Executing adapter handler...`);
+
+
+      if (counter === 1) {
+        logger.info("Transaction already executed, skipping...");
+        return;
+      }
+      if (successLogged || checkTransaction()) {
+        logger.info("SuccessLogedTransaction already executed, skipping...");
+        return;
+      }
 
       for (const { name, fn } of fns) {
         let success = false;
