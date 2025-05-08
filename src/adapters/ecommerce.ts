@@ -86,7 +86,7 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
     case "jane":
-      import("../shared/environment-data-sources/jane").then(({ default: load }): void => load());
+      import("../shared/environment-data-sources/jane").then(({ default: load }): void => load(tracker));
       // description: "jane is a just a test description"
       // events-tracked: [{ value: "add_to_cart", label: "Add to Cart" }, { value: "remove_from_cart", label: "Remove from Cart" }, { "value": "transaction", "label": "Transaction" }]
       break;
