@@ -54,8 +54,8 @@ const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
           return;
         }
 
-        // If an array, add all the ids to the trackedIds array
-        trackedIds.push(...value);
+        // If an array, add eventId to the array
+        trackedIds.push(eventId);
       }
 
       if (parsed.type === "object") {
@@ -69,13 +69,13 @@ const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
       if (parsed.type === "string") {
         const value = parsed.value as string;
 
-        // If a string, add the id to the trackedIds array
         if (value.includes(eventId)) {
           logger.warn(`${eventType} with id ${eventId} already tracked. Discarding duplicate event.`);
           return;
         }
 
-        trackedIds.push(value);
+        // If a string, add eventId to the trackedIds array
+        trackedIds.push(eventId);
       }
     }
 
