@@ -1,7 +1,8 @@
-import logger from "src/shared/logger";
+import { createLogger } from "src/shared/logger";
 import { SnowplowTracker } from "../types";
 
 const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
+  const logger = createLogger("MJ:Deduplication");
   const {
     trackTransaction: originalTrackTransaction,
     trackAddToCart: originalTrackAddToCart,
@@ -15,15 +16,35 @@ const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
   const deduplicateEvent = <T>(originalMethod: (input: T) => void, eventType: string, input: T, idField: (keyof T)[]) => {
     const storageKey = getStorageKey(eventType);
     const eventId = idField.map((key) => input[key]).join(':');
-    const storedId = localStorage.getItem(storageKey);
+    
+    let previousIds: string[] = [];
+    try {
+      const storedValue = localStorage.getItem(storageKey);
+      if (storedValue) {
+        const parsed = JSON.parse(storedValue);
+        
+        if (Array.isArray(parsed)) {
+          previousIds = parsed.filter(id => typeof id === 'string');
+        } else if (typeof parsed === 'string') {
+          previousIds = [parsed];
+        } else {
+          logger.warn(`Invalid stored IDs format for ${eventType}, resetting to empty array`);
+        }
+      }
+    } catch (e) {
+      logger.error(`Failed to parse stored IDs for ${eventType}:`, e);
+      previousIds = [];
+    }
 
-    if (storedId === eventId) {
+    if (previousIds.includes(eventId)) {
       logger.warn(`${eventType} with id ${eventId} already tracked. Discarding duplicate event.`);
       return;
     }
 
     originalMethod(input);
-    localStorage.setItem(storageKey, eventId as string);
+    
+    const updatedIds = [...previousIds, eventId];
+    localStorage.setItem(storageKey, JSON.stringify(updatedIds));
   };
 
   snowplow.ecommerce.trackTransaction = (input) =>
