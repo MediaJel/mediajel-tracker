@@ -16,24 +16,20 @@ const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
   const deduplicateEvent = <T>(originalMethod: (input: T) => void, eventType: string, input: T, idField: (keyof T)[]) => {
     const storageKey = getStorageKey(eventType);
     const eventId = idField.map((key) => input[key]).join(':');
-    
+    const currentId = localStorage.getItem(storageKey);
+    const historyKey = `${storageKey}_history`;
     let previousIds: string[] = [];
+
     try {
-      const storedValue = localStorage.getItem(storageKey);
-      if (storedValue) {
-        const parsed = JSON.parse(storedValue);
-        
+      const storedHistory = localStorage.getItem(historyKey);
+      if (storedHistory) {
+        const parsed = JSON.parse(storedHistory);
         if (Array.isArray(parsed)) {
           previousIds = parsed.filter(id => typeof id === 'string');
-        } else if (typeof parsed === 'string') {
-          previousIds = [parsed];
-        } else {
-          logger.warn(`Invalid stored IDs format for ${eventType}, resetting to empty array`);
         }
       }
     } catch (e) {
-      logger.error(`Failed to parse stored IDs for ${eventType}:`, e);
-      previousIds = [];
+      logger.error(`Failed to parse history for ${eventType}:`, e);
     }
 
     if (previousIds.includes(eventId)) {
@@ -41,10 +37,16 @@ const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
       return;
     }
 
+    if (currentId === eventId) {
+      logger.warn(`${eventType} with id ${eventId} already tracked. Discarding duplicate event.`);
+      return;
+    }
+
     originalMethod(input);
+    const updatedHistory = [...previousIds, eventId];
     
-    const updatedIds = [...previousIds, eventId];
-    localStorage.setItem(storageKey, JSON.stringify(updatedIds));
+    localStorage.setItem(storageKey, eventId);
+    localStorage.setItem(historyKey, JSON.stringify(updatedHistory));
   };
 
   snowplow.ecommerce.trackTransaction = (input) =>
