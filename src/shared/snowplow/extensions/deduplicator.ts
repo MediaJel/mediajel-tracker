@@ -48,13 +48,14 @@ const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
 
       if (parsed.type === "array") {
         const value = parsed.value as string[];
-        // If an array, add all the ids to the trackedIds array
-        trackedIds.push(...value);
 
         if (value.includes(eventId)) {
           logger.warn(`${eventType} with id ${eventId} already tracked. Discarding duplicate event.`);
           return;
         }
+
+        // If an array, add all the ids to the trackedIds array
+        trackedIds.push(...value);
       }
 
       if (parsed.type === "object") {
