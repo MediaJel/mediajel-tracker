@@ -4,6 +4,11 @@ export const datalayerSource = (callback: (data: any) => void, dataLayer: any = 
     console.error('dataLayer.push is not a function');
     return;
   }
+
+  dataLayer.forEach((data) => {
+    callback(data);
+  });
+
   const originalPush = dataLayer.push.bind(dataLayer);;
   dataLayer.push = (...args: any): void => {
     originalPush(...args);
