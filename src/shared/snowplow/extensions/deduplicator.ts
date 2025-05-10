@@ -41,47 +41,27 @@ const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
     const storageKey = getStorageKey(eventType);
     const eventId = idField.map((key) => input[key]).join(":");
     let value: string | null = localStorage.getItem(storageKey);
-    const trackedIds: string[] = [];
+    let existingIds: string[] = [];
 
-    if (value) {
+    if(value) {
       const parsed = tryParseJSONObject(value);
-
-      if (parsed.type === "array") {
-        const value = parsed.value as string[];
-
-        if (value.includes(eventId)) {
-          logger.warn(`${eventType} with id ${eventId} already tracked. Discarding duplicate event.`);
-          return;
-        }
-
-        // If an array, add eventId to the array
-        trackedIds.push(eventId);
-      }
-
       if (parsed.type === "object") {
-        const value = parsed.value as object;
-        // This really shouldn't happen, but just in case
-        logger.error(`Storing object in localStorage is not supported. Resetting to empty array.`);
-        localStorage.setItem(storageKey, JSON.stringify([]));
-        return;
+        existingIds = parsed.value as string[];
       }
 
-      if (parsed.type === "string") {
-        const value = parsed.value as string;
-
-        if (value.includes(eventId)) {
-          logger.warn(`${eventType} with id ${eventId} already tracked. Discarding duplicate event.`);
-          return;
-        }
-
-        // If a string, add eventId to the trackedIds array
-        trackedIds.push(eventId);
+      else if (parsed.type === "string") {
+        existingIds = [parsed.value as string];
       }
     }
 
-    originalMethod(input);
+    console.log("existingIds", existingIds);
+    if (existingIds.includes(eventId)) {
+      logger.warn(`${eventType} with id ${eventId} already tracked. Discarding duplicate.`);
+      return;
+    }
 
-    localStorage.setItem(storageKey, JSON.stringify(trackedIds));
+    originalMethod(input);
+    localStorage.setItem(storageKey, JSON.stringify([...existingIds, eventId]));
   };
 
   snowplow.ecommerce.trackTransaction = (input) =>
