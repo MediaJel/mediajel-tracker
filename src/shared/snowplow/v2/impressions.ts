@@ -65,13 +65,13 @@ const createSnowplowV2TrackerImpressionEventsHandlers = (): SnowplowTrackerImpre
 
       const cCx2 = {
         schema: "iglu:com.mediajel.contexts/campaign/jsonschema/1-0-0",
-        data: { campaignOrderId: "LiquidM_campaign_orders" },
+        data: { campaignOrderId: "Simplifi_campaign_orders" },
       };
 
       const cCx3 = {
         schema: "iglu:com.mediajel.contexts/identities/jsonschema/1-0-0",
         data: {
-          DSP: "LiquidM",
+          DSP: "Simplifi",
           GAID: GAID || "N/A",
           GAID_MD5: GAID_MD5 || "N/A",
           GAID_SHA1: GAID_SHA1 || "N/A",
