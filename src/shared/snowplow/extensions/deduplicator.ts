@@ -15,6 +15,8 @@ function tryParseJSONObject(jsonString: string): TryParseJSONObjectResult {
     if (Array.isArray(o)) {
       return { type: "array", value: o };
     }
+
+    return { type: "string", value: jsonString };
   } catch (e) {
     return { type: "string", value: jsonString };
   }
@@ -43,13 +45,11 @@ const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
     let value: string | null = localStorage.getItem(storageKey);
     let existingIds: string[] = [];
 
-    if(value) {
+    if (value) {
       const parsed = tryParseJSONObject(value);
-      if (parsed.type === "object") {
+      if (parsed?.type === "object") {
         existingIds = parsed.value as string[];
-      }
-
-      else if (parsed.type === "string") {
+      } else if (parsed?.type === "string") {
         existingIds = [parsed.value as string];
       }
     }
