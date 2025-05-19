@@ -23,28 +23,40 @@ export const pollForFunction = (
 };
 
 (function() {
-    window._trackTransQueue = window._trackTransQueue || [];
-  
-    window.trackTrans = function() {
-        window._trackTransQueue.push(arguments);
-    };
-  
-    function initializeTracking() {
-        window.trackTrans = function trackTrans(param) {
-            window.trackTrans(param);
-        };
-        
-        while (window._trackTransQueue.length > 0) {
-            var args = window._trackTransQueue.shift();
-            window.trackTrans.apply(null, args);
-        }
-    }
+  interface TransactionEvent {
+    id: string;
+    affiliateId?: string;
+    total: number;
+    tax: number;
+    shipping: number;
+    city: string;
+    state: string;
+    country: string;
+    currency: string;
+    userId?: string;
+    items: {
+      sku: string;
+      name: string;
+      category: string;
+      unitPrice: number;
+      quantity: number;
+      currency: string;
+      orderId: string;
+      userId?: string;
+    }[];
+  }
 
-    if (typeof window.trackTrans === 'function') {
-        initializeTracking();
-    } else {
-        pollForFunction(['trackTrans'], () => {
-            initializeTracking();
-        }, 100, 10000); // dunno if this will cause lag
+  window._trackTransQueue = window._trackTransQueue || [] as TransactionEvent[];
+  
+  window.trackTrans = function(event: TransactionEvent) {
+    window._trackTransQueue.push(event);
+  };
+
+  //! We can't poll for trackTrans because we have a stub called trackTrans and it'll create a stack overflow 
+  pollForFunction(['tracker'], () => {
+    while (window._trackTransQueue.length > 0) {
+      const event = window._trackTransQueue.shift()!; // Non-null assertion operator, don't remove, makes sure we don't get undefined
+      window.trackTrans(event);
     }
+  }, 100, 10000);
 })();
