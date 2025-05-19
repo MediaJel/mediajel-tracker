@@ -22,6 +22,7 @@ declare global {
     uetq: any;
     trackTrans: (input: TransactionEvent) => void;
     trackSignUp: (input: SignupParams) => void;
+    _trackTransQueue: any;
     addToCart: (input: CartEvent) => void;
     removeFromCart: (input: CartEvent) => void;
     gtmDataLayer: any;
