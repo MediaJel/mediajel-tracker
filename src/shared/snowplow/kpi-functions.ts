@@ -1,10 +1,10 @@
 import { createLogger } from "../logger";
-import { TransactionEvent } from "../types";
+import { EnhancedTransactionEvent } from "../types";
 
 
 export const KPIallocator = (tracker) => {
     const logger = createLogger("KPIallocator");
-    window.trackTrans = (data: TransactionEvent, version?: number | string) => {
+    window.trackTrans = (data: EnhancedTransactionEvent, version?: number | string) => {
     if (version === 2 || version === "2") {
       tracker.ecommerce.enhancedTransaction(data);
       logger.info("Using enhanced transaction tracking for version 2");

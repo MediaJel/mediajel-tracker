@@ -43,6 +43,8 @@ export interface EnhancedTransactionEvent {
   items: TransactionCartItem[];
 }
 
+export type TransactionEventVariation =  TransactionEvent | EnhancedTransactionEvent;
+
 export interface EnvironmentEvents {
   addToCartEvent: (cartData: CartEvent) => void;
   removeFromCartEvent: (cartData: CartEvent) => void;
