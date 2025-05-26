@@ -22,6 +22,7 @@ const createSnowplowTracker = async (input: CreateSnowplowTrackerInput): Promise
 
   tracker.initialize({ appId, collector, event });
   tracker.record(input);
+  
 
   return tracker;
 };

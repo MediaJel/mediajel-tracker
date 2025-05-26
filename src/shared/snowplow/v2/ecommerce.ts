@@ -55,6 +55,36 @@ const createSnowplowV2TrackerEcommerceEventsHandlers = (
         currency: input.currency,
       });
     },
+
+    trackEnhancedTransaction: (input) => {
+      window.trackTrans({
+        id: input.id,
+        affiliation: input.affiliation,
+        total: input.total,
+        tax: input.tax,
+        shipping: input.shipping,
+        discount: input.discount,
+        coupon_code: input.coupon_code,
+        payment_method: input.payment_method,
+        quantity: input.quantity,
+        city: input.city,
+        state: input.state,
+        country: input.country,
+        currency: input.currency,
+        items: input.items.map((item) => {
+          return {
+            orderId: item.orderId,
+            sku: item.sku,
+            name: item.name,
+            category: item.category,
+            unitPrice: item.unitPrice,
+            quantity: item.quantity,
+            currency: item.currency,
+          };
+        }
+        ) || [],
+      })
+    },
   };
 };
 
