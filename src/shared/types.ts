@@ -26,6 +26,23 @@ export interface TransactionEvent {
   items: TransactionCartItem[];
 }
 
+export interface EnhancedTransactionEvent {
+  id: string[];
+  affiliation: string;
+  total: number;
+  tax: number;
+  shipping: number;
+  discount: number;
+  coupon_code: string;
+  payment_method: string;
+  quantity: number;
+  city: string;
+  state: string;
+  country: string;
+  currency: string;
+  items: TransactionCartItem[];
+}
+
 export interface EnvironmentEvents {
   addToCartEvent: (cartData: CartEvent) => void;
   removeFromCartEvent: (cartData: CartEvent) => void;

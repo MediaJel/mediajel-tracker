@@ -1,5 +1,5 @@
 import {
-    CartEvent, ImpressionsMacrosParams, QueryStringContext, SignupParams, TransactionEvent
+    CartEvent, ImpressionsMacrosParams, QueryStringContext, SignupParams, TransactionEvent, EnhancedTransactionEvent
 } from 'src/shared/types';
 
 export interface SnowplowTrackerInitializeInput {
@@ -11,6 +11,7 @@ export interface SnowplowTracker {
   initialize: (input: SnowplowTrackerInitializeInput) => void;
   /** Mainly used for book-keeping purposes so we can document params & the tag itself */
   record: (input: QueryStringContext) => void;
+  enhancedTransaction: (input: QueryStringContext) => void;
   ecommerce: SnowplowTrackerEcommerceEvents;
   impressions?: SnowplowTrackerImpressionEvents;
   /** Used for tracking a signup when rendering the tag, acts like an image tag */
@@ -23,6 +24,7 @@ export interface SnowplowTrackerEcommerceEvents {
   trackTransaction: (input: TransactionEvent) => void;
   trackAddToCart: (input: CartEvent) => void;
   trackRemoveFromCart: (input: CartEvent) => void;
+  trackEnhancedTransaction: (input: EnhancedTransactionEvent) => void;
 }
 
 export interface SnowplowTrackerImpressionEvents {
