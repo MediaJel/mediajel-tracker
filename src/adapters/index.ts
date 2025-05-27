@@ -1,3 +1,4 @@
+import { assign } from "cypress/types/lodash";
 import logger from "src/shared/logger";
 import { createSnowplowTracker } from "src/shared/snowplow";
 import {
@@ -7,8 +8,8 @@ import {
 } from "src/shared/snowplow/extensions";
 import withEnsureBasketItemsOrderId from "src/shared/snowplow/extensions/ensure-basket-items-order-id";
 import withRegisterThirdPartyTagsExtension from "src/shared/snowplow/extensions/register-third-party-tags";
-import { QueryStringContext } from "src/shared/types";
-import { KPIallocator } from "src/shared/snowplow/kpi-functions";
+import { TransactionEventVariation, QueryStringContext, TransactionEvent } from "src/shared/types";
+import { assignGlobalTrackers } from "src/shared/utils/assignGlobalTrackers";
 
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   const plugins = context?.plugin?.split(",") || [];
@@ -28,7 +29,7 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
       (await import("src/shared/snowplow/extensions").then(({ withBingAdsExtension }) => withBingAdsExtension)),
   ]);
 
-  KPIallocator(tracker);
+  assignGlobalTrackers(tracker);
 
   switch (context.event) {
     case "transaction":

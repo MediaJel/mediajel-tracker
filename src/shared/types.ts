@@ -27,20 +27,19 @@ export interface TransactionEvent {
 }
 
 export interface EnhancedTransactionEvent {
-  id: string[];
-  affiliation: string;
-  total: number;
-  tax: number;
-  shipping: number;
-  discount: number;
-  coupon_code: string;
-  payment_method: string;
-  quantity: number;
-  city: string;
-  state: string;
-  country: string;
-  currency: string;
-  items: TransactionCartItem[];
+  transaction_ids: string[];
+  transaction_affiliation: string;
+  transaction_total: number;
+  transaction_tax: number;
+  transaction_shipping: number;
+  transaction_discount: number;
+  transaction_coupon_code: string;
+  transaction_payment_method: string;
+  transaction_total_quantity: number;
+  transaction_city: string;
+  transaction_state: string;
+  transaction_country: string;
+  transaction_currency: string;
 }
 
 export type TransactionEventVariation =  TransactionEvent | EnhancedTransactionEvent;

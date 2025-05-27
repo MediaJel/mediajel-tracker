@@ -56,12 +56,6 @@ const createSnowplowV1Tracker = async (input: CreateSnowplowTrackerInput): Promi
         data: input,
       });
     },
-    enhancedTransaction: (input) => {
-      window.tracker("trackSelfDescribingEvent", {
-        schema: "iglu:com.mediajel.events/enhanced_transaction/jsonschema/1-0-0",
-        data: input,
-      });
-    },
   };
 };
 

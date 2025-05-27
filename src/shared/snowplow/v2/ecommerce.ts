@@ -57,33 +57,42 @@ const createSnowplowV2TrackerEcommerceEventsHandlers = (
     },
 
     trackEnhancedTransaction: (input) => {
-      window.trackTrans({
-        id: input.id,
-        affiliation: input.affiliation,
-        total: input.total,
-        tax: input.tax,
-        shipping: input.shipping,
-        discount: input.discount,
-        coupon_code: input.coupon_code,
-        payment_method: input.payment_method,
-        quantity: input.quantity,
-        city: input.city,
-        state: input.state,
-        country: input.country,
-        currency: input.currency,
-        items: input.items.map((item) => {
-          return {
-            orderId: item.orderId,
-            sku: item.sku,
-            name: item.name,
-            category: item.category,
-            unitPrice: item.unitPrice,
-            quantity: item.quantity,
-            currency: item.currency,
-          };
+      const {
+        transaction_ids,
+        transaction_affiliation,
+        transaction_total,
+        transaction_tax,
+        transaction_shipping,
+        transaction_discount,
+        transaction_coupon_code,
+        transaction_payment_method,
+        transaction_total_quantity,
+        transaction_city,
+        transaction_state,
+        transaction_country,
+        transaction_currency,
+      } = input;
+
+      window.tracker("trackSelfDescribingEvent", {
+        event: {
+          schema: "iglu:com.mediajel.events/enhanced_transaction/jsonschema/1-0-0",
+          data: {
+            transaction_ids,
+            transaction_affiliation,
+            transaction_total,
+            transaction_tax,
+            transaction_shipping,
+            transaction_discount,
+            transaction_coupon_code,
+            transaction_payment_method,
+            transaction_total_quantity,
+            transaction_city,
+            transaction_state,
+            transaction_country,
+            transaction_currency,
+          },
         }
-        ) || [],
-      })
+      });
     },
   };
 };
