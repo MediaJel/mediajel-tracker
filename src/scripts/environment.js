@@ -7,6 +7,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -18,6 +22,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -37,6 +45,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -48,6 +60,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -59,13 +75,17 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
   {
     "label": "Dutchie Iframe",
     "value": "dutchie-iframe",
-    "description": "dutchie-iframe is a just a test description",
+    "description": "dutchie is a just a test description",
     "eventsTracked": [
     {
         "value": "add_to_cart",
@@ -78,13 +98,17 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
   {
     "label": "Dutchie Subdomain",
     "value": "dutchie-subdomain",
-    "description": "dutchie-subdomain is a just a test description",
+    "description": "dutchie is a just a test description",
     "eventsTracked": [
     {
         "value": "add_to_cart",
@@ -97,6 +121,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -116,6 +144,33 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
+    }
+]
+  },
+  {
+    "label": "Dutchie",
+    "value": "dutchie",
+    "description": "dutchie is a just a test description",
+    "eventsTracked": [
+    {
+        "value": "add_to_cart",
+        "label": "Add to Cart"
+    },
+    {
+        "value": "remove_from_cart",
+        "label": "Remove from Cart"
+    },
+    {
+        "value": "transaction",
+        "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -127,6 +182,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -138,6 +197,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -157,6 +220,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -168,6 +235,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -179,6 +250,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -198,6 +273,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -220,6 +299,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -231,6 +314,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -250,6 +337,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -269,6 +360,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -288,6 +383,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -299,6 +398,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -321,6 +424,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -340,6 +447,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -347,6 +458,32 @@
     "label": "Ticketmaster",
     "value": "ticketmaster",
     "description": "ticketmaster is a just a test description",
+    "eventsTracked": [
+    {
+        "value": "transaction",
+        "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
+    }
+]
+  },
+  {
+    "label": "Ticketure",
+    "value": "ticketure",
+    "description": "ticketure is a just a test description",
+    "eventsTracked": [
+    {
+        "value": "transaction",
+        "label": "Transaction"
+    }
+]
+  },
+  {
+    "label": "Tnew",
+    "value": "tnew",
+    "description": "tnew is a just a test description",
     "eventsTracked": [
     {
         "value": "transaction",
@@ -362,6 +499,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -373,6 +514,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -384,6 +529,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -403,6 +552,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -414,6 +567,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
@@ -433,6 +590,10 @@
     {
         "value": "transaction",
         "label": "Transaction"
+    },
+    {
+        "value": "basket_items",
+        "label": "Basket Items"
     }
 ]
   },
