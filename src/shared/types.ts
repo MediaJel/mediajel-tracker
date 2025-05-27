@@ -40,6 +40,7 @@ export interface EnhancedTransactionEvent {
   transaction_state: string;
   transaction_country: string;
   transaction_currency: string;
+  items: TransactionCartItem[];
 }
 
 export type TransactionEventVariation =  TransactionEvent | EnhancedTransactionEvent;

@@ -96,6 +96,20 @@ const createSnowplowV1TrackerEcommerceEventsHandlers = (
           },
         }
       });
+
+      input.items.forEach((item) => {
+        window.tracker(
+          `addItem`,
+          input.transaction_ids,
+          item.sku,
+          item.name,
+          item.category,
+          item.unitPrice,
+          item.quantity,
+          input.transaction_currency,
+        );
+      });
+      window.tracker(`trackTrans`);
     },
   };
 };

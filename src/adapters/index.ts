@@ -1,4 +1,3 @@
-import { assign } from "cypress/types/lodash";
 import logger from "src/shared/logger";
 import { createSnowplowTracker } from "src/shared/snowplow";
 import {
@@ -8,7 +7,7 @@ import {
 } from "src/shared/snowplow/extensions";
 import withEnsureBasketItemsOrderId from "src/shared/snowplow/extensions/ensure-basket-items-order-id";
 import withRegisterThirdPartyTagsExtension from "src/shared/snowplow/extensions/register-third-party-tags";
-import { TransactionEventVariation, QueryStringContext, TransactionEvent } from "src/shared/types";
+import { QueryStringContext } from "src/shared/types";
 import { assignGlobalTrackers } from "src/shared/utils/assignGlobalTrackers";
 
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
