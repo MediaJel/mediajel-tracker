@@ -55,6 +55,7 @@ export interface EventsObservableEvents {
   transactionEvent: TransactionEvent;
   addToCartEvent: CartEvent;
   removeFromCartEvent: CartEvent;
+  enhancedTransactionEvent: EnhancedTransactionEvent;
 }
 
 export interface ThirdPartyTags {
