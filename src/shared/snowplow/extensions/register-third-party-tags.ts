@@ -33,11 +33,27 @@ const processTags = (tags: Array<{ tag: string; type: string }>, placeholders: R
 };
 
 const withRegisterThirdPartyTagsExtension = (snowplow: SnowplowTracker) => {
-  const { trackTransaction, trackAddToCart, trackRemoveFromCart } = snowplow.ecommerce;
+  const { trackTransaction, trackAddToCart, trackRemoveFromCart, trackEnhancedTransaction } = snowplow.ecommerce;
   const { trackSignup } = snowplow;
 
   snowplow.ecommerce.trackTransaction = (input) => {
     trackTransaction(input);
+    processTags(thirdPartyTags.onTransaction, {
+      "{transaction_id}": input?.id?.toString() || "null",
+      "{transaction_total}": input?.total?.toString() || "0",
+      "{transaction_tax}": input?.tax?.toString() || "0",
+      "{transaction_shipping}": input?.shipping?.toString() || "0",
+      "{transaction_city}": input?.city || "null",
+      "{transaction_state}": input?.state || "null",
+      "{transaction_country}": input?.country || "null",
+      "{transaction_currency}": input?.currency || "null",
+      "{transaction_userId}": input?.userId?.toString() || "null",
+    });
+  };
+
+  //! HANDLE MULTIPLE IDS
+  snowplow.ecommerce.trackEnhancedTransaction = (input) => {
+    trackEnhancedTransaction(input);
     processTags(thirdPartyTags.onTransaction, {
       "{transaction_id}": input?.id?.toString() || "null",
       "{transaction_total}": input?.total?.toString() || "0",

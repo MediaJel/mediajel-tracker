@@ -43,6 +43,7 @@ const withSnowplowSegmentsExtension = (snowplow: SnowplowTracker) => {
 
   // Original trackTransaction method
   const trackTransaction = snowplow.ecommerce.trackTransaction;
+  const trackEnhancedTransaction = snowplow.ecommerce.trackEnhancedTransaction;
 
   //* Override the trackTransaction method
   snowplow.ecommerce.trackTransaction = (input) => {
@@ -58,6 +59,22 @@ const withSnowplowSegmentsExtension = (snowplow: SnowplowTracker) => {
       orderId: input.id,
     });
   };
+
+  snowplow.ecommerce.trackEnhancedTransaction = (input) => {
+    trackEnhancedTransaction(input);
+
+    //! What if we have multiple ids?
+    segments.nexxen.emitPurchase({
+      bprice: input.total,
+      cid: input.ids[0] || input.id,
+    });
+
+    segments.dstillery.emitPurchase({
+      amount: input.total,
+      orderId: input.ids[0] || input.id,
+    });
+  };
+
   return snowplow;
 };
 

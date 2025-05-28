@@ -26,24 +26,15 @@ export interface TransactionEvent {
   items: TransactionCartItem[];
 }
 
-export interface EnhancedTransactionEvent {
-  transaction_ids: string[];
-  transaction_affiliation: string;
-  transaction_total: number;
-  transaction_tax: number;
-  transaction_shipping: number;
-  transaction_discount: number;
-  transaction_coupon_code: string;
-  transaction_payment_method: string;
-  transaction_total_quantity: number;
-  transaction_city: string;
-  transaction_state: string;
-  transaction_country: string;
-  transaction_currency: string;
-  items: TransactionCartItem[];
+export interface EnhancedTransactionEvent extends TransactionEvent {
+  ids: string[];
+  discount?: number;
+  coupon_code?: string;
+  payment_method?: string;
+  total_quantity?: number;
 }
 
-export type TransactionEventVariation =  TransactionEvent | EnhancedTransactionEvent;
+export type TransactionEventVariation =  EnhancedTransactionEvent | TransactionEvent;
 
 export interface EnvironmentEvents {
   addToCartEvent: (cartData: CartEvent) => void;

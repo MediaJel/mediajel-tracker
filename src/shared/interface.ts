@@ -20,7 +20,7 @@ declare global {
     dataLayer: any;
     gtag: any;
     uetq: any;
-    trackTrans: (input: TransactionEventVariation, version?: number | string) => void;
+    trackTrans: (input: TransactionEventVariation) => void;
     trackSignUp: (input: SignupParams) => void;
     addToCart: (input: CartEvent) => void;
     removeFromCart: (input: CartEvent) => void;

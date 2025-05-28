@@ -58,45 +58,45 @@ const createSnowplowV2TrackerEcommerceEventsHandlers = (
 
     trackEnhancedTransaction: (input) => {
       const {
-        transaction_ids,
-        transaction_affiliation,
-        transaction_total,
-        transaction_tax,
-        transaction_shipping,
-        transaction_discount,
-        transaction_coupon_code,
-        transaction_payment_method,
-        transaction_total_quantity,
-        transaction_city,
-        transaction_state,
-        transaction_country,
-        transaction_currency,
+        ids,
+        affiliateId,
+        total,
+        tax,
+        shipping,
+        discount,
+        coupon_code,
+        payment_method,
+        total_quantity,
+        city,
+        state,
+        country,
+        currency,
       } = input;
 
       window.tracker("trackSelfDescribingEvent", {
         event: {
           schema: "iglu:com.mediajel.events/enhanced_transaction/jsonschema/1-0-0",
           data: {
-            transaction_ids,
-            transaction_affiliation,
-            transaction_total,
-            transaction_tax,
-            transaction_shipping,
-            transaction_discount,
-            transaction_coupon_code,
-            transaction_payment_method,
-            transaction_total_quantity,
-            transaction_city,
-            transaction_state,
-            transaction_country,
-            transaction_currency,
+            transaction_ids: ids,
+            transaction_affiliation: affiliateId,
+            transaction_total: total,
+            transaction_tax: tax,
+            transaction_shipping: shipping,
+            transaction_discount: discount || 0,
+            transaction_coupon_code: coupon_code || "N/A",
+            transaction_payment_method: payment_method || "N/A",
+            transaction_total_quantity: total_quantity || 1,
+            transaction_city: city,
+            transaction_state: state,
+            transaction_country: country,
+            transaction_currency: currency,
           },
         }
       });
 
       input.items.forEach((item) => {
         window.tracker(`addItem`, {
-          orderId: item.orderId,
+          orderId: ids,
           sku: item.sku,
           name: item.name,
           category: item.category,
