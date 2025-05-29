@@ -36,7 +36,8 @@ const bigcommerceDataSource = (snowplow: SnowplowTracker) => {
 
       try {
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [transaction.orderId.toString()],
             id: transaction.orderId.toString(),
             total: parseFloat(transaction.orderAmount),
             tax: parseFloat(transaction.taxTotal) || 0,
@@ -81,7 +82,8 @@ const bigcommerceDataSource = (snowplow: SnowplowTracker) => {
         try {
           isTrackerLoaded(() => {
             observable.notify({
-              transactionEvent: {
+              enhancedTransactionEvent: {
+                ids: [transaction?.orderId?.toString() || ""],
                 id: transaction?.orderId?.toString() || "",
                 total: parseFloat(transaction?.orderAmount || 0),
                 tax: parseFloat(transaction?.taxTotal || 0),

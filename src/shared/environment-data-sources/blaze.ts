@@ -17,7 +17,8 @@ const blazeDataSource = () => {
                     const address = transaction.delivery_address;
 
                     observable.notify({
-                        transactionEvent: {
+                        enhancedTransactionEvent: {
+                            ids: [transaction.order_number.toString()],
                             id: transaction.order_number.toString(),
                             total: parseFloat(amount) || 0,
                             tax: parseFloat(tax) || 0,
@@ -39,7 +40,8 @@ const blazeDataSource = () => {
                                         quantity: parseInt(product.attributes.quantity || 1),
                                         currency: "USD",
                                     } as TransactionCartItem;
-                                }),
+                                }
+                            ),
                         },
                     });
                 }

@@ -16,7 +16,8 @@ const drupalDataSource = () => {
       isTrackerLoaded(() => {
         runOncePerPageLoad(() => {
           observable.notify({
-            transactionEvent: {
+            enhancedTransactionEvent: {
+              ids: [ecommerce.transaction_id.toString()],
               id: ecommerce.transaction_id.toString(),
               total: parseFloat(ecommerce.value),
               tax: parseFloat(ecommerce.tax) || 0,
