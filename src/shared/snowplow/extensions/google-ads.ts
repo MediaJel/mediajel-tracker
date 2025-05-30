@@ -53,6 +53,7 @@ const withSnowplowGoogleAdsExtension = (snowplow: SnowplowTracker) => {
 
   // Original trackTransaction method
   const trackTransaction = snowplow.ecommerce.trackTransaction;
+  const trackEnhancedTransaction = snowplow.ecommerce.trackEnhancedTransaction;
 
   //* Override the trackTransaction method
   snowplow.ecommerce.trackTransaction = (input) => {
@@ -70,6 +71,25 @@ const withSnowplowGoogleAdsExtension = (snowplow: SnowplowTracker) => {
       value: input.total,
       currency: input.currency,
       transaction_id: input.id,
+    });
+  };
+
+  snowplow.ecommerce.trackEnhancedTransaction = (input) => {
+    trackEnhancedTransaction(input);
+
+    //! What if we have multiple ids?
+    logger.info(`🚀🚀🚀 Google Ads Extension Enhanced Transaction Event`, {
+      send_to: `${conversionId}/${conversionLabel}`,
+      value: input.total,
+      currency: input.currency,
+      transaction_id: input.ids[0] || input.id,
+    });
+
+    window.gtag("event", "conversion", {
+      send_to: `${conversionId}/${conversionLabel}`,
+      value: input.total,
+      currency: input.currency,
+      transaction_id: input.ids[0] || input.id,
     });
   };
   return snowplow;

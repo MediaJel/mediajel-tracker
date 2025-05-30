@@ -1,4 +1,4 @@
-import { TransactionEvent, CartEvent, SignupParams } from "./snowplow/types";
+import { CartEvent, SignupParams, TransactionEventVariation } from "./snowplow/types";
 import { RegisterThirdPartyTagsInput } from './types';
 
 export {};
@@ -20,7 +20,7 @@ declare global {
     dataLayer: any;
     gtag: any;
     uetq: any;
-    trackTrans: (input: TransactionEvent) => void;
+    trackTrans: (input: TransactionEventVariation) => void;
     trackSignUp: (input: SignupParams) => void;
     addToCart: (input: CartEvent) => void;
     removeFromCart: (input: CartEvent) => void;

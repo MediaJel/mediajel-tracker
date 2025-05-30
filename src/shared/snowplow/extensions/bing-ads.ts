@@ -21,6 +21,7 @@ const withSnowplowBingAdsExtension = (snowplow: SnowplowTracker) => {
 
   // Original trackTransaction method
   const trackTransaction = snowplow.ecommerce.trackTransaction;
+  const trackEnhancedTransaction = snowplow.ecommerce.trackEnhancedTransaction;
 
   //* Override the trackTransaction method
   snowplow.ecommerce.trackTransaction = (input) => {
@@ -54,6 +55,39 @@ const withSnowplowBingAdsExtension = (snowplow: SnowplowTracker) => {
       })),
     });
   };
+
+  //! HANDLE MULTIPLE IDS
+  snowplow.ecommerce.trackEnhancedTransaction = (input) => {
+    trackEnhancedTransaction(input);
+    logger.info(`🚀🚀🚀 Bing Ads Extension Enhanced Transaction Event`, {
+      transaction_id: input.ids[0] || input.id,
+      ecomm_prodid: input.items.map((item) => item.sku),
+      ecomm_pagetype: "purchase",
+      ecomm_totalvalue: input.total,
+      revenue_value: input.total,
+      currency: "USD",
+      items: input.items.map((item) => ({
+        id: item.sku,
+        quantity: item.quantity,
+        price: item.unitPrice,
+      })),
+    });
+
+    window.uetq.push("event", "purchase", {
+      transaction_id: input.ids[0] || input.id,
+      ecomm_prodid: input.items.map((item) => item.sku),
+      ecomm_pagetype: "purchase",
+      ecomm_totalvalue: input.total,
+      revenue_value: input.total,
+      currency: "USD",
+      items: input.items.map((item) => ({
+        id: item.sku,
+        quantity: item.quantity,
+        price: item.unitPrice,
+      })),
+    });
+  };
+  
   return snowplow;
 };
 

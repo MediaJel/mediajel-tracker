@@ -64,6 +64,30 @@ const dispenseDataSource = (snowplow: SnowplowTracker) => {
                 } as TransactionCartItem;
               }),
             },
+            enhancedTransactionEvent: {
+              ids: [transaction_id.toString()],
+              id: transaction_id.toString(),
+              total: parseFloat(value),
+              tax,
+              shipping: 0,
+              city: "N/A",
+              state: "N/A",
+              country: "USA",
+              currency: "USD",
+              items: items.map((item) => {
+                const { item_name, item_category, price, quantity } = item;
+
+                return {
+                  orderId: transaction_id.toString(),
+                  sku: item_name.toString() || "N/A",
+                  name: item_name?.toString() || "N/A",
+                  category: item_category?.toString() || "N/A",
+                  unitPrice: parseFloat(price || 0),
+                  quantity: parseInt(quantity || 1),
+                  currency: "USD",
+                } as TransactionCartItem;
+              }),
+            },
           });
 
           cache.recordTransaction(); // Allows the IF case to execute break on the switch case
@@ -91,7 +115,8 @@ const dispenseDataSource = (snowplow: SnowplowTracker) => {
           try {
             runOncePerPageLoad(() => {
               observable.notify({
-                transactionEvent: {
+                enhancedTransactionEvent: {
+                  ids: [responseBody.id],
                   total: parseFloat(responseBody.total || 0),
                   id: responseBody.id,
                   tax: parseFloat(responseBody.totalTax || 0),

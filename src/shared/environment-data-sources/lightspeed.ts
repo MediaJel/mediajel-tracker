@@ -10,7 +10,8 @@ const lightspeedTracker = () => {
       const products = transaction.products;
 
       observable.notify({
-        transactionEvent: {
+        enhancedTransactionEvent: {
+          ids: [transaction.id.toString()],
           id: transaction.id.toString(),
           total: parseFloat(transaction.total),
           tax: parseFloat(transaction.tax) || 0,

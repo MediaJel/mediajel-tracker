@@ -47,7 +47,8 @@ const dutchieSubdomainDataSource = () => {
       const { transaction_id, value } = transaction;
 
       observable.notify({
-        transactionEvent: {
+        enhancedTransactionEvent: {
+          ids: [transaction_id.toString()],
           total: parseFloat(value),
           id: transaction_id.toString(),
           tax: 0,
@@ -78,7 +79,8 @@ const dutchieSubdomainDataSource = () => {
       const { transaction_id, value } = transaction;
 
       observable.notify({
-        transactionEvent: {
+        enhancedTransactionEvent: {
+          ids: [transaction_id.toString()],
           total: parseFloat(value),
           id: transaction_id.toString(),
           tax: 0,
@@ -109,7 +111,8 @@ const dutchieSubdomainDataSource = () => {
       const { transaction_id, transaction_total, transaction_tax } = data;
 
       observable.notify({
-        transactionEvent: {
+        enhancedTransactionEvent: {
+          ids: [transaction_id.toString()],
           total: parseFloat(transaction_total),
           id: transaction_id.toString(),
           tax: transaction_tax === "N/A" || isNaN(transaction_tax) ? 0 : parseFloat(transaction_tax),

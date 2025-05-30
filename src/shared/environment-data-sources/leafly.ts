@@ -27,7 +27,8 @@ const leaflyDataSource = () => {
 
         isTrackerLoaded(() => {
           observable.notify({
-            transactionEvent: {
+            enhancedTransactionEvent: {
+              ids: [id.toString()],
               id: id.toString(),
               total: parseFloat(total) || 0,
               tax: 0,

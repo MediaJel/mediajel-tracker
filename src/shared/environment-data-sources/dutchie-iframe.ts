@@ -48,7 +48,8 @@ const dutchieIframeDataSource = () => {
         const { transaction_id, value } = transaction;
 
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [transaction_id.toString()],
             id: transaction_id.toString(),
             total: parseFloat(value || 0),
             tax: 0,
@@ -84,7 +85,8 @@ const dutchieIframeDataSource = () => {
         const { transaction_id, value } = transaction;
 
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [transaction_id.toString()],
             id: transaction_id.toString(),
             total: parseFloat(value || 0),
             tax: 0,
