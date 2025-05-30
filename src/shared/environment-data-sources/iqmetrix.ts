@@ -13,7 +13,8 @@ const iqmetrixDataSource = () => {
                 const product = transaction.data.productDetails;
 
                 observable.notify({
-                    transactionEvent: {
+                    enhancedTransactionEvent: {
+                        ids: [transaction.data.orderDisplayId.toString()],
                         id: transaction.data.orderDisplayId.toString(),
                         city: "N/A",
                         country: "USA",

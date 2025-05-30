@@ -26,7 +26,8 @@ const magentoDataSource = () => {
             isTrackerLoaded(() => {
               runOncePerPageLoad(() => {
                 observable.notify({
-                  transactionEvent: {
+                  enhancedTransactionEvent: {
+                    ids: [ecommerce.transaction_id.toString()],
                     id: ecommerce.transaction_id.toString(),
                     total: parseFloat(ecommerce.value),
                     tax: parseFloat(ecommerce.tax) || 0,
@@ -100,7 +101,8 @@ const magentoDataSource = () => {
         isTrackerLoaded(() => {
           runOncePerPageLoad(() => {
             observable.notify({
-              transactionEvent: {
+              enhancedTransactionEvent: {
+                ids: [ecommerce.transaction_id.toString()],
                 id: ecommerce.transaction_id.toString(),
                 total: parseFloat(ecommerce.value),
                 tax: parseFloat(ecommerce.tax) || 0,
@@ -158,7 +160,8 @@ const magentoDataSource = () => {
         const orderNumber = orderNumberElement.textContent.trim();
 
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [orderNumber.toString()],
             id: orderNumber,
             total: parseFloat(retrievedObject.base_grand_total),
             tax: parseFloat(retrievedObject.base_tax_amount) || 0,
