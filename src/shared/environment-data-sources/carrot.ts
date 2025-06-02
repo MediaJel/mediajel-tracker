@@ -52,6 +52,7 @@ const carrotDataSource = (snowplow: SnowplowTracker) => {
         }
     );
   });
+  handler.execute();
 };
 
 export default carrotDataSource;
