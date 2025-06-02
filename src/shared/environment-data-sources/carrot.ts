@@ -16,8 +16,8 @@ const carrotDataSource = (snowplow: SnowplowTracker) => {
             if (!window.location.href.includes('/store/activity')) return;
             if (!responseBody) return;
             try {
-                responseBody.orders.map((order) => {
-                    if (order.details.status === 'open') {
+                responseBody?.orders?.map((order) => {
+                    if (order?.details?.status === 'open') {
                         const data = order;
                             try {
                                 isTrackerLoaded(() => {
