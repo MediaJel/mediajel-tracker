@@ -12,7 +12,8 @@ const shopifyDataSource = () => {
       const transaction = window?.transactionOrder;
       const products = window?.transactionItems;
       observable.notify({
-        transactionEvent: {
+        enhancedTransactionEvent: {
+          ids: [transaction?.order?.id.toString()],
           id: transaction?.order?.id,
           total: parseFloat(transaction?.totalPrice?.amount || 0),
           tax: parseFloat(transaction?.totalTax?.amount || 0),
@@ -52,7 +53,8 @@ const shopifyDataSource = () => {
       window.tracker("setUserId", email);
 
       observable.notify({
-        transactionEvent: {
+        enhancedTransactionEvent: {
+          ids: [(transaction.liquid_order_name || transaction.order_id).toString()],
           userId: email,
           id: `${(transaction.liquid_order_name || transaction.order_id).toString()} ${
             orderNumber && `- ${orderNumber}`

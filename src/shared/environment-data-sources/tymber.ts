@@ -49,7 +49,8 @@ const tymberDataSource = () => {
         const { id, revenue, tax } = transaction;
 
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [id.toString()],
             id: id.toString(),
             total: parseFloat(revenue),
             tax: parseFloat(tax),
@@ -82,7 +83,8 @@ const tymberDataSource = () => {
   if (!success) {
     const trackTransaction = (transaction) => {
       observable.notify({
-        transactionEvent: {
+        enhancedTransactionEvent: {
+          ids: [transaction.orderId.toString()],
           id: transaction.orderId.toString(),
           total: parseFloat(transaction.orderAmount),
           tax: parseFloat(transaction.taxTotal) || 0,

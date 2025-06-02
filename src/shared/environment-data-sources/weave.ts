@@ -11,7 +11,8 @@ const weaveDataSource = () => {
         const products = data.items;
 
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [data.order_id.toString()],
             id: data.order_id.toString(),
             total: data.total.total / 100,
             tax: data.total.tax / 100 || 0,

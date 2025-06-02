@@ -37,7 +37,8 @@ const wixTrackerDataSource = () => {
       if (e === "Purchase") {
         console.log("Purchase: ", p);
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [(p.orderId || "N/A").toString()],
             id: (p.orderId || "N/A").toString(),
             total: parseFloat(p.revenue || 0),
             tax: parseFloat(p.tax || 0),

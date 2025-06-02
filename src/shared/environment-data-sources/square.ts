@@ -9,7 +9,8 @@ const squareDataSource = () => {
       try {
         const ecommerce = data[2];
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [ecommerce.transaction_id],
             id: ecommerce.transaction_id,
             total: parseFloat(ecommerce.value),
             tax: parseFloat(ecommerce.tax),

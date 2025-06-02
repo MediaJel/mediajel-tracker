@@ -12,7 +12,8 @@ const stickyLeafDataSource = () => {
     const value = document.getElementById("total");
 
     observable.notify({
-      transactionEvent: {
+      enhancedTransactionEvent: {
+        ids: [transactionId],
         id: transactionId,
         total: parseFloat(value.innerText.replace(/^\D+/g, "")),
         tax: 0,

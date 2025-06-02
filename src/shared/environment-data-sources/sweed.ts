@@ -14,7 +14,8 @@ const sweedDataSource = () => {
         const transactionId = transaction && transaction.transaction_id && transaction.transaction_id.toString();
 
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [transactionId],
             id: transactionId,
             total: parseFloat(value),
             tax: parseFloat(tax),

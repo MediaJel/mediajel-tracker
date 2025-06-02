@@ -47,7 +47,8 @@ const ollaTracker = () => {
         const products = data.items || data[2].items;
 
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [transaction_id.toString()],
             id: transaction_id.toString(),
             total: parseFloat(transaction_total),
             tax: 0,
