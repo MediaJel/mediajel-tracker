@@ -85,7 +85,13 @@ jobs:
           distribution_id: EQGTP3X7S8LMI
           paths: /*
       - aws-cloudfront/invalidate:
-          distribution_id: EFJHMMZDNURYT
+          distribution_id: E39XLCEMWS6VO1
+          paths: /*
+      - aws-cloudfront/invalidate:
+          distribution_id: E270PRY60O4B3Y
+          paths: /*
+      - aws-cloudfront/invalidate:
+          distribution_id: ELFZ8CP0408WK
           paths: /*
       - run:
           name: Run Tracker
