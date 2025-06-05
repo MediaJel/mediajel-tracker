@@ -14,42 +14,43 @@ const carrotDataSource = (snowplow: SnowplowTracker) => {
       (request) => {},
       (response, responseBody) => {
         if (!window.location.href.includes("/store/activity")) return;
-        if (!responseBody)
-          responseBody?.orders?.map((order) => {
-            if (order?.details?.status === "open") {
-              const data = order;
-              try {
-                isTrackerLoaded(() => {
-                  observable.notify({
-                    transactionEvent: {
-                      id: data.details.id || "N/A",
-                      total: parseFloat(data.details.total || 0),
-                      tax: parseFloat(data.details.tax || 0),
-                      shipping: 0,
-                      city: "N/A",
-                      state: "N/A",
-                      country: "USA",
-                      currency: "USD",
-                      items:
-                        data.items.map((item) => {
-                          return {
-                            orderId: data.details.id || "N/A",
-                            sku: item.product.id.toString() || "N/A",
-                            name: (item.product.name || "N/A").toString(),
-                            category: (item.product.categoryName || "N/A").toString(),
-                            unitPrice: parseFloat(item.price) || 0,
-                            quantity: parseInt(item.unitQty) || 1,
-                            currency: "USD",
-                          } as TransactionCartItem;
-                        }) || [],
-                    },
-                  });
+        if (!responseBody) return;
+
+        responseBody?.orders?.forEach((order) => {
+          if (order?.details?.status === "open") {
+            const data = order;
+            try {
+              isTrackerLoaded(() => {
+                observable.notify({
+                  transactionEvent: {
+                    id: data.details.id || "N/A",
+                    total: parseFloat(data.details.total || 0),
+                    tax: parseFloat(data.details.tax || 0),
+                    shipping: 0,
+                    city: "N/A",
+                    state: "N/A",
+                    country: "USA",
+                    currency: "USD",
+                    items:
+                      data.items.map((item) => {
+                        return {
+                          orderId: data.details.id || "N/A",
+                          sku: item.product.id.toString() || "N/A",
+                          name: (item.product.name || "N/A").toString(),
+                          category: (item.product.categoryName || "N/A").toString(),
+                          unitPrice: parseFloat(item.price) || 0,
+                          quantity: parseInt(item.unitQty) || 1,
+                          currency: "USD",
+                        } as TransactionCartItem;
+                      }) || [],
+                  },
                 });
-              } catch (error) {
-                logger.error("Carrot: Error parsing response body", error);
-              }
+              });
+            } catch (error) {
+              logger.error("Carrot: Error parsing response body", error);
             }
-          });
+          }
+        });
       },
     );
   });
