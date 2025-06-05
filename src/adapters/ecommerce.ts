@@ -190,6 +190,11 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       // description: "thirdparty is a just a test descriptions"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
+    case "carrot":
+      import("../shared/environment-data-sources/carrot").then(({ default: load }): void => load(tracker));
+      // description: "carrot is a just a test descriptions"
+      // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+      break;
 
     default:
       logger.warn("No event/environment specified, Only pageview is active");
