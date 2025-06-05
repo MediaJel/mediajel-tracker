@@ -1,6 +1,44 @@
 import { CreateSnowplowTrackerInput, SnowplowTracker } from 'src/shared/snowplow/types';
 import { initialize } from 'src/shared/snowplow/v2/init';
 
+export const TransactionFilterPlugin = {
+  EcommercePayloadValidator: function () {
+    return {
+      filter: (payload: Record<string, string>) => {
+        if (payload.e === "tr") {
+          const orderId = payload.tr_id;
+          const rawTotal = payload.tr_tt;
+          const total = parseFloat(rawTotal);
+
+          const isValidId =
+            typeof orderId === "string" &&
+            orderId.trim().length > 0 &&
+            orderId !== "undefined" &&
+            orderId !== "null";
+          const isValidTotal = !isNaN(total) && total >= 0;
+
+          const shouldBlock = !isValidId || !isValidTotal;
+
+          console.log("Snowplow transaction filter:", {
+            orderId,
+            rawTotal,
+            isValidId,
+            isValidTotal,
+            shouldBlock,
+            payload,
+          });
+
+          if (shouldBlock) {
+            console.warn("❌ Blocked Snowplow transaction:", payload);
+            return false;
+          }
+        }
+        return true;
+      },
+    };
+  },
+};
+
 const createSnowplowV2Tracker = async (input: CreateSnowplowTrackerInput): Promise<SnowplowTracker> => {
   const loadImpressionHandler = async () => {
     return await import(`src/shared/snowplow/v2/impressions`).then(({ default: load }) => load());

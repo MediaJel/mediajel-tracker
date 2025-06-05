@@ -1,4 +1,5 @@
 import { CreateSnowplowTrackerInput } from "src/shared/snowplow/types";
+import { TransactionFilterPlugin } from "./tracker";
 
 export const initialize = ({ appId, collector, event }: CreateSnowplowTrackerInput) => {
   (function (e, o, n, t, a, c, i) {
@@ -25,6 +26,9 @@ export const initialize = ({ appId, collector, event }: CreateSnowplowTrackerInp
     respectDoNotTrack: false,
     eventMethod: "post",
   });
+
+  window.tracker("addPlugin", TransactionFilterPlugin, "EcommercePayloadValidator");
+
   window.tracker("enableActivityTracking", {
     minimumVisitLength: 30,
     heartbeatDelay: 10,
