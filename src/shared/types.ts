@@ -26,6 +26,16 @@ export interface TransactionEvent {
   items: TransactionCartItem[];
 }
 
+export interface EnhancedTransactionEvent extends TransactionEvent {
+  ids: string[];
+  discount?: number;
+  coupon_code?: string;
+  payment_method?: string;
+  total_quantity?: number;
+}
+
+export type TransactionEventVariation =  EnhancedTransactionEvent | TransactionEvent;
+
 export interface EnvironmentEvents {
   addToCartEvent: (cartData: CartEvent) => void;
   removeFromCartEvent: (cartData: CartEvent) => void;
@@ -36,6 +46,7 @@ export interface EventsObservableEvents {
   transactionEvent: TransactionEvent;
   addToCartEvent: CartEvent;
   removeFromCartEvent: CartEvent;
+  enhancedTransactionEvent: EnhancedTransactionEvent;
 }
 
 export interface ThirdPartyTags {

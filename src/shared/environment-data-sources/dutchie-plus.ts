@@ -11,7 +11,8 @@ const dutchiePlusDataSource = () => {
     //* Works on Curaleaf
     if (data.event === "purchase") {
       observable.notify({
-        transactionEvent: {
+        enhancedTransactionEvent: {
+          ids: [data.ecommerce.transaction_id.toString()],
           id: data.ecommerce.transaction_id,
           total: parseFloat(data.ecommerce.value),
           tax: parseFloat(data.ecommerce.tax || 0),
@@ -97,7 +98,8 @@ const dutchiePlusDataSource = () => {
 
       if (getId) {
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [getId],
             total: parseFloat(getRevenue),
             id: getId,
             tax: parseFloat(getTax || 0),
@@ -128,7 +130,8 @@ const dutchiePlusDataSource = () => {
         const items = transactionData.items;
 
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [transactionData.rawData.orderNumber],
             total: parseFloat(transactionData.value),
             id: transactionData.rawData.orderNumber,
             tax: parseFloat(transactionData.tax || 0),

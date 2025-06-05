@@ -18,7 +18,8 @@ const ecwidTracker = () => {
     const products = tryParseJSONObject(window.transactionItems);
 
     observable.notify({
-      transactionEvent: {
+      enhancedTransactionEvent: {
+        ids: [transaction.id.toString()],
         id: transaction.id.toString(),
         total: parseFloat(transaction.total),
         tax: parseFloat(transaction.tax) || 0,
@@ -87,7 +88,8 @@ const ecwidTracker = () => {
             ];
 
             observable.notify({
-              transactionEvent: {
+              enhancedTransactionEvent: {
+                ids: [id.toString()],
                 id: id.toString(),
                 total: parseFloat(total),
                 tax: 0,

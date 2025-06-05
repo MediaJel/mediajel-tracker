@@ -46,7 +46,8 @@ const grassDoorTracker = () => {
         const products = data.products;
 
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [transaction_id.toString()],
             id: transaction_id.toString(),
             total: parseFloat(transaction_total || 0),
             tax: parseFloat(transaction_tax || 0),

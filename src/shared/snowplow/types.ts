@@ -1,5 +1,5 @@
 import {
-    CartEvent, ImpressionsMacrosParams, QueryStringContext, SignupParams, TransactionEvent
+    CartEvent, ImpressionsMacrosParams, QueryStringContext, SignupParams, TransactionEvent, EnhancedTransactionEvent
 } from 'src/shared/types';
 
 export interface SnowplowTrackerInitializeInput {
@@ -23,6 +23,7 @@ export interface SnowplowTrackerEcommerceEvents {
   trackTransaction: (input: TransactionEvent) => void;
   trackAddToCart: (input: CartEvent) => void;
   trackRemoveFromCart: (input: CartEvent) => void;
+  trackEnhancedTransaction: (input: EnhancedTransactionEvent) => void;
 }
 
 export interface SnowplowTrackerImpressionEvents {
@@ -33,5 +34,5 @@ export interface SnowplowTrackerImpressionEvents {
 
 export interface CreateSnowplowTrackerInput extends QueryStringContext {}
 
-export { TransactionEvent, CartEvent, SignupParams };
+export { TransactionEvent, CartEvent, SignupParams, TransactionEventVariation } from 'src/shared/types';
 

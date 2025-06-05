@@ -10,7 +10,8 @@ const webjointDataSource = () => {
     if (parsedData && Object.keys(parsedData).includes("orders")) {
       try {
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [parsedData.orders[0].id || "N/A"],
             id: parsedData.orders[0].id || "N/A",
             total: parseFloat(parsedData.orders[0].total) || 0,
             tax: parseFloat(parsedData.orders[0].taxes) || 0,

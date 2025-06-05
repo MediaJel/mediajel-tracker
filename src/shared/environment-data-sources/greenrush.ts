@@ -12,7 +12,8 @@ const greenrushDataSource = () => {
         const product = transaction.data.items.data;
 
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [transaction.data.id.toString()],
             id: transaction.data.id.toString(),
             city: "N/A",
             country: "USA",

@@ -42,7 +42,8 @@ const yotpoDataSource = () => {
         const products = data.ecommerce.items;
         const { transaction_id, value, tax } = transaction;
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [transaction_id.toString()],
             id: transaction_id.toString(),
             total: parseFloat(value),
             tax: parseFloat(tax),

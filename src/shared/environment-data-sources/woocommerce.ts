@@ -14,7 +14,8 @@ const woocommerceDataSource = () => {
     const email = transaction.billing.email || "N/A";
 
     observable.notify({
-      transactionEvent: {
+      enhancedTransactionEvent: {
+        ids: [(transaction.id || transaction.transaction_id).toString()],
         id: (transaction.id || transaction.transaction_id).toString(),
         total: parseFloat(transaction.total),
         tax: parseFloat(transaction.total_tax || 0),

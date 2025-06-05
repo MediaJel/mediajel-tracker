@@ -20,7 +20,8 @@ const ticketMasterDataSource = () => {
           const taxFee = transaction.tax || 0;
 
           observable.notify({
-            transactionEvent: {
+            enhancedTransactionEvent: {
+              ids: [transaction_id.toString()],
               total: parseFloat(valueTransaction),
               id: transaction_id.toString(),
               tax: parseFloat(taxFee) || 0,
@@ -57,7 +58,8 @@ const ticketMasterDataSource = () => {
           const { transaction_id, value, tax, shipping } = transaction;
 
           observable.notify({
-            transactionEvent: {
+            enhancedTransactionEvent: {
+              ids: [transaction_id.toString()],
               total: parseFloat(value || 0) + parseFloat(tax || 0) + parseFloat(shipping || 0),
               id: transaction_id.toString(),
               tax: parseFloat(tax) || 0,
@@ -101,7 +103,8 @@ const ticketMasterDataSource = () => {
       const items = transaction?.items || []
 
       observable.notify({
-        transactionEvent: {
+        enhancedTransactionEvent: {
+          ids: [transaction.transaction_id.toString()],
           total: parseFloat(transaction.value),
           id: transaction.transaction_id.toString(),
           tax: 0,

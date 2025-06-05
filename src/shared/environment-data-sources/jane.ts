@@ -54,7 +54,8 @@ const janeDataSource = () => {
         } = payload.properties;
 
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [cartId.toString()],
             userId: customerEmail,
             id: cartId.toString(),
             total: parseFloat(estimatedTotal),

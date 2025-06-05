@@ -46,7 +46,8 @@ const meadowTracker = () => {
         const products = transaction.lineItems;
 
         observable.notify({
-          transactionEvent: {
+          enhancedTransactionEvent: {
+            ids: [transaction.id.toString()],
             id: transaction.id.toString(),
             total: parseFloat(transaction.netPrice) / 100,
             tax: parseFloat(transaction.taxesTotal || 0) / 100,
