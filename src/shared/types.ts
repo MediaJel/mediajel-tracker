@@ -14,6 +14,7 @@ export interface TransactionCartItem extends CartEvent {
 
 export interface TransactionEvent {
   id: string;
+
   affiliateId?: string;
   total: number;
   tax: number;
@@ -23,6 +24,9 @@ export interface TransactionEvent {
   country: string;
   currency: string;
   userId?: string;
+  discount?: number;
+  couponCode?: string;
+  alternativeTransactionIds?: string[];
   items: TransactionCartItem[];
 }
 
