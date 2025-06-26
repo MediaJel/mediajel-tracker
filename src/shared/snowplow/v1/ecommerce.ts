@@ -7,7 +7,7 @@ const createSnowplowV1TrackerEcommerceEventsHandlers = (
 
   return {
     trackTransaction: (input) => {
-      console.log(input.discount, input.couponCode);
+
       window.tracker(
         `addTrans`,
         input.id,
@@ -23,6 +23,7 @@ const createSnowplowV1TrackerEcommerceEventsHandlers = (
           {
             schema: "iglu:com.mediajel.events/enhanced_transaction/jsonschema/1-0-0",
             data: {
+              transaction_ids: input.alternativeTransactionIds,
               transaction_discount: input.discount,
               transaction_coupon_code: input.couponCode,
             },
