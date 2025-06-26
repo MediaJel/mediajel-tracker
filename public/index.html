@@ -12,10 +12,10 @@
 
     <!-- <script src="http://localhost:3000/index.js?appId=universal-tag-staging&environment=demo&test=true"></script> -->
 
-    <script src="http://localhost:3000/index.js?appId=universal-tag-staging-test&environment=dummy-cart"></script>
+    <script src="http://localhost:3000/index.js?appId=universal-tag-staging-test&environment=dummy-cart&version=2"></script>
     <!-- <script src="http://localhost:3000/index.js?appId=universal-tag-staging-test&test=true"></script> -->
 
-    <script src="http://localhost:3000/index.js?appId=universal-tag-staging-test&version=2&debug=true"></script>
+    <!-- <script src="http://localhost:3000/index.js?appId=universal-tag-staging-test&version=2&debug=true"></script> -->
 
     <!-- <script src="http://localhost:3000/index.js?appId=universal-tag-staging-test&environment=jane&retailId=segregate&test=true"></script>  -->
     <!-- <script src="http://localhost:3000/index.js?appId=universal-tag-staging&event=signup&test=true&emailAddress=test123@gmail.com&hashedEmailAddress=test123@gmail.com"></script> -->
@@ -86,6 +86,27 @@
     </script> -->
     <title>App</title>
   </head>
+  <script>
+
+window.setTimeout(() => {
+    window.trackTrans({
+      id: "12345",
+      total: 100,
+      tax: 10,
+      shipping: 5,
+      couponCode: "SUMMER_SALE",
+      discount: 10,
+      alternativeTransactionIds: ["1234567890", "1234567891"],
+      items: [
+        {
+          sku: "12345",
+          name: "T-Shirt",
+          category: "Apparel",
+        }
+      ]
+    })
+  }, 2000);
+  </script>
   <!-- <body>
     <a href="https://youtube.com/" target="_blank">link</a>
     <script type="text/javascript">
@@ -167,4 +188,4 @@
       }, 2000);
     </script> -->
   </body>
-</html> -->
+</html> 

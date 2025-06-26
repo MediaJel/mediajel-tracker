@@ -19,6 +19,9 @@ const withEnsureBasketItemsOrderId = (snowplow: SnowplowTracker) => {
       state: input.state,
       country: input.country,
       currency: input.currency,
+      discount: input.discount,
+      couponCode: input.couponCode,
+      alternativeTransactionIds: input.alternativeTransactionIds,
       items: input.items.map((item) => ({
         orderId: input.id,
         sku: item.sku,
