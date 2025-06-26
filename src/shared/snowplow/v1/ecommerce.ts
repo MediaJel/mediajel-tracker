@@ -7,6 +7,7 @@ const createSnowplowV1TrackerEcommerceEventsHandlers = (
 
   return {
     trackTransaction: (input) => {
+      console.log(input.discount, input.couponCode);
       window.tracker(
         `addTrans`,
         input.id,
