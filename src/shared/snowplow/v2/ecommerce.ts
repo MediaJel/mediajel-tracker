@@ -1,6 +1,4 @@
-import {
-    CreateSnowplowTrackerInput, SnowplowTrackerEcommerceEvents
-} from 'src/shared/snowplow/types';
+import { CreateSnowplowTrackerInput, SnowplowTrackerEcommerceEvents } from "src/shared/snowplow/types";
 
 const createSnowplowV2TrackerEcommerceEventsHandlers = (
   input: CreateSnowplowTrackerInput,
@@ -19,6 +17,15 @@ const createSnowplowV2TrackerEcommerceEventsHandlers = (
         state: input.state,
         country: input.country,
         currency: input.currency,
+        context: [
+          {
+            schema: "iglu:com.mediajel.events/enhanced_transaction/jsonschema/1-0-0",
+            data: {
+              transaction_discount: input.discount,
+              transaction_coupon_code: input.couponCode,
+            },
+          },
+        ],
       });
 
       input.items.forEach((item) => {

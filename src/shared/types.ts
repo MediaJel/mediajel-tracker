@@ -23,6 +23,8 @@ export interface TransactionEvent {
   country: string;
   currency: string;
   userId?: string;
+  discount?: number;
+  couponCode?: string;
   items: TransactionCartItem[];
 }
 
