@@ -26,5 +26,6 @@ declare global {
     removeFromCart: (input: CartEvent) => void;
     gtmDataLayer: any;
     registerThirdPartyTags: (input: RegisterThirdPartyTagsInput) => void;
+    overrides: any;
   }
 }

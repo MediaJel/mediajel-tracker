@@ -1,15 +1,9 @@
-import { QueryStringContext, QueryStringParams } from '../types';
+import { QueryStringContext, QueryStringParams, Window } from '../types';
 
 // Locates our tag
 
 //* v2
 //* v1
-
-declare global {
-  interface Window {
-    overrides?: string;
-  }
-}
 
 const getContext = (): QueryStringContext => {
   const scripts: HTMLCollectionOf<HTMLScriptElement> = document.getElementsByTagName("script");
@@ -20,8 +14,7 @@ const getContext = (): QueryStringContext => {
     urlSearchParams.entries(),
   ) as unknown as QueryStringParams;
 
-   const overrides = window.overrides ? JSON.parse(window.overrides) : { "s3.pv": "00000", "s3.tr": "00000" }
-
+  const overrides = window.overrides ? JSON.parse(window.overrides) : { "s3.pv": "00000", "s3.tr": "00000" }
 
   // let storedVersion = localStorage.getItem("mj-tag-version");
 
@@ -46,6 +39,8 @@ const getContext = (): QueryStringContext => {
     // Regex mainly used to remove the "&amp;" and the '\\"' from the outerHTML
     tag: target.outerHTML.replace(/&amp;/g, "&").replace(/\\"/g, '"'),
     overrides: overrides,
+    "s3.pv": window.overrides ? overrides["s3.pv"] : params["s3.pv"],
+    "s3.tr": window.overrides ? overrides["s3.tr"] : params["s3.tr"],
     ...params,
   };
 };
