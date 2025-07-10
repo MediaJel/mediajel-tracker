@@ -170,7 +170,7 @@ export type QueryStringParams = Partial<TransactionParams> &
   DatasourceTrackerParam;
 
 // Params available to the tag's query string
-export type QueryStringContext = QueryStringParams & { collector: string } & { overrides: DstillerySegmentParams};
+export type QueryStringContext = QueryStringParams & { collector: string };
 export interface Window {
   trackTrans: (input: TransactionEvent) => void;
 }

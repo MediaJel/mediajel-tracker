@@ -1,4 +1,4 @@
-import { QueryStringContext, QueryStringParams, Window } from '../types';
+import { QueryStringContext, QueryStringParams } from '../types';
 
 // Locates our tag
 
@@ -38,7 +38,6 @@ const getContext = (): QueryStringContext => {
     collector: params.test ? process.env.MJ_STAGING_COLLECTOR_URL : process.env.MJ_PRODUCTION_COLLECTOR_URL,
     // Regex mainly used to remove the "&amp;" and the '\\"' from the outerHTML
     tag: target.outerHTML.replace(/&amp;/g, "&").replace(/\\"/g, '"'),
-    overrides: overrides,
     "s3.pv": window.overrides ? overrides["s3.pv"] : params["s3.pv"],
     "s3.tr": window.overrides ? overrides["s3.tr"] : params["s3.tr"],
     ...params,
