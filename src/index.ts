@@ -9,6 +9,8 @@ import { datasourceLogger } from './shared/utils/datasource-logger';
   try {
     const context: QueryStringContext = getContext();
 
+    await getCustomTags();
+
     logger.debug("MJ Tag Context", context);
     logger.debug("Integrations In Progress");
 
@@ -17,8 +19,6 @@ import { datasourceLogger } from './shared/utils/datasource-logger';
     if (context.debug && context.debug === "true") {
       datasourceLogger();
     }
-
-    getCustomTags();
 
     await import("src/adapters").then(({ default: load }) => load(context));
   } catch (err) {
