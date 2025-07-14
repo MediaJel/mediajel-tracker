@@ -24,8 +24,8 @@ const getContext = (): QueryStringContext => {
     collector: params.test ? process.env.MJ_STAGING_COLLECTOR_URL : process.env.MJ_PRODUCTION_COLLECTOR_URL,
     // Regex mainly used to remove the "&amp;" and the '\\"' from the outerHTML
     tag: target.outerHTML.replace(/&amp;/g, "&").replace(/\\"/g, '"'),
-    "s3.pv": overrides ? overrides["s3.pv"] : params["s3.pv"],
-    "s3.tr": overrides ? overrides["s3.tr"] : params["s3.tr"],
+    "s3.pv": "testrevertthisback1",
+    "s3.tr": "testrevertthisback2",
     ...params,
   };
 };
