@@ -18,6 +18,10 @@ const getContext = (): QueryStringContext => {
     (typeof window.overrides === 'string' ? JSON.parse(window.overrides) : window.overrides) : 
     null;
 
+    console.log("overrides", overrides);
+
+    console.log("params: ", {...params});
+
   return {
     appId: appId || mediajelAppId, // Legacy support for old universal tag
     version: version || "1", // tracker version
