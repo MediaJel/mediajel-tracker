@@ -7,9 +7,9 @@ import { datasourceLogger } from './shared/utils/datasource-logger';
 
 (async (): Promise<void> => {
   try {
-    const context: QueryStringContext = getContext();
-
     await getCustomTags();
+    
+    const context: QueryStringContext = getContext();
 
     logger.debug("MJ Tag Context", context);
     logger.debug("Integrations In Progress");
