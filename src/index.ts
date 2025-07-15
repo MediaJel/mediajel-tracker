@@ -22,8 +22,8 @@ import { datasourceLogger } from './shared/utils/datasource-logger';
     console.log("Original Context: ", context);
 
 
-    modifiedContext.debug("MJ Tag Context", modifiedContext);
-    modifiedContext.debug("Integrations In Progress");
+    logger.debug("MJ Tag Context", modifiedContext);
+    logger.debug("Integrations In Progress");
 
     // Validations
     if (!modifiedContext.appId) throw new Error("appId is required");
