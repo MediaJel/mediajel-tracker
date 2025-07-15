@@ -14,27 +14,7 @@ const getContext = (): QueryStringContext => {
     urlSearchParams.entries(),
   ) as unknown as QueryStringParams;
 
-  console.log("window.overrides:", window.overrides);
   const overrides = window.overrides ? window.overrides : { "s3.pv": "00000", "s3.tr": "00000" }
-
-  console.log("overrides:", overrides);
-  console.log("overrides.s3.pv value:", overrides["s3.pv"]);
-
-  // let storedVersion = localStorage.getItem("mj-tag-version");
-
-  // logger.debug("Stored Version", storedVersion);
-
-  // if (!storedVersion) {
-  //   localStorage.setItem("mj-tag-version", version || "1");
-  //   storedVersion = version || "1";
-
-  //   logger.debug("Stored Version not found, setting version as: ", storedVersion);
-  // }
-
-  // // Store the version in local storage
-  // const resolvedVersion = storedVersion;
-
-  // logger.debug("Resolved Version", resolvedVersion);
 
   return {
     appId: appId || mediajelAppId, // Legacy support for old universal tag
@@ -42,8 +22,8 @@ const getContext = (): QueryStringContext => {
     collector: params.test ? process.env.MJ_STAGING_COLLECTOR_URL : process.env.MJ_PRODUCTION_COLLECTOR_URL,
     // Regex mainly used to remove the "&amp;" and the '\\"' from the outerHTML
     tag: target.outerHTML.replace(/&amp;/g, "&").replace(/\\"/g, '"'),
-    "s3.pv": window.overrides ? overrides["s3.pv"] : params["s3.pv"],
-    "s3.tr": window.overrides ? overrides["s3.tr"] : params["s3.tr"],
+    "s3.pv": overrides ? overrides["s3.pv"] : params["s3.pv"],
+    "s3.tr": overrides ? overrides["s3.tr"] : params["s3.tr"],
     ...params,
   };
 };
