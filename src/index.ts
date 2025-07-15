@@ -17,12 +17,17 @@ import { datasourceLogger } from './shared/utils/datasource-logger';
     
     const modifiedContext = { ...context, ...overrides };
 
-    logger.debug("MJ Tag Context", context);
+    console.log("Overrides: ", overrides);
+    console.log("Modified Context: ", modifiedContext);
+    console.log("Original Context: ", context);
+
+
+    logger.debug("MJ Tag Context", modifiedContext);
     logger.debug("Integrations In Progress");
 
     // Validations
-    if (!context.appId) throw new Error("appId is required");
-    if (context.debug && context.debug === "true") {
+    if (!modifiedContext.appId) throw new Error("appId is required");
+    if (modifiedContext.debug && modifiedContext.debug === "true") {
       datasourceLogger();
     }
 
