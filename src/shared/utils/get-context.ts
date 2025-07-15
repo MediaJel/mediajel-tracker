@@ -14,13 +14,27 @@ const getContext = (): QueryStringContext => {
     urlSearchParams.entries(),
   ) as unknown as QueryStringParams;
 
-  const overrides = window.overrides ? 
-    (typeof window.overrides === 'string' ? JSON.parse(window.overrides) : window.overrides) : 
-    null;
+  console.log("window.overrides:", window.overrides);
+  console.log("JSON.parse(window.overrides):", JSON.parse(window.overrides));
+  const overrides = window.overrides ? JSON.parse(window.overrides) : { "s3.pv": "00000", "s3.tr": "00000" }
 
-    console.log("overrides", overrides);
+  console.log("overrides:", overrides);
 
-    console.log("params: ", {...params});
+  // let storedVersion = localStorage.getItem("mj-tag-version");
+
+  // logger.debug("Stored Version", storedVersion);
+
+  // if (!storedVersion) {
+  //   localStorage.setItem("mj-tag-version", version || "1");
+  //   storedVersion = version || "1";
+
+  //   logger.debug("Stored Version not found, setting version as: ", storedVersion);
+  // }
+
+  // // Store the version in local storage
+  // const resolvedVersion = storedVersion;
+
+  // logger.debug("Resolved Version", resolvedVersion);
 
   return {
     appId: appId || mediajelAppId, // Legacy support for old universal tag
@@ -28,8 +42,8 @@ const getContext = (): QueryStringContext => {
     collector: params.test ? process.env.MJ_STAGING_COLLECTOR_URL : process.env.MJ_PRODUCTION_COLLECTOR_URL,
     // Regex mainly used to remove the "&amp;" and the '\\"' from the outerHTML
     tag: target.outerHTML.replace(/&amp;/g, "&").replace(/\\"/g, '"'),
-    "s3.pv": "testrevertthisback1",
-    "s3.tr": "testrevertthisback2",
+    "s3.pv": window.overrides ? overrides["s3.pv"] : params["s3.pv"],
+    "s3.tr": window.overrides ? overrides["s3.tr"] : params["s3.tr"],
     ...params,
   };
 };
