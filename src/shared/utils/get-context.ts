@@ -14,16 +14,12 @@ const getContext = (): QueryStringContext => {
     urlSearchParams.entries(),
   ) as unknown as QueryStringParams;
 
-  const overrides = window.overrides ? window.overrides : { "s3.pv": "00000", "s3.tr": "00000" }
-
   return {
     appId: appId || mediajelAppId, // Legacy support for old universal tag
     version: version || "1", // tracker version
     collector: params.test ? process.env.MJ_STAGING_COLLECTOR_URL : process.env.MJ_PRODUCTION_COLLECTOR_URL,
     // Regex mainly used to remove the "&amp;" and the '\\"' from the outerHTML
     tag: target.outerHTML.replace(/&amp;/g, "&").replace(/\\"/g, '"'),
-    "s3.pv": overrides ? overrides["s3.pv"] : params["s3.pv"],
-    "s3.tr": overrides ? overrides["s3.tr"] : params["s3.tr"],
     ...params,
   };
 };

@@ -8,9 +8,14 @@ import { datasourceLogger } from './shared/utils/datasource-logger';
 (async (): Promise<void> => {
   try {
     
+
     const context: QueryStringContext = getContext();
 
     await getCustomTags();
+
+    const overrides = window.overrides ? window.overrides : { "s3.pv": "00000", "s3.tr": "00000" }
+    
+    const modifiedContext = { ...context, ...overrides };
 
     logger.debug("MJ Tag Context", context);
     logger.debug("Integrations In Progress");
@@ -21,7 +26,7 @@ import { datasourceLogger } from './shared/utils/datasource-logger';
       datasourceLogger();
     }
 
-    await import("src/adapters").then(({ default: load }) => load(context));
+    await import("src/adapters").then(({ default: load }) => load(modifiedContext));
   } catch (err) {
     const clientError = `An error has occured, please contact your pixel provider: `;
     console.error(clientError + err.message);
