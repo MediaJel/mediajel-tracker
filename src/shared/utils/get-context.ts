@@ -15,10 +15,10 @@ const getContext = (): QueryStringContext => {
   ) as unknown as QueryStringParams;
 
   console.log("window.overrides:", window.overrides);
-  console.log("JSON.parse(window.overrides):", JSON.parse(window.overrides));
-  const overrides = window.overrides ? JSON.parse(window.overrides) : { "s3.pv": "00000", "s3.tr": "00000" }
+  const overrides = window.overrides ? window.overrides : { "s3.pv": "00000", "s3.tr": "00000" }
 
   console.log("overrides:", overrides);
+  console.log("overrides.s3.pv value:", overrides["s3.pv"]);
 
   // let storedVersion = localStorage.getItem("mj-tag-version");
 
