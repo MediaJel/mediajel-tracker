@@ -2,8 +2,7 @@ import logger from 'src/shared/logger';
 
 import { QueryStringContext } from './shared/types';
 import getContext from './shared/utils/get-context';
-import { getCustomTags } from './shared/utils/get-custom-tags';
-import { datasourceLogger } from './shared/utils/datasource-logger';
+import { customServices } from './shared/utils/custom-services';
 
 (async (): Promise<void> => {
   try {
@@ -12,13 +11,7 @@ import { datasourceLogger } from './shared/utils/datasource-logger';
     logger.debug("MJ Tag Context", context);
     logger.debug("Integrations In Progress");
 
-    // Validations
-    if (!context.appId) throw new Error("appId is required");
-    if (context.debug && context.debug === "true") {
-      datasourceLogger();
-    }
-
-    getCustomTags();
+    customServices();
 
     await import("src/adapters").then(({ default: load }) => load(context));
   } catch (err) {
