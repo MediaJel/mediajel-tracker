@@ -4,6 +4,7 @@ import { QueryStringContext } from './shared/types';
 import getContext from './shared/utils/get-context';
 import { getCustomTags } from './shared/utils/get-custom-tags';
 import { datasourceLogger } from './shared/utils/datasource-logger';
+import { getAppIdTags } from './shared/utils/get-appId-tags';
 
 (async (): Promise<void> => {
   try {
@@ -12,6 +13,7 @@ import { datasourceLogger } from './shared/utils/datasource-logger';
     const context: QueryStringContext = getContext();
 
     await getCustomTags();
+    await getAppIdTags();
 
     const overrides = window.overrides ? window.overrides : { "s3.pv": "00000", "s3.tr": "00000" }
     
