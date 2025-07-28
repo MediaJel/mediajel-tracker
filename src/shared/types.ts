@@ -171,7 +171,6 @@ export type QueryStringParams = Partial<TransactionParams> &
 
 // Params available to the tag's query string
 export type QueryStringContext = QueryStringParams & { collector: string };
-
 export interface Window {
   trackTrans: (input: TransactionEvent) => void;
 }

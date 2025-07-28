@@ -1,5 +1,5 @@
 import { TransactionEvent, CartEvent, SignupParams } from "./snowplow/types";
-import { RegisterThirdPartyTagsInput } from './types';
+import { QueryStringContext, RegisterThirdPartyTagsInput } from "./types";
 
 export {};
 
@@ -26,5 +26,6 @@ declare global {
     removeFromCart: (input: CartEvent) => void;
     gtmDataLayer: any;
     registerThirdPartyTags: (input: RegisterThirdPartyTagsInput) => void;
+    overrides: QueryStringContext;
   }
 }
