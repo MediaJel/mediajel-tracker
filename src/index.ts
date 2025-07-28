@@ -1,28 +1,21 @@
-import logger from 'src/shared/logger';
+import logger from "src/shared/logger";
 
-import { QueryStringContext } from './shared/types';
-import getContext from './shared/utils/get-context';
-import { getCustomTags } from './shared/utils/get-custom-tags';
-import { datasourceLogger } from './shared/utils/datasource-logger';
-import { getAppIdTags } from './shared/utils/get-appId-tags';
+import { QueryStringContext } from "./shared/types";
+import getContext from "./shared/utils/get-context";
+import { getCustomTags } from "./shared/utils/get-custom-tags";
+import { datasourceLogger } from "./shared/utils/datasource-logger";
+import { getAppIdTags } from "./shared/utils/get-appId-tags";
 
 (async (): Promise<void> => {
   try {
-    
-
     const context: QueryStringContext = getContext();
 
     await getCustomTags();
     await getAppIdTags();
 
-    const overrides = window.overrides ? window.overrides : { "s3.pv": "00000", "s3.tr": "00000" }
-    
+    const overrides = window.overrides ? window.overrides : { "s3.pv": "00000", "s3.tr": "00000" };
+
     const modifiedContext = { ...context, ...overrides };
-
-    console.log("Overrides: ", overrides);
-    console.log("Modified Context: ", modifiedContext);
-    console.log("Original Context: ", context);
-
 
     logger.debug("MJ Tag Context", modifiedContext);
     logger.debug("Integrations In Progress");
