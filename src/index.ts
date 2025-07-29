@@ -13,7 +13,10 @@ import { getAppIdTags } from "./shared/utils/get-appId-tags";
     await getCustomTags();
     await getAppIdTags();
 
-    const overrides = window.overrides ? window.overrides : { "s3.pv": "00000", "s3.tr": "00000" };
+    const overrides = window.overrides ? window.overrides : {
+      ...(context["s3.pv"] ? {} : { "s3.pv": "00000" }),
+      ...(context["s3.tr"] ? {} : { "s3.tr": "00000" })
+    };
 
     const modifiedContext = { ...context, ...overrides };
 
