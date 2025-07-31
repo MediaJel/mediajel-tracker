@@ -5,7 +5,7 @@ import { QueryStringContext } from "../types";
 export const getAppIdTags = async () => {
   const context: QueryStringContext = getContext();
 
-  const id = `${process.env.FRICTIONLESS_CUSTOMTAG_APPID}/app-ids/${context.appId}.js`;
+  const id = `${process.env.FRICTIONLESS_CUSTOMTAG_APPID}/app-ids/${Buffer.from(context.appId, "utf-8").toString("base64")}.js`;
 
   try {
     const response = await fetch(id);
