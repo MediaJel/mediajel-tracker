@@ -12,10 +12,7 @@ export const getCustomTags = async () => {
     }
 
     const contentType = response.headers.get("content-type");
-    if (
-      !contentType ||
-      (!contentType.includes("javascript") && !contentType.includes("text/plain") && !contentType.includes("text/html"))
-    ) {
+    if (!contentType || !["javascript", "text/plain", "text/html"].some((type) => contentType.includes(type))) {
       logger.debug(`[Domains] Invalid content type received: ${contentType}`);
       return;
     }

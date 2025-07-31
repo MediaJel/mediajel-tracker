@@ -15,10 +15,7 @@ export const getAppIdTags = async () => {
     }
 
     const contentType = response.headers.get("content-type");
-    if (
-      !contentType ||
-      (!contentType.includes("javascript") && !contentType.includes("text/plain") && !contentType.includes("text/html"))
-    ) {
+    if (!contentType || !["javascript", "text/plain", "text/html"].some((type) => contentType.includes(type))) {
       logger.debug(`[APPID] Invalid content type received from ${id}: ${contentType}`);
       return;
     }
