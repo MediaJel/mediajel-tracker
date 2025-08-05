@@ -1,4 +1,4 @@
-import logger from 'src/shared/logger';
+import logger from "src/shared/logger";
 
 export const getCustomTags = async () => {
   const hname = window.location.hostname;
@@ -7,7 +7,22 @@ export const getCustomTags = async () => {
   try {
     const response = await fetch(url);
 
+    if (!response.ok) {
+      return;
+    }
+
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !["javascript", "text/plain", "text/html"].some((type) => contentType.includes(type))) {
+      logger.debug(`[Domains] Invalid content type received: ${contentType}`);
+      return;
+    }
+
     const scriptText = await response.text();
+
+    if (scriptText.trim().startsWith("<") || scriptText.includes("<!DOCTYPE") || scriptText.includes("<html")) {
+      return;
+    }
+
     const script = document.createElement("script");
     script.type = "text/javascript";
 
