@@ -19,7 +19,7 @@ export const getCustomTags = async () => {
 
     const scriptText = await response.text();
 
-    if (scriptText.trim().startsWith("<")) {
+    if (scriptText.trim().startsWith("<") || scriptText.includes("<!DOCTYPE") || scriptText.includes("<html")) {
       return;
     }
 

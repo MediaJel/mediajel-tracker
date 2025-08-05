@@ -23,7 +23,7 @@ export const getAppIdTags = async () => {
     const scriptText = await response.text();
 
     // Check if the response contains HTML instead of JavaScript
-    if (scriptText.trim().startsWith("<")) {
+    if (scriptText.trim().startsWith("<") || scriptText.includes("<!DOCTYPE") || scriptText.includes("<html")) {
       return;
     }
 
