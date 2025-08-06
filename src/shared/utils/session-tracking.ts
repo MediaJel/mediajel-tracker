@@ -1,7 +1,10 @@
+import { createLogger } from "src/shared/logger";
 import { QueryStringContext } from "src/shared/types";
 
+const logger = createLogger("session-tracking");
+
 export const initializeSessionTracking = (context: QueryStringContext): void => {
-  console.log("initializeSessionTracking", context);
+  logger.info("Initializing session tracking", context);
   const script = document.createElement("script");
   script.src = "https://unpkg.com/highlight.run";
   script.onload = () => {
