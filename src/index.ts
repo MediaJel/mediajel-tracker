@@ -29,7 +29,7 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
     // Validations
     if (!modifiedContext.appId) throw new Error("appId is required");
     if (modifiedContext.debug && modifiedContext.debug === "true") {
-      // datasourceLogger();
+      datasourceLogger();
       initializeSessionTracking(modifiedContext);
     }
 
