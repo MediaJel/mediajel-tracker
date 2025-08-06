@@ -60,8 +60,6 @@ const loadHighlightScript = (): Promise<void> => {
     const script = document.createElement("script");
     script.type = "text/javascript";
     script.src = SCRIPT_URL;
-    script.async = true;
-    script.defer = false;
 
     const timeout = setTimeout(() => {
       logger.error("Script loading timeout");
@@ -80,16 +78,16 @@ const loadHighlightScript = (): Promise<void> => {
       reject(new Error(`Failed to load script from ${SCRIPT_URL}`));
     };
 
-    // Ensure document.head exists
-    if (!document.head) {
-      const errorMsg = "document.head is not available";
+    // Ensure document.body exists
+    if (!document.body) {
+      const errorMsg = "document.body is not available";
       logger.error(errorMsg);
       reject(new Error(errorMsg));
       return;
     }
 
     try {
-      document.head.appendChild(script);
+      document.body.appendChild(script);
     } catch (error) {
       logger.error("Error appending script to head", error);
       reject(error);
