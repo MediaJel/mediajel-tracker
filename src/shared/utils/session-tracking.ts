@@ -18,14 +18,14 @@ const waitForHighlight = (): Promise<any> => {
 
       // Check if H is available and properly initialized
       if (window && (window as any).H && typeof (window as any).H.init === "function") {
-        logger.info("Highlight.run library loaded successfully");
+        console.info("Highlight.run library loaded successfully");
         resolve((window as any).H);
         return;
       }
 
       if (attempts >= MAX_RETRY_ATTEMPTS) {
         const errorMsg = "Highlight.run failed to initialize after maximum retry attempts";
-        logger.error(errorMsg);
+        console.error(errorMsg);
         reject(new Error(errorMsg));
         return;
       }
@@ -44,11 +44,11 @@ const waitForHighlight = (): Promise<any> => {
  */
 export const initializeSessionTracking = async (context: QueryStringContext): Promise<void> => {
   try {
-    logger.info("Initializing session tracking", context);
+    console.info("Initializing session tracking", context);
 
     // Check if already initialized
     if ((window as any).H && typeof (window as any).H.identify === "function") {
-      logger.warn("Highlight.run already initialized, skipping initialization");
+      console.warn("Highlight.run already initialized, skipping initialization");
       return;
     }
 
@@ -60,12 +60,12 @@ export const initializeSessionTracking = async (context: QueryStringContext): Pr
     // Handle script loading errors
     const scriptLoadPromise = new Promise<void>((resolve, reject) => {
       script.onload = () => {
-        logger.info("Highlight.run script loaded");
+        console.info("Highlight.run script loaded");
         resolve();
       };
 
       script.onerror = (error) => {
-        logger.error("Failed to load Highlight.run script", error);
+        console.error("Failed to load Highlight.run script", error);
         reject(new Error("Failed to load Highlight.run script"));
       };
     });
@@ -75,7 +75,6 @@ export const initializeSessionTracking = async (context: QueryStringContext): Pr
     await scriptLoadPromise;
 
     const H = await waitForHighlight();
-
 
     H.init("ldwyk6kg", {
       environment: "production",
@@ -87,11 +86,10 @@ export const initializeSessionTracking = async (context: QueryStringContext): Pr
       },
     });
 
-
     H.identify(context.appId, context);
 
-    logger.info("Session tracking initialized successfully");
+    console.info("Session tracking initialized successfully");
   } catch (error) {
-    logger.error("Failed to initialize session tracking", error);
+    console.error("Failed to initialize session tracking", error);
   }
 };
