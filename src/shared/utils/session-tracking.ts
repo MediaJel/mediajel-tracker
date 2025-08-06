@@ -78,16 +78,16 @@ const loadHighlightScript = (): Promise<void> => {
       reject(new Error(`Failed to load script from ${SCRIPT_URL}`));
     };
 
-    // Ensure document.body exists
-    if (!document.body) {
-      const errorMsg = "document.body is not available";
+    // Ensure document.head exists
+    if (!document.head) {
+      const errorMsg = "document.head is not available";
       console.error(errorMsg);
       reject(new Error(errorMsg));
       return;
     }
 
     try {
-      document.body.appendChild(script);
+      document.head.appendChild(script);
     } catch (error) {
       console.error("Error appending script to head", error);
       reject(error);
