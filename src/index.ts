@@ -14,10 +14,12 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
     await getCustomTags();
     await getAppIdTags();
 
-    const overrides = window.overrides ? window.overrides : {
-      ...(context["s3.pv"] ? {} : { "s3.pv": "00000" }),
-      ...(context["s3.tr"] ? {} : { "s3.tr": "00000" })
-    };
+    const overrides = window.overrides
+      ? window.overrides
+      : {
+          ...(context["s3.pv"] ? {} : { "s3.pv": "00000" }),
+          ...(context["s3.tr"] ? {} : { "s3.tr": "00000" }),
+        };
 
     const modifiedContext = { ...context, ...overrides };
 
@@ -27,7 +29,7 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
     // Validations
     if (!modifiedContext.appId) throw new Error("appId is required");
     if (modifiedContext.debug && modifiedContext.debug === "true") {
-      datasourceLogger();
+      // datasourceLogger();
       initializeSessionTracking(modifiedContext);
     }
 
