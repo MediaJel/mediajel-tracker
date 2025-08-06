@@ -3,7 +3,7 @@ import { QueryStringContext } from "src/shared/types";
 
 const logger = createLogger("session-tracking");
 
-const SCRIPT_URL = "https://unpkg.com/@highlight-run/browser"; // Use the specific package
+const SCRIPT_URL = "https://unpkg.com/highlight.run"; // Use the specific package
 const MAX_RETRY_ATTEMPTS = 50;
 const RETRY_INTERVAL_MS = 100;
 
