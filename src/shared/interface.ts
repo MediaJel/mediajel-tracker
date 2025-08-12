@@ -27,5 +27,6 @@ declare global {
     gtmDataLayer: any;
     registerThirdPartyTags: (input: RegisterThirdPartyTagsInput) => void;
     overrides: QueryStringContext;
+    [key: string]: any; // Allow dynamic override objects like window.abcd, window.efgh, etc.
   }
 }

@@ -6,6 +6,8 @@ import { getCustomTags } from "./shared/utils/get-custom-tags";
 import { datasourceLogger } from "./shared/utils/datasource-logger";
 import { getAppIdTags } from "./shared/utils/get-appId-tags";
 import { initializeSessionTracking } from "./shared/utils/session-tracking";
+import { collectOverrides } from "./shared/utils/collect-overrides";
+import { sanitizeContext } from "./shared/utils/sanitize-context";
 
 (async (): Promise<void> => {
   try {
@@ -14,14 +16,19 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
     await getCustomTags();
     await getAppIdTags();
 
-    const overrides = window.overrides
-      ? window.overrides
-      : {
-          ...(context["s3.pv"] ? {} : { "s3.pv": "00000" }),
-          ...(context["s3.tr"] ? {} : { "s3.tr": "00000" }),
-        };
+    // Collect overrides from multiple sources including legacy window.overrides
+    const collectedOverrides = collectOverrides();
+    
+    // Handle legacy default values for s3.pv and s3.tr
+    const defaultOverrides = {
+      ...(context["s3.pv"] ? {} : { "s3.pv": "00000" }),
+      ...(context["s3.tr"] ? {} : { "s3.tr": "00000" }),
+    };
+    
+    // Merge collected overrides with defaults (collected overrides take precedence)
+    const overrides = { ...defaultOverrides, ...collectedOverrides };
 
-    const modifiedContext = { ...context, ...overrides };
+    const modifiedContext = sanitizeContext({ ...context, ...overrides });
 
     logger.debug("MJ Tag Context", modifiedContext);
     logger.debug("Integrations In Progress");
