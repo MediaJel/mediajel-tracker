@@ -23,7 +23,12 @@ const parseMsgToString = (message: unknown | unknown[]): string => {
   } else if (Array.isArray(message)) {
     return message.map(parseMsgToString).join(" ");
   } else {
-    return JSON.stringify(message, null, 2);
+    try {
+      return JSON.stringify(message, null, 2);
+    } catch (error) {
+      // Handle circular references and other serialization issues
+      return String(message);
+    }
   }
 };
 

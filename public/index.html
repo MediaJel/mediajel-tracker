@@ -11,8 +11,21 @@
     <!-- Tracker START, note: Make sure app id is the same as in your .env file-->
 
     <!-- <script src="http://localhost:3000/index.js?appId=universal-tag-staging&environment=demo&test=true"></script> -->
-
-    <script src="http://localhost:3000/index.js?appId=universal-tag-staging-test&environment=dummy-cart&s2.pv=TestPV&s2.tr=TestTR&s3.pv=S3PV&s3.tr=S3TR&version=2&debug=true"></script>
+    <script>
+            window["universal-tag-staging-test"] = {
+            "s3.pv": "12345",
+            "s3.tr": "11111",
+            "debug": "false",
+            "environment": "jane" // This will override staging from URL
+        };
+        
+        window["universal-tag-staging-test-three"] = {
+            "s3.pv": "456789",
+            "retailId": "test-store-123"
+        };
+    </script>
+    <script src="http://localhost:3000/index.js?appId=universal-tag-staging-test&environment=dummy-cart&s2.pv=TestPV&s2.tr=TestTR&s3.pv=S3PV&s3.tr=S3TR&version=2"></script>
+     <script src="http://localhost:3000/index.js?appId=universal-tag-staging-test-three&environment=dutchie&s2.pv=TestPV&s2.tr=TestTR&s3.pv=S3PV&s3.tr=S3TR&version=2"></script>
     <!-- <script src="http://localhost:3000/index.js?appId=universal-tag-staging-test&test=true"></script> -->
 
     <!-- <script src="http://localhost:3000/index.js?appId=universal-tag-staging-test&version=2&debug=true"></script> -->
