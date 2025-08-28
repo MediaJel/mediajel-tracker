@@ -158,6 +158,10 @@ export type DatasourceTrackerParam = {
   debug: string;
 };
 
+export type enableTagParam = {
+  enable: "true" | "false";
+};
+
 export type QueryStringParams = Partial<TransactionParams> &
   Partial<SignupParams> &
   Partial<SnowplowPluginParams> &
@@ -167,7 +171,8 @@ export type QueryStringParams = Partial<TransactionParams> &
   BingAdsPluginParams &
   SnowplowParams &
   SegmentParams &
-  DatasourceTrackerParam;
+  DatasourceTrackerParam &
+  enableTagParam;
 
 // Params available to the tag's query string
 export type QueryStringContext = QueryStringParams & { collector: string };

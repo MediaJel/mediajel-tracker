@@ -11,21 +11,18 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
   try {
     const context: QueryStringContext = getContext();
 
-    await getCustomTags();
-    await getAppIdTags();
-
     let overrides = {};
-    
+
     if (window.overrides) {
       if (Array.isArray(window.overrides)) {
         // Find matching override by appId or tag (old array format)
-        const matchingOverride = window.overrides.find(override => 
-          override.tag === context.appId || override.appId === context.appId
+        const matchingOverride = window.overrides.find(
+          (override) => override.tag === context.appId || override.appId === context.appId,
         );
         if (matchingOverride) {
           overrides = matchingOverride;
         }
-      } else if (typeof window.overrides === 'object' && window.overrides !== null) {
+      } else if (typeof window.overrides === "object" && window.overrides !== null) {
         // New format: window.overrides is an object with appId properties
         if (context.appId && window.overrides[context.appId]) {
           overrides = window.overrides[context.appId];
@@ -43,6 +40,14 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
     }
 
     const modifiedContext = { ...context, ...overrides };
+
+    if (modifiedContext.enable === "false") {
+      logger.debug("Tag has been disabled. Reach out to your pixel provider for more information.");
+      return;
+    }
+
+    await getCustomTags();
+    await getAppIdTags();
 
     logger.debug("MJ Tag Context", modifiedContext);
     logger.debug("Integrations In Progress");
