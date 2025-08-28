@@ -14,12 +14,33 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
     await getCustomTags();
     await getAppIdTags();
 
-    const overrides = window.overrides
-      ? window.overrides
-      : {
-          ...(context["s3.pv"] ? {} : { "s3.pv": "00000" }),
-          ...(context["s3.tr"] ? {} : { "s3.tr": "00000" }),
-        };
+    let overrides = {};
+    
+    if (window.overrides) {
+      if (Array.isArray(window.overrides)) {
+        // Find matching override by appId or tag (old array format)
+        const matchingOverride = window.overrides.find(override => 
+          override.tag === context.appId || override.appId === context.appId
+        );
+        if (matchingOverride) {
+          overrides = matchingOverride;
+        }
+      } else if (typeof window.overrides === 'object' && window.overrides !== null) {
+        // New format: window.overrides is an object with appId properties
+        if (context.appId && window.overrides[context.appId]) {
+          overrides = window.overrides[context.appId];
+        } else {
+          // Backwards compatibility for single object override
+          overrides = window.overrides;
+        }
+      }
+    } else {
+      // Default fallback behavior
+      overrides = {
+        ...(context["s3.pv"] ? {} : { "s3.pv": "00000" }),
+        ...(context["s3.tr"] ? {} : { "s3.tr": "00000" }),
+      };
+    }
 
     const modifiedContext = { ...context, ...overrides };
 
