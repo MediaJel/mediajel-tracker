@@ -12,7 +12,23 @@
 
     <!-- <script src="http://localhost:3000/index.js?appId=universal-tag-staging&environment=demo&test=true"></script> -->
 
-    <script src="http://localhost:3000/index.js?appId=universal-tag-staging-test&environment=dummy-cart&s2.pv=TestPV&s2.tr=TestTR&s3.pv=S3PV&s3.tr=S3TR&version=2&debug=true"></script>
+    <script type="text/javascript">
+      window.overrides = {};
+    window.overrides["gsdfg-test"] = {
+        "s3.pv": "12345",
+        "s3.tr": "11111", 
+        "debug": "false",
+        "environment": "jane" 
+    };
+
+    window.overrides["abcef-test-three"] = {
+        "s3.pv": "456789",
+        "retailId": "test-store-123",
+        "environment": "woo"
+    };
+    </script>
+    <script src="http://localhost:3000/index.js?appId=gsdfg-test&environment=dummy-cart&s2.pv=TestPV&s2.tr=TestTR&s3.pv=S3PV&s3.tr=S3TR&version=2&debug=true"></script>
+    <script src="http://localhost:3000/index.js?appId=abcef-test-three&environment=dutchie&s2.pv=TestPV&s2.tr=TestTR123&s3.pv=S3PV4324&s3.tr=S3TR657567&version=2&debug=true"></script>
     <!-- <script src="http://localhost:3000/index.js?appId=universal-tag-staging-test&test=true"></script> -->
 
     <!-- <script src="http://localhost:3000/index.js?appId=universal-tag-staging-test&version=2&debug=true"></script> -->
@@ -87,9 +103,10 @@
     <title>App</title>
   </head>
   <script>
+    
 
-window.setTimeout(() => {
-    window.trackTrans({
+    window.setTimeout(() => {
+        window.trackTrans({
       id: "12345",
       total: 100,
       tax: 10,
@@ -188,4 +205,4 @@ window.setTimeout(() => {
       }, 2000);
     </script> -->
   </body>
-</html> 
+</html>
