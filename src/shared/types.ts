@@ -74,6 +74,21 @@ export type SignupParams = {
   advertiser: string;
 };
 
+export interface retailIdentifier {
+  id: {
+    /**
+     * The name of the retail identifier, used to create a URL parameter.
+     */
+    retailId: string;
+    /**
+     * An array of CSS selectors or element IDs to poll for the retail identifier.
+     * These elements should be present on the page to ensure the retail ID is applied correctly.
+     */
+    element: string[];
+    fn?: () => void;
+  }[];
+}
+
 export type SnowplowParams = {
   appId: string;
   mediajelAppId?: string;
