@@ -3,7 +3,7 @@ import { CreateSnowplowTrackerInput, SnowplowTrackerEcommerceEvents } from "src/
 const createSnowplowV2TrackerEcommerceEventsHandlers = (
   input: CreateSnowplowTrackerInput,
 ): SnowplowTrackerEcommerceEvents => {
-  const { appId, retailId } = input;
+  const { appId, retailId, environment } = input;
 
   return {
     trackTransaction(input) {
@@ -19,11 +19,12 @@ const createSnowplowV2TrackerEcommerceEventsHandlers = (
         currency: input.currency,
         context: [
           {
-            schema: "iglu:com.mediajel.events/enhanced_transaction/jsonschema/1-0-0",
+            schema: "iglu:com.mediajel.events/enhanced_transaction/jsonschema/1-0-1",
             data: {
+              cart: environment,
               transaction_ids: input.alternativeTransactionIds,
-              transaction_discount: input.discount,
-              transaction_coupon_code: input.couponCode,
+              discount: input.discount,
+              coupon_code: input.couponCode,
             },
           },
         ],
