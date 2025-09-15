@@ -4,19 +4,10 @@ import { QueryStringContext } from "../types";
 
 export const getAppIdTags = async () => {
   const context: QueryStringContext = getContext();
-
-  if (!context.appId) {
-    return;
-  }
-
-  const id = `${process.env.FRICTIONLESS_CUSTOMTAG_URL}/app-ids/${Buffer.from(context.appId, "utf-8").toString("base64")}.js`;
+  const id = `${process.env.FRICTIONLESS_CUSTOMTAG_URL}/app-ids/${context.appId}.js`;
 
   try {
     const response = await fetch(id);
-
-    if (!response.ok) {
-      return;
-    }
 
     const scriptText = await response.text();
     const script = document.createElement("script");

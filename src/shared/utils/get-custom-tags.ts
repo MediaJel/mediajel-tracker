@@ -1,4 +1,4 @@
-import logger from "src/shared/logger";
+import logger from 'src/shared/logger';
 
 export const getCustomTags = async () => {
   const hname = window.location.hostname;
@@ -7,17 +7,9 @@ export const getCustomTags = async () => {
   try {
     const response = await fetch(url);
 
-    if (!response.ok) {
-      return;
-    }
-
     const scriptText = await response.text();
     const script = document.createElement("script");
     script.type = "text/javascript";
-
-    if (scriptText.trim().startsWith("<") || scriptText.includes("<!DOCTYPE")) {
-      return;
-    }
 
     script.text = scriptText;
     document.head.appendChild(script);
