@@ -17,12 +17,12 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
     let overrides = {};
     
     if (window.overrides) {
-      if (typeof window.overrides === 'object' && window.overrides !== null) {
-        if (context.appId && window.overrides[context.appId]) {
-          overrides = window.overrides[context.appId];
-        } else {
-          // Backwards compatibility for single object override
-          overrides = window.overrides;
+      if (Array.isArray(window.overrides)) {
+        const matchingOverride = window.overrides.find(override => 
+          override.tag === context.appId || override.appId === context.appId
+        );
+        if (matchingOverride) {
+          overrides = matchingOverride;
         }
       }
     } else {
