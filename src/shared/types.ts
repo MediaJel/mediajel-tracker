@@ -56,7 +56,7 @@ export interface RegisterThirdPartyTagsInput {
 
 // Data structure of the tag after parsing
 export type TransactionParams = {
-  environment: string;
+  environment: string | string[];
   retailId: string;
 };
 
@@ -77,7 +77,7 @@ export type SignupParams = {
 export type SnowplowParams = {
   appId: string;
   mediajelAppId?: string;
-  environment: string;
+  environment: string | string[];
   event: "impression" | "transaction" | "signup" | "googleAds";
   test: string;
   version: string;
