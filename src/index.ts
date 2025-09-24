@@ -14,21 +14,27 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
     let overrides = {};
 
     if (window.overrides) {
-      if (Array.isArray(window.overrides)) {
-        // Find matching override by appId or tag (old array format)
-        const matchingOverride = window.overrides.find(
-          (override) => override.tag === context.appId || override.appId === context.appId,
-        );
-        if (matchingOverride) {
-          overrides = matchingOverride;
-        }
-      } else if (typeof window.overrides === "object" && window.overrides !== null) {
-        // New format: window.overrides is an object with appId properties
-        if (context.appId && window.overrides[context.appId]) {
-          overrides = window.overrides[context.appId];
+      if (typeof window.overrides === 'object' && window.overrides !== null) {
+        if (context.appId) {
+          // Only use exact matches - disable partial matching entirely
+          if (window.overrides[context.appId]) {
+            overrides = window.overrides[context.appId];
+            logger.debug(`Using exact match overrides for appId: ${context.appId}`);
+          } else {
+            // If no exact match found, check if there's a default override
+            if (window.overrides.default) {
+              overrides = window.overrides.default;
+              logger.debug(`Using default overrides for appId: ${context.appId}`);
+            } else {
+              // No matching override found - use empty overrides
+              overrides = {};
+              logger.debug(`No matching override found for appId: ${context.appId}, using empty overrides`);
+            }
+          }
         } else {
-          // Backwards compatibility for single object override
-          overrides = window.overrides;
+          // No appId in context - use empty overrides
+          overrides = {};
+          logger.debug(`No appId in context, using empty overrides`);
         }
       }
     } else {
@@ -37,6 +43,7 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
         ...(context["s3.pv"] ? {} : { "s3.pv": "00000" }),
         ...(context["s3.tr"] ? {} : { "s3.tr": "00000" }),
       };
+      logger.debug(`Using default fallback overrides for appId: ${context.appId}`);
     }
 
     const modifiedContext = { ...context, ...overrides };
