@@ -178,4 +178,8 @@ export type QueryStringParams = Partial<TransactionParams> &
 export type QueryStringContext = QueryStringParams & { collector: string };
 export interface Window {
   trackTrans: (input: TransactionEvent) => void;
+  overrides?: {
+    [key: string]: any;
+    default?: any;
+  };
 }
