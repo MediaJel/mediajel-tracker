@@ -11,6 +11,9 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
   try {
     const context: QueryStringContext = getContext();
 
+    await getCustomTags();
+    await getAppIdTags();
+
     let overrides = {};
 
     if (window.overrides) {
@@ -53,8 +56,7 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
       return;
     }
 
-    await getCustomTags();
-    await getAppIdTags();
+  
 
     logger.debug("MJ Tag Context", modifiedContext);
     logger.debug("Integrations In Progress");
