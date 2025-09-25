@@ -18,7 +18,6 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
 
     if (window.overrides) {
       if (typeof window.overrides === 'object' && window.overrides !== null) {
-        if (context.appId) {
           // Only use exact matches - disable partial matching entirely
           if (window.overrides[context.appId]) {
             overrides = window.overrides[context.appId];
@@ -30,15 +29,13 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
               logger.debug(`Using default overrides for appId: ${context.appId}`);
             } else {
               // No matching override found - use empty overrides
-              overrides = {};
+              overrides = {
+                ...(context["s3.pv"] ? {} : { "s3.pv": "00000" }),
+                ...(context["s3.tr"] ? {} : { "s3.tr": "00000" }),
+              };
               logger.debug(`No matching override found for appId: ${context.appId}, using empty overrides`);
             }
           }
-        } else {
-          // No appId in context - use empty overrides
-          overrides = {};
-          logger.debug(`No appId in context, using empty overrides`);
-        }
       }
     } else {
       // Default fallback behavior
