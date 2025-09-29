@@ -26,8 +26,10 @@ declare global {
     removeFromCart: (input: CartEvent) => void;
     gtmDataLayer: any;
     registerThirdPartyTags: (input: RegisterThirdPartyTagsInput) => void;
-    overrides: QueryStringContext;
-    navigation: any;
+    overrides?: {
+      [key: string]: any;
+      default?: any;
+    };
     parseRetailId: (retail: retailIdentifier) => void;
   }
 }

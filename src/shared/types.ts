@@ -56,7 +56,7 @@ export interface RegisterThirdPartyTagsInput {
 
 // Data structure of the tag after parsing
 export type TransactionParams = {
-  environment: string;
+  environment: string | string[];
   retailId: string;
 };
 
@@ -92,7 +92,7 @@ export interface retailIdentifier {
 export type SnowplowParams = {
   appId: string;
   mediajelAppId?: string;
-  environment: string;
+  environment: string | string[];
   event: "impression" | "transaction" | "signup" | "googleAds";
   test: string;
   version: string;
@@ -173,6 +173,10 @@ export type DatasourceTrackerParam = {
   debug: string;
 };
 
+export type enableTagParam = {
+  enable: "true" | "false";
+};
+
 export type QueryStringParams = Partial<TransactionParams> &
   Partial<SignupParams> &
   Partial<SnowplowPluginParams> &
@@ -182,10 +186,15 @@ export type QueryStringParams = Partial<TransactionParams> &
   BingAdsPluginParams &
   SnowplowParams &
   SegmentParams &
-  DatasourceTrackerParam;
+  DatasourceTrackerParam &
+  enableTagParam;
 
 // Params available to the tag's query string
 export type QueryStringContext = QueryStringParams & { collector: string };
 export interface Window {
   trackTrans: (input: TransactionEvent) => void;
+  overrides?: {
+    [key: string]: any;
+    default?: any;
+  };
 }
