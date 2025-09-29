@@ -1,11 +1,12 @@
 import logger from "src/shared/logger";
 
-import { QueryStringContext } from "./shared/types";
+import { QueryStringContext, retailIdentifier } from "./shared/types";
 import getContext from "./shared/utils/get-context";
 import { getCustomTags } from "./shared/utils/get-custom-tags";
 import { datasourceLogger } from "./shared/utils/datasource-logger";
 import { getAppIdTags } from "./shared/utils/get-appId-tags";
 import { initializeSessionTracking } from "./shared/utils/session-tracking";
+import { createRetailId } from "./shared/utils/retail-id-parser";
 
 (async (): Promise<void> => {
   try {
@@ -17,25 +18,25 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
     let overrides = {};
 
     if (window.overrides) {
-      if (typeof window.overrides === 'object' && window.overrides !== null) {
-          // Only use exact matches - disable partial matching entirely
-          if (window.overrides[context.appId]) {
-            overrides = window.overrides[context.appId];
-            logger.debug(`Using exact match overrides for appId: ${context.appId}`);
+      if (typeof window.overrides === "object" && window.overrides !== null) {
+        // Only use exact matches - disable partial matching entirely
+        if (window.overrides[context.appId]) {
+          overrides = window.overrides[context.appId];
+          logger.debug(`Using exact match overrides for appId: ${context.appId}`);
+        } else {
+          // If no exact match found, check if there's a default override
+          if (window.overrides.default) {
+            overrides = window.overrides.default;
+            logger.debug(`Using default overrides for appId: ${context.appId}`);
           } else {
-            // If no exact match found, check if there's a default override
-            if (window.overrides.default) {
-              overrides = window.overrides.default;
-              logger.debug(`Using default overrides for appId: ${context.appId}`);
-            } else {
-              // No matching override found - use empty overrides
-              overrides = {
-                ...(context["s3.pv"] ? {} : { "s3.pv": "00000" }),
-                ...(context["s3.tr"] ? {} : { "s3.tr": "00000" }),
-              };
-              logger.debug(`No matching override found for appId: ${context.appId}, using empty overrides`);
-            }
+            // No matching override found - use empty overrides
+            overrides = {
+              ...(context["s3.pv"] ? {} : { "s3.pv": "00000" }),
+              ...(context["s3.tr"] ? {} : { "s3.tr": "00000" }),
+            };
+            logger.debug(`No matching override found for appId: ${context.appId}, using empty overrides`);
           }
+        }
       }
     } else {
       // Default fallback behavior
@@ -53,8 +54,6 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
       return;
     }
 
-  
-
     logger.debug("MJ Tag Context", modifiedContext);
     logger.debug("Integrations In Progress");
 
@@ -64,6 +63,8 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
       datasourceLogger();
       initializeSessionTracking(modifiedContext);
     }
+
+    window.parseRetailId = createRetailId;
 
     await import("src/adapters").then(({ default: load }) => load(modifiedContext));
   } catch (err) {

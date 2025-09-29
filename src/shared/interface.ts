@@ -1,5 +1,5 @@
 import { TransactionEvent, CartEvent, SignupParams } from "./snowplow/types";
-import { QueryStringContext, RegisterThirdPartyTagsInput } from "./types";
+import { QueryStringContext, RegisterThirdPartyTagsInput, retailIdentifier } from "./types";
 
 export {};
 
@@ -30,5 +30,6 @@ declare global {
       [key: string]: any;
       default?: any;
     };
+    parseRetailId: (retail: retailIdentifier) => void;
   }
 }
