@@ -1,4 +1,3 @@
-import { parse } from "path";
 import { pollForElement } from "../sources/utils/poll-for-element";
 import { retailIdentifier } from "../types";
 /**
