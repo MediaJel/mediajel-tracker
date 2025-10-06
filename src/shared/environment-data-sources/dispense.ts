@@ -19,6 +19,9 @@ const dispenseDataSource = (snowplow: SnowplowTracker) => {
         try {
           const { transaction_id, tax, value, items, coupon } = data[2];
 
+          const discounts = items.map((item) => parseFloat(item.discount || 0));
+          const totalDiscount = discounts.reduce((sum, discount) => sum + discount, 0);
+
           observable.notify({
             transactionEvent: {
               total: parseFloat(value),
@@ -26,6 +29,7 @@ const dispenseDataSource = (snowplow: SnowplowTracker) => {
               tax,
               shipping: 0,
               couponCode: coupon || 0,
+              discount: totalDiscount || 0,
               city: "N/A",
               state: "N/A",
               country: "USA",
