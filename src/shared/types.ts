@@ -167,10 +167,10 @@ export type QueryStringParams = Partial<TransactionParams> &
   BingAdsPluginParams &
   SnowplowParams &
   SegmentParams &
-  DatasourceTrackerParam;
+  DatasourceTrackerParam & { sdkUrl: string };
 
 // Params available to the tag's query string
-export type QueryStringContext = QueryStringParams & { collector: string; sdkUrl: string };
+export type QueryStringContext = QueryStringParams & { collector: string };
 export interface Window {
   trackTrans: (input: TransactionEvent) => void;
 }
