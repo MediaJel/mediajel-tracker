@@ -1,6 +1,6 @@
 import { CreateSnowplowTrackerInput } from "src/shared/snowplow/types";
 
-export const initialize = ({ appId, collector, event }: CreateSnowplowTrackerInput) => {
+export const initialize = ({ appId, collector, event, sdkUrl }: CreateSnowplowTrackerInput) => {
   (function (e, o, n, t, a, c, i) {
     if (!e[a]) {
       e.GlobalSnowplowNamespace = e.GlobalSnowplowNamespace || [];
@@ -15,7 +15,7 @@ export const initialize = ({ appId, collector, event }: CreateSnowplowTrackerInp
       c.src = t;
       i.parentNode.insertBefore(c, i);
     }
-  })(window, document, "script", "//mj-snowplow-static-js.s3.amazonaws.com/cnna.js", "tracker");
+  })(window, document, "script", sdkUrl || "//mj-snowplow-static-js.s3.amazonaws.com/cnna.js", "tracker");
   window.tracker("newTracker", appId, collector, {
     appId,
     postPath: "/analytics/track",

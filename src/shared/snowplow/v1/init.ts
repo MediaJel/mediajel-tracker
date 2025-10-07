@@ -1,6 +1,6 @@
 import { CreateSnowplowTrackerInput } from "src/shared/snowplow/types";
 
-export const initialize = ({ appId, collector, event }: CreateSnowplowTrackerInput) => {
+export const initialize = ({ appId, collector, event, sdkUrl }: CreateSnowplowTrackerInput) => {
   // Loading tracker with the snowplow tag by fetching our sp.js file
   // Creates a global function called "tracker" which we use to access the Snowplow Tracker
   (function (e, o, n, t, a, c, i) {
@@ -17,7 +17,7 @@ export const initialize = ({ appId, collector, event }: CreateSnowplowTrackerInp
       c.src = t;
       i.parentNode.insertBefore(c, i);
     }
-  })(window, document, "script", "//dm2q9qfzyjfox.cloudfront.net/sp.js", "tracker");
+  })(window, document, "script", sdkUrl || "//dm2q9qfzyjfox.cloudfront.net/sp.js", "tracker");
 
   // Creates the tracker with the appId and sends events to collector url
   window.tracker("newTracker", appId, `${collector}`, {
