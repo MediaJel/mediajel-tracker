@@ -16,7 +16,7 @@ export const initialize = ({ appId, collector, event, sdkUrl }: CreateSnowplowTr
       c.src = t;
       i.parentNode.insertBefore(c, i);
     }
-  })(window, document, "script", sdkUrl || "//mj-snowplow-static-js.s3.amazonaws.com/cnna.js", "tracker");
+  })(window, document, "script", sdkUrl, "tracker");
   window.tracker("newTracker", appId, collector, {
     appId,
     postPath: "/analytics/track",

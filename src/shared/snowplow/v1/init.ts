@@ -18,7 +18,7 @@ export const initialize = ({ appId, collector, event, sdkUrl }: CreateSnowplowTr
       c.src = t;
       i.parentNode.insertBefore(c, i);
     }
-  })(window, document, "script", sdkUrl || "//dm2q9qfzyjfox.cloudfront.net/sp.js", "tracker");
+  })(window, document, "script", sdkUrl, "tracker");
 
   // Creates the tracker with the appId and sends events to collector url
   window.tracker("newTracker", appId, `${collector}`, {
