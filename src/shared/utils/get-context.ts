@@ -16,7 +16,7 @@ const getContext = (): QueryStringContext => {
 
   const version1SdkUrl = "//dm2q9qfzyjfox.cloudfront.net/sp.js";
   const version2SdkUrl = "//mj-snowplow-static-js.s3.amazonaws.com/cnna.js";
-  const sdkUrl = params.sdkUrl ?? (version === "1" ? version1SdkUrl : version2SdkUrl);
+  const sdkUrl = params.sdkUrl || (version === "1" ? version1SdkUrl : version2SdkUrl);
 
   return {
     appId: appId || mediajelAppId, // Legacy support for old universal tag
