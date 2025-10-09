@@ -11,7 +11,7 @@ import { QueryStringContext } from "src/shared/types";
 
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   const plugins = context?.plugin?.split(",") || [];
-  console.log("Adater Context", context);
+  console.log("Adapter Context", context);
   const snowplow = await createSnowplowTracker(context);
 
   // Apply extensions to the tracker
