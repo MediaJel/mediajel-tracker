@@ -11,6 +11,7 @@ import { QueryStringContext } from "src/shared/types";
 
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   const plugins = context?.plugin?.split(",") || [];
+  const data = "default"; // Test CI, remove this later
   console.log("Adapter Context", context);
   const snowplow = await createSnowplowTracker(context);
 
