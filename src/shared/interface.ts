@@ -8,6 +8,7 @@ declare global {
     cnnaSegments: any;
     wixDevelopersAnalytics: any;
     GlobalSnowplowNamespace: any;
+    navigation: any;
     src: any;
     snowplow: any;
     tracker: any;
