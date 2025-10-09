@@ -1,0 +1,2 @@
+var e;(0,(e=("undefined"!=typeof globalThis?globalThis:"undefined"!=typeof self?self:"undefined"!=typeof window?window:"undefined"!=typeof global?global:{}).parcelRequire07df).register)("ftvBx",function(f,n){Object.defineProperty(f.exports,"default",{get:function(){return d},set:void 0,enumerable:!0,configurable:!0});var t=e("dptSB"),d=()=>{(0,t.default)()}});
+//# sourceMappingURL=ticketure.d10a2db2.js.map

@@ -1,4 +1,4 @@
-import { QueryStringContext, QueryStringParams } from '../types';
+import { QueryStringContext, QueryStringParams } from "../types";
 
 // Locates our tag
 
