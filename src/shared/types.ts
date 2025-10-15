@@ -187,8 +187,8 @@ export type QueryStringParams = Partial<TransactionParams> &
   SnowplowParams &
   SegmentParams &
   DatasourceTrackerParam &
-  enableTagParam;
-  DatasourceTrackerParam & { sdkUrl: string };
+  enableTagParam &
+  { sdkUrl: string };
 
 // Params available to the tag's query string
 export type QueryStringContext = QueryStringParams & { collector: string };
