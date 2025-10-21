@@ -1,5 +1,5 @@
 import { TransactionEvent, CartEvent, SignupParams } from "./snowplow/types";
-import { QueryStringContext, RegisterThirdPartyTagsInput } from "./types";
+import { QueryStringContext, RegisterThirdPartyTagsInput, retailIdentifier } from "./types";
 
 export {};
 
@@ -8,6 +8,7 @@ declare global {
     cnnaSegments: any;
     wixDevelopersAnalytics: any;
     GlobalSnowplowNamespace: any;
+    navigation: any;
     src: any;
     snowplow: any;
     tracker: any;
@@ -26,6 +27,10 @@ declare global {
     removeFromCart: (input: CartEvent) => void;
     gtmDataLayer: any;
     registerThirdPartyTags: (input: RegisterThirdPartyTagsInput) => void;
-    overrides: QueryStringContext;
+    overrides?: {
+      [key: string]: any;
+      default?: any;
+    };
+    parseRetailId: (retail: retailIdentifier) => void;
   }
 }

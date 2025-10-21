@@ -34,6 +34,8 @@ const magentoDataSource = () => {
                     city: "N/A",
                     country: "USA",
                     currency: "USD",
+                    couponCode: ecommerce.coupon || "N/A",
+                    discount: parseFloat(ecommerce.discount) || 0,
                     state: "N/A",
                     items: ecommerce.items.map((item: any) => {
                       return {
