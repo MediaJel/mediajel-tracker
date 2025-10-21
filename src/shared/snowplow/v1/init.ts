@@ -29,6 +29,7 @@ export const initialize = ({ appId, collector, event, sdkUrl }: CreateSnowplowTr
     cookieSameSite: "Lax",
     respectDoNotTrack: false,
     eventMethod: "post",
+    idService: "/cookie-extension-service-endpoint"
   });
 
   window.tracker("enableActivityTracking", 30, 10);
