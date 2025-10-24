@@ -11,6 +11,7 @@ executors:
     working_directory: ~/mediajel-tracker
 
 orbs:
+  aws-cli: circleci/aws-cli@4.0
   aws-s3: circleci/aws-s3@2.0.0
   aws-cloudfront: topmonks/aws-cloudfront@1.0.0
 jobs:
@@ -34,13 +35,16 @@ jobs:
       - run:
           name: Build
           command: npm run deploy
-      - aws-s3/sync:
-          from: dist/
-          to: "s3://mediajel-tracker-staging"
-          arguments: --cache-control "max-age=2628288"
-      - aws-cloudfront/invalidate:
-          distribution_id: E1ZEPT1NM5152K
-          paths: /*
+      - aws-cli/install:
+          version: latest
+      - run:
+          name: Sync to S3
+          command: |
+            aws s3 sync dist/ s3://mediajel-tracker-staging
+      - run:
+          name: Invalidate CloudFront
+          command: |
+            aws cloudfront create-invalidation --distribution-id E1ZEPT1NM5152K --paths "/*"
 
   build-main:
     executor: the-executor
@@ -62,37 +66,40 @@ jobs:
       - run:
           name: Build
           command: yarn deploy
-      - aws-s3/sync:
-          from: dist/
-          to: "s3://mediajel-tracker-production"
-          arguments: --cache-control "max-age=2628288"
-      - aws-cloudfront/invalidate:
-          distribution_id: E3NZWAOF5B6J2O
-          paths: /*    
-      - aws-cloudfront/invalidate:
-          distribution_id: E3FT67SI37G1ZH
-          paths: /*
-      - aws-cloudfront/invalidate:
-          distribution_id: EQGTP3X7S8LMI
-          paths: /*
-      - aws-cloudfront/invalidate:
-          distribution_id: EFJHMMZDNURYT
-          paths: /*
-      - aws-cloudfront/invalidate:
-          distribution_id: E3FT67SI37G1ZH
-          paths: /*
-      - aws-cloudfront/invalidate:
-          distribution_id: EQGTP3X7S8LMI
-          paths: /*
-      - aws-cloudfront/invalidate:
-          distribution_id: E39XLCEMWS6VO1
-          paths: /*
-      - aws-cloudfront/invalidate:
-          distribution_id: E270PRY60O4B3Y
-          paths: /*
-      - aws-cloudfront/invalidate:
-          distribution_id: ELFZ8CP0408WK
-          paths: /*
+      - aws-cli/install:
+          version: latest
+      - run:
+          name: Sync to S3
+          command: |
+            aws s3 sync dist/ s3://mediajel-tracker-production
+      - run:
+          name: Invalidate CloudFront
+          command: |
+            aws cloudfront create-invalidation --distribution-id E3NZWAOF5B6J2O --paths "/*"
+      - run:
+          name: Invalidate CloudFront
+          command: |
+            aws cloudfront create-invalidation --distribution-id E3FT67SI37G1ZH --paths "/*"
+      - run:
+          name: Invalidate CloudFront
+          command: |
+            aws cloudfront create-invalidation --distribution-id EQGTP3X7S8LMI --paths "/*"
+      - run:
+          name: Invalidate CloudFront
+          command: |
+            aws cloudfront create-invalidation --distribution-id EFJHMMZDNURYT --paths "/*"
+      - run:
+          name: Invalidate CloudFront
+          command: |
+            aws cloudfront create-invalidation --distribution-id E39XLCEMWS6VO1 --paths "/*"
+      - run:
+          name: Invalidate CloudFront
+          command: |
+            aws cloudfront create-invalidation --distribution-id E270PRY60O4B3Y --paths "/*"
+      - run:
+          name: Invalidate CloudFront
+          command: |
+            aws cloudfront create-invalidation --distribution-id ELFZ8CP0408WK --paths "/*"
       - run:
           name: Run Tracker
           command: npm run tracker:generate-environments
