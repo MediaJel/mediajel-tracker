@@ -57,7 +57,6 @@ const janeDataSource = (snowplow: SnowplowTracker) => {
             deliveryFee,
             deliveryAddress = {},
             salesTax,
-            discountTotal,
             storeTax,
           } = payload.properties;
   
@@ -71,8 +70,6 @@ const janeDataSource = (snowplow: SnowplowTracker) => {
               city: (deliveryAddress?.city || "N/A").toString(),
               state: (deliveryAddress?.state_code || "N/A").toString(),
               country: (deliveryAddress?.country_code || "N/A").toString(),
-              discount: parseFloat(discountTotal || 0),
-              couponCode: "N/A",
               currency: "USD",
               items: products.map((product) => {
                 const { product_id, name, category, unit_price, count } = product;

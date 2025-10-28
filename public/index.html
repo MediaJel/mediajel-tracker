@@ -13,21 +13,22 @@
     <!-- <script src="http://localhost:3000/index.js?appId=universal-tag-staging&environment=demo&test=true"></script> -->
 
     <script type="text/javascript">
-        window.overrides = {};
-
-    var overridesVal = {
-    "s3.pv": "44444",
-    "s3.tr": "88888"
+      window.overrides = {};
+    window.overrides["gsdfg-test"] = {
+        "s3.pv": "12345",
+        "s3.tr": "11111", 
+        "s2.tr": "888",
+        "debug": "false",
+        "environment": "jane" 
     };
-    window.overrides["gsdfg-test12"] = overridesVal;
 
-    // window.overrides["abcef-test-threef"] = {
-    //     "s3.pv": "456789",
-    //     "retailId": "test-store-123",
-    //     "environment": "woo"
-    // };
+    window.overrides["abcef-test-three"] = {
+        "s3.pv": "456789",
+        "retailId": "test-store-123",
+        "environment": "woo"
+    };
     </script>
-    <script src="http://localhost:3000/index.js?appId=gsdfg-test12&environment=dummy-cart&s2.pv=TestPV&s2.tr=TestTR&s3.pv=S3PV&s3.tr=S3TR&version=2&debug=false"></script>
+    <script src="http://localhost:3000/index.js?appId=gsdfg-test&environment=dummy-cart&s2.pv=TestPV&s2.tr=TestTR&s3.pv=S3PV&s3.tr=S3TR&version=2&debug=false"></script>
     <script src="http://localhost:3000/index.js?appId=abcef-test-three&environment=dutchie&s2.pv=TestPV&s2.tr=TestTR123&s3.pv=S3PV4324&s3.tr=S3TR657567&version=2&debug=false"></script>
     <!-- <script src="http://localhost:3000/index.js?appId=universal-tag-staging-test&test=true"></script> -->
 
@@ -102,7 +103,8 @@
     </script> -->
     <title>App</title>
   </head>
-  <!-- <script>
+  <script>
+    
 
     window.setTimeout(() => {
         window.trackTrans({
@@ -122,7 +124,7 @@
       ]
     })
   }, 2000);
-  </script>  -->
+  </script>
   <!-- <body>
     <a href="https://youtube.com/" target="_blank">link</a>
     <script type="text/javascript">
