@@ -15,12 +15,12 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
   // We are dynamically loading the data source publisher/notifier based on the environment(s)
   //* WARNING: Do not use absolute imports when dynamically loading modules
 
-  const environments = context.environment;
-
-  if (environments.length === 0) {
+  if (!context.environment) {
     logger.warn("No event/environment specified, Only pageview is active");
     return;
   }
+
+  const environments = context.environment.split(',').map(env => env.trim()).filter(env => env.length > 0);
 
   for (const env of environments) {
     switch (env) {

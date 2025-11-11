@@ -4,7 +4,11 @@ import { SnowplowTracker } from "src/shared/snowplow";
 export default async (tracker: SnowplowTracker): Promise<void> => {
   const { environment } = tracker.context;
 
-  const environments = environment
+  if (!environment) {
+    return;
+  }
+
+  const environments = environment.split(',').map(env => env.trim()).filter(env => env.length > 0);
 
   for (const env of environments) {
     switch (env) {
