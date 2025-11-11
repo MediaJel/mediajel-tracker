@@ -50,10 +50,7 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
         return;
       }
       import("./ecommerce").then(({ default: load }): Promise<void> => load(tracker));
-      const envDisplay = Array.isArray(context.environment) 
-        ? context.environment.join(', ') 
-        : context.environment;
-      logger.warn(`No event specified, Loading ${envDisplay}`);
+      logger.warn(`No event specified, Loading ${context.environment}`);
   }
 };
 

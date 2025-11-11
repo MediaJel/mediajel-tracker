@@ -1,2 +1,0 @@
-(0,("undefined"!=typeof globalThis?globalThis:"undefined"!=typeof self?self:"undefined"!=typeof window?window:"undefined"!=typeof global?global:{}).parcelRequire07df.register)("5p3pM",function(e,n){Object.defineProperty(e.exports,"default",{get:function(){return o},set:void 0,enumerable:!0,configurable:!0});var o=()=>{console.log("thirdpartyTracker")}});
-//# sourceMappingURL=thirdparty.1d2a32c6.js.map
