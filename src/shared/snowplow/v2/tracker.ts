@@ -28,10 +28,11 @@ const createSnowplowV2Tracker = async (input: CreateSnowplowTrackerInput): Promi
         state,
         phoneNumber,
         advertiser,
+        test,
       } = input;
       window.tracker("trackSelfDescribingEvent", {
         event: {
-          schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-2",
+          schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-3",
           data: {
             uuid,
             firstName,
@@ -44,6 +45,7 @@ const createSnowplowV2Tracker = async (input: CreateSnowplowTrackerInput): Promi
             state,
             phoneNumber,
             advertiser,
+            test,
           },
         },
       });
@@ -51,7 +53,7 @@ const createSnowplowV2Tracker = async (input: CreateSnowplowTrackerInput): Promi
     record(input) {
       window.tracker("trackSelfDescribingEvent", {
         event: {
-          schema: "iglu:com.mediajel.events/record/jsonschema/1-0-2",
+          schema: "iglu:com.mediajel.events/enhanced_transaction/jsonschema/1-0-1",
           data: input,
         },
       });
