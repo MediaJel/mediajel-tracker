@@ -14,11 +14,8 @@ const FlowhubDataSource = (snowplow: SnowplowTracker) => {
                 try {
                     const transaction = data && data.ecommerce;
                     const products = transaction.items;
-                    const { value, shipping, tax, coupon } = transaction;
+                    const { value, shipping, tax } = transaction;
                     const transactionId = transaction && transaction.transaction_id && transaction.transaction_id.toString();
-
-                    const discounts = products.map((item) => parseFloat(item.discount || 0));
-                    const totalDiscount = discounts.reduce((sum, discount) => sum + discount, 0);
 
                     observable.notify({
                         transactionEvent: {
@@ -29,8 +26,6 @@ const FlowhubDataSource = (snowplow: SnowplowTracker) => {
                             country: "USA",
                             currency: "USD",
                             shipping: shipping,
-                            discount: totalDiscount || 0,
-                            couponCode: coupon || "N/A",
                             state: "N/A",
                             items: products.map((items: any) => {
                             const { item_id, item_name, item_category, price, quantity } = items;
