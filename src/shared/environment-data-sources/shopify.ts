@@ -61,6 +61,8 @@ const shopifyDataSource = () => {
           tax: parseFloat(transaction.total_tax || 0),
           shipping: parseFloat(transaction.shipping_rate.price || 0),
           city: (transaction.billing_address.city || "N/A").toString(),
+          discount: parseFloat(transaction.discount || 0),
+          couponCode: "N/A", // No Coupon Code field in Shopify Checkout object
           state: (transaction.billing_address.province || "N/A").toString(),
           country: (transaction.billing_address.country || "N/A").toString(),
           currency: (transaction.currency || "N/A").toString(),
