@@ -27,7 +27,7 @@ const foxyDataSource = () => {
                             city: "N/A",
                             state: "N/A",
                             country: "N/A",
-                            couponCode: transaction.coupon || "N/A",
+                            couponCode: transaction?.coupon || "N/A",
                             discount: 0,
                             currency: "USD",
                             items: products.map((product) => {
