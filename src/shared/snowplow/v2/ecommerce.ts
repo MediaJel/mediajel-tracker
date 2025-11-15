@@ -17,6 +17,7 @@ const createSnowplowV2TrackerEcommerceEventsHandlers = (
         state: input.state,
         country: input.country,
         currency: input.currency,
+        test: input.test,
         context: [
           {
             schema: "iglu:com.mediajel.events/enhanced_transaction/jsonschema/1-0-1",
