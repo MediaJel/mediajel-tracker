@@ -215,3 +215,4 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       break;
   }
 };
+}
