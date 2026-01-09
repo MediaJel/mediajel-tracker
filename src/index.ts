@@ -17,21 +17,26 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
     let overrides = {};
     
     if (window.overrides) {
+      logger.debug("overrides: ", window.overrides);
       if (Array.isArray(window.overrides)) {
         // Find matching override by appId or tag (old array format)
         const matchingOverride = window.overrides.find(override => 
           override.tag === context.appId || override.appId === context.appId
         );
+        logger.debug("matchingOverride: ", matchingOverride);
         if (matchingOverride) {
           overrides = matchingOverride;
         }
       } else if (typeof window.overrides === 'object' && window.overrides !== null) {
+         logger.debug("window.overrides appids new format");
         // New format: window.overrides is an object with appId properties
         if (context.appId && window.overrides[context.appId]) {
           overrides = window.overrides[context.appId];
+          logger.debug("new format overrides: ", overrides);
         } else {
           // Backwards compatibility for single object override
           overrides = window.overrides;
+          logger.debug("overrides backwards compatibility: ", overrides);
         }
       }
     } else {
@@ -40,6 +45,7 @@ import { initializeSessionTracking } from "./shared/utils/session-tracking";
         ...(context["s3.pv"] ? {} : { "s3.pv": "00000" }),
         ...(context["s3.tr"] ? {} : { "s3.tr": "00000" }),
       };
+      logger.debug("default overrides: ", overrides);
     }
 
     const modifiedContext = { ...context, ...overrides };
