@@ -13,10 +13,7 @@ const setupExtension = (context: QueryStringContext): void => {
     context.conversionId = `AW-${context.conversionId}`;
   }
 
-  const envDisplay = Array.isArray(context.environment) 
-    ? context.environment.join(', ') 
-    : context.environment;
-  logger.info(`🚀🚀🚀 Google Ads Plugin loaded for ${envDisplay}`);
+  logger.info(`🚀🚀🚀 Google Ads Plugin loaded for ${context.environment}`);
 
   document.createElement("script").src = `https://www.googletagmanager.com/gtag/js?id=${context.conversionId}`;
 

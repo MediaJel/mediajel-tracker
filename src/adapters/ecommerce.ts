@@ -12,15 +12,18 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
     removeFromCartEvent && tracker.ecommerce.trackRemoveFromCart(removeFromCartEvent);
   });
 
-  // We are dynamically loading the data source publisher/notifier based on the environment(s)
+  // We are dynamically loading the data source publisher/notifier based on the environment
   //* WARNING: Do not use absolute imports when dynamically loading modules
 
-  const environments = context.environment;
-
-  if (environments.length === 0) {
+  if (!context.environment) {
     logger.warn("No event/environment specified, Only pageview is active");
     return;
   }
+
+  const environments = context.environment
+    .split(",")
+    .map((env) => env.trim())
+    .filter((env) => env.length > 0);
 
   for (const env of environments) {
     switch (env) {
@@ -161,61 +164,57 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
         break;
       case "tnew":
         import("../shared/environment-data-sources/tnew").then(({ default: load }): void => load());
-        // description: "tnew is just a test description"
+        // description: "tnew is a just a test description"
         // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
         break;
       case "weave":
         import("../shared/environment-data-sources/weave").then(({ default: load }): void => load());
-        // description: "weave is just a test description"
-        // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+        // description: "weave is a just a test descriptions"
+        // events-tracked: [{ "value": "transaction", "label": "Transaction" }, { "value": "basket_items", "label": "Basket Items" }]
         break;
       case "webjoint":
         import("../shared/environment-data-sources/webjoint").then(({ default: load }): void => load());
-        // description: "webjoint is just a test description"
-        // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+        // description: "webjoint is a just a test description"
+        // events-tracked: [{ "value": "transaction", "label": "Transaction" }, { "value": "basket_items", "label": "Basket Items" }]
         break;
       case "wefunder":
         import("../shared/environment-data-sources/wefunder").then(({ default: load }): void => load());
-        // description: "wefunder is just a test description"
-        // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+        // description: "wefunder is a just a test description"
+        // events-tracked: [{ "value": "transaction", "label": "Transaction" }, { "value": "basket_items", "label": "Basket Items" }]
         break;
       case "wix":
         import("../shared/environment-data-sources/wix").then(({ default: load }): void => load());
-        // description: "wix is just a test description"
-        // events-tracked: [{ value: "add_to_cart", label: "Add to Cart" }, { value: "remove_from_cart", label: "Remove from Cart" }, { "value": "transaction", "label": "Transaction" }]
+        // description: "wix is a just a test description"
+        // events-tracked: [{ value: "add_to_cart", label: "Add to Cart" }, { value: "remove_from_cart", label: "Remove from Cart" }, { "value": "transaction", "label": "Transaction" }, { "value": "basket_items", "label": "Basket Items" }]
         break;
       case "woocommerce":
         import("../shared/environment-data-sources/woocommerce").then(({ default: load }): void => load());
-        // description: "woocommerce is just a test description"
-        // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+        // description: "woocommerce is a just a test description"
+        // events-tracked: [{ "value": "transaction", "label": "Transaction" }, { "value": "basket_items", "label": "Basket Items" }]
         break;
       case "yotpo":
         import("../shared/environment-data-sources/yotpo").then(({ default: load }): void => load());
-        // description: "yotpo is just a test description"
-        // events-tracked: [{ value: "add_to_cart", label: "Add to Cart" }, { value: "remove_from_cart", label: "Remove from Cart" }, { "value": "transaction", "label": "Transaction" }]
+        // description: "yotpo is a just a test description"
+        // events-tracked: [{ value: "add_to_cart", label: "Add to Cart" }, { value: "remove_from_cart", label: "Remove from Cart" }, { "value": "transaction", "label": "Transaction" }, { "value": "basket_items", "label": "Basket Items" }]
         break;
       case "flowhub":
         import("../shared/environment-data-sources/flowhub").then(({ default: load }): void => load(tracker));
-        // description: "flowhub is just a test description"
+        // description: "flowhub is a just a test descriptions"
         // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
         break;
       case "thirdparty":
         import("../shared/environment-data-sources/thirdparty").then(({ default: load }): void => load());
-        // description: "thirdparty is just a test description"
+        // description: "thirdparty is a just a test descriptions"
         // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
         break;
       case "carrot":
         import("../shared/environment-data-sources/carrot").then(({ default: load }): void => load(tracker));
-        // description: "carrot is just a test description"
+        // description: "carrot is a just a test descriptions"
         // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
         break;
-      case "evenue":
-        import("../shared/environment-data-sources/evenue").then(({ default: load }): void => load(tracker));
-        // description: "evenue is just a test description"
-        // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
-        break;
+
       default:
-        logger.warn(`Unknown environment specified: ${env}`);
+        logger.warn("No event/environment specified, Only pageview is active");
         break;
     }
   }
