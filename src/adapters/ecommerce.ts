@@ -77,6 +77,11 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
         // description: "ecwid is just a test description"
         // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
         break;
+      case "evenue":
+        import("../shared/environment-data-sources/evenue").then(({ default: load }): void => load(tracker));
+        // description: "evenue is just a test description"
+        // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
+        break;
       case "foxy":
         import("../shared/environment-data-sources/foxy").then(({ default: load }): void => load());
         // description: "foxy is just a test description"
@@ -219,3 +224,4 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
     }
   }
 };
+}

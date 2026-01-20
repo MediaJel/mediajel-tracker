@@ -89,11 +89,12 @@ const dutchiePlusDataSource = () => {
       // // set order id to local storage to prevent duplicate events
       // localStorage.setItem("orderNumber", orderNumber);
 
-      const items = data?.ecommerce?.purchase?.products;
+      const items = data?.ecommerce?.purchase?.products || data?.ecommerce?.items;
 
-      const getId = data?.ecommerce?.purchase?.actionField?.id;
-      const getRevenue = data?.ecommerce?.purchase?.actionField?.revenue;
-      const getTax = data?.ecommerce?.purchase?.actionField?.tax;
+      const getId = data?.ecommerce?.purchase?.actionField?.id || data?.ecommerce?.transaction_id;
+      const getRevenue = data?.ecommerce?.purchase?.actionField?.revenue || data?.ecommerce?.value;
+      const getTax = data?.ecommerce?.purchase?.actionField?.tax || data?.ecommerce?.tax;
+      const additionalIds = data?.ecommerce?.product_ids || [];
 
       if (getId) {
         observable.notify({
@@ -106,12 +107,13 @@ const dutchiePlusDataSource = () => {
             state: "N/A",
             country: "USA",
             currency: "USD",
+            alternativeTransactionIds: additionalIds,
             items: items.map((item) => {
               return {
                 orderId: getId,
-                sku: item.id,
-                name: item.name,
-                category: item.category,
+                sku: item.id || item.item_id,
+                name: item.name || item.item_name,
+                category: item.category || item.item_category,
                 unitPrice: parseFloat(item.price),
                 quantity: parseInt(item.quantity),
                 currency: "USD",

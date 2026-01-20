@@ -1,10 +1,7 @@
 import logger from "src/shared/logger";
-import getContext from "./get-context";
-import { QueryStringContext } from "../types";
 
-export const getAppIdTags = async () => {
-  const context: QueryStringContext = getContext();
-  const id = `${process.env.FRICTIONLESS_CUSTOMTAG_URL}/app-ids/${context.appId}.js`;
+export const getAppIdTags = async (appId: string) => {
+  const id = `${process.env.FRICTIONLESS_CUSTOMTAG_URL}/app-ids/${appId}.js`;
 
   try {
     const response = await fetch(id);
