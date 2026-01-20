@@ -18,7 +18,6 @@ const createSnowplowV1TrackerEcommerceEventsHandlers = (
         input.state,
         input.country,
         input.currency,
-        input.test,
         [
           {
             schema: "iglu:com.mediajel.events/enhanced_transaction/jsonschema/1-0-1",
@@ -27,6 +26,7 @@ const createSnowplowV1TrackerEcommerceEventsHandlers = (
               transaction_ids: input.alternativeTransactionIds,
               discount: input.discount,
               coupon_code: input.couponCode,
+              test: input.test,
             },
           },
         ],
