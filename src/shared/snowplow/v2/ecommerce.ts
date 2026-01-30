@@ -25,6 +25,7 @@ const createSnowplowV2TrackerEcommerceEventsHandlers = (
               transaction_ids: input.alternativeTransactionIds,
               discount: input.discount,
               coupon_code: input.couponCode,
+              test: input.test,
             },
           },
         ],
