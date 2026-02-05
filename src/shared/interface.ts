@@ -1,5 +1,5 @@
 import { TransactionEvent, CartEvent, SignupParams } from "./snowplow/types";
-import { QueryStringContext, RegisterThirdPartyTagsInput } from "./types";
+import { QueryStringContext, RegisterThirdPartyTagsInput, retailIdentifier } from "./types";
 
 export {};
 
@@ -27,5 +27,7 @@ declare global {
     gtmDataLayer: any;
     registerThirdPartyTags: (input: RegisterThirdPartyTagsInput) => void;
     overrides: QueryStringContext;
+    parseRetailId: (retail: retailIdentifier) => void;
+    navigation: any;
   }
 }
