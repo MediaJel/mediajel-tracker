@@ -46,7 +46,7 @@ const tymberDataSource = () => {
       try {
         const transaction = data.ecommerce.actionField;
         const products = data.ecommerce.products;
-        const { id, revenue, tax } = transaction;
+        const { id, revenue, tax, coupon } = transaction;
 
         observable.notify({
           transactionEvent: {
@@ -55,6 +55,8 @@ const tymberDataSource = () => {
             tax: parseFloat(tax),
             shipping: 0,
             city: "N/A",
+            couponCode: coupon || "N/A",
+            discount: 0,
             state: "N/A",
             country: "N/A",
             currency: "USD",
