@@ -26,6 +26,17 @@ export const initialize = ({ appId, collector, event, sdkUrl }: CreateSnowplowTr
     respectDoNotTrack: false,
     eventMethod: "post",
   });
+
+  // Second tracker for new pipeline collector
+  window.tracker("newTracker", `${appId}_v2`, "collector-latest.dmp.cnna.io", {
+    appId,
+    postPath: "/analytics/track",
+    discoverRootDomain: true,
+    stateStorageStrategy: "cookieAndLocalStorage",
+    cookieSameSite: "Lax",
+    respectDoNotTrack: false,
+    eventMethod: "post",
+  });
   window.tracker("enableActivityTracking", {
     minimumVisitLength: 30,
     heartbeatDelay: 10,
