@@ -21,7 +21,7 @@ export const initialize = ({ appId, collector, event, sdkUrl }: CreateSnowplowTr
   })(window, document, "script", "//dm2q9qfzyjfox.cloudfront.net/sp.js", "tracker");
 
   // Creates the tracker with the appId and sends events to collector url
-  window.tracker("newTracker", appId, `${collector}`, {
+  window.tracker("newTracker", `${appId}_v2`, `${collector}`, {
     appId: appId,
     postPath: "/analytics/track",
     discoverRootDomain: true,
