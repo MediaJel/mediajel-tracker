@@ -27,6 +27,7 @@ export interface TransactionEvent {
   discount?: number;
   couponCode?: string;
   alternativeTransactionIds?: string[];
+  test: string;
   items: TransactionCartItem[];
 }
 
@@ -72,6 +73,7 @@ export type SignupParams = {
   state: string;
   phoneNumber: string;
   advertiser: string;
+  test:string;
 };
 
 export interface retailIdentifier {
