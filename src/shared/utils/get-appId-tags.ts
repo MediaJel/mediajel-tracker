@@ -1,7 +1,7 @@
 import logger from "src/shared/logger";
 
 export const getAppIdTags = async (appId: string) => {
-  const id = `${process.env.FRICTIONLESS_CUSTOMTAG_URL}/app-ids/${appId}.js`;
+  const id = `${process.env.FRICTIONLESS_CUSTOMTAG_URL}/app-ids/${Buffer.from(appId).toString("base64")}.js`;
 
   try {
     const response = await fetch(id);
