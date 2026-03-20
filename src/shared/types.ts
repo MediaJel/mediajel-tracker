@@ -27,7 +27,7 @@ export interface TransactionEvent {
   discount?: number;
   couponCode?: string;
   alternativeTransactionIds?: string[];
-  test: string;
+  test?: string;
   items: TransactionCartItem[];
 }
 
