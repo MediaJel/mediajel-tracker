@@ -1,3 +1,4 @@
+import logger from "src/shared/logger";
 import { pollForElement } from "../sources/utils/poll-for-element";
 import { retailIdentifier } from "../types";
 /**
@@ -35,7 +36,7 @@ export const createRetailId = (retail: retailIdentifier) => {
         retail.element.forEach((elementSelector) => {
           const element = document.querySelector(elementSelector);
           if (element) {
-            console.log(`Element detected for retail ID "${retail.retailId}": ${elementSelector}`);
+            logger.debug(`Element detected for retail ID "${retail.retailId}": ${elementSelector}`);
           }
         });
 

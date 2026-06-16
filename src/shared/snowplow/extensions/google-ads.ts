@@ -6,7 +6,7 @@ import { QueryStringContext } from "src/shared/types";
 const setupExtension = (context: QueryStringContext): void => {
   // Fail fast if the required params are not present
   if (!context.conversionId || !context.conversionLabel) {
-    console.warn("Conversion ID and Conversion Label are required for Google Ads");
+    logger.warn("Conversion ID and Conversion Label are required for Google Ads");
   }
 
   if (!context.conversionId.includes("AW-")) {

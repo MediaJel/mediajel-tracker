@@ -1,4 +1,4 @@
-import logger from "src/shared/logger";
+import logger, { isLoggingEnabled, setLoggingEnabled } from "src/shared/logger";
 
 import { QueryStringContext } from "./shared/types";
 import getContext from "./shared/utils/get-context";
@@ -49,6 +49,12 @@ import { createRetailId } from "./shared/utils/retail-id-parser";
 
     const modifiedContext = { ...context, ...overrides };
 
+    // Re-apply the logging flag now that window.overrides are merged, so logs can be
+    // toggled per-appId via overrides too. The query-string value is already live from
+    // logger module-init (earliest point); this only changes things when an override
+    // sets `logs`. Opt-out default: logging stays on unless explicitly "false".
+    setLoggingEnabled(modifiedContext.logs !== "false");
+
     if (modifiedContext.enable === "false") {
       logger.debug("Tag has been disabled. Reach out to your pixel provider for more information.");
       return;
@@ -59,7 +65,7 @@ import { createRetailId } from "./shared/utils/retail-id-parser";
 
     // Validations
     if (!modifiedContext.appId) throw new Error("appId is required");
-    if (modifiedContext.debug && modifiedContext.debug === "true") {
+    if (modifiedContext.debug && modifiedContext.debug === "true" && isLoggingEnabled()) {
       datasourceLogger();
       initializeSessionTracking(modifiedContext);
     }

@@ -1,3 +1,5 @@
+import logger from "src/shared/logger";
+
 export const tryParseJSONObject = (event: string | object): string | object | any => {
   try {
     if (typeof event === "object") {
@@ -7,7 +9,7 @@ export const tryParseJSONObject = (event: string | object): string | object | an
       return JSON.parse(event);
     }
   } catch (e) {
-    console.error("Error parsing event:", e);
+    logger.error("Error parsing event:", e);
   }
 
   return event;

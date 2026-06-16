@@ -54,7 +54,7 @@ const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
       }
     }
 
-    console.log("existingIds", existingIds);
+    logger.debug("existingIds", existingIds);
     if (existingIds.includes(eventId)) {
       logger.warn(`${eventType} with id ${eventId} already tracked. Discarding duplicate.`);
       return;

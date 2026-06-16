@@ -27,7 +27,7 @@ const DstillerySegmentBuilderInput = (input: DstillerySegmentBuilderInput) => {
       const { orderId, amount } = input;
 
       if (!orderId || !amount || !purchaseNC) {
-        console.warn("Missing required data for s3.tr");
+        logger.warn("Missing required data for s3.tr");
         return;
       }
 

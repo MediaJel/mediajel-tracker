@@ -1,3 +1,4 @@
+import logger from "src/shared/logger";
 import observable from "src/shared/utils/create-events-observable";
 
 import { datalayerSource } from "../sources/google-datalayer-source";
@@ -6,7 +7,7 @@ import { EnvironmentEvents, TransactionCartItem } from "../types";
 const sweedDataSource = () => {
   datalayerSource((data: any): void => {
     if (data.event === "purchase") {
-      console.log("Purchase Event: ", data);
+      logger.debug("Purchase Event: ", data);
       try {
         const transaction = data && data.ecommerce;
         const products = transaction.items;
@@ -38,7 +39,7 @@ const sweedDataSource = () => {
           },
         });
       } catch (error) {
-        console.log("Log Warn Purchase Event: ", error);
+        logger.debug("Log Warn Purchase Event: ", error);
       }
     }
 
@@ -58,7 +59,7 @@ const sweedDataSource = () => {
           },
         });
       } catch (error) {
-        console.log("Log Warn Add to Cart Event: ", error);
+        logger.debug("Log Warn Add to Cart Event: ", error);
       }
     }
 
@@ -77,7 +78,7 @@ const sweedDataSource = () => {
           }
         });
       } catch (error) {
-        console.log("Log Warn Remove from Cart Event: ", error);
+        logger.debug("Log Warn Remove from Cart Event: ", error);
       }
     }
   });

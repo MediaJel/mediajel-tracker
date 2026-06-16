@@ -20,7 +20,7 @@ const nexxenSegmentBuilder = (beacons: NexxenSegmentBuilderInput) => {
       const { cid, bprice } = input;
 
       if (!cid || !bprice || !transactionBeaconId) {
-        console.warn("Missing required data for s2.tr");
+        logger.warn("Missing required data for s2.tr");
         return;
       }
 

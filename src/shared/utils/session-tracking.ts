@@ -25,14 +25,14 @@ const waitForHighlight = (): Promise<any> => {
       attempts++;
 
       if (isHighlightLoaded()) {
-        console.info("Highlight.run library loaded successfully");
+        logger.info("Highlight.run library loaded successfully");
         resolve((window as any).H);
         return;
       }
 
       if (attempts >= MAX_RETRY_ATTEMPTS) {
         const errorMsg = "Highlight.run failed to initialize after maximum retry attempts";
-        console.error(errorMsg);
+        logger.error(errorMsg);
         reject(new Error(errorMsg));
         return;
       }
@@ -52,7 +52,7 @@ const loadHighlightScript = (): Promise<void> => {
     // Check if script already exists
     const existingScript = document.querySelector(`script[src="${SCRIPT_URL}"]`);
     if (existingScript) {
-      console.info("Highlight.run script already in DOM");
+      logger.info("Highlight.run script already in DOM");
       resolve();
       return;
     }
@@ -62,26 +62,26 @@ const loadHighlightScript = (): Promise<void> => {
     script.src = SCRIPT_URL;
 
     const timeout = setTimeout(() => {
-      console.error("Script loading timeout");
+      logger.error("Script loading timeout");
       reject(new Error("Script loading timeout after 10 seconds"));
     }, 10000);
 
     script.onload = () => {
       clearTimeout(timeout);
-      console.info("Highlight.run script element loaded");
+      logger.info("Highlight.run script element loaded");
       resolve();
     };
 
     script.onerror = (event) => {
       clearTimeout(timeout);
-      console.error("Failed to load Highlight.run script", event);
+      logger.error("Failed to load Highlight.run script", event);
       reject(new Error(`Failed to load script from ${SCRIPT_URL}`));
     };
 
     // Ensure document.head exists
     if (!document.head) {
       const errorMsg = "document.head is not available";
-      console.error(errorMsg);
+      logger.error(errorMsg);
       reject(new Error(errorMsg));
       return;
     }
@@ -89,7 +89,7 @@ const loadHighlightScript = (): Promise<void> => {
     try {
       document.head.appendChild(script);
     } catch (error) {
-      console.error("Error appending script to head", error);
+      logger.error("Error appending script to head", error);
       reject(error);
     }
   });
@@ -100,17 +100,17 @@ const loadHighlightScript = (): Promise<void> => {
  */
 export const initializeSessionTracking = async (context: QueryStringContext): Promise<void> => {
   try {
-    console.info("Starting session tracking initialization", context);
+    logger.info("Starting session tracking initialization", context);
 
     // Check if already initialized
     if (isHighlightLoaded()) {
-      console.info("Highlight.run already loaded, initializing with context");
+      logger.info("Highlight.run already loaded, initializing with context");
       const H = (window as any).H;
 
       // Check if already initialized by looking for identify method
       if (typeof H.identify === "function") {
         H.identify(context.appId, context);
-        console.info("Updated existing Highlight session with new context");
+        logger.info("Updated existing Highlight session with new context");
         return;
       }
     }
@@ -136,12 +136,12 @@ export const initializeSessionTracking = async (context: QueryStringContext): Pr
       // Identify the user/session
       H.identify(context.appId, context);
 
-      console.info("Session tracking initialized successfully");
+      logger.info("Session tracking initialized successfully");
     } catch (initError) {
-      console.error("Error during H.init or H.identify", initError);
+      logger.error("Error during H.init or H.identify", initError);
       throw initError;
     }
   } catch (error) {
-    console.error("Failed to initialize session tracking", error);
+    logger.error("Failed to initialize session tracking", error);
   }
 };

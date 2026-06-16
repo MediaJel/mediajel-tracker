@@ -1,3 +1,5 @@
+import logger from "src/shared/logger";
+
 /**
  * ! Be very careful when using the fetch data source.
  * ! As poorly implementing it can cause a lot of issues on
@@ -24,7 +26,7 @@ export const fetchSource = (
         return response;
       })
       .catch((error: Error) => {
-        console.error("Fetch error:", error);
+        logger.error("Fetch error:", error);
         throw error;
       });
   };

@@ -1,3 +1,4 @@
+import logger from "src/shared/logger";
 import observable from "src/shared/utils/create-events-observable";
 import { SnowplowTracker } from "src/shared/snowplow/types";
 import { datalayerSource } from "../sources/google-datalayer-source";
@@ -10,7 +11,7 @@ const FlowhubDataSource = (snowplow: SnowplowTracker) => {
     handler.add("Google Data Layer Source #1", () => {
         datalayerSource((data: any) => {
             if (data.event === "purchase") {
-                console.log("Purchase Event: ", data);
+                logger.debug("Purchase Event: ", data);
                 try {
                     const transaction = data && data.ecommerce;
                     const products = transaction.items;
@@ -42,7 +43,7 @@ const FlowhubDataSource = (snowplow: SnowplowTracker) => {
                         },
                     });
                 } catch (error) {
-                    console.log("Log Warn Purchase Event: ", error);
+                    logger.debug("Log Warn Purchase Event: ", error);
                 }
             }
         });

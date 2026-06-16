@@ -171,6 +171,12 @@ export type enableTagParam = {
   enable: "true" | "false";
 };
 
+// Controls whether the tracker emits any console output. Opt-out: logging is on
+// unless `logs=false` is set. See src/shared/logger.ts.
+export type LoggingParam = {
+  logs: "true" | "false";
+};
+
 export type SegmentParams = LiquidmSegmentParams & NexxenSegmentParams & DstillerySegmentParams;
 
 export type DatasourceTrackerParam = {
@@ -187,6 +193,7 @@ export type QueryStringParams = Partial<TransactionParams> &
   SnowplowParams &
   SegmentParams &
   enableTagParam &
+  Partial<LoggingParam> &
   DatasourceTrackerParam & { sdkUrl: string };
 
 // Params available to the tag's query string

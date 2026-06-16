@@ -1,3 +1,4 @@
+import logger from "src/shared/logger";
 import observable from "src/shared/utils/create-events-observable";
 
 import { TransactionCartItem } from "../types";
@@ -5,9 +6,9 @@ import { TransactionCartItem } from "../types";
 const wixTrackerDataSource = () => {
   function registerListeners() {
     window.wixDevelopersAnalytics.register("conversionListener", (e, p) => {
-      console.log("Event: ", e);
+      logger.debug("Event: ", e);
       if (e === "AddToCart") {
-        console.log("AddToCart: ", p);
+        logger.debug("AddToCart: ", p);
         observable.notify({
           addToCartEvent: {
             sku: (p.sku || "N/A").toString(),
@@ -21,7 +22,7 @@ const wixTrackerDataSource = () => {
       }
 
       if (e === "RemoveFromCart") {
-        console.log("RemoveFromCart: ", p);
+        logger.debug("RemoveFromCart: ", p);
         observable.notify({
           removeFromCartEvent: {
             sku: (p.sku || "N/A").toString(),
@@ -35,7 +36,7 @@ const wixTrackerDataSource = () => {
       }
 
       if (e === "Purchase") {
-        console.log("Purchase: ", p);
+        logger.debug("Purchase: ", p);
         observable.notify({
           transactionEvent: {
             id: (p.orderId || "N/A").toString(),

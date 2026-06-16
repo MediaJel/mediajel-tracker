@@ -1,5 +1,7 @@
+import logger from "src/shared/logger";
+
 const thirdpartyTracker = () => {
-    console.log('thirdpartyTracker');
+    logger.debug('thirdpartyTracker');
 }
 
 export default thirdpartyTracker;
