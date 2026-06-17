@@ -1,3 +1,5 @@
+import { guard } from "src/shared/utils/guard";
+
 /*
  *   Waits for elements to be loaded in the DOM.
  *   It repeatedly checks if all the elements exist in the DOM.
@@ -22,7 +24,7 @@ export const pollForElement = (
 
     if (isAllLoaded) {
       clearInterval(poller);
-      callback();
+      guard(callback, "poll-for-element")();
     } else if (Date.now() - startTime >= timeout) {
       clearInterval(poller);
       //console.error(`Timeout reached: elements with selectors "${selectors.join(", ")}" not found.`);

@@ -1,9 +1,11 @@
+import { guard } from "src/shared/utils/guard";
+
 export const xhrRequestSource = (callback: (xhrRequest: Document | XMLHttpRequestBodyInit) => void): void => {
   const send = XMLHttpRequest.prototype.send;
   XMLHttpRequest.prototype.send = function (data?: Document | XMLHttpRequestBodyInit | null) {
-    this.addEventListener("readystatechange", function () {
+    this.addEventListener("readystatechange", guard(function () {
       if (data != null) callback(data); // Request Payload data
-    });
+    }, "xhr-request"));
     send.apply(this, arguments);
   };
 };

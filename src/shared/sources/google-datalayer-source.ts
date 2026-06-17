@@ -1,4 +1,5 @@
 import logger from "src/shared/logger";
+import { guard } from "src/shared/utils/guard";
 
 export const datalayerSource = (callback: (data: any) => void, dataLayer: any = window.dataLayer || []): void => {
   // dataLayer is optional second param to handle dispense cart;
@@ -7,13 +8,15 @@ export const datalayerSource = (callback: (data: any) => void, dataLayer: any = 
     return;
   }
 
+  const safeCallback = guard(callback, "datalayer");
+
   dataLayer.forEach((data) => {
-    callback(data);
+    safeCallback(data);
   });
 
   const originalPush = dataLayer.push.bind(dataLayer);;
   dataLayer.push = (...args: any): void => {
     originalPush(...args);
-    callback(dataLayer.slice(-1)[0]); // Gets the newest array member of dataLayer
+    safeCallback(dataLayer.slice(-1)[0]); // Gets the newest array member of dataLayer
   };
 };

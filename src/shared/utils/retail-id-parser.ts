@@ -1,6 +1,7 @@
 import logger from "src/shared/logger";
 import { pollForElement } from "../sources/utils/poll-for-element";
 import { retailIdentifier } from "../types";
+import { guard } from "src/shared/utils/guard";
 /**
  * Dynamically parses a retail ID on the site url by polling for specific elements present on the checkout page.
  * @param {retailIdentifier} retail - The retail identifier object containing the elements to poll.
@@ -53,7 +54,7 @@ export const createRetailId = (retail: retailIdentifier) => {
   parseRetailId();
 
   const checkUrlChange = () => {
-    window.navigation?.addEventListener("navigate", () => {
+    window.navigation?.addEventListener("navigate", guard(() => {
       let previousUrl = sessionStorage.getItem("previousUrl");
       const currentUrl = window.location.href;
       sessionStorage.setItem("currentUrl", currentUrl);
@@ -62,8 +63,8 @@ export const createRetailId = (retail: retailIdentifier) => {
         sessionStorage.setItem("previousUrl", currentUrl);
         parseRetailId();
       }
-    });
+    }, "retail-navigate"));
   };
 
-  setInterval(checkUrlChange, 1000);
+  setInterval(guard(checkUrlChange, "retail-poll"), 1000);
 };

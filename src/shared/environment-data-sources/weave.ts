@@ -2,10 +2,11 @@ import logger from "src/shared/logger";
 import observable from "src/shared/utils/create-events-observable";
 
 import { EnvironmentEvents, TransactionCartItem } from "../types";
+import { guard } from "src/shared/utils/guard";
 
 const weaveDataSource = () => {
   try {
-    document.addEventListener("weave-analytics-event", (event: any) => {
+    document.addEventListener("weave-analytics-event", guard((event: any) => {
       const data = event.detail.event;
       if (event.detail.event_name === "order_submit") {
         const products = data.items;
@@ -35,7 +36,7 @@ const weaveDataSource = () => {
           },
         });
       }
-    });
+    }, "weave"));
   } catch {}
 };
 

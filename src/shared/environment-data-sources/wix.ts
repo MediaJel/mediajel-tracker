@@ -2,10 +2,11 @@ import logger from "src/shared/logger";
 import observable from "src/shared/utils/create-events-observable";
 
 import { TransactionCartItem } from "../types";
+import { guard } from "src/shared/utils/guard";
 
 const wixTrackerDataSource = () => {
   function registerListeners() {
-    window.wixDevelopersAnalytics?.register("conversionListener", (e, p) => {
+    window.wixDevelopersAnalytics?.register("conversionListener", guard((e, p) => {
       logger.debug("Event: ", e);
       if (e === "AddToCart") {
         logger.debug("AddToCart: ", p);
@@ -62,7 +63,7 @@ const wixTrackerDataSource = () => {
           },
         });
       }
-    });
+    }, "wix"));
   }
 
   window.wixDevelopersAnalytics ? registerListeners() : window.addEventListener('wixDevelopersAnalyticsReady', registerListeners);

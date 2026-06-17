@@ -1,4 +1,5 @@
 import logger from "src/shared/logger";
+import { guard } from "src/shared/utils/guard";
 
 /**
  * ! Be very careful when using the fetch data source.
@@ -16,13 +17,13 @@ export const fetchSource = (
   const originalFetch = window.fetch;
 
   window.fetch = function (...args: [RequestInfo, RequestInit?]): Promise<Response> {
-    requestCallback(...args);
+    guard(requestCallback, "fetch-request")(...args);
 
     return originalFetch(...args)
       .then(async (response: Response) => {
         const clonedResponse = response.clone();
         const responseBody = await parseResponse(clonedResponse);
-        responseCallback(response, responseBody);
+        guard(responseCallback, "fetch-response")(response, responseBody);
         return response;
       })
       .catch((error: Error) => {
