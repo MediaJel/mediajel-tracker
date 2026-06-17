@@ -11,7 +11,7 @@ export interface SnowplowTracker {
   initialize: (input: SnowplowTrackerInitializeInput) => void;
   /** Mainly used for book-keeping purposes so we can document params & the tag itself */
   record: (input: QueryStringContext) => void;
-  ecommerce: SnowplowTrackerEcommerceEvents;
+  ecommerce?: SnowplowTrackerEcommerceEvents;
   impressions?: SnowplowTrackerImpressionEvents;
   /** Used for tracking a signup when rendering the tag, acts like an image tag */
   trackSignup: (input: Partial<SignupParams>) => void;

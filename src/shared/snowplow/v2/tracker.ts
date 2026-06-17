@@ -13,8 +13,8 @@ const createSnowplowV2Tracker = async (input: CreateSnowplowTrackerInput): Promi
     context: input,
     initialize,
     // Load ecommerce handler only if the event is a transaction or if no event is specified
-    ecommerce: (input.event === "transaction" || !input.event) && (await loadEcommerceHandler()),
-    impressions: input.event === "impression" && (await loadImpressionHandler()),
+    ecommerce: (input.event === "transaction" || !input.event) ? (await loadEcommerceHandler()) : undefined,
+    impressions: input.event === "impression" ? (await loadImpressionHandler()) : undefined,
     trackSignup(input) {
       const {
         uuid,

@@ -5,7 +5,7 @@ import { TransactionCartItem } from "../types";
 
 const wixTrackerDataSource = () => {
   function registerListeners() {
-    window.wixDevelopersAnalytics.register("conversionListener", (e, p) => {
+    window.wixDevelopersAnalytics?.register("conversionListener", (e, p) => {
       logger.debug("Event: ", e);
       if (e === "AddToCart") {
         logger.debug("AddToCart: ", p);

@@ -20,7 +20,7 @@ const setupExtension = (context: QueryStringContext): void => {
   window.dataLayer = window.dataLayer || [];
 
   function gtag() {
-    window.dataLayer.push(arguments);
+    (window.dataLayer = window.dataLayer || []).push(arguments);
   }
 
   window.gtag = gtag;
@@ -51,11 +51,13 @@ const withSnowplowGoogleAdsExtension = (snowplow: SnowplowTracker) => {
 
   setupExtension(snowplow.context);
 
+  if (!snowplow.ecommerce) return snowplow;
+
   // Original trackTransaction method
   const trackTransaction = snowplow.ecommerce.trackTransaction;
 
   //* Override the trackTransaction method
-  snowplow.ecommerce.trackTransaction = (input) => {
+  snowplow.ecommerce!.trackTransaction = (input) => {
     trackTransaction(input);
 
     logger.info(`🚀🚀🚀 Google Ads Extension Transaction Event`, {
@@ -65,7 +67,7 @@ const withSnowplowGoogleAdsExtension = (snowplow: SnowplowTracker) => {
       transaction_id: input.id,
     });
 
-    window.gtag("event", "conversion", {
+    window.gtag?.("event", "conversion", {
       send_to: `${conversionId}/${conversionLabel}`,
       value: input.total,
       currency: input.currency,

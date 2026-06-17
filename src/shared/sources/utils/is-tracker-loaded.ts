@@ -1,10 +1,10 @@
 export const isTrackerLoaded = (callback: () => void): void => {
-  if (window.tracker) {
+  if (typeof window.tracker === "function") {
     callback();
   } else {
     let trackerLoaded = false;
     const intervalId = setInterval(() => {
-      if (window.tracker && !trackerLoaded) {
+      if (typeof window.tracker === "function" && !trackerLoaded) {
         trackerLoaded = true;
         clearInterval(intervalId);
         callback();

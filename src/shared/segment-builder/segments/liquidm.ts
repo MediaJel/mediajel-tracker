@@ -16,7 +16,7 @@ const liquidmSegmentBuilder = (segmentId: string) => {
           "&cb=" +
           new Date().getTime();
         var b = document.getElementsByTagName("script")[0];
-        b.parentNode.insertBefore(a, b);
+        b.parentNode?.insertBefore(a, b);
       })();
     },
   };

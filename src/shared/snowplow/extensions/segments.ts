@@ -41,11 +41,13 @@ const setupExtension = (context: QueryStringContext): ReturnType<typeof createSe
 const withSnowplowSegmentsExtension = (snowplow: SnowplowTracker) => {
   const segments = setupExtension(snowplow.context);
 
+  if (!snowplow.ecommerce) return snowplow;
+
   // Original trackTransaction method
   const trackTransaction = snowplow.ecommerce.trackTransaction;
 
   //* Override the trackTransaction method
-  snowplow.ecommerce.trackTransaction = (input) => {
+  snowplow.ecommerce!.trackTransaction = (input) => {
     trackTransaction(input);
 
     segments.nexxen.emitPurchase({

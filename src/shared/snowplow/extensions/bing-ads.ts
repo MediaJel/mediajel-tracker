@@ -19,11 +19,13 @@ const setupExtension = (context: QueryStringContext): void => {
 const withSnowplowBingAdsExtension = (snowplow: SnowplowTracker) => {
   setupExtension(snowplow.context);
 
+  if (!snowplow.ecommerce) return snowplow;
+
   // Original trackTransaction method
   const trackTransaction = snowplow.ecommerce.trackTransaction;
 
   //* Override the trackTransaction method
-  snowplow.ecommerce.trackTransaction = (input) => {
+  snowplow.ecommerce!.trackTransaction = (input) => {
     trackTransaction(input);
 
     logger.info(`🚀🚀🚀 Bing Ads Extension Transaction Event`, {
@@ -40,7 +42,7 @@ const withSnowplowBingAdsExtension = (snowplow: SnowplowTracker) => {
       })),
     });
 
-    window.uetq.push("event", "purchase", {
+    window.uetq?.push("event", "purchase", {
       transaction_id: input.id,
       ecomm_prodid: input.items.map((item) => item.sku),
       ecomm_pagetype: "purchase",

@@ -4,6 +4,7 @@ import observable from "src/shared/utils/create-events-observable";
 import { pollForElement } from "../sources/utils/poll-for-element";
 import { TransactionCartItem } from "../types";
 import { tryParseJSONObject } from "../utils/try-parse-json";
+import { queryText } from "src/shared/utils/safe-dom";
 
 // TODO: Maybe remove the success = true; and the if (!success) block
 const ecwidTracker = () => {
@@ -64,15 +65,10 @@ const ecwidTracker = () => {
             window.location.href.includes("/orderConfirmation") ||
             window.location.href.includes("/order-confirmation")
           ) {
-            const idElement = document.querySelector(".ec-confirmation__number.ec-header-h5");
-            const totalElement = document.querySelector(".ec-confirmation__order-confirmation-total");
-            const nameElement = document.querySelector(".ec-cart-item__title");
-            const quantityElement = document.querySelector(".ec-cart-item__count-inner");
-
-            var id = idElement.textContent;
-            var total = totalElement.textContent.replace("$", "");
-            var name = nameElement.textContent;
-            var quantity = quantityElement.textContent.replace("× ", "");
+            var id = queryText(".ec-confirmation__number.ec-header-h5");
+            var total = queryText(".ec-confirmation__order-confirmation-total").replace("$", "");
+            var name = queryText(".ec-cart-item__title");
+            var quantity = queryText(".ec-cart-item__count-inner").replace("× ", "");
 
             const products: TransactionCartItem[] = [
               {

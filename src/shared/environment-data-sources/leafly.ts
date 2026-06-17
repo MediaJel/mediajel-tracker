@@ -2,13 +2,14 @@ import logger from "src/shared/logger";
 import observable from "src/shared/utils/create-events-observable";
 
 import { pollForElement } from "../sources/utils/poll-for-element";
+import { queryText } from "src/shared/utils/safe-dom";
 
 const leaflyDataSource = () => {
   //TODO: Research on identifying per advertiser on leafly
   try {
     const isTrackerLoaded = (callback) => {
       const intervalId = setInterval(() => {
-        if (window.tracker) {
+        if (typeof window.tracker === "function") {
           callback();
           clearInterval(intervalId);
         }
@@ -19,11 +20,8 @@ const leaflyDataSource = () => {
 
     pollForElement(elements, () => {
       if (window.location.href.includes("/order-status")) {
-        const idElement = document.querySelector("div.jsx-1636262898.content.open p.font-bold.mt-md");
-        const totalElement = document.querySelector(".price .font-bold.text-md");
-
-        var id = idElement.textContent.match(/#(\d+)/)[1];
-        var total = totalElement.textContent.replace("$", "");
+        var id = queryText("div.jsx-1636262898.content.open p.font-bold.mt-md").match(/#(\d+)/)?.[1] ?? "N/A";
+        var total = queryText(".price .font-bold.text-md").replace("$", "");
 
         isTrackerLoaded(() => {
           observable.notify({

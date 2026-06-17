@@ -33,12 +33,13 @@ const processTags = (tags: Array<{ tag: string; type: string }>, placeholders: R
 };
 
 const withRegisterThirdPartyTagsExtension = (snowplow: SnowplowTracker) => {
+  if (!snowplow.ecommerce) return snowplow;
   const { trackTransaction, trackAddToCart, trackRemoveFromCart } = snowplow.ecommerce;
   const { trackSignup } = snowplow;
 
-  snowplow.ecommerce.trackTransaction = (input) => {
+  snowplow.ecommerce!.trackTransaction = (input) => {
     trackTransaction(input);
-    processTags(thirdPartyTags.onTransaction, {
+    processTags(thirdPartyTags.onTransaction ?? [], {
       "{transaction_id}": input?.id?.toString() || "null",
       "{transaction_total}": input?.total?.toString() || "0",
       "{transaction_tax}": input?.tax?.toString() || "0",
@@ -51,9 +52,9 @@ const withRegisterThirdPartyTagsExtension = (snowplow: SnowplowTracker) => {
     });
   };
 
-  snowplow.ecommerce.trackAddToCart = (input) => {
+  snowplow.ecommerce!.trackAddToCart = (input) => {
     trackAddToCart(input);
-    processTags(thirdPartyTags.onAddToCart, {
+    processTags(thirdPartyTags.onAddToCart ?? [], {
       "{cart_id}": input?.sku || "null",
       "{cart_name}": input?.name || "null",
       "{cart_category}": input?.category || "null",
@@ -64,9 +65,9 @@ const withRegisterThirdPartyTagsExtension = (snowplow: SnowplowTracker) => {
     });
   };
 
-  snowplow.ecommerce.trackRemoveFromCart = (input) => {
+  snowplow.ecommerce!.trackRemoveFromCart = (input) => {
     trackRemoveFromCart(input);
-    processTags(thirdPartyTags.onRemoveFromCart, {
+    processTags(thirdPartyTags.onRemoveFromCart ?? [], {
       "{cart_id}": input?.sku || "null",
       "{cart_name}": input?.name || "null",
       "{cart_category}": input?.category || "null",
@@ -79,7 +80,7 @@ const withRegisterThirdPartyTagsExtension = (snowplow: SnowplowTracker) => {
 
   snowplow.trackSignup = (input) => {
     trackSignup(input);
-    processTags(thirdPartyTags.onSignup, {
+    processTags(thirdPartyTags.onSignup ?? [], {
       "{signup_firstName}": input?.firstName || "null",
       "{signup_lastName}": input?.lastName || "null",
       "{signup_uuid}": input?.uuid || "null",

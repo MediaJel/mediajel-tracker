@@ -24,6 +24,7 @@ function tryParseJSONObject(jsonString: string): TryParseJSONObjectResult {
 
 const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
   const logger = createLogger("MJ:Deduplication");
+  if (!snowplow.ecommerce) return snowplow;
   const {
     trackTransaction: originalTrackTransaction,
     trackAddToCart: originalTrackAddToCart,
@@ -64,13 +65,13 @@ const withDeduplicationExtension = (snowplow: SnowplowTracker) => {
     localStorage.setItem(storageKey, JSON.stringify([...existingIds, eventId]));
   };
 
-  snowplow.ecommerce.trackTransaction = (input) =>
+  snowplow.ecommerce!.trackTransaction = (input) =>
     deduplicateEvent(originalTrackTransaction, "transaction", input, ["id"]);
 
-  snowplow.ecommerce.trackAddToCart = (input) =>
+  snowplow.ecommerce!.trackAddToCart = (input) =>
     deduplicateEvent(originalTrackAddToCart, "addToCart", input, ["name", "quantity"]);
 
-  snowplow.ecommerce.trackRemoveFromCart = (input) =>
+  snowplow.ecommerce!.trackRemoveFromCart = (input) =>
     deduplicateEvent(originalTrackRemoveFromCart, "removeFromCart", input, ["name", "quantity"]);
 
   snowplow.trackSignup = (input) => deduplicateEvent(originalTrackSignup, "signUp", input, ["uuid", "emailAddress"]);

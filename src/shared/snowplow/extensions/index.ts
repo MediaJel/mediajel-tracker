@@ -7,8 +7,12 @@ export {default as withDeduplicationExtension} from './deduplicator';
 
 export const applyExtensions = (
   tracker: SnowplowTracker,
-  // Either load a function or undefined for dynamic loading
-  extensions: ((tracker: SnowplowTracker) => SnowplowTracker)[] | undefined
+  // Either load a function, false, or undefined for dynamic loading
+  extensions: ((tracker: SnowplowTracker) => SnowplowTracker)[] | (((tracker: SnowplowTracker) => SnowplowTracker) | false | undefined)[] | undefined
 ): SnowplowTracker => {
-  return extensions.reduce((currentTracker, extension) => extension ? extension(currentTracker): currentTracker, tracker);
+  if (!extensions) return tracker;
+  return (extensions as ((tracker: SnowplowTracker) => SnowplowTracker | false | undefined)[]).reduce(
+    (currentTracker, extension) => (extension ? (extension as (tracker: SnowplowTracker) => SnowplowTracker)(currentTracker) : currentTracker),
+    tracker
+  );
 };

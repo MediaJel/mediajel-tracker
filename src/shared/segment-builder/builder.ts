@@ -7,9 +7,9 @@ const createSegments = (input: SegmentBuilderInput) => {
   const { liquidm, nexxen, dstillery } = input;
 
   return {
-    nexxen: nexxenSegmentBuilder(nexxen),
-    liquidm: liquidmSegmentBuilder(liquidm),
-    dstillery: DstillerySegmentBuilderInput(dstillery),
+    nexxen: nexxenSegmentBuilder(nexxen as any),
+    liquidm: liquidmSegmentBuilder(liquidm as any),
+    dstillery: DstillerySegmentBuilderInput(dstillery as any),
   };
 };
 

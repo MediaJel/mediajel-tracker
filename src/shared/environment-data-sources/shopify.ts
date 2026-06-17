@@ -9,8 +9,8 @@ const shopifyDataSource = () => {
     }
   } else {
     try {
-      const transaction = window?.transactionOrder;
-      const products = window?.transactionItems;
+      const transaction: any = window?.transactionOrder;
+      const products: any = window?.transactionItems;
       observable.notify({
         transactionEvent: {
           id: transaction?.order?.id,

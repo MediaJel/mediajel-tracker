@@ -5,7 +5,7 @@ export const initialize = ({ appId, collector, event, sdkUrl }: CreateSnowplowTr
   logger.debug(`SDK URL: ${sdkUrl}`);
   // Loading tracker with the snowplow tag by fetching our sp.js file
   // Creates a global function called "tracker" which we use to access the Snowplow Tracker
-  (function (e, o, n, t, a, c, i) {
+  (function (e, o, n, t, a, c?: any, i?: any) {
     if (!e[a]) {
       e.GlobalSnowplowNamespace = e.GlobalSnowplowNamespace || [];
       e.GlobalSnowplowNamespace.push(a);

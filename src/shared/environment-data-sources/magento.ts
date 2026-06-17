@@ -2,6 +2,7 @@ import logger from "src/shared/logger";
 import observable from "src/shared/utils/create-events-observable";
 
 import { isTrackerLoaded } from "../sources/utils/is-tracker-loaded";
+import { queryEl, queryText } from "src/shared/utils/safe-dom";
 import { runOncePerPageLoad } from "../sources/utils/trans-deduplicator";
 import { xhrResponseSource } from "../sources/xhr-response-source";
 import { EnvironmentEvents, TransactionCartItem } from "../types";
@@ -152,12 +153,13 @@ const magentoDataSource = () => {
     setTimeout(() => {
       try {
         const storedData = sessionStorage.getItem("pixelData");
-        const retrievedObject = JSON.parse(storedData);
+        const retrievedObject = JSON.parse(storedData ?? "null");
         const productsList = retrievedObject && retrievedObject.items;
 
-        const checkoutSuccessElement = document.querySelector(".checkout-success");
-        const orderNumberElement = checkoutSuccessElement.querySelector("span");
-        const orderNumber = orderNumberElement.textContent.trim();
+        const checkoutSuccessElement = queryEl(".checkout-success");
+        // Scope the order-number lookup to the success container; never fall back to a
+        // page-wide <span> search (queryText defaults root to document on undefined).
+        const orderNumber = checkoutSuccessElement ? queryText("span", "", checkoutSuccessElement) : "";
 
         observable.notify({
           transactionEvent: {

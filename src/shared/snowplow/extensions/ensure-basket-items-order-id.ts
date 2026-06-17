@@ -6,9 +6,10 @@ import { SnowplowTracker } from "src/shared/snowplow/types";
  * This is important for Shopify integrations since the orderId for the basket items is the product id and not the order id.
  */
 const withEnsureBasketItemsOrderId = (snowplow: SnowplowTracker) => {
+  if (!snowplow.ecommerce) return snowplow;
   const trackTransaction = snowplow.ecommerce.trackTransaction;
 
-  snowplow.ecommerce.trackTransaction = (input) => {
+  snowplow.ecommerce!.trackTransaction = (input) => {
     trackTransaction({
       id: input.id,
       affiliateId: input.affiliateId,

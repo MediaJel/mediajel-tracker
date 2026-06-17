@@ -7,9 +7,9 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
 
   // We are subscribing to the observable to get the eccomerce events
   observable.subscribe(({ transactionEvent, addToCartEvent, removeFromCartEvent }) => {
-    transactionEvent && tracker.ecommerce.trackTransaction(transactionEvent);
-    addToCartEvent && tracker.ecommerce.trackAddToCart(addToCartEvent);
-    removeFromCartEvent && tracker.ecommerce.trackRemoveFromCart(removeFromCartEvent);
+    transactionEvent && tracker.ecommerce?.trackTransaction(transactionEvent);
+    addToCartEvent && tracker.ecommerce?.trackAddToCart(addToCartEvent);
+    removeFromCartEvent && tracker.ecommerce?.trackRemoveFromCart(removeFromCartEvent);
   });
 
   // We are dynamically loading the data source publisher/notifier based on the environment

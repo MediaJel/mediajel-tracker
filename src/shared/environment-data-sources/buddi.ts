@@ -2,11 +2,12 @@ import observable from "src/shared/utils/create-events-observable";
 
 import { xhrResponseSource } from "../sources/xhr-response-source";
 import { TransactionCartItem } from "../types";
+import { tryParseJSONObject } from "../utils/try-parse-json";
 
 const buddiDataSource = (): void => {
   xhrResponseSource((xhr: XMLHttpRequest): void => {
-    const response = JSON.parse(xhr.responseText);
-    const cartList = [];
+    const response = tryParseJSONObject(xhr.responseText);
+    const cartList: any[] = [];
 
     if (xhr.responseURL.includes("cart") && !xhr.response.includes("delete")) {
       const product = response;

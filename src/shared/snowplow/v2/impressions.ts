@@ -56,7 +56,7 @@ const createSnowplowV2TrackerImpressionEventsHandlers = (): SnowplowTrackerImpre
         },
       };
 
-      const mjcx = [];
+      const mjcx: { schema: string; data: any }[] = [];
 
       const cCx = {
         schema: "iglu:com.mediajel.contexts/client/jsonschema/1-0-0",
@@ -172,7 +172,7 @@ const createSnowplowV2TrackerImpressionEventsHandlers = (): SnowplowTrackerImpre
         },
       };
 
-      const mjcx = [];
+      const mjcx: { schema: string; data: any }[] = [];
 
       const cCx = {
         schema: "iglu:com.mediajel.contexts/client/jsonschema/1-0-0",

@@ -13,13 +13,13 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
   for (const env of environments) {
     switch (env) {
       case "liquidm":
-        tracker.impressions.trackLiquidmImpression({ ...tracker.context });
+        tracker.impressions?.trackLiquidmImpression({ ...tracker.context });
         break;
       case "mantis":
-        tracker.impressions.trackMantisImpression({ ...tracker.context });
+        tracker.impressions?.trackMantisImpression({ ...tracker.context });
         break;
       case "simplifi":
-        tracker.impressions.trackSimplifiImpression({ ...tracker.context });
+        tracker.impressions?.trackSimplifiImpression({ ...tracker.context });
         break;
     }
   }

@@ -3,7 +3,7 @@ import { CreateSnowplowTrackerInput } from "src/shared/snowplow/types";
 
 export const initialize = ({ appId, collector, event, sdkUrl }: CreateSnowplowTrackerInput) => {
   logger.debug(`SDK URL: ${sdkUrl}`);
-  (function (e, o, n, t, a, c, i) {
+  (function (e, o, n, t, a, c?: any, i?: any) {
     if (!e[a]) {
       e.GlobalSnowplowNamespace = e.GlobalSnowplowNamespace || [];
       e.GlobalSnowplowNamespace.push(a);

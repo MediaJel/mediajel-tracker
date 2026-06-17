@@ -7,14 +7,14 @@ const stickyLeafDataSource = () => {
     return;
   }
   try {
-    const { name } = window["$sl"].cartReview.form;
+    const name = window["$sl"]?.cartReview?.form?.name;
     const transactionId = `${name} - ${new Date()}`;
-    const value = document.getElementById("total");
+    const value = document.getElementById("total")?.innerText;
 
     observable.notify({
       transactionEvent: {
         id: transactionId,
-        total: parseFloat(value.innerText.replace(/^\D+/g, "")),
+        total: parseFloat(value?.replace(/^\D+/g, "") ?? ""),
         tax: 0,
         shipping: 0,
         city: "N/A",

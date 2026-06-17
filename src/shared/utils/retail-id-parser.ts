@@ -53,7 +53,7 @@ export const createRetailId = (retail: retailIdentifier) => {
   parseRetailId();
 
   const checkUrlChange = () => {
-    window.navigation.addEventListener("navigate", () => {
+    window.navigation?.addEventListener("navigate", () => {
       let previousUrl = sessionStorage.getItem("previousUrl");
       const currentUrl = window.location.href;
       sessionStorage.setItem("currentUrl", currentUrl);

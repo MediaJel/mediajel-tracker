@@ -29,10 +29,10 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
       (await import("src/shared/snowplow/extensions").then(({ withBingAdsExtension }) => withBingAdsExtension)),
   ]);
 
-  window.trackTrans = tracker.ecommerce.trackTransaction;
+  window.trackTrans = tracker.ecommerce?.trackTransaction ?? (() => {});
   window.trackSignUp = tracker.trackSignup;
-  window.addToCart = tracker.ecommerce.trackAddToCart;
-  window.removeFromCart = tracker.ecommerce.trackRemoveFromCart;
+  window.addToCart = tracker.ecommerce?.trackAddToCart ?? (() => {});
+  window.removeFromCart = tracker.ecommerce?.trackRemoveFromCart ?? (() => {});
 
   switch (context.event) {
     case "transaction":
