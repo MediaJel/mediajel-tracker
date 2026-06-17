@@ -7,10 +7,20 @@ import { datasourceLogger } from "./shared/utils/datasource-logger";
 import { getAppIdTags } from "./shared/utils/get-appId-tags";
 import { initializeSessionTracking } from "./shared/utils/session-tracking";
 import { createRetailId } from "./shared/utils/retail-id-parser";
+import isUsPrivacyOptOut from "./shared/utils/privacy-opt-out";
 
 (async (): Promise<void> => {
   try {
     const context: QueryStringContext = getContext();
+
+    // US privacy opt-out gate — honor GPC / DNT before any tracking or network activity.
+    // (getContext() above only parses the script URL — no network/cookies — so it's safe first.)
+    // Lives in the tag so every embedding site inherits it. Hard no-track: we return before
+    // loading adapters, Snowplow, custom tags, or appId tags — no events, no cookies.
+    if (isUsPrivacyOptOut()) {
+      logger.debug("US privacy opt-out detected (GPC/DNT). Tracker will not initialize.");
+      return;
+    }
 
     await getCustomTags();
     await getAppIdTags(context.appId);

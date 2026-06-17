@@ -4,7 +4,12 @@ import { QueryStringContext, RegisterThirdPartyTagsInput, retailIdentifier } fro
 export {};
 
 declare global {
+  interface Navigator {
+    globalPrivacyControl?: boolean;
+    msDoNotTrack?: string | null;
+  }
   interface Window {
+    doNotTrack?: string | null;
     cnnaSegments: any;
     wixDevelopersAnalytics: any;
     GlobalSnowplowNamespace: any;
