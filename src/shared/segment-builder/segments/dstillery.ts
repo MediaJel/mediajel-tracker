@@ -1,4 +1,3 @@
-import { create } from "cypress/types/lodash";
 import logger from "src/shared/logger";
 import { DstillerySegmentBuilderInput } from "src/shared/segment-builder/types";
 import createImagePixel from "src/shared/utils/create-image-pixel";
@@ -17,7 +16,7 @@ const DstillerySegmentBuilderInput = (input: DstillerySegmentBuilderInput) => {
       logger.info("Building s3 segment with segmentId: ", siteVisitorNC);
 
       const pix = createImagePixel(
-        `https://action.dstillery.com/orbserv/nsjs?adv=cl172365597545365&ns=8779&nc=${siteVisitorNC}&ncv=76`
+        `https://action.dstillery.com/orbserv/nsjs?adv=cl172365597545365&ns=8779&nc=${siteVisitorNC}&ncv=76`,
       );
 
       document.head.appendChild(pix);
@@ -34,7 +33,7 @@ const DstillerySegmentBuilderInput = (input: DstillerySegmentBuilderInput) => {
       logger.info("Emitting dstillery purchase event for segmentId: ", purchaseNC);
 
       const pix = createImagePixel(
-        `https://action.dstillery.com/orbserv/nsjs?adv=cl172365597545365&ns=8779&nc=${purchaseNC}&ncv=76&dstOrderId=${orderId}&dstOrderAmount=${amount}`
+        `https://action.dstillery.com/orbserv/nsjs?adv=cl172365597545365&ns=8779&nc=${purchaseNC}&ncv=76&dstOrderId=${orderId}&dstOrderAmount=${amount}`,
       );
 
       document.head.appendChild(pix);

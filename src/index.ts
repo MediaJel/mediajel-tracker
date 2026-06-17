@@ -1,13 +1,13 @@
-import logger, { isLoggingEnabled, setLoggingEnabled } from "src/shared/logger";
+import logger, { isLoggingEnabled, setLoggingEnabled } from 'src/shared/logger';
 
-import { QueryStringContext } from "./shared/types";
-import getContext from "./shared/utils/get-context";
-import { getCustomTags } from "./shared/utils/get-custom-tags";
-import { datasourceLogger } from "./shared/utils/datasource-logger";
-import { getAppIdTags } from "./shared/utils/get-appId-tags";
-import { initializeSessionTracking } from "./shared/utils/session-tracking";
-import { createRetailId } from "./shared/utils/retail-id-parser";
-import isUsPrivacyOptOut from "./shared/utils/privacy-opt-out";
+import { QueryStringContext } from './shared/types';
+import { datasourceLogger } from './shared/utils/datasource-logger';
+import { getAppIdTags } from './shared/utils/get-appId-tags';
+import getContext from './shared/utils/get-context';
+import { getCustomTags } from './shared/utils/get-custom-tags';
+import isUsPrivacyOptOut from './shared/utils/privacy-opt-out';
+import { createRetailId } from './shared/utils/retail-id-parser';
+import { initializeSessionTracking } from './shared/utils/session-tracking';
 
 (async (): Promise<void> => {
   try {
@@ -85,6 +85,6 @@ import isUsPrivacyOptOut from "./shared/utils/privacy-opt-out";
     await import("src/adapters").then(({ default: load }) => load(modifiedContext));
   } catch (err) {
     const clientError = `An error has occured, please contact your pixel provider: `;
-    console.error(clientError + err.message);
+    console.error(clientError + (err instanceof Error ? err.message : String(err)));
   }
 })();
