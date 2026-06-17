@@ -8,6 +8,7 @@
     ],
     "baseUrl": ".",
     "strictNullChecks": true,
+    "noImplicitAny": false,
     "paths": {
       "src/*": [
         "./src/*"
