@@ -1,8 +1,11 @@
 import logger from "src/shared/logger";
 
-export const tryParseJSONObject = (event: string | object): string | object | any => {
+// `unknown` in: accepts retyped client globals (e.g. window.transactionOrder) and
+// raw strings without a cast. `any` out: parsed client data is unvalidated, so this
+// is the deliberate honest boundary where the shape becomes the caller's concern.
+export const tryParseJSONObject = (event: unknown): any => {
   try {
-    if (typeof event === "object") {
+    if (event && typeof event === "object") {
       return event;
     }
     if (typeof event === "string") {
