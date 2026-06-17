@@ -9,6 +9,8 @@
     "baseUrl": ".",
     "strictNullChecks": true,
     "noImplicitAny": false,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
     "paths": {
       "src/*": [
         "./src/*"

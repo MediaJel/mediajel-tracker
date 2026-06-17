@@ -1,7 +1,7 @@
 import logger from "src/shared/logger";
-import { CreateSnowplowTrackerInput } from "src/shared/snowplow/types";
+import { SnowplowTrackerInitializeInput } from "src/shared/snowplow/types";
 
-export const initialize = ({ appId, collector, event, sdkUrl }: CreateSnowplowTrackerInput) => {
+export const initialize = ({ appId, collector, event, sdkUrl }: SnowplowTrackerInitializeInput) => {
   logger.debug(`SDK URL: ${sdkUrl}`);
   // Loading tracker with the snowplow tag by fetching our sp.js file
   // Creates a global function called "tracker" which we use to access the Snowplow Tracker

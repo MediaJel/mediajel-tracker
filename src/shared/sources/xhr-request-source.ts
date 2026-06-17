@@ -6,7 +6,7 @@ export const xhrRequestSource = (callback: (xhrRequest: Document | XMLHttpReques
     this.addEventListener("readystatechange", guard(function () {
       if (data != null) callback(data); // Request Payload data
     }, "xhr-request"));
-    send.apply(this, arguments);
+    send.call(this, data);
   };
 };
 

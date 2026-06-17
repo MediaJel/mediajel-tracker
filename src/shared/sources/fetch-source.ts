@@ -16,7 +16,7 @@ export const fetchSource = (
 ): void => {
   const originalFetch = window.fetch;
 
-  window.fetch = function (...args: [RequestInfo, RequestInit?]): Promise<Response> {
+  window.fetch = function (...args: [RequestInfo | URL, RequestInit?]): Promise<Response> {
     guard(requestCallback, "fetch-request")(...args);
 
     return originalFetch(...args)

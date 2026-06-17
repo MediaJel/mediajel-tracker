@@ -6,6 +6,7 @@ export interface SnowplowTrackerInitializeInput {
   appId: string;
   collector: string;
   event: string;
+  sdkUrl?: string;
 }
 export interface SnowplowTracker {
   initialize: (input: SnowplowTrackerInitializeInput) => void;
