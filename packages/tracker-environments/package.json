@@ -1,0 +1,26 @@
+{
+  "name": "@mediajel/tracker-environments",
+  "version": "1.0.0",
+  "description": "Per-platform environment data sources (38 integrations) and audience segment builders for the MediaJel tracker.",
+  "private": true,
+  "license": "ISC",
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "alias": {
+    "@mediajel/tracker-core": "../tracker-core/src",
+    "@mediajel/tracker-environments": "./src"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@mediajel/tracker-core": "*"
+  },
+  "devDependencies": {
+    "@mediajel/eslint-config": "*",
+    "@mediajel/tsconfig": "*",
+    "@types/node": "^22.9.0"
+  }
+}

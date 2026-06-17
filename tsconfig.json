@@ -1,26 +1,6 @@
 {
-  "compilerOptions": {
-    "lib": [
-      "es5",
-      "es6",
-      "dom",
-      "ES2018"
-    ],
-    "baseUrl": ".",
-    "strict": true,
-    "noImplicitAny": false,
-    "paths": {
-      "src/*": [
-        "./src/*"
-      ]
-    }
-  },
-  "include": [
-    "src/**/*",
-    "server/**/*"
-  ],
-  "exclude": [
-    "node_modules/*",
-    "src/scripts/**/*"
-  ]
+  "//": "Root config is a thin solution shell — each app/package owns its own tsconfig. Run type-checks via `turbo run check`.",
+  "extends": "./packages/tsconfig/base.json",
+  "files": [],
+  "exclude": ["node_modules", "**/dist"]
 }

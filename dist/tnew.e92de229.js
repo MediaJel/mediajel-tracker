@@ -1,2 +1,0 @@
-var e;(0,(e=("undefined"!=typeof globalThis?globalThis:"undefined"!=typeof self?self:"undefined"!=typeof window?window:"undefined"!=typeof global?global:{}).parcelRequire07df).register)("eyINy",function(n,f){Object.defineProperty(n.exports,"default",{get:function(){return o},set:void 0,enumerable:!0,configurable:!0});var l=e("01Tl8"),o=()=>{(0,l.default)()}});
-//# sourceMappingURL=tnew.e92de229.js.map

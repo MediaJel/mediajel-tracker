@@ -1,0 +1,99 @@
+{
+	"$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+	"description": "Commplete Ad Impression event optimized for image pixels",
+	"self": {
+		"vendor": "com.mediajel.events",
+		"name": "consolidated_ad_impression",
+		"format": "jsonschema",
+		"version": "1-0-2"
+	},
+	"type": "object",
+	"properties": {
+		"advertiserId": {
+			"type": ["string", "null"]
+		},
+		"insertionOrder": {
+			"type": ["string", "null"]
+		},
+		"lineItemId": {
+			"type": ["string", "null"]
+		},
+		"creativeId": {
+			"type": ["string", "null"]
+		},
+		"creativeName": {
+			"type": ["string", "null"]
+		},		
+		"campaignOrderId": {
+			"type": ["string", "null"]
+		},
+		"publisherId": {
+			"type": ["string", "null"]
+		},
+		"publisherName": {
+			"type": ["string", "null"]
+		},
+		"siteId": {
+			"type": ["string", "null"]
+		},
+		"siteName": {
+			"type": ["string", "null"]
+		},
+		"appId": {
+			"type": ["string", "null"]
+		},
+		"appName": {
+			"type": ["string", "null"]
+		},
+		"GAID": {
+			"type": ["string", "null"]
+		},
+		"GAID_MD5": {
+			"type": ["string", "null"]
+		},
+		"GAID_SHA1": {
+			"type": ["string", "null"]
+		},
+		"IDFA": {
+			"type": ["string", "null"]
+		},
+		"IDFA_MD5": {
+			"type": ["string", "null"]
+		},
+		"IDFA_SHA1": {
+			"type": ["string", "null"]
+		},
+		"DSP": {
+			"type": ["string", "null"]
+		},
+		"DSPIDENTIFIER": {
+			"type": ["string", "null"]
+		},
+		"DEVICEID": {
+			"type": ["string", "null"]
+		},
+		"impressionId": {
+			"type": ["string", "null"]
+		},
+		"campaignId": {
+			"type": ["string", "null"]
+		},
+		"targetUrl": {
+			"type": ["string", "null"]	
+		},
+		"sasTimestamp": {
+			"type":  ["string","integer"]	
+		},
+		"costModel": {
+			"enum": ["cpa", "cpc", "cpm"]
+		},
+		"cost": {
+			"type": ["string", "null"]
+		},
+		"n3pc": {
+			"type": ["string", "null"]
+		}
+	},
+	"minProperties": 1,
+	"additionalProperties": true
+}

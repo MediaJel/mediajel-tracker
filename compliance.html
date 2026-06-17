@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MediaJel Tracker — US Privacy Compliance Plan (Results)</title>
+    <style>
+      :root {
+        --bg: #f5f7fa; --card: #fff; --ink: #16202b; --muted: #5b6b7a; --line: #e2e8ee;
+        --accent: #2f6df6; --ok: #1a7f4b; --ok-bg: #e8f6ee; --stop: #c0392b; --stop-bg: #fdeceb;
+        --code-bg: #0f172a; --code-ink: #e6edf3; --cmt: #8aa0b6;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.55;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      main { max-width: 880px; margin: 0 auto; padding: 36px 20px 90px; }
+      header h1 { font-size: 25px; margin: 0 0 6px; }
+      header p.lead { color: var(--muted); margin: 0; font-size: 15px; }
+      .badge { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+        text-transform: uppercase; color: #1f5fd0; background: #e8f0ff; border: 1px solid #c7dbff;
+        padding: 3px 9px; border-radius: 999px; margin-bottom: 14px; }
+      section { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 22px; margin: 18px 0; }
+      h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin: 0 0 14px; }
+      h3 { font-size: 15px; margin: 18px 0 8px; }
+      p { margin: 0 0 10px; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .fact { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+      .fact .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+      .fact .v { font-weight: 600; margin-top: 2px; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+      th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+      code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+      td code { font-size: 12.5px; }
+      pre { background: var(--code-bg); color: var(--code-ink); border-radius: 10px; padding: 16px; overflow-x: auto;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; line-height: 1.5; margin: 10px 0 0; }
+      .cmt { color: var(--cmt); }
+      .file { font-size: 12.5px; color: var(--muted); margin: 16px 0 0; font-family: ui-monospace, monospace; }
+      .file b { color: var(--ink); }
+      .decision { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 10px; font-weight: 600; }
+      .decision.ok { background: var(--ok-bg); color: var(--ok); border: 1px solid #bfe6cf; }
+      .decision.stop { background: var(--stop-bg); color: var(--stop); border: 1px solid #f3c6c1; }
+      .decision .dot { font-size: 20px; }
+      .decision .sub { display: block; font-weight: 400; font-size: 13px; color: var(--muted); margin-top: 2px; }
+      ul { margin: 6px 0 0; padding-left: 20px; } li { margin: 5px 0; }
+      .pill { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+      .pill.in { background: var(--ok-bg); color: var(--ok); }
+      .pill.out { background: #f1f4f7; color: var(--muted); }
+      .kbd { font-family: ui-monospace, monospace; background: #eef2f6; border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; font-size: 12px; }
+      footer { color: var(--muted); font-size: 13px; margin-top: 20px; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="badge">Plan ready &middot; not yet implemented</span>
+        <h1>US Privacy Compliance — automatic opt-out (GPC)</h1>
+        <p class="lead">The MediaJel tag will detect US privacy opt-out signals and refuse to initialize tracking — on every site, with no per-site setup.</p>
+      </header>
+
+      <!-- ===== DECISION ===== -->
+      <section>
+        <h2>What we're building &amp; why</h2>
+        <p>
+          US privacy laws (California's CCPA/CPRA, plus Colorado and Connecticut) recognize a browser-level
+          <strong>opt-out signal</strong> a user can set once. We honor it inside the tag itself, so the protection
+          applies everywhere the tag is embedded — no consent banner, no cookie, no work from the sites we're on.
+        </p>
+        <div class="grid">
+          <div class="fact"><div class="k">Signal honored</div><div class="v">GPC (primary) + legacy DNT</div></div>
+          <div class="fact"><div class="k">Where it runs</div><div class="v">In the tag — <code>src/index.ts</code></div></div>
+          <div class="fact"><div class="k">Meaning of "respect"</div><div class="v">Hard no-track: no events, no cookies</div></div>
+          <div class="fact"><div class="k">Reach</div><div class="v">Every site, automatically</div></div>
+        </div>
+      </section>
+
+      <!-- ===== LIVE READOUT ===== -->
+      <section>
+        <h2>Your browser right now</h2>
+        <div id="decision" class="decision ok"><span class="dot">…</span><span>Reading your privacy signals…</span></div>
+        <table style="margin-top:14px">
+          <thead><tr><th>Signal</th><th>Source</th><th>Your value</th></tr></thead>
+          <tbody id="signals"></tbody>
+        </table>
+        <p style="margin-top:12px; color:var(--muted); font-size:13px">
+          This is just a live illustration of the rule below — this page does not load the tag.
+        </p>
+      </section>
+
+      <!-- ===== SIGNALS ===== -->
+      <section>
+        <h2>Signals honored</h2>
+        <table>
+          <thead><tr><th>Signal</th><th>Property</th><th>Opt-out when</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Global Privacy Control</strong><br /><span style="color:var(--muted);font-size:12.5px">CCPA/CPRA, CO, CT</span></td>
+              <td><code>navigator.globalPrivacyControl</code></td>
+              <td><code>=== true</code></td>
+              <td>Primary US signal</td>
+            </tr>
+            <tr>
+              <td><strong>Do Not Track</strong></td>
+              <td><code>navigator.doNotTrack</code>, <code>navigator.msDoNotTrack</code>, <code>window.doNotTrack</code></td>
+              <td><code>"1"</code> or <code>"yes"</code></td>
+              <td>Legacy fallback</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ===== THE CHANGES ===== -->
+      <section>
+        <h2>The exact tracker changes</h2>
+
+        <p class="file">1. Create &mdash; <b>src/shared/utils/privacy-opt-out.ts</b> (pure signal detection)</p>
+        <pre><span class="cmt">/** Detects US privacy opt-out signals (GPC + legacy DNT) at the browser level. */</span>
+export const isUsPrivacyOptOut = (): boolean =&gt; {
+  const gpcOptOut = navigator.globalPrivacyControl === true;
+
+  const dntRaw = navigator.doNotTrack || navigator.msDoNotTrack || window.doNotTrack;
+  const dntOptOut = dntRaw === "1" || dntRaw === "yes";
+
+  return gpcOptOut || dntOptOut;
+};
+
+export default isUsPrivacyOptOut;</pre>
+
+        <p class="file">2. Modify &mdash; <b>src/shared/interface.ts</b> (global type augmentation)</p>
+        <pre>declare global {
+  interface Navigator {
+    globalPrivacyControl?: boolean;
+    msDoNotTrack?: string | null;
+  }
+  interface Window {
+    doNotTrack?: string | null;
+    <span class="cmt">// ...existing fields unchanged...</span>
+  }
+}</pre>
+
+        <p class="file">3. Modify &mdash; <b>src/index.ts</b> (gate, right after <code>getContext()</code>, before any network call)</p>
+        <pre>const context: QueryStringContext = getContext();
+
+<span class="cmt">// US privacy opt-out gate — honor GPC / DNT before any tracking or network activity.</span>
+<span class="cmt">// Hard no-track: return before adapters, Snowplow, custom tags, or appId tags load.</span>
+if (isUsPrivacyOptOut()) {
+  logger.debug("US privacy opt-out detected (GPC/DNT). Tracker will not initialize.");
+  return;
+}
+
+await getCustomTags();
+await getAppIdTags(context.appId);</pre>
+        <p style="margin-top:14px; color:var(--muted); font-size:13px">
+          This is stronger than Snowplow's <code>respectDoNotTrack</code> (which only gates sending, and only reads DNT, not GPC).
+          Here the tracker never starts, so nothing is sent and no cookies are set.
+        </p>
+      </section>
+
+      <!-- ===== VERIFICATION ===== -->
+      <section>
+        <h2>How it's verified</h2>
+        <h3>Automated (Cypress E2E)</h3>
+        <p style="color:var(--muted); font-size:13.5px">Stub the signal before the tag loads; assert the collector is never hit.</p>
+        <pre>cy.intercept("POST", "**/analytics/track", { statusCode: 200, body: {} }).as("track");
+
+cy.visit("http://localhost:1234/", {
+  onBeforeLoad(win) {
+    Object.defineProperty(win.navigator, "globalPrivacyControl", { value: true, configurable: true });
+  },
+});
+cy.wait(3000);
+cy.get("@track.all").should("have.length", 0);   <span class="cmt">// tag suppressed</span></pre>
+        <p class="file" style="margin-top:14px">Run:</p>
+        <pre>npm run check
+npx start-server-and-test 'npm run bootstrap-test-server' http://localhost:1234 \
+  'npx cypress run --spec cypress/e2e/privacy-opt-out.spec.cy.ts'</pre>
+
+        <h3>Manual (real signal)</h3>
+        <ul>
+          <li><code>npm start</code>, then open the demo in <strong>Brave</strong> (GPC on by default) or <strong>Firefox</strong> (<em>“Tell websites not to sell or share my data”</em>).</li>
+          <li>DevTools → Network, filter <span class="kbd">track</span>: no <span class="kbd">POST …/analytics/track</span>; console logs the opt-out.</li>
+          <li>Turn the signal off, reload: collector requests return.</li>
+        </ul>
+      </section>
+
+      <!-- ===== SCOPE ===== -->
+      <section>
+        <h2>Scope</h2>
+        <table>
+          <tbody>
+            <tr><td><span class="pill in">v1</span></td><td>GPC + legacy DNT, checked in the tag, applied on every site. Hard no-track.</td></tr>
+            <tr><td><span class="pill out">later</span></td><td>Site CMP signals — US Privacy string (<code>__uspapi</code>) and GPP (<code>__gpp</code>) — behind the same gate.</td></tr>
+            <tr><td><span class="pill out">later</span></td><td>Recording/audit of opt-outs (currently silently honored).</td></tr>
+            <tr><td><span class="pill out">later</span></td><td>Per-appId escape hatch (v1 gate is global and unconditional).</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <footer>
+        Full implementation plan: <code>docs/superpowers/plans/2026-06-17-us-privacy-gpc-optout.md</code>
+      </footer>
+    </main>
+
+    <script>
+      (function () {
+        var gpc = navigator.globalPrivacyControl === true;
+        var dntRaw = navigator.doNotTrack || navigator.msDoNotTrack || window.doNotTrack || null;
+        var dnt = dntRaw === "1" || dntRaw === "yes";
+        var optedOut = gpc || dnt;
+
+        var rows = [
+          { name: "Global Privacy Control", src: "navigator.globalPrivacyControl", raw: String(navigator.globalPrivacyControl) },
+          { name: "Do Not Track", src: "navigator.doNotTrack", raw: String(dntRaw) },
+        ];
+        document.getElementById("signals").innerHTML = rows
+          .map(function (r) {
+            return "<tr><td>" + r.name + "</td><td><code>" + r.src + "</code></td><td><code>" + r.raw + "</code></td></tr>";
+          })
+          .join("");
+
+        var el = document.getElementById("decision");
+        if (optedOut) {
+          el.className = "decision stop";
+          el.innerHTML = "<span class='dot'>&#128683;</span><span>You're opted out — the tag would NOT initialize" +
+            "<span class='sub'>No events, no cookies. GPC=" + gpc + ", DNT=" + dnt + "</span></span>";
+        } else {
+          el.className = "decision ok";
+          el.innerHTML = "<span class='dot'>&#9989;</span><span>No US opt-out signal — the tag would initialize normally" +
+            "<span class='sub'>Set GPC (Brave/Firefox) and reload to see it flip.</span></span>";
+        }
+      })();
+    </script>
+  </body>
+</html>

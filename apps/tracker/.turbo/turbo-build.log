@@ -1,0 +1,56 @@
+$ node scripts/run-parcel.mjs build src/index.ts --no-scope-hoist
+/bin/sh: /Users/pacholoamit/Developer/code-workspace/mediajel/mediajel-tracker/node_modules/term-size/vendor/macos/term-size: Bad CPU type in executable
+Building...
+Bundling...
+Packaging & Optimizing...
+✨ Built in 1.58s
+
+dist/index.js                         22.11 KB    411ms
+dist/adapters.5f7cda45.js             18.49 KB    411ms
+dist/tracker.9e738a98.js               3.59 KB    417ms
+dist/ecommerce.bc4102cd.js             1.95 KB    415ms
+dist/impressions.ed370f5f.js           4.33 KB    409ms
+dist/tracker.c5d6daff.js               3.72 KB    411ms
+dist/ecommerce.7b97bd07.js             2.17 KB    417ms
+dist/impressions.8ecb4a99.js           4.36 KB    414ms
+dist/ecommerce.a6d8a12e.js            13.29 KB    410ms
+dist/training.e217415f.js              4.16 KB    411ms
+dist/bigcommerce.4d83d729.js           6.28 KB    417ms
+dist/blaze.baba5621.js                 2.21 KB    414ms
+dist/buddi.f4830d26.js                 3.32 KB    409ms
+dist/dispense.e8aed927.js              5.09 KB    411ms
+dist/drupal.d1a771be.js                3.65 KB    417ms
+dist/dutchie-iframe.60ebbb6b.js        4.35 KB    414ms
+dist/dutchie-subdomain.813a46a4.js     4.04 KB    409ms
+dist/dutchie-plus.fd567e8a.js          4.24 KB    411ms
+dist/dutchie.b1fdc9eb.js                1.5 KB    417ms
+dist/ecwid.63cfadb1.js                 4.25 KB    414ms
+dist/evenue.508371a7.js                3.88 KB    409ms
+dist/foxy.41a727ed.js                  2.95 KB    411ms
+dist/grassdoor.183310fc.js             2.58 KB    417ms
+dist/greenrush.360d4b9b.js             2.04 KB    414ms
+dist/iqmetrix.4070aadf.js              2.09 KB    409ms
+dist/jane.ab10bba1.js                  4.86 KB    411ms
+dist/leafly.72d8f60e.js                2.73 KB    417ms
+dist/lightspeed.f471bf24.js            1.94 KB    414ms
+dist/magento.2fb5ab87.js               6.28 KB    409ms
+dist/meadow.98bbf785.js                3.14 KB    411ms
+dist/olla.cb3de958.js                  2.68 KB    417ms
+dist/shopify.084a5cf0.js               3.39 KB    414ms
+dist/square.c7c2cd8b.js                1.91 KB    409ms
+dist/sticky-leaf.a3074bcf.js           1.81 KB    411ms
+dist/sweed.c623d74e.js                 3.11 KB    417ms
+dist/tymber.cd0d3cc4.js                4.12 KB    414ms
+dist/ticketmaster.f9415fa5.js          3.36 KB    409ms
+dist/ticketure.a712d2be.js             1.32 KB    411ms
+dist/tnew.ee528ede.js                   1.3 KB    417ms
+dist/weave.df9b0388.js                 2.01 KB    414ms
+dist/webjoint.de236d68.js              2.04 KB    409ms
+dist/wefunder.35f1e9d4.js              2.12 KB    411ms
+dist/wix.7304ce98.js                   2.96 KB    417ms
+dist/woocommerce.8b9c5b6a.js           2.73 KB    414ms
+dist/yotpo.f49b2456.js                 2.01 KB    409ms
+dist/flowhub.be8347ab.js               3.37 KB    411ms
+dist/thirdparty.72feec96.js            1.37 KB    417ms
+dist/carrot.0b5d34c2.js                4.11 KB    414ms
+dist/impressions.3df631b7.js           1.69 KB    409ms

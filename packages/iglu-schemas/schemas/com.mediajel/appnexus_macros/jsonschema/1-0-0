@@ -1,0 +1,164 @@
+{
+	"$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+	"description": "Schema app nexus consolidated macros",
+	"self": {
+		"vendor": "com.mediajel",
+		"name": "appnexus_consolidated_macros",
+		"format": "jsonschema",
+		"version": "1-0-0"
+	},
+
+	"type": "object",
+	"properties": {
+		"age": {
+			"type": ["string", "null"]
+		},	
+		"auctionId": {
+			"type": ["string", "null"]
+		},
+		"bidPrice": {
+			"type": ["string", "null"]
+		},
+		"cacheBuster": {
+			"type": ["string", "null"]
+		},
+		"clickUrlEncoded": {
+			"type": ["string", "null"]
+		},	
+		"clickUrl": {
+			"type": ["string", "null"]
+		},
+		"creativeCode": {
+			"type": ["string", "null"]
+		},
+		"creativeId": {
+			"type": ["string", "null"]
+		},
+		"creativeSize": {
+			"type": ["string", "null"]
+		},
+		"dataCenterId": {
+			"type": ["string", "null"]
+		},	
+		"estimatedClearPrice": {
+			"type": ["string", "null"]
+		},
+		"externalAppIdentifier": {
+			"type": ["string", "null"]
+		},
+		"gender": {
+			"type": ["string", "null"]
+		},	
+		"height": {
+			"type": ["string", "null"]
+		},		
+		"pricePaid": {
+			"type": ["string", "null"]
+		},	
+		"publisherCode": {
+			"type": ["string", "null"]
+		},	
+		"publisherID": {
+			"type": ["string", "null"]
+		},	
+		"referrerUrlEncoded": {
+			"type": ["string", "null"]
+		},	
+		"referrerUrl": {
+			"type": ["string", "null"]
+		},
+		"reservePrice": {
+			"type": ["string", "null"]
+		},		
+		"segmentCodes": {
+			"type": ["string", "null"]
+		},	
+		"segmentIds": {
+			"type": ["string", "null"]
+		},	
+		"sellerMemberId": {
+			"type": ["string", "null"]
+		},		
+		"sessionFrequency": {
+			"type": ["string", "null"]
+		},	
+		"siteId": {
+			"type": ["string", "null"]
+		},										
+		"supplyType": {
+			"enum": ["0", "1", "2","3","null"]
+		},
+		"tagCode1": {
+			"type": ["string", "null"]
+		},	
+		"tagCode2": {
+			"type": ["string", "null"]
+		},
+		"tagId": {
+			"type": ["string", "null"]
+		},	
+		"auctionTimeStamp": {
+			"type": ["string", "null"]
+		},	
+		"appnexusUserAgentEncoding": {
+			"type": ["string", "null"]
+		},	
+		"appnexusUserAgent": {
+			"type": ["string", "null"]
+		},	
+		"appnexusUserCity": {
+			"type": ["string", "null"]
+		},	
+		"appnexusUserId": {
+			"type": ["string", "null"]
+		},	
+		"appnexusUserIp": {
+			"type": ["string", "null"]
+		},		
+		"appnexusUserState": {
+			"type": ["string", "null"]
+		},
+		"width": {
+			"type": ["string", "null"]
+		},
+		"carrierId": {
+			"type": ["string", "null"]
+		},	
+		"deviceAaid": {
+			"type": ["string", "null"]
+		},
+		"deviceAppleIda": {
+			"type": ["string", "null"]
+		},
+		"deviceMakeId": {
+			"type": ["string", "null"]
+		},
+		"deviceMd5": {
+			"type": ["string", "null"]
+		},	
+		"deviceModelId": {
+			"type": ["string", "null"]
+		},
+		"deviceOdin": {
+			"type": ["string", "null"]
+		},
+		"deviceOpenUdId": {
+			"type": ["string", "null"]
+		},
+		"deviceSha1": {
+			"type": ["string", "null"]
+		},
+		"deviceWinId": {
+			"type": ["string", "null"]
+		},	
+		"geoLat": {
+			"type": ["string", "null"]
+		},
+		"geoLon": {
+			"type": ["string", "null"]
+		}
+
+										},
+	"minProperties":1,
+	"additionalProperties": false
+}

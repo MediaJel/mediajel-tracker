@@ -1,0 +1,32 @@
+{
+  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "description": "Iglu Schema for recording data from IHeartJane",
+  "self": {
+    "vendor": "com.mediajel.events",
+    "name": "iheartjane",
+    "format": "jsonschema",
+    "version": "1-0-0"
+  },
+  "type": "object",
+  "properties": {
+    "advertiserId": {
+      "type": "string"
+    },
+    "advertiserName": {
+      "type": "string"
+    },
+    "storeId": {
+      "type": "string"
+    },
+    "storeName": {
+      "type": "string"
+    },
+    "locationId": {
+      "type": "string"
+    },
+    "locationName": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

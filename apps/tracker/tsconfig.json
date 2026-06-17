@@ -1,0 +1,13 @@
+{
+  "extends": "@mediajel/tsconfig/base.json",
+  "compilerOptions": {
+    "paths": {
+      "src/*": ["./src/*"],
+      "@mediajel/tracker-core/*": ["../../packages/tracker-core/src/*"],
+      "@mediajel/tracker-environments/*": ["../../packages/tracker-environments/src/*"]
+    }
+  },
+  "//include": "interface.ts carries the shared `declare global { Window }` augmentation from tracker-core; pulled in so window.* call sites type-check.",
+  "include": ["src/**/*", "server/**/*", "../../packages/tracker-core/src/interface.ts"],
+  "exclude": ["node_modules", "dist", "src/scripts/**/*"]
+}
