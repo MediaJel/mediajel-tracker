@@ -7,11 +7,13 @@ export function CodeEditor({
   onChange,
   language,
   readOnly = false,
+  placeholder,
 }: {
   value: string;
   onChange: (v: string) => void;
   language: "html" | "javascript";
   readOnly?: boolean;
+  placeholder?: string;
 }) {
   const { mode } = useTheme();
   return (
@@ -22,6 +24,7 @@ export function CodeEditor({
       theme={mode === "dark" ? "vs-dark" : "light"}
       options={{
         readOnly,
+        placeholder,
         fontSize: 13.5,
         fontFamily: "SF Mono, JetBrains Mono, ui-monospace, Menlo, monospace",
         fontLigatures: true,

@@ -55,6 +55,31 @@ export function MissionText({ text }: { text: string }) {
   );
 }
 
+/** Inline-formatted text (supports `code` and **bold**) for single lines like objectives. */
+export function Inline({ text }: { text: string }) {
+  return <>{renderInline(text, 0)}</>;
+}
+
+/** A lesson's objectives rendered as an unchecked checklist (mirrors the graded checks on Play). */
+export function Objectives({ items }: { items: string[] }) {
+  if (!items?.length) return null;
+  return (
+    <div className="mt-5">
+      <div className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft">
+        Objectives
+      </div>
+      <ul className="space-y-2">
+        {items.map((o, i) => (
+          <li key={i} className="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink-soft">
+            <span className="mt-[3px] h-[15px] w-[15px] shrink-0 rounded-[5px] border-[1.5px] border-ink-faint/50" />
+            <span>{renderInline(o, i)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /* ----------------------------------------------------------------- badges */
 export function DifficultyBadge({ d }: { d: string }) {
   const variant = d === "Basics" ? "good" : d === "Advanced" ? "bad" : "default";

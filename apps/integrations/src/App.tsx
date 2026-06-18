@@ -27,6 +27,7 @@ import {
   EventInspector,
   MicroStatus,
   MissionText,
+  Objectives,
   ReportCard,
   ThemeSwitcher,
   celebrate,
@@ -60,13 +61,21 @@ const ctxFor = (appId: string): SandboxContext => ({
 });
 
 const codeKey = (id: string) => "mj-code-" + id;
+// Every lesson starts from a blank editor — learners write the integration from scratch
+// (the mission + hints guide them; "Reveal solution" is the escape hatch). We persist their
+// in-progress code per lesson, but the initial state is always empty.
 const loadCode = (l: Lesson) => {
   try {
-    return localStorage.getItem(codeKey(l.id)) ?? l.starterCode;
+    return localStorage.getItem(codeKey(l.id)) ?? "";
   } catch {
-    return l.starterCode;
+    return "";
   }
 };
+
+const editorPlaceholder = (l: Lesson) =>
+  l.language === "html"
+    ? "<!-- Write your tag here, then press Play to grade it -->"
+    : "// Write your integration here, then press Play to grade it";
 
 /* --------------------------------------------------------------- header */
 function Header({
@@ -91,7 +100,7 @@ function Header({
   );
   return (
     <header className="sticky top-0 z-40 border-b hairline bg-surface/70 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6">
+      <div className="mx-auto flex max-w-[1680px] items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <button onClick={() => setView({ kind: "home" })} className="flex items-center gap-2.5">
           <span className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-accent to-accent-2 text-white shadow-glow">
             ◆
@@ -332,21 +341,38 @@ function Workspace({
     }
   }, [code, lesson, progress, setProgress]);
 
+  // ⌘/Ctrl+Enter runs the lesson from anywhere in the workspace (incl. inside the editor).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        if (!running) run();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [run, running]);
+
   const passedAll = checks.length > 0 && checks.every((c) => c.pass);
   // numbering drives order (the array isn't in display order), so find the next by number.
   const next = LESSONS.find((l) => l.number === lesson.number + 1);
 
   return (
-    <div className="grid flex-1 gap-5 lg:grid-cols-2">
+    <div className="grid gap-5 lg:h-full lg:grid-cols-2">
       {/* editor */}
-      <div className="card flex min-h-[520px] flex-col overflow-hidden">
+      <div className="card flex min-h-[440px] flex-col overflow-hidden lg:min-h-0">
         <div className="flex items-center gap-2 border-b hairline px-4 py-2.5">
-          <span className="text-xs font-medium text-ink-faint">
+          <span className="flex items-center gap-2 text-xs font-medium text-ink-faint">
+            <span className="flex gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-bad/70" />
+              <span className="h-2.5 w-2.5 rounded-full bg-accent/70" />
+              <span className="h-2.5 w-2.5 rounded-full bg-good/70" />
+            </span>
             {lesson.language === "html" ? "index.html" : "integration.js"}
           </span>
           <div className="ml-auto flex items-center gap-1">
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => onCode(lesson.starterCode)}>
-              Reset
+            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => onCode("")}>
+              Clear
             </Button>
             <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => onCode(lesson.solutionCode)}>
               Reveal solution
@@ -354,10 +380,15 @@ function Workspace({
           </div>
         </div>
         <div className="min-h-0 flex-1">
-          <CodeEditor value={code} onChange={onCode} language={lesson.language} />
+          <CodeEditor
+            value={code}
+            onChange={onCode}
+            language={lesson.language}
+            placeholder={editorPlaceholder(lesson)}
+          />
         </div>
         <div className="flex items-center gap-3 border-t border-border/60 px-4 py-3">
-          <Button onClick={run} disabled={running}>
+          <Button onClick={run} disabled={running} title="Run (⌘/Ctrl + Enter)">
             {running ? (
               <>
                 <Spinner /> Running…
@@ -366,10 +397,14 @@ function Workspace({
               <>▶ Play</>
             )}
           </Button>
-          {passedAll && next && (
+          {passedAll && next ? (
             <Button variant="secondary" onClick={() => goto(next.id)}>
               Next: {next.title} →
             </Button>
+          ) : (
+            <kbd className="hidden rounded-md border border-border/70 bg-muted/50 px-1.5 py-0.5 font-mono text-[10px] text-ink-faint sm:inline-block">
+              ⌘↵
+            </kbd>
           )}
           <span className="ml-auto text-xs text-ink-faint">
             {progress[lesson.id]?.attempts
@@ -380,8 +415,8 @@ function Workspace({
       </div>
 
       {/* mission + results */}
-      <div className="flex min-h-[520px] flex-col gap-5">
-        <div className="card p-6">
+      <div className="flex min-h-[440px] flex-col gap-5 lg:min-h-0 lg:h-full">
+        <div className="card shrink-0 p-6">
           <div className="mb-3 flex items-center gap-3">
             <span className="text-2xl text-accent">{lesson.icon}</span>
             <div>
@@ -393,6 +428,7 @@ function Workspace({
             </div>
           </div>
           <MissionText text={lesson.mission} />
+          <Objectives items={lesson.objectives} />
           {lesson.hints.length > 0 && (
             <Accordion type="single" collapsible className="mt-4 rounded-xl bg-muted/40 px-3">
               <AccordionItem value="hints" className="border-0">
@@ -517,13 +553,18 @@ function FreePlay() {
   };
 
   return (
-    <div className="grid flex-1 gap-5 lg:grid-cols-2">
-      <div className="card flex min-h-[520px] flex-col overflow-hidden">
+    <div className="grid gap-5 lg:h-full lg:grid-cols-2">
+      <div className="card flex min-h-[440px] flex-col overflow-hidden lg:min-h-0">
         <div className="border-b hairline px-4 py-2.5 text-xs font-medium text-ink-faint">
           playground.js
         </div>
         <div className="min-h-0 flex-1">
-          <CodeEditor value={code} onChange={onCode} language="javascript" />
+          <CodeEditor
+            value={code}
+            onChange={onCode}
+            language="javascript"
+            placeholder="// Free play — call window.trackTrans / trackSignUp / addToCart, push to dataLayer…"
+          />
         </div>
         <div className="border-t hairline px-4 py-3">
           <button onClick={run} disabled={running} className="btn-accent disabled:opacity-60">
@@ -537,7 +578,7 @@ function FreePlay() {
           </button>
         </div>
       </div>
-      <div className="card flex min-h-[520px] flex-col p-5">
+      <div className="card flex min-h-[440px] flex-col p-5 lg:min-h-0">
         <div className="mb-2 text-sm font-semibold text-ink">Live event inspector</div>
         <div className="min-h-0 flex-1">
           <EventInspector bundle={bundle} logs={logs} />
@@ -589,28 +630,30 @@ export function App() {
           {view.kind === "home" && <Hero onStart={() => gotoLesson(LESSONS[0].id)} />}
 
           {view.kind === "lesson" && lesson && (
-            <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-              <div className="mb-5">
-                <LessonStepper active={lesson.id} progress={progress} onPick={gotoLesson} />
+            <div className="mx-auto flex max-w-[1680px] flex-col gap-4 px-4 py-4 sm:px-6 lg:h-[calc(100dvh-4rem)] lg:px-8">
+              <LessonStepper active={lesson.id} progress={progress} onPick={gotoLesson} />
+              <div className="min-h-0 lg:flex-1">
+                <Workspace
+                  lesson={lesson}
+                  progress={progress}
+                  setProgress={setProgress}
+                  goto={gotoLesson}
+                />
               </div>
-              <Workspace
-                lesson={lesson}
-                progress={progress}
-                setProgress={setProgress}
-                goto={gotoLesson}
-              />
             </div>
           )}
 
           {view.kind === "freeplay" && (
-            <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-              <div className="mb-4">
+            <div className="mx-auto flex max-w-[1680px] flex-col gap-4 px-4 py-4 sm:px-6 lg:h-[calc(100dvh-4rem)] lg:px-8">
+              <div>
                 <h2 className="text-2xl font-semibold text-ink">Free Play</h2>
                 <p className="text-sm text-ink-soft">
                   An open sandbox — the tag is live and pointed at Micro. Experiment freely.
                 </p>
               </div>
-              <FreePlay />
+              <div className="min-h-0 lg:flex-1">
+                <FreePlay />
+              </div>
             </div>
           )}
 
@@ -621,9 +664,11 @@ export function App() {
           )}
         </motion.main>
 
-      <footer className="mx-auto max-w-7xl px-6 py-10 text-center text-xs text-ink-faint">
-        MediaJel Integrations · graded against Snowplow Micro · schemas via iglu.mediajel.ninja
-      </footer>
+      {(view.kind === "home" || view.kind === "report") && (
+        <footer className="mx-auto max-w-[1680px] px-6 py-10 text-center text-xs text-ink-faint">
+          MediaJel Integrations · graded against Snowplow Micro · schemas via iglu.mediajel.ninja
+        </footer>
+      )}
     </div>
   );
 }

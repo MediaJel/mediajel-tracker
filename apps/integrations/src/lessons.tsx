@@ -134,11 +134,14 @@ export const LESSONS: Lesson[] = [
     icon: "◎",
     appId: APP + "-basics",
     language: "javascript",
-    mission: `Every MediaJel integration speaks **Snowplow**. A page loads the **tag**, the tag sends **events** to a **collector**, and the collector validates each event against a **schema** before it lands in the warehouse.
+    mission: `Every MediaJel integration is a thin layer over **Snowplow**, the open-source event pipeline. The flow never changes: a page loads the **tag**, the tag emits **events**, a **collector** receives them, and each event is validated against an **Iglu schema** before it's enriched and written to the warehouse. An event that doesn't match its schema is quarantined as a *bad* event instead of silently corrupting reporting.
 
-This whole site is wired to a *real* Snowplow **Micro** pipeline running locally — so everything you do here is graded against the same validation production uses.
-
-**Your mission:** fire a **structured event** with the raw Snowplow API. Use \`window.tracker\` with category \`"education"\` and action \`"lesson_complete"\`.`,
+This trainer runs that exact pipeline locally with **Snowplow Micro**, so every Play grades your code against the same validation production uses. We'll start with the simplest payload: a **structured event** — Snowplow's generic \`category\` / \`action\` / \`label\` shape for one-off interactions.`,
+    objectives: [
+      "Call the low-level API the tag exposes on the page as `window.tracker(command, payload)`.",
+      'Fire a `trackStructEvent` with category `"education"` and action `"lesson_complete"`.',
+      "Press Play and watch it appear in the **Events** panel — that's Micro confirming the collector accepted it.",
+    ],
     hints: [
       "The tag exposes the low-level Snowplow API as window.tracker(command, ...args).",
       'Structured events: window.tracker("trackStructEvent", { category, action, label })',
@@ -178,11 +181,14 @@ window.tracker("trackStructEvent", {
     icon: "❡",
     appId: APP + "-tag",
     language: "html",
-    mission: `Installing MediaJel is one line: a **script tag**. It loads from \`tags.cnna.io\` and carries an **\`appId\`** that identifies the advertiser.
+    mission: `Installing MediaJel is one line of markup: a **script tag** loaded from \`tags.cnna.io\`. Its query string carries the configuration — most importantly an **\`appId\`** that maps to one advertiser account. Every event the tag emits is stamped with that \`appId\` (as \`app_id\`), which is how reporting attributes activity back to the right advertiser.
 
-On load, the tag automatically fires a **page view** — the heartbeat of every integration.
-
-**Your mission:** complete the tag so it uses the appId **\`${APP}-tag\`**. (In this sandbox the tag is served locally and pointed at Micro, but the markup is exactly what you'd paste on a real site.)`,
+As soon as it boots, the tag fires a **page view** on its own — no code required. In this sandbox the script is served locally and pointed at Micro, but the markup is byte-for-byte what you'd paste on a client's site.`,
+    objectives: [
+      "Add the `<script>` tag that loads the tracker from `tags.cnna.io`.",
+      "Set the `appId` query parameter to `" + APP + "-tag` (replace the `YOUR_APP_ID` placeholder).",
+      "Confirm the tag boots and emits its automatic `page_view` carrying the correct `app_id`.",
+    ],
     hints: [
       "The query string carries the config: ...cnna.io/?appId=YOUR_APP_ID",
       `Use appId=${APP}-tag`,
@@ -214,9 +220,14 @@ On load, the tag automatically fires a **page view** — the heartbeat of every 
     icon: "₪",
     appId: APP + "-tx",
     language: "javascript",
-    mission: `Revenue is the headline event. After the tag loads it exposes **\`window.trackTrans\`** — call it on your order-confirmation page with the order total and line items.
+    mission: `Purchases are the conversion DSP campaigns optimize toward, so getting them right matters most. On the order-confirmation page the tag exposes **\`window.trackTrans\`**: call it with the order header (id, total, tax, shipping, currency, location) and one entry per product in \`items\`.
 
-**Your mission:** track a purchase with id **\`T-1001\`**, total **\`129.99\`**, currency **USD**, and at least **one item**.`,
+The tracker expands that single call into a Snowplow **\`transaction\`** event for the order plus a **\`transaction_item\`** event for each line, all stitched together by \`orderId\` so revenue and products reconcile downstream.`,
+    objectives: [
+      "Call `window.trackTrans({...})` with order id `T-1001`, total `129.99`, and currency `USD`.",
+      "Include at least one entry in `items` (sku, name, category, unitPrice, quantity, orderId, currency).",
+      "Confirm one `transaction` and at least one `transaction_item` reach the pipeline.",
+    ],
     hints: [
       "window.trackTrans({ id, total, tax, shipping, currency, city, state, country, items: [...] })",
       "Each item: { sku, name, category, unitPrice, quantity, orderId, currency }",
@@ -261,9 +272,14 @@ window.trackTrans({
     icon: "✦",
     appId: APP + "-signup",
     language: "javascript",
-    mission: `Sign-ups are **self-describing events** validated against the \`com.mediajel.events/sign_up\` schema. Call **\`window.trackSignUp\`** when a user registers.
+    mission: `Registrations are a primary conversion for lead-gen advertisers. Unlike a structured event, a sign-up is a **self-describing event**: its payload is governed by the versioned \`com.mediajel.events/sign_up\` schema, so the collector enforces exactly which fields are allowed and required.
 
-**Your mission:** track a sign-up with an **\`emailAddress\`** and a **\`uuid\`**. (Micro validates it against the real schema served from \`iglu.mediajel.ninja\`.)`,
+Call **\`window.trackSignUp\`** when a user registers. Micro validates the result against the real schema served from \`iglu.mediajel.ninja\` — get a field wrong and it lands as a *bad* event instead of a *good* one.`,
+    objectives: [
+      "Call `window.trackSignUp({...})` at the point of registration.",
+      "Provide at least `emailAddress` and `uuid` — the identity fields the schema expects.",
+      "Confirm the event validates against `com.mediajel.events/sign_up` (good, not bad).",
+    ],
     hints: [
       "window.trackSignUp({ uuid, emailAddress, firstName, lastName, state, ... })",
       "emailAddress and uuid are the two that matter for this lesson.",
@@ -302,9 +318,15 @@ window.trackSignUp({
     icon: "◐",
     appId: APP + "-imp",
     language: "javascript",
-    mission: `Impression pixels report when a creative is shown. Under the hood the tag fires a self-describing **\`com.mediajel.events/ad_impression\`** event. Send one directly with the raw API.
+    mission: `When a creative renders in a DSP placement, an impression is fired so delivery and viewability can later be reconciled against conversions. In MediaJel's pipeline that's a self-describing **\`com.mediajel.events/ad_impression\`** event carrying the advertiser, creative, line item and site that served it.
 
-**Your mission:** fire an \`ad_impression\` self-describing event with an **\`advertiserId\`** and a **\`creativeId\`**.`,
+Most of the time a partner integration emits these for you. Here you'll send one by hand with the raw \`trackSelfDescribingEvent\` API so you can see the schema and payload directly.`,
+    objectives: [
+      'Fire `window.tracker("trackSelfDescribingEvent", { event: { schema, data } })`.',
+      "Set `schema` to `iglu:com.mediajel.events/ad_impression/jsonschema/1-0-3`.",
+      "Include `advertiserId` and `creativeId` in `data`.",
+      "Confirm it validates against the `ad_impression` schema.",
+    ],
     hints: [
       'window.tracker("trackSelfDescribingEvent", { schema, data }) — v2 wraps it as { event: { schema, data } }.',
       "schema: iglu:com.mediajel.events/ad_impression/jsonschema/1-0-3",
@@ -351,9 +373,14 @@ window.tracker("trackSelfDescribingEvent", {
     icon: "⧉",
     appId: APP + "-dl",
     language: "javascript",
-    mission: `Most stores already push ecommerce events to Google's **\`window.dataLayer\`** (GA4 format). MediaJel can listen and convert those into transactions **automatically** — no manual \`trackTrans\` needed.
+    mission: `Most storefronts already push GA4 ecommerce events to Google's **\`window.dataLayer\`** for Google Tag Manager. Rather than ask every client to add \`trackTrans\` calls, MediaJel can subscribe to that same dataLayer and translate a GA4 **\`purchase\`** into a Snowplow transaction **automatically**.
 
-**Your mission:** push a GA4 **\`purchase\`** event to \`window.dataLayer\`. The tracker (running in \`environment=training\`) will detect it and forward the transaction.`,
+This is the first of three **auto-capture** sources (dataLayer, network, iframe). You write no tracker call at all — you just produce the signal the site already produces, and the tracker (running in \`environment=training\`) does the mapping.`,
+    objectives: [
+      'Push a GA4 `purchase` object to `window.dataLayer` (an `event` plus an `ecommerce` block with `items`).',
+      "Use transaction_id `DL-5500`, value `84.00`, currency `USD`, and GA4 item keys (item_id, item_name, …).",
+      "Confirm the tracker auto-detects it and forwards a `transaction` with the id and total intact.",
+    ],
     hints: [
       'GA4 shape: dataLayer.push({ event: "purchase", ecommerce: { transaction_id, value, currency, items:[...] } })',
       "items use GA4 keys: item_id, item_name, item_category, price, quantity",
@@ -392,9 +419,14 @@ window.dataLayer.push({ event: "purchase", ecommerce: { transaction_id: "DL-5500
     icon: "⇄",
     appId: APP + "-net",
     language: "javascript",
-    mission: `Some platforms never touch a dataLayer — the order only exists in an **API response**. MediaJel can intercept \`fetch\`/XHR and pull the transaction straight out of the response body.
+    mission: `Some platforms never populate a dataLayer — the order only exists in an **API response** the storefront fetches. For those, MediaJel patches \`fetch\` and \`XMLHttpRequest\` so it can read order-shaped JSON straight out of the response body, no cooperation from the page required.
 
-A mock order endpoint is available at **\`/mock/orders\`** (returns order-shaped JSON). **Your mission:** trigger that request — the tracker will intercept the response and forward the transaction.`,
+A mock checkout endpoint is wired up at **\`/mock/orders\`** and returns one such order. Trigger the request and let the tracker's interceptor recognise and forward it.`,
+    objectives: [
+      "Call `fetch(\"/mock/orders\")` to trigger the order response.",
+      "Let the tracker's fetch interceptor parse the order-shaped JSON body.",
+      "Confirm transaction `NET-7700` is captured from the response.",
+    ],
     hints: [
       "Just fetch it: fetch('/mock/orders')",
       "The tracker's fetch source reads the JSON response and auto-detects the order.",
@@ -426,9 +458,14 @@ A mock order endpoint is available at **\`/mock/orders\`** (returns order-shaped
     icon: "❒",
     appId: APP + "-iframe",
     language: "javascript",
-    mission: `Embedded checkouts (Dutchie, Jane, Meadow…) live in an **iframe** and can't touch the parent page directly. They communicate via **\`postMessage\`**. MediaJel listens for those messages and captures the purchase.
+    mission: `Many dispensaries run their checkout inside an embedded provider — Dutchie, Jane, Meadow — that lives in a cross-origin **iframe**. Browser security stops that iframe from writing to the parent page, so it broadcasts what happened with **\`postMessage\`** instead. MediaJel listens for those messages on the parent window and reconstructs the purchase.
 
-**Your mission:** simulate the checkout iframe by posting a **\`TRAINING_PURCHASE\`** message. The tracker is listening on the window and will capture it.`,
+This is the third auto-capture source. Here you play the role of the checkout iframe and post the message the tracker is waiting for.`,
+    objectives: [
+      'Post a `TRAINING_PURCHASE` message via `window.postMessage(payload, "*")`.',
+      "Include the `order` (id `IF-9900`, total `250.00`, currency, and one item).",
+      "Confirm the tracker captures it as transaction `IF-9900`.",
+    ],
     hints: [
       'window.postMessage({ type: "TRAINING_PURCHASE", order: { id, total, currency, items:[...] } }, "*")',
       "This is exactly what a real checkout iframe posts to its parent.",
@@ -467,9 +504,14 @@ window.postMessage(
     icon: "⊕",
     appId: APP + "-atc",
     language: "javascript",
-    mission: `Cart activity is a strong intent signal. After the tag loads it exposes **\`window.addToCart\`** — call it whenever a shopper adds a product.
+    mission: `Cart actions sit in the middle of the funnel, between a product view and a purchase, and they feed mid-funnel optimization and retargeting. After the tag loads it exposes **\`window.addToCart\`** for you to call whenever a shopper adds a product.
 
-**Your mission:** track an add-to-cart for a product with sku **\`SKU-9\`**, a name, and a price in **USD**.`,
+The tracker turns that call into a Snowplow **\`add_to_cart\`** self-describing event describing the product and quantity.`,
+    objectives: [
+      "Call `window.addToCart({...})` for the product the shopper added.",
+      "Identify it with sku `SKU-9`, plus a `name` and a `unitPrice` in `USD`.",
+      "Confirm an `add_to_cart` event reaches the pipeline.",
+    ],
     hints: ["window.addToCart({ sku, name, category, unitPrice, quantity, currency })"],
     starterCode: `// The tag is loaded. Track an add-to-cart with window.addToCart.
 window.addToCart({
@@ -499,9 +541,14 @@ window.addToCart({
     icon: "⊖",
     appId: APP + "-rfc",
     language: "javascript",
-    mission: `The flip side of add-to-cart: when a shopper **removes** an item, the tag exposes **\`window.removeFromCart\`**. Tracking removals helps measure abandonment.
+    mission: `Removals are the inverse signal, and just as useful: they expose hesitation and help measure cart abandonment against completed orders. The tag exposes **\`window.removeFromCart\`** with the same product shape as add-to-cart.
 
-**Your mission:** track a remove-from-cart for sku **\`SKU-9\`** with a quantity.`,
+Call it when a shopper takes an item back out of their cart; the tracker emits a Snowplow **\`remove_from_cart\`** event.`,
+    objectives: [
+      "Call `window.removeFromCart({...})` for the product the shopper removed.",
+      "Identify it with sku `SKU-9` and a `quantity`.",
+      "Confirm a `remove_from_cart` event reaches the pipeline.",
+    ],
     hints: ["window.removeFromCart({ sku, name, category, unitPrice, quantity, currency })"],
     starterCode: `// Track a remove-from-cart with window.removeFromCart.
 window.removeFromCart({
@@ -530,11 +577,15 @@ window.removeFromCart({
     icon: "⚙",
     appId: APP + "-ext",
     language: "javascript",
-    mission: `MediaJel composes the tracker from **extensions** — functions shaped \`(tracker) => tracker\` that **wrap** tracker methods to intercept signals. \`withDeduplicationExtension\`, for example, wraps \`tracker.ecommerce.trackTransaction\` to drop duplicates. They're combined with \`applyExtensions(tracker, [ext1, ext2, …])\`.
+    mission: `The production tracker isn't monolithic — it's **composed from extensions**, each a function shaped \`(tracker) => tracker\` that wraps tracker methods to add behavior. Deduplication, segment stitching, third-party tag registration and the Google/Bing Ads plugins are all extensions; \`applyExtensions(tracker, [ext1, ext2, …])\` simply threads the tracker through them in order. \`withDeduplicationExtension\`, for instance, wraps \`tracker.ecommerce.trackTransaction\` so a repeated order id is dropped.
 
-In this sandbox you register your own with **\`window.mjApplyExtension(yourExtension)\`** — it runs through the *real* \`applyExtensions\` and rebinds \`window.trackTrans\`.
-
-**Your mission:** write an extension that intercepts every transaction and adds a **$5 "training fee"** to the total, register it, then fire a transaction with total **100** (id **\`EXT-1\`**). The pipeline should receive a total of **105**.`,
+In this sandbox you register your own extension through the *real* \`applyExtensions\` via **\`window.mjApplyExtension(yourExtension)\`**, which then rebinds \`window.trackTrans\` to your wrapped method.`,
+    objectives: [
+      "Write `withTrainingFee(tracker)` that captures and wraps `tracker.ecommerce.trackTransaction`.",
+      "In the wrapper, add `5` to `input.total`, call the original method, and `return tracker`.",
+      "Register it with `window.mjApplyExtension(withTrainingFee)`, then fire a `100` transaction (id `EXT-1`).",
+      "Confirm the pipeline receives a total of `105` — proof your wrapper actually ran.",
+    ],
     hints: [
       "Wrap the method: const orig = tracker.ecommerce.trackTransaction; tracker.ecommerce.trackTransaction = (input) => { input.total += 5; orig(input); }; return tracker;",
       "Register, then track: window.mjApplyExtension(withTrainingFee); window.trackTrans({ ... });",
@@ -581,11 +632,15 @@ window.trackTrans({ id: "EXT-1", total: 100, currency: "USD", tax: 0, shipping: 
     icon: "⌁",
     appId: APP + "-friction",
     language: "javascript",
-    mission: `Some sites need bespoke capture the standard adapters can't do. **Frictionless custom tags** solve this: a one-off script named by the client's domain (e.g. \`a21dispensary.com.ts\`) that you deploy to S3. The tag loads it at runtime for that domain (via \`getCustomTags\`) and it hooks the site's DOM to fire events.
+    mission: `Sometimes a site needs capture that none of the standard adapters cover. The escape hatch is a **frictionless custom tag**: a one-off script named for the client's domain (e.g. \`a21dispensary.com.ts\`), deployed to S3, and loaded at runtime *only for that domain* via \`getCustomTags\`. Because it runs on the page, it can reach into the site's DOM directly — wiring up listeners and firing events the generic adapters never could.
 
-This sandbox renders a simulated client site with a **contact form** (name + email + a Send button).
-
-**Your mission:** write the custom tag — hook the form's submit, read the visitor's name and email, and fire a **sign_up** self-describing event. We auto-submit the form to test it.`,
+This sandbox is a stand-in client site with a **contact form** (name, email, and a Send button). You're writing the per-domain tag that turns a form submission into a tracked sign-up; we auto-submit the form to test it.`,
+    objectives: [
+      "Hook the form's submit by adding a `click` listener to `.submit-btn`.",
+      "Read the visitor's name and email from the form's `[data-name]` fields.",
+      "Fire a `sign_up` self-describing event (schema `…/sign_up/jsonschema/1-0-2`) with that data.",
+      "Confirm the captured sign_up carries the visitor's email and name.",
+    ],
     hints: [
       "Grab the button: document.querySelector('.submit-btn') and add a 'click' listener.",
       "Read fields: document.querySelector('[data-name=\"your-email\"]').value",

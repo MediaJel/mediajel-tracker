@@ -188,8 +188,10 @@ export interface Lesson {
   tagline: string;
   difficulty: Difficulty;
   icon: string;
-  /** Markdown-ish mission text (rendered with a tiny formatter). */
+  /** Markdown-ish mission text (rendered with a tiny formatter): the "why" and "how". */
   mission: string;
+  /** Concrete, gradable objectives shown as a checklist — the "what to accomplish". */
+  objectives: string[];
   hints: string[];
   language: "html" | "javascript";
   starterCode: string;

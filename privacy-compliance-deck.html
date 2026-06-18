@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MediaJel — Privacy &amp; Consent Compliance · CTO Briefing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;450;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --void: #070b14; --ink-1: #0b1322; --ink-2: #0f1a2e; --ink-3: #13203a;
+        --text: #e9eef9; --dim: #a3b3cc; --mute: #6c7d99;
+        --line: rgba(255,255,255,.09); --line-2: rgba(255,255,255,.14);
+        --signal: #5b9dff; --signal-2: #8b5cf6; --signal-soft: rgba(91,157,255,.16);
+        --allow: #34d399; --allow-soft: rgba(52,211,153,.13); --allow-line: rgba(52,211,153,.34);
+        --deny: #fb7185; --deny-soft: rgba(251,113,133,.12); --deny-line: rgba(251,113,133,.34);
+        --amber: #fbbf24;
+        --display: "Space Grotesk", "Inter", system-ui, sans-serif;
+        --body: "Inter", system-ui, -apple-system, sans-serif;
+        --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+        --ease: cubic-bezier(.2,.75,.25,1);
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0; font-family: var(--body); color: var(--text); background: var(--void);
+        height: 100vh; overflow: hidden; display: flex; flex-direction: column;
+        -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+      }
+      ::selection { background: rgba(91,157,255,.3); }
+
+      /* ---------- ambient signal-field backdrop ---------- */
+      .bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+        background:
+          radial-gradient(1200px 700px at 78% -8%, rgba(91,157,255,.12), transparent 60%),
+          radial-gradient(1000px 800px at 12% 108%, rgba(139,92,246,.12), transparent 60%),
+          var(--void);
+      }
+      .bg::before, .bg::after { content: ""; position: absolute; border-radius: 50%; filter: blur(130px); opacity: .55; }
+      .bg::before { width: 46vw; height: 46vw; top: -14vw; right: -10vw;
+        background: radial-gradient(circle, rgba(91,157,255,.55), transparent 70%); animation: drift1 22s var(--ease) infinite alternate; }
+      .bg::after { width: 42vw; height: 42vw; bottom: -16vw; left: -8vw;
+        background: radial-gradient(circle, rgba(139,92,246,.5), transparent 70%); animation: drift2 26s var(--ease) infinite alternate; }
+      .grid { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .5;
+        background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+        background-size: 58px 58px; mask-image: radial-gradient(circle at 50% 42%, #000 30%, transparent 86%); }
+      @keyframes drift1 { to { transform: translate3d(-7vw, 6vh, 0) scale(1.12); } }
+      @keyframes drift2 { to { transform: translate3d(6vw, -5vh, 0) scale(1.15); } }
+
+      /* ---------- top progress ---------- */
+      #progress { position: relative; z-index: 5; height: 2px; flex: 0 0 auto;
+        background: linear-gradient(90deg, var(--signal), var(--signal-2)); width: 0%;
+        box-shadow: 0 0 14px rgba(91,157,255,.7); transition: width .5s var(--ease); }
+
+      /* ---------- chrome ---------- */
+      .topbar { position: relative; z-index: 5; flex: 0 0 auto; display: flex; align-items: center;
+        justify-content: space-between; padding: 16px 34px; }
+      .brand { display: flex; align-items: center; gap: 11px; }
+      .brand .mark { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center;
+        font-family: var(--display); font-weight: 700; font-size: 13px; color: #fff;
+        background: linear-gradient(135deg, var(--signal), var(--signal-2)); box-shadow: 0 6px 20px rgba(91,157,255,.35); }
+      .brand b { font-family: var(--display); font-weight: 600; font-size: 15px; letter-spacing: -.01em; }
+      .brand .div { width: 1px; height: 16px; background: var(--line-2); }
+      .brand .tag { font-size: 12px; color: var(--mute); letter-spacing: .02em; }
+      .vtag { font-family: var(--mono); font-size: 10px; letter-spacing: .04em; color: var(--signal);
+        border: 1px solid rgba(91,157,255,.3); background: rgba(91,157,255,.08); padding: 3px 9px; border-radius: 999px; }
+      .status { display: flex; align-items: center; gap: 14px; font-family: var(--mono); font-size: 11.5px; color: var(--dim); }
+      .status .sec { color: var(--signal); letter-spacing: .12em; text-transform: uppercase; }
+      .status .live { display: inline-flex; align-items: center; gap: 6px; color: var(--allow); }
+      .status .live i { width: 7px; height: 7px; border-radius: 50%; background: var(--allow);
+        box-shadow: 0 0 0 0 rgba(52,211,153,.6); animation: ping 2.4s ease-out infinite; }
+      @keyframes ping { 0%{box-shadow:0 0 0 0 rgba(52,211,153,.55)} 70%,100%{box-shadow:0 0 0 7px rgba(52,211,153,0)} }
+
+      /* ---------- stage / slides ---------- */
+      .stage { position: relative; z-index: 2; flex: 1 1 auto; overflow-y: auto; display: flex; padding: 8px 34px 14px; }
+      .deck { margin: auto; width: 100%; max-width: 1120px; }
+      .slide { display: none; }
+      .slide.active { display: block; animation: fade .45s ease both; }
+      @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+      @media (prefers-reduced-motion: no-preference) {
+        .slide.active .stagger > * { animation: rise .6s var(--ease) both; }
+        .slide.active .stagger > *:nth-child(1){animation-delay:.05s}
+        .slide.active .stagger > *:nth-child(2){animation-delay:.12s}
+        .slide.active .stagger > *:nth-child(3){animation-delay:.19s}
+        .slide.active .stagger > *:nth-child(4){animation-delay:.26s}
+        .slide.active .stagger > *:nth-child(5){animation-delay:.33s}
+        .slide.active .stagger > *:nth-child(6){animation-delay:.40s}
+      }
+
+      /* ---------- typography ---------- */
+      .eyebrow { display: inline-flex; align-items: center; gap: 10px; font-family: var(--mono);
+        font-size: 11.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--signal); margin: 0 0 18px; }
+      .eyebrow::before { content: ""; width: 22px; height: 1px; background: linear-gradient(90deg, var(--signal), transparent); }
+      h1 { font-family: var(--display); font-weight: 600; font-size: clamp(38px, 5.6vw, 72px);
+        line-height: 1.02; letter-spacing: -.03em; margin: 0 0 20px; }
+      h2 { font-family: var(--display); font-weight: 600; font-size: clamp(26px, 3.2vw, 40px);
+        line-height: 1.1; letter-spacing: -.02em; margin: 0 0 8px; }
+      h3 { font-family: var(--display); font-weight: 600; font-size: 16px; letter-spacing: -.01em; margin: 0 0 10px; }
+      .sub { font-size: clamp(14.5px, 1.4vw, 17px); color: var(--dim); max-width: 62ch; margin: 0 0 24px; line-height: 1.55; }
+      p { margin: 0 0 12px; line-height: 1.55; }
+      .grad { background: linear-gradient(110deg, var(--signal) 10%, var(--signal-2) 90%);
+        -webkit-background-clip: text; background-clip: text; color: transparent; }
+      .mut { color: var(--mute); } .dimc { color: var(--dim); }
+      code { font-family: var(--mono); font-size: .85em; color: #cfe0ff; background: rgba(91,157,255,.12);
+        border: 1px solid rgba(91,157,255,.2); border-radius: 6px; padding: 1px 6px; }
+
+      /* ---------- glass cards ---------- */
+      .glass { position: relative; border: 1px solid var(--line); border-radius: 16px;
+        background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+        backdrop-filter: blur(8px); padding: 22px 24px;
+        transition: transform .3s var(--ease), border-color .3s var(--ease), box-shadow .3s var(--ease); }
+      .glass:hover { transform: translateY(-3px); border-color: var(--line-2);
+        box-shadow: 0 18px 50px rgba(0,0,0,.4), 0 0 0 1px rgba(91,157,255,.12); }
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--signal); }
+      .v { margin-top: 7px; font-size: 14.5px; color: var(--text); line-height: 1.5; }
+
+      .tile { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; flex: 0 0 auto;
+        background: linear-gradient(135deg, rgba(91,157,255,.18), rgba(139,92,246,.14));
+        border: 1px solid rgba(91,157,255,.22); }
+      .ic { width: 22px; height: 22px; stroke: var(--signal); stroke-width: 1.7; fill: none;
+        stroke-linecap: round; stroke-linejoin: round; }
+      .ic.sm { width: 17px; height: 17px; }
+      .ic.allow { stroke: var(--allow); } .ic.deny { stroke: var(--deny); }
+
+      /* ---------- hero ---------- */
+      .hero { display: grid; grid-template-columns: 1.35fr .65fr; gap: 30px; align-items: center; min-height: 64vh; }
+      .pills { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+      .pill { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--dim);
+        border: 1px solid var(--line); background: rgba(255,255,255,.03); padding: 8px 14px; border-radius: 999px; }
+      .pill .ic { width: 15px; height: 15px; }
+      .gates { display: flex; flex-direction: column; gap: 14px; }
+      .gate { position: relative; display: flex; align-items: center; gap: 14px; padding: 16px 18px;
+        border-radius: 14px; border: 1px solid var(--line); overflow: hidden; background: rgba(255,255,255,.025); }
+      .gate::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+      .gate.allow::before { background: var(--allow); box-shadow: 0 0 22px 2px var(--allow); }
+      .gate.deny::before { background: var(--deny); box-shadow: 0 0 22px 2px var(--deny); }
+      .gate .dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
+      .gate.allow .dot { background: var(--allow); box-shadow: 0 0 12px var(--allow); animation: ping2 2.6s ease-out infinite; }
+      .gate.deny .dot { background: var(--deny); box-shadow: 0 0 12px var(--deny); }
+      @keyframes ping2 { 0%{box-shadow:0 0 0 0 rgba(52,211,153,.5)} 70%,100%{box-shadow:0 0 0 9px rgba(52,211,153,0)} }
+      .gate .lab { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+      .gate.allow .lab { color: var(--allow); } .gate.deny .lab { color: var(--deny); }
+      .gate .tx { font-size: 13px; color: var(--dim); }
+
+      /* ---------- decision panels (signature) ---------- */
+      .panel { position: relative; border-radius: 18px; padding: 24px; border: 1px solid var(--line); overflow: hidden;
+        background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.015)); height: 100%;
+        transition: transform .3s var(--ease), box-shadow .3s var(--ease); }
+      .panel:hover { transform: translateY(-3px); }
+      .panel::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; }
+      .panel.allow::before { background: linear-gradient(90deg, var(--allow), transparent); box-shadow: 0 0 26px var(--allow); }
+      .panel.deny::before { background: linear-gradient(90deg, var(--deny), transparent); box-shadow: 0 0 26px var(--deny); }
+      .panel.allow { box-shadow: inset 0 0 60px rgba(52,211,153,.06); }
+      .panel.deny { box-shadow: inset 0 0 60px rgba(251,113,133,.06); }
+      .panel .ph { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+      .panel .ph .badge { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; flex: 0 0 auto; }
+      .panel.allow .ph .badge { background: var(--allow-soft); border: 1px solid var(--allow-line); }
+      .panel.deny .ph .badge { background: var(--deny-soft); border: 1px solid var(--deny-line); }
+      .panel .ph h3 { margin: 0; font-size: 18px; }
+      .panel.allow .ph h3 { color: var(--allow); } .panel.deny .ph h3 { color: var(--deny); }
+      .panel .desc { color: var(--dim); font-size: 14px; margin: 8px 0 14px; }
+      .list { list-style: none; margin: 0; padding: 0; }
+      .list li { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--text); margin: 11px 0; line-height: 1.45; }
+      .list li .ic { margin-top: 1px; }
+
+      /* ---------- diff (BEFORE → AFTER theme) ---------- */
+      .diff { display: grid; grid-template-columns: 1fr 46px 1fr; gap: 14px; align-items: stretch; }
+      .diff .col { border-radius: 16px; padding: 20px 22px; border: 1px solid; }
+      .diff .before { border-color: var(--deny-line); background: linear-gradient(180deg, rgba(251,113,133,.085), rgba(251,113,133,.02)); }
+      .diff .after { border-color: var(--allow-line); background: linear-gradient(180deg, rgba(52,211,153,.085), rgba(52,211,153,.02)); }
+      .diff .vh { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; font-family: var(--display); font-weight: 600; font-size: 15px; }
+      .diff .before .vh { color: var(--deny); } .diff .after .vh { color: var(--allow); }
+      .vlab { font-family: var(--mono); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; border: 1px solid; }
+      .before .vlab { color: var(--deny); border-color: var(--deny-line); background: var(--deny-soft); }
+      .after .vlab { color: var(--allow); border-color: var(--allow-line); background: var(--allow-soft); }
+      .diff .mid { display: flex; align-items: center; justify-content: center; }
+      .diff .mid span { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+        border: 1px solid var(--line-2); background: rgba(255,255,255,.04); }
+      .dl { list-style: none; margin: 0; padding: 0; }
+      .dl li { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; line-height: 1.45; margin: 11px 0; }
+      .dl li .m { font-family: var(--mono); font-weight: 600; flex: 0 0 auto; font-size: 14px; line-height: 1.3; }
+      .before .dl li { color: var(--dim); } .before .dl .m { color: var(--deny); }
+      .after .dl li { color: var(--text); } .after .dl .m { color: var(--allow); }
+
+      /* ---------- tables / matrix ---------- */
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { text-align: left; padding: 12px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+      th { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); font-weight: 500; }
+      td { color: var(--dim); } td strong { color: var(--text); font-weight: 600; }
+      .matrix td { font-size: 13px; padding: 11px 12px; }
+      .matrix tr:last-child td { border-bottom: none; }
+      .signal-pill { display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 11px;
+        color: var(--signal); border: 1px solid rgba(91,157,255,.25); background: rgba(91,157,255,.1); padding: 3px 9px; border-radius: 999px; }
+      .dot-st { display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+      .dot-st i { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+      .dot-st.ship { color: var(--allow); } .dot-st.ship i { background: var(--allow); box-shadow: 0 0 8px var(--allow); }
+      .dot-st.road { color: var(--amber); } .dot-st.road i { background: var(--amber); box-shadow: 0 0 8px rgba(251,191,36,.6); }
+      .disc { font-size: 11.5px; color: var(--mute); margin-top: 16px; font-style: italic; }
+
+      /* law chips */
+      .lawrow { display: flex; flex-wrap: wrap; gap: 12px; }
+      .lawchip { display: flex; flex-direction: column; gap: 3px; padding: 13px 16px; border-radius: 12px;
+        border: 1px solid var(--line); background: rgba(255,255,255,.03); min-width: 132px;
+        transition: border-color .25s var(--ease), transform .25s var(--ease); }
+      .lawchip:hover { border-color: rgba(91,157,255,.4); transform: translateY(-2px); }
+      .lawchip .lw { font-family: var(--display); font-weight: 600; font-size: 15px; }
+      .lawchip .ls { font-family: var(--mono); font-size: 10.5px; color: var(--mute); letter-spacing: .03em; }
+
+      /* ---------- flow / pipeline ---------- */
+      .flow { display: flex; flex-direction: column; }
+      .node { display: flex; gap: 16px; align-items: flex-start; }
+      .node .num { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+        font-family: var(--mono); font-weight: 500; font-size: 13px; color: var(--signal);
+        background: rgba(91,157,255,.1); border: 1px solid rgba(91,157,255,.28); }
+      .node .num.deny { color: var(--deny); background: var(--deny-soft); border-color: var(--deny-line); box-shadow: 0 0 20px rgba(251,113,133,.25); }
+      .node .nb .nt { font-family: var(--display); font-weight: 600; font-size: 15.5px; }
+      .node .nb .nd { font-size: 13px; color: var(--mute); margin-top: 2px; line-height: 1.45; }
+      .node .nb .nd b { color: var(--dim); font-weight: 600; }
+      .conn { width: 34px; display: flex; justify-content: center; }
+      .conn i { width: 1.5px; height: 18px; background: linear-gradient(var(--signal), transparent); opacity: .55; }
+
+      /* ---------- terminal code ---------- */
+      .term { border-radius: 13px; overflow: hidden; border: 1px solid var(--line-2); background: #060a12; box-shadow: 0 18px 50px rgba(0,0,0,.45); }
+      .term-bar { display: flex; align-items: center; gap: 7px; padding: 9px 13px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.02); }
+      .term-bar i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+      .term-bar i:nth-child(1){background:#fb7185} .term-bar i:nth-child(2){background:#fbbf24} .term-bar i:nth-child(3){background:#34d399}
+      .term-bar b { margin-left: 8px; font-family: var(--mono); font-size: 11px; color: var(--mute); font-weight: 400; }
+      pre { margin: 0; padding: 15px 17px; font-family: var(--mono); font-size: 12.5px; line-height: 1.65; color: #d7e3f5; overflow-x: auto; }
+      pre .c { color: #607590; } pre .kw { color: #8b9dff; } pre .st { color: #6fe0b0; } pre .fn { color: #79c0ff; }
+      pre .del { color: var(--deny); } pre .add { color: var(--allow); }
+      pre.sm { font-size: 11.5px; line-height: 1.6; }
+
+      /* ---------- callout / refs / layers ---------- */
+      .callout { display: flex; gap: 13px; align-items: flex-start; margin-top: 20px; padding: 14px 18px;
+        border-radius: 12px; border: 1px solid var(--line); border-left: 2px solid var(--signal);
+        background: linear-gradient(90deg, rgba(91,157,255,.08), rgba(91,157,255,.01)); font-size: 14px; color: var(--dim); }
+      .callout .ic { flex: 0 0 auto; margin-top: 1px; } .callout b { color: var(--text); }
+      .ref { font-family: var(--mono); font-size: 11px; color: var(--mute); margin-top: 18px; line-height: 1.7; } .ref b { color: var(--dim); font-weight: 500; }
+      .layer { display: flex; gap: 16px; align-items: flex-start; padding: 20px 22px; }
+      .layer .lh { font-family: var(--display); font-weight: 600; font-size: 17px; margin: 2px 0 5px; }
+      .layer .ld { font-size: 14px; color: var(--dim); margin: 0; line-height: 1.5; }
+      .layer .lm { font-family: var(--mono); font-size: 11px; color: var(--mute); margin-top: 9px; letter-spacing: .02em; }
+      .plus { text-align: center; font-family: var(--display); color: var(--mute); font-size: 18px; margin: 10px 0; }
+
+      /* status pills */
+      .spill { font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; display: inline-block; white-space: nowrap; }
+      .spill.live { color: var(--allow); background: var(--allow-soft); border: 1px solid var(--allow-line); }
+      .spill.next { color: var(--amber); background: rgba(251,191,36,.1); border: 1px solid rgba(251,191,36,.3); }
+
+      /* live readout */
+      .decision { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 13px; font-weight: 600; font-size: 14.5px; border: 1px solid; }
+      .decision.ok { color: var(--allow); background: var(--allow-soft); border-color: var(--allow-line); box-shadow: inset 0 0 40px rgba(52,211,153,.07); }
+      .decision.stop { color: var(--deny); background: var(--deny-soft); border-color: var(--deny-line); box-shadow: inset 0 0 40px rgba(251,113,133,.07); }
+      .decision .dot { font-size: 19px; } .decision .sub { display: block; font-weight: 400; font-size: 12px; color: var(--mute); margin-top: 3px; }
+
+      /* close */
+      .close-statement { font-family: var(--display); font-weight: 600; font-size: clamp(30px, 4.4vw, 56px); line-height: 1.08; letter-spacing: -.025em; margin: 0 0 28px; max-width: 20ch; }
+      .takeaways { display: flex; flex-wrap: wrap; gap: 12px; }
+      .ta { display: flex; align-items: center; gap: 12px; padding: 13px 18px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255,255,255,.03); font-size: 14px; }
+      .ta .n { font-family: var(--mono); font-size: 12px; color: var(--signal); }
+
+      /* ---------- controls ---------- */
+      .controls { position: relative; z-index: 5; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 18px; padding: 14px 34px 20px; }
+      .navbtn { display: inline-flex; align-items: center; gap: 7px; font-family: var(--body); font-size: 13px; font-weight: 500;
+        color: var(--dim); background: rgba(255,255,255,.04); border: 1px solid var(--line); border-radius: 10px; padding: 9px 15px; cursor: pointer; transition: all .2s var(--ease); }
+      .navbtn:hover:not(:disabled) { color: #fff; border-color: rgba(91,157,255,.4); background: rgba(91,157,255,.1); }
+      .navbtn:disabled { opacity: .35; cursor: default; }
+      .dots { display: flex; align-items: center; gap: 8px; }
+      .dots button { width: 7px; height: 7px; border-radius: 50%; border: none; padding: 0; cursor: pointer; background: rgba(255,255,255,.18); transition: all .25s var(--ease); }
+      .dots button:hover { background: rgba(255,255,255,.4); }
+      .dots button.on { width: 20px; border-radius: 5px; background: linear-gradient(90deg, var(--signal), var(--signal-2)); box-shadow: 0 0 12px rgba(91,157,255,.6); }
+      .idx { font-family: var(--mono); font-size: 12px; color: var(--mute); min-width: 64px; } .idx b { color: var(--text); font-weight: 500; }
+      .hint { position: fixed; bottom: 20px; right: 26px; z-index: 5; font-family: var(--mono); font-size: 10.5px; color: var(--mute); opacity: .7; }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, .slide.active { animation: none !important; transition: none !important; }
+        .bg::before, .bg::after { animation: none !important; }
+      }
+      @media (max-width: 860px) {
+        .hero, .grid2, .grid3 { grid-template-columns: 1fr; } .hero { min-height: 0; gap: 18px; }
+        .diff { grid-template-columns: 1fr; } .diff .mid { transform: rotate(90deg); padding: 4px 0; }
+        .topbar, .stage, .controls { padding-left: 18px; padding-right: 18px; } .hint, .vtag { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg" aria-hidden="true"></div>
+    <div class="grid" aria-hidden="true"></div>
+
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></symbol>
+      <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v6c0 1.55 3.36 2.8 7.5 2.8s7.5-1.25 7.5-2.8v-6"/><path d="M4.5 11.5v6c0 1.55 3.36 2.8 7.5 2.8s7.5-1.25 7.5-2.8v-6"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5.5c0 4.3-2.9 7.3-7 8.5-4.1-1.2-7-4.2-7-8.5V6z"/><path d="M9 12l2 2 4-4.2"/></symbol>
+      <symbol id="i-signal" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.8"/><path d="M7.5 7.5a6.4 6.4 0 000 9M16.5 7.5a6.4 6.4 0 010 9M4.8 4.8a10.2 10.2 0 000 14.4M19.2 4.8a10.2 10.2 0 010 14.4"/></symbol>
+      <symbol id="i-doc" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M9.5 12.5h5M9.5 16h5"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4 4 10-10"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h13M12.5 6l6 6-6 6"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2.2"/><path d="M8 11V8a4 4 0 018 0v3"/></symbol>
+      <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3L5.5 13H11l-1 8 8.5-11H13z"/></symbol>
+      <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 4v16M7 20h10M12 4l-6 3 6 1 6-1z"/><path d="M6 7l-3 6a3 3 0 006 0zM18 7l-3 6a3 3 0 006 0z"/></symbol>
+    </svg>
+
+    <div id="progress"></div>
+
+    <div class="topbar">
+      <div class="brand">
+        <span class="mark">MJ</span><b>MediaJel</b>
+        <span class="div"></span><span class="tag">Privacy &amp; Consent</span>
+        <span class="vtag">Previous&nbsp;→&nbsp;Current</span>
+      </div>
+      <div class="status">
+        <span class="sec" id="section">Overview</span>
+        <span class="live"><i></i> COMPLIANCE</span>
+      </div>
+    </div>
+
+    <main class="stage">
+      <div class="deck">
+
+        <!-- 1 — HERO -->
+        <section class="slide active" data-label="Overview">
+          <div class="hero stagger">
+            <div>
+              <span class="eyebrow">CTO Briefing · Engineering</span>
+              <h1>Respecting <span class="grad">user choice</span>,<br />across the stack.</h1>
+              <p class="sub">How we took the MediaJel tracker from "tracks everyone" to "honors every opt-out" — what changed, previous vs current, and which privacy specifications it now lets clients meet.</p>
+              <div class="pills">
+                <span class="pill"><svg class="ic"><use href="#i-signal"/></svg> Honors GPC + Do&nbsp;Not&nbsp;Track</span>
+                <span class="pill"><svg class="ic"><use href="#i-shield"/></svg> Two layers, defense in depth</span>
+                <span class="pill"><svg class="ic"><use href="#i-scale"/></svg> CCPA / CPRA · CO · CT · TX · OR</span>
+              </div>
+            </div>
+            <div class="gates">
+              <div class="gate allow"><span class="dot"></span><div><div class="lab">Allow</div><div class="tx">No signal → tracking runs</div></div></div>
+              <div class="gate deny"><span class="dot"></span><div><div class="lab">Deny</div><div class="tx">GPC / DNT → hard no-track</div></div></div>
+              <div class="gate" style="border-style:dashed"><svg class="ic sm"><use href="#i-bolt"/></svg><div class="tx">Decided in the first milliseconds of page load</div></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2 — WHY NOW -->
+        <section class="slide" data-label="The mandate">
+          <div class="stagger">
+            <span class="eyebrow">The mandate</span>
+            <h2>Why this matters now</h2>
+            <p class="sub">Modern US privacy law gives people a single switch to say "don't sell or share my data." As a tag that lives on hundreds of client sites, we have to respect it everywhere — without asking each site to do a thing.</p>
+            <div class="grid2">
+              <div class="glass"><div class="k">The signal</div><div class="v">A browser-level opt-out (Global Privacy Control) a user sets once — recognized under CCPA/CPRA, Colorado &amp; Connecticut.</div></div>
+              <div class="glass"><div class="k">The request</div><div class="v">Explicit consumer "Do Not Sell or Share" submissions that must be recorded and suppressed downstream.</div></div>
+            </div>
+            <div class="callout"><svg class="ic sm"><use href="#i-bolt"/></svg><div><b>Two obligations → two layers.</b> Stop tracking users who signal opt-out, <em>and</em> honor people who formally ask to be removed.</div></div>
+          </div>
+        </section>
+
+        <!-- 3 — BEFORE → AFTER OVERVIEW (theme anchor) -->
+        <section class="slide" data-label="What changed">
+          <div class="stagger">
+            <span class="eyebrow">Previous version → current version</span>
+            <h2>What changed in the tag</h2>
+            <p class="sub">Three upgrades took the tag from a privacy-blind script to a compliant, defensive one — with <strong>zero change</strong> for users who never opted out.</p>
+            <div class="diff">
+              <div class="col before">
+                <div class="vh"><span class="vlab">Previous</span> Privacy-blind</div>
+                <ul class="dl">
+                  <li><span class="m">−</span> Initialized for <strong>every</strong> visitor — no privacy-signal check</li>
+                  <li><span class="m">−</span> A throwing callback could crash the host page</li>
+                  <li><span class="m">−</span> Loose types; assumed each host page's globals</li>
+                </ul>
+              </div>
+              <div class="mid"><span><svg class="ic sm"><use href="#i-arrow"/></svg></span></div>
+              <div class="col after">
+                <div class="vh"><span class="vlab">Current</span> Compliant &amp; defensive</div>
+                <ul class="dl">
+                  <li><span class="m">+</span> Honors GPC / DNT — <strong>hard no-track</strong> for opt-outs</li>
+                  <li><span class="m">+</span> Error boundary — a failure can't crash the page</li>
+                  <li><span class="m">+</span> Strict types; host globals treated as unknown</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4 — TWO JOURNEYS -->
+        <section class="slide" data-label="The decision">
+          <div class="stagger">
+            <span class="eyebrow">The user's choice · current behavior</span>
+            <h2>Two journeys, one rule</h2>
+            <p class="sub">The decision is made before any data is collected or any cookie is set — at the very top of the tag.</p>
+            <div class="grid2">
+              <div class="panel allow">
+                <div class="ph"><span class="badge"><svg class="ic allow"><use href="#i-check"/></svg></span><h3>User is OK with tracking</h3></div>
+                <p class="desc">No opt-out signal present. The tag initializes normally:</p>
+                <ul class="list">
+                  <li><svg class="ic sm allow"><use href="#i-check"/></svg> Analytics &amp; attribution run as designed</li>
+                  <li><svg class="ic sm allow"><use href="#i-check"/></svg> Events sent, cookies set</li>
+                  <li><svg class="ic sm allow"><use href="#i-check"/></svg> <strong>Behaves exactly as before</strong> — zero change</li>
+                </ul>
+              </div>
+              <div class="panel deny">
+                <div class="ph"><span class="badge"><svg class="ic deny"><use href="#i-x"/></svg></span><h3>User has opted out</h3></div>
+                <p class="desc">Browser signals GPC or Do&nbsp;Not&nbsp;Track. The tag never starts:</p>
+                <ul class="list">
+                  <li><svg class="ic sm deny"><use href="#i-x"/></svg> <strong>Hard no-track</strong> — nothing initializes</li>
+                  <li><svg class="ic sm deny"><use href="#i-x"/></svg> No events, no cookies, no network calls</li>
+                  <li><svg class="ic sm deny"><use href="#i-x"/></svg> Applies on every site, automatically</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5 — DIFF: OPT-OUT HANDLING -->
+        <section class="slide" data-label="Change · Opt-out">
+          <div class="stagger">
+            <span class="eyebrow">Change 01 · Opt-out handling</span>
+            <h2>From "track everyone" to "honor the signal"</h2>
+            <div class="diff">
+              <div class="col before">
+                <div class="vh"><span class="vlab">Previous</span> Always on</div>
+                <ul class="dl">
+                  <li><span class="m">−</span> The tag initialized for <strong>every</strong> visitor</li>
+                  <li><span class="m">−</span> No Global Privacy Control check at all</li>
+                  <li><span class="m">−</span> Do&nbsp;Not&nbsp;Track, at best, only limited what was <em>sent</em> — data was still collected and cookies still set</li>
+                </ul>
+              </div>
+              <div class="mid"><span><svg class="ic sm"><use href="#i-arrow"/></svg></span></div>
+              <div class="col after">
+                <div class="vh"><span class="vlab">Current</span> Gated at the top</div>
+                <ul class="dl">
+                  <li><span class="m">+</span> Reads GPC + DNT and <strong>returns before anything runs</strong></li>
+                  <li><span class="m">+</span> Opted-out visitors → zero events, zero cookies</li>
+                  <li><span class="m">+</span> One check in the shared tag → every site inherits it</li>
+                </ul>
+              </div>
+            </div>
+            <div class="callout"><svg class="ic sm"><use href="#i-bolt"/></svg><div>No change for users who haven't opted out — the new behavior is the opt-out path only.</div></div>
+          </div>
+        </section>
+
+        <!-- 5b — OPT-OUT GATE IN CODE -->
+        <section class="slide" data-label="Change · Opt-out">
+          <div class="stagger">
+            <span class="eyebrow">Change 01 · In code</span>
+            <h2>The opt-out gate, in code</h2>
+            <p class="sub">Two small, dependency-free additions — a pure signal detector, and a one-line gate at the very top of the tag.</p>
+            <div class="grid2" style="gap:20px; align-items:start">
+              <div class="term">
+                <div class="term-bar"><i></i><i></i><i></i><b>tracker-core/utils/privacy-opt-out.ts</b></div>
+                <pre class="sm"><span class="c">// New file — detect US opt-out signals.</span>
+const isDntEnabled = (value: string | null | undefined): boolean =&gt;
+  value === <span class="st">"1"</span> || value === <span class="st">"yes"</span>;
+
+export const <span class="fn">isUsPrivacyOptOut</span> = (): boolean =&gt; {
+  const gpcOptOut = navigator.globalPrivacyControl === true;
+
+  <span class="c">// each DNT source checked independently</span>
+  const dntOptOut =
+    <span class="fn">isDntEnabled</span>(navigator.doNotTrack) ||
+    <span class="fn">isDntEnabled</span>(navigator.msDoNotTrack) ||
+    <span class="fn">isDntEnabled</span>(window.doNotTrack);
+
+  return gpcOptOut || dntOptOut;
+};</pre>
+              </div>
+              <div class="term">
+                <div class="term-bar"><i></i><i></i><i></i><b>apps/tracker/src/index.ts</b></div>
+                <pre class="sm">const context = <span class="fn">getContext</span>();
+
+<span class="c">// Gate: honor GPC / DNT before anything runs.</span>
+if (<span class="fn">isUsPrivacyOptOut</span>()) {
+  logger.<span class="fn">debug</span>(<span class="st">"opt-out detected (GPC/DNT)"</span>);
+  return;            <span class="c">// hard no-track</span>
+}
+
+await <span class="fn">getCustomTags</span>();
+await <span class="fn">getAppIdTags</span>(context.appId);</pre>
+              </div>
+            </div>
+            <div class="callout"><svg class="ic sm"><use href="#i-lock"/></svg><div>No new dependencies, no per-site config — the gate sits <b>above</b> adapters, Snowplow, custom tags and app-id tags.</div></div>
+          </div>
+        </section>
+
+        <!-- 6 — DEFENSE IN DEPTH -->
+        <section class="slide" data-label="Architecture">
+          <div class="stagger">
+            <span class="eyebrow">Architecture at a glance</span>
+            <h2>Two layers, defense in depth</h2>
+            <div class="glass layer" style="margin-top:18px">
+              <span class="tile"><svg class="ic"><use href="#i-globe"/></svg></span>
+              <div><div class="lh">Layer 01 — At the edge <span class="mut" style="font-weight:400">(the browser tag)</span></div>
+                <p class="ld">Reads the privacy signal and refuses to start tracking. <strong style="color:var(--text)">Proactive: prevents collection at the source.</strong></p>
+                <div class="lm">EVERY EMBEDDING SITE INHERITS IT · NO CONSENT BANNER · NO PER-SITE SETUP</div></div>
+            </div>
+            <div class="plus">+</div>
+            <div class="glass layer">
+              <span class="tile"><svg class="ic"><use href="#i-db"/></svg></span>
+              <div><div class="lh">Layer 02 — At the core <span class="mut" style="font-weight:400">(the data pipeline)</span></div>
+                <p class="ld">Captures explicit opt-out requests and turns them into a suppression list + an audit trail. <strong style="color:var(--text)">Reactive: honors formal requests downstream.</strong></p>
+                <div class="lm">LIVES IN THE GRAPHQL SERVICE · BATCH-PROCESSED · IDEMPOTENT</div></div>
+            </div>
+            <div class="callout"><svg class="ic sm"><use href="#i-shield"/></svg><div>The edge stops <em>new</em> data from being collected. The core honors people who <em>formally ask</em> to be removed. Together they cover the full opt-out obligation.</div></div>
+          </div>
+        </section>
+
+        <!-- 7 — LAYER 1 WHAT/WHERE -->
+        <section class="slide" data-label="Layer 01 · Edge">
+          <div class="stagger">
+            <span class="eyebrow">Layer 01 · The browser gate</span>
+            <h2>Honor the signal inside the tag</h2>
+            <p class="sub">Because the check lives in the shared tag, protection ships to every site at once — no cookie, no banner, no cooperation from the sites we're on.</p>
+            <div class="glass" style="padding:6px 22px">
+              <table>
+                <thead><tr><th>Signal</th><th>What it is</th><th>Treated as opt-out when…</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>Global Privacy Control</strong><br /><span class="signal-pill">primary US signal</span></td>
+                      <td>Browser-level "do not sell / share" — Brave (on by default), Firefox, extensions</td>
+                      <td><code>globalPrivacyControl === true</code></td></tr>
+                  <tr><td><strong>Do Not Track</strong><br /><span class="mut" style="font-size:11.5px">legacy fallback</span></td>
+                      <td>Older browser opt-out header</td>
+                      <td>value is <code>"1"</code> or <code>"yes"</code></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="callout"><svg class="ic sm"><use href="#i-lock"/></svg><div><b>"Respect" = hard no-track.</b> Not "send less" — the tracker simply never starts.</div></div>
+            <p class="ref">Detection: <b>packages/tracker-core/…/privacy-opt-out.ts</b> &nbsp;·&nbsp; gate runs in <b>apps/tracker/src/index.ts</b></p>
+          </div>
+        </section>
+
+        <!-- 8 — LIFECYCLE -->
+        <section class="slide" data-label="Layer 01 · Edge">
+          <div class="stagger">
+            <span class="eyebrow">Layer 01 · Where the gate sits</span>
+            <h2>Checked before anything happens</h2>
+            <div class="grid2" style="align-items:start; gap:28px; margin-top:10px">
+              <div class="flow">
+                <div class="node"><span class="num">01</span><div class="nb"><div class="nt">Read the page context</div><div class="nd">Parse the script URL only — no network, no cookies yet.</div></div></div>
+                <div class="conn"><i></i></div>
+                <div class="node"><span class="num deny">!</span><div class="nb"><div class="nt" style="color:var(--deny)">Privacy opt-out? (GPC / DNT)</div><div class="nd"><b style="color:var(--deny)">If yes → log &amp; stop.</b> Nothing below runs.</div></div></div>
+                <div class="conn"><i></i></div>
+                <div class="node"><span class="num">02</span><div class="nb"><div class="nt">Load tags &amp; adapters</div><div class="nd">Custom tags, app-specific tags, integrations.</div></div></div>
+                <div class="conn"><i></i></div>
+                <div class="node"><span class="num">03</span><div class="nb"><div class="nt">Start the tracker</div><div class="nd">Events fire, cookies set — normal analytics.</div></div></div>
+              </div>
+              <div>
+                <div class="term">
+                  <div class="term-bar"><i></i><i></i><i></i><b>apps/tracker/src/index.ts</b></div>
+                  <pre><span class="c">// Honor GPC / DNT before any tracking or</span>
+<span class="c">// network activity. Hard no-track: return</span>
+<span class="c">// before adapters, the tracker, custom or</span>
+<span class="c">// app-id tags — no events, no cookies.</span>
+<span class="kw">if</span> (<span class="fn">isUsPrivacyOptOut</span>()) {
+  logger.<span class="fn">debug</span>(<span class="st">"opt-out detected…"</span>);
+  <span class="kw">return</span>;
+}</pre>
+                </div>
+                <div class="callout"><svg class="ic sm"><use href="#i-bolt"/></svg><div>Stronger than the analytics SDK's built-in <code>respectDoNotTrack</code>, which only stops <em>sending</em> and ignores GPC. Here the tracker never initializes at all.</div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 9 — PROOF / LIVE -->
+        <section class="slide" data-label="Layer 01 · Proof">
+          <div class="stagger">
+            <span class="eyebrow">Layer 01 · Verification</span>
+            <h2>Proven, not promised</h2>
+            <div class="grid2" style="gap:24px; align-items:start; margin-top:8px">
+              <div class="glass">
+                <h3>Your browser, right now</h3>
+                <div id="decision" class="decision ok"><span class="dot">…</span><span>Reading your privacy signals…</span></div>
+                <table style="margin-top:6px">
+                  <thead><tr><th>Signal</th><th>Your value</th></tr></thead>
+                  <tbody id="signals"></tbody>
+                </table>
+                <p class="mut" style="font-size:12px; margin:12px 0 0">Live illustration — this page doesn't load the tag. Set GPC (Brave/Firefox) and reload to watch it flip.</p>
+              </div>
+              <div>
+                <h3>Automated checks (run in CI)</h3>
+                <ul class="list" style="margin-bottom:16px">
+                  <li><svg class="ic sm allow"><use href="#i-check"/></svg> GPC enabled → collector gets <strong>zero</strong> requests</li>
+                  <li><svg class="ic sm allow"><use href="#i-check"/></svg> Do&nbsp;Not&nbsp;Track enabled → <strong>zero</strong> requests</li>
+                  <li><svg class="ic sm allow"><use href="#i-check"/></svg> No signal → tag fires normally <span class="mut">(positive control)</span></li>
+                </ul>
+                <div class="term">
+                  <div class="term-bar"><i></i><i></i><i></i><b>privacy-opt-out.spec.cy.ts</b></div>
+                  <pre><span class="c">// opted-out visitor sends nothing</span>
+cy.<span class="fn">get</span>(<span class="st">"@track.all"</span>).<span class="fn">should</span>(<span class="st">"have.length"</span>, <span class="kw">0</span>);</pre>
+                </div>
+                <p class="ref">Manual check: Brave (GPC default on) or Firefox.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 10 — LAYER 2 PURPOSE -->
+        <section class="slide" data-label="Layer 02 · Core">
+          <div class="stagger">
+            <span class="eyebrow">Layer 02 · Server-side opt-out pipeline</span>
+            <h2>Honor explicit "remove me" requests</h2>
+            <p class="sub">When a consumer formally opts out — a "Do Not Sell or Share" request under CCPA/CPRA — we capture it through a secured endpoint and process it into a suppression list, plus a record we can audit.</p>
+            <div class="grid3">
+              <div class="glass"><span class="tile" style="margin-bottom:14px"><svg class="ic"><use href="#i-db"/></svg></span><div class="k">Where</div><div class="v">mediajel-gql-service — our core API</div></div>
+              <div class="glass"><span class="tile" style="margin-bottom:14px"><svg class="ic"><use href="#i-lock"/></svg></span><div class="k">How it's secured</div><div class="v">Access-controlled endpoint — per-partner opt-out tokens + API key</div></div>
+              <div class="glass"><span class="tile" style="margin-bottom:14px"><svg class="ic"><use href="#i-doc"/></svg></span><div class="k">What's captured</div><div class="v">Email, mobile ad ID, IP, name &amp; address — to match and suppress</div></div>
+            </div>
+            <div class="callout"><svg class="ic sm"><use href="#i-check"/></svg><div>A queued batch job processes new requests, builds the suppression list, and is <b>idempotent</b> — the same request is never double-counted.</div></div>
+          </div>
+        </section>
+
+        <!-- 11 — PIPELINE -->
+        <section class="slide" data-label="Layer 02 · Core">
+          <div class="stagger">
+            <span class="eyebrow">Layer 02 · The opt-outs pipeline</span>
+            <h2>From request to suppression</h2>
+            <div class="grid2" style="gap:14px 40px; align-items:start; margin-top:10px">
+              <div class="flow">
+                <div class="node"><span class="num">01</span><div class="nb"><div class="nt">Intake</div><div class="nd">Secured <code>createOptout</code> request → stored, marked <b>unprocessed</b>.</div></div></div>
+                <div class="conn"><i></i></div>
+                <div class="node"><span class="num">02</span><div class="nb"><div class="nt">Schedule</div><div class="nd">Queued job (Redis), ~7-day look-back, one batch at a time.</div></div></div>
+                <div class="conn"><i></i></div>
+                <div class="node"><span class="num">03</span><div class="nb"><div class="nt">Collect</div><div class="nd">Gather all unprocessed opt-out requests in range.</div></div></div>
+              </div>
+              <div class="flow">
+                <div class="node"><span class="num">04</span><div class="nb"><div class="nt">Package</div><div class="nd">Convert to columnar files &amp; stage them in cloud storage (S3).</div></div></div>
+                <div class="conn"><i></i></div>
+                <div class="node"><span class="num">05</span><div class="nb"><div class="nt">Load</div><div class="nd">Insert into the <b style="color:var(--text)">suppression store</b> (ClickHouse); warehouse copy for audit.</div></div></div>
+                <div class="conn"><i></i></div>
+                <div class="node"><span class="num">06</span><div class="nb"><div class="nt">Mark done</div><div class="nd">Flag requests <b>processed</b> → never reprocessed.</div></div></div>
+              </div>
+            </div>
+            <p class="ref"><b>src/jobs/optouts/</b> (queue + runner) &nbsp;·&nbsp; suppression target <b>MISCELLANEOUS.OPTOUTS</b> (ClickHouse) &nbsp;·&nbsp; warehouse copy <b>Snowflake</b></p>
+          </div>
+        </section>
+
+        <!-- 12 — DIFF: HOST-PAGE SAFETY & TYPES -->
+        <section class="slide" data-label="Change · Trust">
+          <div class="stagger">
+            <span class="eyebrow">Change 02 · Trust &amp; robustness</span>
+            <h2>From "could crash your site" to "fails quietly"</h2>
+            <p class="sub">A third-party script that crashes a client's page is a liability. Being safe and reliable <em>is</em> part of respecting the user.</p>
+            <div class="diff">
+              <div class="col before">
+                <div class="vh"><span class="vlab">Previous</span> Fragile guest</div>
+                <ul class="dl">
+                  <li><span class="m">−</span> A throwing callback (listener / interceptor / timer) could bubble to the host page</li>
+                  <li><span class="m">−</span> Assumed host globals (<code>window</code>, dataLayer, Shopify…) → runtime crashes</li>
+                  <li><span class="m">−</span> Loose typing hid these risks</li>
+                </ul>
+              </div>
+              <div class="mid"><span><svg class="ic sm"><use href="#i-arrow"/></svg></span></div>
+              <div class="col after">
+                <div class="vh"><span class="vlab">Current</span> Good guest</div>
+                <ul class="dl">
+                  <li><span class="m">+</span> Every callback wrapped in an <strong>error boundary</strong> — logged, contained</li>
+                  <li><span class="m">+</span> Safe DOM access + defensive parsing</li>
+                  <li><span class="m">+</span> Strict TypeScript; external globals optional / unknown</li>
+                  <li><span class="m">+</span> Proven by an E2E "can't crash the page" test</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 12b — HARDENING IN CODE -->
+        <section class="slide" data-label="Change · Trust">
+          <div class="stagger">
+            <span class="eyebrow">Change 02 · In code</span>
+            <h2>The hardening, in code</h2>
+            <div class="grid2" style="gap:20px; align-items:start">
+              <div class="term">
+                <div class="term-bar"><i></i><i></i><i></i><b>tracker-core/utils/guard.ts</b></div>
+                <pre class="sm"><span class="c">// Wrap every callback we register so a throw</span>
+<span class="c">// is logged &amp; swallowed — never the host page.</span>
+export const <span class="fn">guard</span> = &lt;A extends any[], R&gt;(
+  fn: (...args: A) =&gt; R,
+  label = <span class="st">"callback"</span>,
+) =&gt; {
+  return function (this: unknown, ...args: A) {
+    try {
+      return fn.<span class="fn">apply</span>(this, args);
+    } catch (err) {
+      logger.<span class="fn">error</span>(<span class="st">`"${label}" threw; suppressed`</span>, err);
+      return undefined;
+    }
+  };
+};</pre>
+              </div>
+              <div>
+                <div class="term">
+                  <div class="term-bar"><i></i><i></i><i></i><b>tracker-core/interface.ts — honest types</b></div>
+                  <pre class="sm">declare global {
+  interface Navigator {
+    globalPrivacyControl?: boolean;
+  }
+  interface Window {
+    <span class="c">// our injected infra: present</span>
+    tracker: SnowplowTrackerFn;
+    <span class="c">// external globals: optional → guard</span>
+    Shopify?: { checkout?: any };
+  }
+}</pre>
+                </div>
+                <div class="term" style="margin-top:14px">
+                  <div class="term-bar"><i></i><i></i><i></i><b>e.g. ecommerce adapter — now guarded</b></div>
+                  <pre class="sm"><span class="del">- tracker.ecommerce.trackTransaction(evt);</span>
+<span class="add">+ tracker.ecommerce?.trackTransaction(evt);</span></pre>
+                </div>
+              </div>
+            </div>
+            <div class="callout"><svg class="ic sm"><use href="#i-shield"/></svg><div>Strict TypeScript forced every external-global access to be guarded — surfacing latent crashes at compile time, not on a client's page.</div></div>
+          </div>
+        </section>
+
+        <!-- 13 — HOW THEY FIT -->
+        <section class="slide" data-label="The full picture">
+          <div class="stagger">
+            <span class="eyebrow">Together</span>
+            <h2>Edge + core = full coverage</h2>
+            <div class="grid2" style="margin-top:8px">
+              <div class="glass">
+                <div class="ph" style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><span class="tile"><svg class="ic"><use href="#i-globe"/></svg></span><h3 style="margin:0">Edge — the tag</h3></div>
+                <p class="dimc" style="font-size:14px"><strong style="color:var(--text)">Prevents new collection.</strong> Reads the browser signal (GPC/DNT) and never starts tracking that user.</p>
+                <ul class="list"><li><svg class="ic sm"><use href="#i-arrow"/></svg> Proactive</li><li><svg class="ic sm"><use href="#i-arrow"/></svg> Automatic, every site</li><li><svg class="ic sm"><use href="#i-arrow"/></svg> No data is ever gathered</li></ul>
+              </div>
+              <div class="glass">
+                <div class="ph" style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><span class="tile"><svg class="ic"><use href="#i-db"/></svg></span><h3 style="margin:0">Core — the pipeline</h3></div>
+                <p class="dimc" style="font-size:14px"><strong style="color:var(--text)">Honors explicit requests.</strong> Captures formal opt-outs, builds a suppression list + audit record.</p>
+                <ul class="list"><li><svg class="ic sm"><use href="#i-arrow"/></svg> Reactive</li><li><svg class="ic sm"><use href="#i-arrow"/></svg> Covers people who ask to be removed</li><li><svg class="ic sm"><use href="#i-arrow"/></svg> Auditable for compliance</li></ul>
+              </div>
+            </div>
+            <div class="callout"><svg class="ic sm"><use href="#i-shield"/></svg><div>One handles the <b>signal in the browser</b>; the other handles the <b>request in the data layer</b>.</div></div>
+          </div>
+        </section>
+
+        <!-- 14 — REGULATORY LANDSCAPE -->
+        <section class="slide" data-label="Coverage">
+          <div class="stagger">
+            <span class="eyebrow">The landscape</span>
+            <h2>A patchwork you can't hand-build per site</h2>
+            <p class="sub">US privacy law is now state-by-state. A growing number of states require honoring a browser <strong>universal opt-out mechanism (UOOM)</strong> — so one automatic signal beats a banner on every site.</p>
+            <div class="grid2" style="align-items:start; gap:22px">
+              <div>
+                <h3 class="mut" style="margin-bottom:14px">Laws that recognize a universal opt-out</h3>
+                <div class="lawrow">
+                  <div class="lawchip"><span class="lw">California</span><span class="ls">CCPA / CPRA</span></div>
+                  <div class="lawchip"><span class="lw">Colorado</span><span class="ls">CPA</span></div>
+                  <div class="lawchip"><span class="lw">Connecticut</span><span class="ls">CTDPA</span></div>
+                  <div class="lawchip"><span class="lw">Texas</span><span class="ls">TDPSA</span></div>
+                  <div class="lawchip"><span class="lw">Oregon</span><span class="ls">OCPA</span></div>
+                  <div class="lawchip"><span class="lw">Montana</span><span class="ls">MCDPA</span></div>
+                  <div class="lawchip" style="justify-content:center"><span class="lw" style="color:var(--mute)">+ more</span><span class="ls">adopting UOOM</span></div>
+                </div>
+              </div>
+              <div class="glass">
+                <span class="tile" style="margin-bottom:14px"><svg class="ic"><use href="#i-signal"/></svg></span>
+                <h3>The one signal that covers them</h3>
+                <p class="dimc" style="font-size:13.5px">Global Privacy Control (GPC) is the industry spec for a universal opt-out — a single browser flag (<code>Sec-GPC</code> header + <code>navigator.globalPrivacyControl</code>) that asserts the user's choice across <em>all</em> sites. Honor it once and the UOOM-mandating states are covered.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 15 — WHAT WE'RE COMPLIANT FOR (matrix) -->
+        <section class="slide" data-label="Coverage">
+          <div class="stagger">
+            <span class="eyebrow">Coverage</span>
+            <h2>What our tracker makes you compliant for</h2>
+            <div class="glass" style="padding:6px 22px">
+              <table class="matrix">
+                <thead><tr><th>Capability</th><th>Signal / spec</th><th>Supports compliance with</th><th>Status</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>Browser opt-out gate</strong></td><td><code>GPC</code> universal opt-out</td><td>Opt-out of sale/share — CCPA/CPRA, CO CPA, CT CTDPA, TX TDPSA, OR OCPA</td><td><span class="dot-st ship"><i></i> Shipped</span></td></tr>
+                  <tr><td><strong>Legacy fallback</strong></td><td><code>Do&nbsp;Not&nbsp;Track</code></td><td>Older-browser opt-out · defense-in-depth</td><td><span class="dot-st ship"><i></i> Shipped</span></td></tr>
+                  <tr><td><strong>Opt-out pipeline</strong></td><td>"Do Not Sell or Share" intake</td><td>CCPA/CPRA opt-out + suppression · auditability</td><td><span class="dot-st ship"><i></i> Shipped</span></td></tr>
+                  <tr><td><strong>Consent-tool signals</strong></td><td>IAB <code>GPP</code> · US Privacy <code>__uspapi</code></td><td>CMP-based multi-state coverage at scale</td><td><span class="dot-st road"><i></i> Roadmap</span></td></tr>
+                  <tr><td><strong>EU consent</strong></td><td>IAB <code>TCF</code> / consent</td><td>GDPR · ePrivacy (EU)</td><td><span class="dot-st road"><i></i> Roadmap</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="disc">Our tracker provides the technical controls above; full legal compliance also depends on each client's own privacy program — notices, request handling, and contracts.</p>
+          </div>
+        </section>
+
+        <!-- 16 — SHIPPED VS ROADMAP -->
+        <section class="slide" data-label="Status">
+          <div class="stagger">
+            <span class="eyebrow">Status</span>
+            <h2>Shipped today · what's next</h2>
+            <div class="grid2" style="margin-top:8px">
+              <div class="glass">
+                <h3 style="color:var(--allow)">Shipped</h3>
+                <table>
+                  <tbody>
+                    <tr><td style="width:62px"><span class="spill live">live</span></td><td>GPC + Do&nbsp;Not&nbsp;Track hard no-track in the tag — every site</td></tr>
+                    <tr><td><span class="spill live">live</span></td><td>Server-side opt-out pipeline → suppression list + audit</td></tr>
+                    <tr><td><span class="spill live">live</span></td><td>Good-citizen hardening (error boundary, safe DOM, strict types)</td></tr>
+                    <tr><td><span class="spill live">live</span></td><td>Automated tests + manual verification path</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="glass">
+                <h3 style="color:var(--amber)">Roadmap</h3>
+                <table>
+                  <tbody>
+                    <tr><td style="width:62px"><span class="spill next">next</span></td><td>Consent-tool signals (GPP, US Privacy string) behind the same gate</td></tr>
+                    <tr><td><span class="spill next">next</span></td><td>Record opt-outs for audit (today they're silently honored)</td></tr>
+                    <tr><td><span class="spill next">next</span></td><td>Per-account override / escape hatch</td></tr>
+                    <tr><td><span class="spill next">next</span></td><td>Pipeline: full-batch processing + wire the warehouse-audit step</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 17 — CLOSE -->
+        <section class="slide" data-label="Bottom line">
+          <div class="hero stagger" style="min-height:60vh">
+            <div>
+              <span class="eyebrow">Bottom line</span>
+              <p class="close-statement">We honor user choice at the edge <span class="grad">and</span> at the core.</p>
+              <div class="takeaways">
+                <span class="ta"><span class="n">01</span> Opt-out is automatic &amp; universal — no per-site work</span>
+                <span class="ta"><span class="n">02</span> Opted-out users → zero events, zero cookies</span>
+                <span class="ta"><span class="n">03</span> Formal requests → suppressed &amp; auditable</span>
+              </div>
+              <p class="sub" style="margin-top:26px">…and we don't break the sites we live on.</p>
+            </div>
+            <div class="gates">
+              <div class="gate allow"><span class="dot"></span><div><div class="lab">Edge</div><div class="tx">Prevents collection</div></div></div>
+              <div class="gate allow"><span class="dot" style="animation-delay:.6s"></span><div><div class="lab">Core</div><div class="tx">Suppresses &amp; audits</div></div></div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <div class="controls">
+      <button class="navbtn" id="prev"><svg class="ic sm" style="transform:rotate(180deg);stroke:currentColor"><use href="#i-arrow"/></svg> Prev</button>
+      <div class="dots" id="dots"></div>
+      <span class="idx"><b id="cur">01</b> / <span id="tot">17</span></span>
+      <button class="navbtn" id="next">Next <svg class="ic sm" style="stroke:currentColor"><use href="#i-arrow"/></svg></button>
+    </div>
+    <div class="hint">← / → · SPACE · F FULLSCREEN</div>
+
+    <script>
+      (function () {
+        var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+        var total = slides.length;
+        var cur = document.getElementById("cur");
+        var tot = document.getElementById("tot");
+        var section = document.getElementById("section");
+        var progress = document.getElementById("progress");
+        var dotsWrap = document.getElementById("dots");
+        var prevBtn = document.getElementById("prev");
+        var nextBtn = document.getElementById("next");
+        var stage = document.querySelector(".stage");
+        var idx = 0;
+        var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+        tot.textContent = pad(total);
+
+        slides.forEach(function (_, i) {
+          var b = document.createElement("button");
+          b.setAttribute("aria-label", "Slide " + (i + 1));
+          b.addEventListener("click", function () { go(i); });
+          dotsWrap.appendChild(b);
+        });
+        var dots = Array.prototype.slice.call(dotsWrap.children);
+
+        function render() {
+          slides.forEach(function (s, i) {
+            s.classList.toggle("active", i === idx);
+            s.setAttribute("aria-hidden", i === idx ? "false" : "true");
+          });
+          dots.forEach(function (d, i) { d.classList.toggle("on", i === idx); });
+          cur.textContent = pad(idx + 1);
+          section.textContent = slides[idx].dataset.label || "";
+          progress.style.width = (total <= 1 ? 100 : (idx / (total - 1)) * 100) + "%";
+          prevBtn.disabled = idx === 0;
+          nextBtn.disabled = idx === total - 1;
+          if (("#" + (idx + 1)) !== location.hash) history.replaceState(null, "", "#" + (idx + 1));
+          stage.scrollTop = 0;
+        }
+        function go(n) { idx = Math.max(0, Math.min(total - 1, n)); render(); }
+
+        prevBtn.addEventListener("click", function () { go(idx - 1); });
+        nextBtn.addEventListener("click", function () { go(idx + 1); });
+        document.addEventListener("keydown", function (e) {
+          if (e.metaKey || e.ctrlKey || e.altKey) return;
+          switch (e.key) {
+            case "ArrowRight": case "PageDown": case " ": case "j": go(idx + 1); e.preventDefault(); break;
+            case "ArrowLeft": case "PageUp": case "k": go(idx - 1); e.preventDefault(); break;
+            case "Home": go(0); break;
+            case "End": go(total - 1); break;
+            case "f": case "F":
+              if (!document.fullscreenElement) { document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); }
+              else { document.exitFullscreen && document.exitFullscreen(); }
+              break;
+          }
+        });
+        window.addEventListener("hashchange", function () {
+          var n = parseInt(location.hash.replace("#", ""), 10);
+          if (!isNaN(n) && n - 1 !== idx) go(n - 1);
+        });
+        var start = parseInt(location.hash.replace("#", ""), 10);
+        if (!isNaN(start)) idx = Math.max(0, Math.min(total - 1, start - 1));
+        render();
+
+        // ---- live "your browser right now" readout ----
+        var gpc = navigator.globalPrivacyControl === true;
+        var dntRaw = navigator.doNotTrack || navigator.msDoNotTrack || window.doNotTrack || null;
+        var dnt = dntRaw === "1" || dntRaw === "yes";
+        var optedOut = gpc || dnt;
+        var rows = [
+          { name: "Global Privacy Control", raw: String(navigator.globalPrivacyControl) },
+          { name: "Do Not Track", raw: String(dntRaw) },
+        ];
+        var sig = document.getElementById("signals");
+        if (sig) sig.innerHTML = rows.map(function (r) {
+          return "<tr><td>" + r.name + "</td><td><code>" + r.raw + "</code></td></tr>";
+        }).join("");
+        var el = document.getElementById("decision");
+        if (el) {
+          if (optedOut) {
+            el.className = "decision stop";
+            el.innerHTML = "<span class='dot'>&#128683;</span><span>You're opted out — the tag would NOT initialize<span class='sub'>No events, no cookies. GPC=" + gpc + ", DNT=" + dnt + "</span></span>";
+          } else {
+            el.className = "decision ok";
+            el.innerHTML = "<span class='dot'>&#9989;</span><span>No US opt-out signal — the tag would initialize normally<span class='sub'>Set GPC (Brave/Firefox) and reload to see it flip.</span></span>";
+          }
+        }
+      })();
+    </script>
+  </body>
+</html>
