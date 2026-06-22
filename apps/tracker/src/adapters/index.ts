@@ -9,6 +9,7 @@ import withEnsureBasketItemsOrderId from "@mediajel/tracker-core/snowplow/extens
 import withRegisterThirdPartyTagsExtension from "@mediajel/tracker-core/snowplow/extensions/register-third-party-tags";
 import { QueryStringContext } from "@mediajel/tracker-core/types";
 import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
+import loadErrorAdapter from "./error";
 
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   const plugins = context?.plugin?.split(",") || [];
@@ -30,9 +31,12 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
       (await import("@mediajel/tracker-core/snowplow/extensions").then(({ withBingAdsExtension }) => withBingAdsExtension)),
   ]);
 
-  // Always-on error capture, independent of context.event. Subscribe before any
-  // data source can throw.
-  import("./error").then(({ default: load }): Promise<void> => load(tracker));
+  // Always-on error capture, independent of context.event. Static import (not a
+  // dynamic chunk) so the observable subscription is registered synchronously,
+  // before window.trackError is exposed and before the event switch loads any
+  // data source — otherwise an error fired in the import gap is dropped (the
+  // observable has no replay).
+  loadErrorAdapter(tracker);
 
   // Public API: external appId/domain overrides report caught errors through the
   // same observable funnel (cap/dedupe/attribution shared with internal producers).
