@@ -29,6 +29,10 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
       (await import("@mediajel/tracker-core/snowplow/extensions").then(({ withBingAdsExtension }) => withBingAdsExtension)),
   ]);
 
+  // Always-on error capture, independent of context.event. Subscribe before any
+  // data source can throw.
+  import("./error").then(({ default: load }): Promise<void> => load(tracker));
+
   window.trackTrans = tracker.ecommerce?.trackTransaction ?? (() => {});
   window.trackSignUp = tracker.trackSignup;
   window.addToCart = tracker.ecommerce?.trackAddToCart ?? (() => {});
