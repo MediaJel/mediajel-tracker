@@ -1,5 +1,6 @@
 import {
-    CartEvent, ImpressionsMacrosParams, QueryStringContext, SignupParams, TransactionEvent
+    ApplicationErrorEvent, CartEvent, ImpressionsMacrosParams, QueryStringContext, SignupParams,
+    TransactionEvent
 } from '@mediajel/tracker-core/types';
 
 export interface SnowplowTrackerInitializeInput {
@@ -12,6 +13,8 @@ export interface SnowplowTracker {
   initialize: (input: SnowplowTrackerInitializeInput) => void;
   /** Mainly used for book-keeping purposes so we can document params & the tag itself */
   record: (input: QueryStringContext) => void;
+  /** Routes a caught application error to Snowplow's application_error event. */
+  trackError: (input: ApplicationErrorEvent) => void;
   ecommerce?: SnowplowTrackerEcommerceEvents;
   impressions?: SnowplowTrackerImpressionEvents;
   /** Used for tracking a signup when rendering the tag, acts like an image tag */
@@ -34,5 +37,5 @@ export interface SnowplowTrackerImpressionEvents {
 
 export interface CreateSnowplowTrackerInput extends QueryStringContext {}
 
-export { TransactionEvent, CartEvent, SignupParams };
+export { TransactionEvent, CartEvent, SignupParams, ApplicationErrorEvent };
 
