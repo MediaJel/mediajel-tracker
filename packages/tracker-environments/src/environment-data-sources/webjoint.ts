@@ -1,3 +1,4 @@
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
 
 import { xhrRequestSource } from "@mediajel/tracker-core/sources/xhr-request-source";
@@ -34,7 +35,7 @@ const webjointDataSource = () => {
           },
         });
       } catch (error) {
-        // window.tracker("trackError", JSON.stringify(error), "WEBJOINT");
+        notifyError(error, "webjoint");
       }
     }
   });

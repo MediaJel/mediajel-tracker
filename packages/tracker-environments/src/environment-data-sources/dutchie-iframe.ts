@@ -1,3 +1,4 @@
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
 
 import { postMessageSource } from "@mediajel/tracker-core/sources/post-message-source";
@@ -73,7 +74,7 @@ const dutchieIframeDataSource = () => {
           },
         });
       } catch (error) {
-        // window.tracker("trackError", JSON.stringify(error), "DUTCHIEIFRAME");
+        notifyError(error, "dutchie-iframe");
       }
     }
 
@@ -109,7 +110,7 @@ const dutchieIframeDataSource = () => {
           },
         });
       } catch (error) {
-        // window.tracker("trackError", JSON.stringify(error), "DUTCHIEIFRAME");
+        notifyError(error, "dutchie-iframe");
       }
     }
   });

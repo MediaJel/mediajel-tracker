@@ -1,3 +1,4 @@
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
 
 import { xhrResponseSource } from "@mediajel/tracker-core/sources/xhr-response-source";
@@ -87,7 +88,7 @@ const buddiDataSource = (): void => {
           },
         });
       } catch (e) {
-        // window.tracker("trackError", JSON.stringify(e), "BUDDI");
+        notifyError(e, "buddi");
       }
     }
   });

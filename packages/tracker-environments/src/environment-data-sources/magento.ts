@@ -1,3 +1,4 @@
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import logger from "@mediajel/tracker-core/logger";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
 
@@ -187,7 +188,7 @@ const magentoDataSource = () => {
           },
         });
       } catch (error) {
-        // window.tracker("trackError", JSON.stringify(error), "MAGENTO");
+        notifyError(error, "magento");
       }
       sessionStorage.setItem("pixelData", "0");
     }, 1000);
