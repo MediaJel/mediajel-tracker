@@ -8,6 +8,7 @@ import {
 import withEnsureBasketItemsOrderId from "@mediajel/tracker-core/snowplow/extensions/ensure-basket-items-order-id";
 import withRegisterThirdPartyTagsExtension from "@mediajel/tracker-core/snowplow/extensions/register-third-party-tags";
 import { QueryStringContext } from "@mediajel/tracker-core/types";
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   const plugins = context?.plugin?.split(",") || [];
@@ -32,6 +33,10 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   // Always-on error capture, independent of context.event. Subscribe before any
   // data source can throw.
   import("./error").then(({ default: load }): Promise<void> => load(tracker));
+
+  // Public API: external appId/domain overrides report caught errors through the
+  // same observable funnel (cap/dedupe/attribution shared with internal producers).
+  window.trackError = notifyError;
 
   window.trackTrans = tracker.ecommerce?.trackTransaction ?? (() => {});
   window.trackSignUp = tracker.trackSignup;
