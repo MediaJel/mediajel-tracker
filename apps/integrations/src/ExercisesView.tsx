@@ -427,14 +427,6 @@ export function ExerciseWorkspace({
                       >
                         Reset
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 px-2 text-xs"
-                        onClick={() => onCode(exercise.solutionCode)}
-                      >
-                        Reveal solution
-                      </Button>
                     </div>
                   </div>
                   <div className="min-h-0 flex-1">

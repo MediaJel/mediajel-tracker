@@ -53,8 +53,8 @@ function useMicroHealth() {
 
 const codeKey = (id: string) => "mj-code-" + id;
 // Every lesson starts from a blank editor — learners write the integration from scratch
-// (the mission + hints guide them; "Reveal solution" is the escape hatch). We persist their
-// in-progress code per lesson, but the initial state is always empty.
+// (the mission + hints guide them). We persist their in-progress code per lesson, but the
+// initial state is always empty.
 const loadCode = (l: Lesson) => {
   try {
     return localStorage.getItem(codeKey(l.id)) ?? "";
@@ -514,9 +514,6 @@ function Workspace({
           <div className="ml-auto flex items-center gap-1">
             <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => onCode("")}>
               Clear
-            </Button>
-            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => onCode(lesson.solutionCode)}>
-              Reveal solution
             </Button>
           </div>
         </div>

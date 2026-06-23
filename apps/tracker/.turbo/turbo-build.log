@@ -1,5 +1,5 @@
 [0m[2m[35m$[0m [2m[1mnode scripts/run-parcel.mjs build src/index.ts --no-scope-hoist[0m
-[0J[0J[?25h✨ [32m[1mBuilt in 455ms[22m[39m
+[0J[0J[?25h✨ [32m[1mBuilt in 10.19s[22m[39m
 
 [2mdist/[22m[36m[1mindex.js[22m[39m                         [1m[35m22.16 KB[39m[22m    [32m[1m335ms[22m[39m
 [2mdist/[22m[36m[1madapters.5f7cda45.js[22m[39m             [1m[35m18.49 KB[39m[22m    [32m[1m340ms[22m[39m
