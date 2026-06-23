@@ -4,6 +4,9 @@ node_modules/
 # Build output
 dist/
 
+# Generated API docs (jsdoc / better-docs)
+/docs/
+
 # Caches
 .cache/
 .parcel-cache/
