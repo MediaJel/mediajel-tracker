@@ -1,10 +1,30 @@
-node_modules
-.cache
-# dist
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Caches
+.cache/
+.parcel-cache/
+.turbo/
+
+# Logs
+*.log
+
+# Environment / secrets
 .env
-.parcel-cache
-env
+.env.*
+!.env.example
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+
+# Cypress test artifacts
+**/cypress/videos/
+**/cypress/screenshots/
+**/cypress/downloads/
+
+# Misc
 todo.txt
-yarn-error.log
-cypress/videos
-cypress/screenshots
