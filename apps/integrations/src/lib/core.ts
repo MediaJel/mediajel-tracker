@@ -207,7 +207,9 @@ export interface Lesson {
   hints: string[];
   language: "html" | "javascript";
   starterCode: string;
-  solutionCode: string;
+  /** Optional reference solution. Intentionally omitted for most lessons — the learner writes the
+   * integration and Snowplow Micro is the sole grader; there is no "reveal answer" shortcut. */
+  solutionCode?: string;
   appId: string;
   /** Build the iframe srcdoc from the learner's code. */
   buildSandbox: (code: string, ctx: SandboxContext) => string;

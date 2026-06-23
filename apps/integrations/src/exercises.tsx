@@ -35,7 +35,6 @@ export interface Exercise {
   language: "html" | "javascript";
   goals: Goal[];
   starterCode: string;
-  solutionCode: string;
   /** Build the long-lived, interactive iframe srcdoc: simulated app + tag + learner code. */
   buildSandbox: (code: string, ctx: SandboxContext) => string;
 }
@@ -431,43 +430,6 @@ const ECOMMERCE_STARTER = `<!-- 1 · Install the MediaJel tracker on Greenleaf's
   });
 </script>`;
 
-const ECOMMERCE_SOLUTION = `<!-- Install Greenleaf's tracker -->
-<script src="https://tags.cnna.io/?appId=${STORE_APP_ID}"></script>
-
-<script>
-  // Cart actions arrive on the Google dataLayer:
-  window.datalayerSource(function (entry) {
-    var ec = entry && entry.ecommerce;
-    if (!ec || !ec.items || !ec.items[0]) return;
-    var i = ec.items[0];
-    var product = {
-      sku: String(i.item_id),
-      name: i.item_name || "N/A",
-      category: i.item_category || "N/A",
-      unitPrice: Number(i.price || 0),
-      quantity: Number(i.quantity || 1),
-      currency: ec.currency || "USD",
-    };
-    if (entry.event === "add_to_cart") window.addToCart(product);
-    if (entry.event === "remove_from_cart") window.removeFromCart(product);
-  });
-
-  // The order only exists in the checkout network call — sniff the response and forward the transaction:
-  window.xhrResponseSource(function (xhr) {
-    if (!xhr.responseURL || xhr.responseURL.indexOf("/api/checkout") === -1) return;
-    var o;
-    try { o = JSON.parse(xhr.responseText); } catch (e) { return; }
-    if (!o || !o.items) return;
-    window.trackTrans({
-      id: o.id, total: o.total, tax: o.tax || 0, shipping: o.shipping || 0,
-      currency: o.currency || "USD", city: o.city, state: o.state, country: o.country,
-      items: o.items.map(function (it) {
-        return { sku: it.sku, name: it.name, category: it.category, unitPrice: it.unitPrice, quantity: it.quantity, orderId: o.id, currency: o.currency || "USD" };
-      }),
-    });
-  });
-</script>`;
-
 /* ====================================================================== sign-up form */
 
 const FORM_CSS =
@@ -545,30 +507,6 @@ const SIGNUP_STARTER = `<!-- 1 · Install the MediaJel tracker. Use Greenleaf's 
     var u = entry.user || {};
     // TODO: window.tracker("trackSelfDescribingEvent", { event: { schema: "...sign_up/jsonschema/1-0-2",
     //        data: { uuid, firstName, lastName, emailAddress, hashedEmailAddress, phoneNumber, state } } })
-  });
-</script>`;
-
-const SIGNUP_SOLUTION = `<!-- Install Greenleaf's tracker -->
-<script src="https://tags.cnna.io/?appId=${SIGNUP_APP_ID}"></script>
-
-<script>
-  window.datalayerSource(function (entry) {
-    if (!entry || entry.event !== "sign_up") return;
-    var u = entry.user || {};
-    window.tracker("trackSelfDescribingEvent", {
-      event: {
-        schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-2",
-        data: {
-          uuid: u.uuid || u.emailAddress,
-          firstName: u.firstName,
-          lastName: u.lastName,
-          emailAddress: u.emailAddress,
-          hashedEmailAddress: u.hashedEmailAddress || u.emailAddress,
-          phoneNumber: u.phoneNumber || "N/A",
-          state: u.state,
-        },
-      },
-    });
   });
 </script>`;
 
