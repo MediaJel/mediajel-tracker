@@ -3,13 +3,15 @@ import {
   Lesson,
   MicroBundle,
   SandboxContext,
+  Section,
   findSelfDescribing,
+  noBadEvents,
   unstructData,
 } from "./lib/core";
 
 /* ------------------------------------------------------------------ sandbox builders */
 
-const consoleBridge = `
+export const consoleBridge = `
 ['log','info','warn','error'].forEach(function(l){
   var o=console[l]?console[l].bind(console):function(){};
   console[l]=function(){ try{parent.postMessage({__mj:'log',level:l,text:[].slice.call(arguments).map(function(a){return typeof a==='object'?JSON.stringify(a):String(a);}).join(' ')},'*');}catch(e){} o.apply(null,arguments); };
@@ -103,12 +105,7 @@ ${appId ? `<script src="${tag}"></script>` : "<!-- no appId found in your tag --
 
 /* ------------------------------------------------------------------ validator helpers */
 
-const ok = (
-  id: string,
-  label: string,
-  pass: boolean,
-  detail?: string | false | null | 0,
-): Check => ({
+const ok = (id: string, label: string, pass: boolean, detail?: string | false | null | 0): Check => ({
   id,
   label,
   pass,
@@ -126,8 +123,6 @@ export const LESSONS: Lesson[] = [
   /* ---------------------------------------------------------------- 0. Snowplow basics */
   {
     id: "basics",
-    number: 0,
-    section: "Basics",
     title: "Snowplow Basics",
     tagline: "Collectors, events & schemas",
     difficulty: "Basics",
@@ -173,8 +168,6 @@ window.tracker("trackStructEvent", {
   /* ---------------------------------------------------------------- 1. Add the tracker */
   {
     id: "add-tag",
-    number: 1,
-    section: "Basics",
     title: "Add the Tracker",
     tagline: "Your first tag",
     difficulty: "Basics",
@@ -189,10 +182,7 @@ As soon as it boots, the tag fires a **page view** on its own — no code requir
       "Set the `appId` query parameter to `" + APP + "-tag` (replace the `YOUR_APP_ID` placeholder).",
       "Confirm the tag boots and emits its automatic `page_view` carrying the correct `app_id`.",
     ],
-    hints: [
-      "The query string carries the config: ...cnna.io/?appId=YOUR_APP_ID",
-      `Use appId=${APP}-tag`,
-    ],
+    hints: ["The query string carries the config: ...cnna.io/?appId=YOUR_APP_ID", `Use appId=${APP}-tag`],
     starterCode: `<!-- Paste this on your site, just before </head> -->
 <script src="https://tags.cnna.io/?appId=YOUR_APP_ID"></script>`,
     solutionCode: `<script src="https://tags.cnna.io/?appId=${APP}-tag"></script>`,
@@ -212,8 +202,6 @@ As soon as it boots, the tag fires a **page view** on its own — no code requir
   /* ---------------------------------------------------------------- 2. Transactions */
   {
     id: "transactions",
-    number: 2,
-    section: "Basics",
     title: "Track Transactions",
     tagline: "Ecommerce purchases",
     difficulty: "Intermediate",
@@ -253,10 +241,16 @@ window.trackTrans({
       const total = tx?.event?.tr_total;
       return [
         ok("tx", "A transaction reached the pipeline", !!tx),
-        ok("id", 'Order id is "T-1001"', tx?.event?.tr_orderid === "T-1001", tx?.event?.tr_orderid && `got "${tx.event.tr_orderid}"`),
+        ok(
+          "id",
+          'Order id is "T-1001"',
+          tx?.event?.tr_orderid === "T-1001",
+          tx?.event?.tr_orderid && `got "${tx.event.tr_orderid}"`,
+        ),
         ok("total", "Total is 129.99", Number(total) === 129.99, total != null && `got ${total}`),
         ok("currency", "Currency is USD", tx?.event?.tr_currency === "USD"),
         ok("items", "At least one line item was tracked", items.length >= 1, `${items.length} item(s)`),
+        ok("valid", "Every event validated against its schema (none quarantined by Micro)", noBadEvents(b)),
       ];
     },
   },
@@ -264,8 +258,6 @@ window.trackTrans({
   /* ---------------------------------------------------------------- 3. Sign ups */
   {
     id: "signups",
-    number: 3,
-    section: "Basics",
     title: "Track Sign Ups",
     tagline: "Registration conversions",
     difficulty: "Intermediate",
@@ -297,12 +289,17 @@ window.trackSignUp({
     buildSandbox: (code, ctx) => jsSandbox(code, ctx, "training"),
     validate: (b) => {
       const ev = findSelfDescribing(b, "sign_up");
-      const data = ev ? unstructData(ev)?.data ?? ev.event?.unstruct_event?.data?.data : null;
+      const data = ev ? (unstructData(ev)?.data ?? ev.event?.unstruct_event?.data?.data) : null;
       return [
         ok("captured", "A self-describing sign_up event was captured", !!ev),
-        ok("schema", "Validated against the com.mediajel.events/sign_up schema", !!ev && (ev.schema || "").includes("sign_up")),
+        ok(
+          "schema",
+          "Validated against the com.mediajel.events/sign_up schema",
+          !!ev && (ev.schema || "").includes("sign_up"),
+        ),
         ok("email", "emailAddress is present", !!data?.emailAddress, data?.emailAddress),
         ok("uuid", "uuid is present", !!data?.uuid, data?.uuid),
+        ok("valid", "Validated against its schema (none quarantined by Micro)", noBadEvents(b)),
       ];
     },
   },
@@ -310,8 +307,6 @@ window.trackSignUp({
   /* ---------------------------------------------------------------- 4. Ad impressions */
   {
     id: "impressions",
-    number: 4,
-    section: "Basics",
     title: "Track Ad Impressions",
     tagline: "DSP impression events",
     difficulty: "Advanced",
@@ -352,12 +347,17 @@ window.tracker("trackSelfDescribingEvent", {
     buildSandbox: (code, ctx) => jsSandbox(code, ctx, "training"),
     validate: (b) => {
       const ev = findSelfDescribing(b, "ad_impression");
-      const data = ev ? unstructData(ev)?.data ?? ev.event?.unstruct_event?.data?.data : null;
+      const data = ev ? (unstructData(ev)?.data ?? ev.event?.unstruct_event?.data?.data) : null;
       return [
         ok("captured", "An ad_impression event was captured", !!ev),
-        ok("schema", "Validated against com.mediajel.events/ad_impression", !!ev && (ev.schema || "").includes("ad_impression")),
+        ok(
+          "schema",
+          "Validated against com.mediajel.events/ad_impression",
+          !!ev && (ev.schema || "").includes("ad_impression"),
+        ),
         ok("advertiser", "advertiserId is present", !!data?.advertiserId, data?.advertiserId),
         ok("creative", "creativeId is present", !!data?.creativeId, data?.creativeId),
+        ok("valid", "Validated against its schema (none quarantined by Micro)", noBadEvents(b)),
       ];
     },
   },
@@ -365,8 +365,6 @@ window.tracker("trackSelfDescribingEvent", {
   /* ---------------------------------------------------------------- 5. Google dataLayer */
   {
     id: "datalayer",
-    number: 7,
-    section: "Basics",
     title: "Listen to the Google dataLayer",
     tagline: "Auto-capture from GTM",
     difficulty: "Advanced",
@@ -377,7 +375,7 @@ window.tracker("trackSelfDescribingEvent", {
 
 This is the first of three **auto-capture** sources (dataLayer, network, iframe). You write no tracker call at all — you just produce the signal the site already produces, and the tracker (running in \`environment=training\`) does the mapping.`,
     objectives: [
-      'Push a GA4 `purchase` object to `window.dataLayer` (an `event` plus an `ecommerce` block with `items`).',
+      "Push a GA4 `purchase` object to `window.dataLayer` (an `event` plus an `ecommerce` block with `items`).",
       "Use transaction_id `DL-5500`, value `84.00`, currency `USD`, and GA4 item keys (item_id, item_name, …).",
       "Confirm the tracker auto-detects it and forwards a `transaction` with the id and total intact.",
     ],
@@ -401,9 +399,20 @@ window.dataLayer.push({ event: "purchase", ecommerce: { transaction_id: "DL-5500
       const tx = txEvent(b);
       return [
         ok("captured", "The dataLayer purchase was auto-detected as a transaction", !!tx),
-        ok("id", 'Transaction id is "DL-5500"', tx?.event?.tr_orderid === "DL-5500", tx?.event?.tr_orderid && `got "${tx.event.tr_orderid}"`),
-        ok("total", "Value (84.00) carried through", Number(tx?.event?.tr_total) === 84, tx?.event?.tr_total != null && `got ${tx.event.tr_total}`),
+        ok(
+          "id",
+          'Transaction id is "DL-5500"',
+          tx?.event?.tr_orderid === "DL-5500",
+          tx?.event?.tr_orderid && `got "${tx.event.tr_orderid}"`,
+        ),
+        ok(
+          "total",
+          "Value (84.00) carried through",
+          Number(tx?.event?.tr_total) === 84,
+          tx?.event?.tr_total != null && `got ${tx.event.tr_total}`,
+        ),
         ok("items", "Line item(s) carried through", txItems(b).length >= 1, `${txItems(b).length} item(s)`),
+        ok("valid", "Every event validated against its schema (none quarantined by Micro)", noBadEvents(b)),
       ];
     },
   },
@@ -411,8 +420,6 @@ window.dataLayer.push({ event: "purchase", ecommerce: { transaction_id: "DL-5500
   /* ---------------------------------------------------------------- 6. Network requests */
   {
     id: "network",
-    number: 8,
-    section: "Basics",
     title: "Listen to Network Requests",
     tagline: "Auto-capture from fetch/XHR",
     difficulty: "Advanced",
@@ -423,7 +430,7 @@ window.dataLayer.push({ event: "purchase", ecommerce: { transaction_id: "DL-5500
 
 A mock checkout endpoint is wired up at **\`/mock/orders\`** and returns one such order. Trigger the request and let the tracker's interceptor recognise and forward it.`,
     objectives: [
-      "Call `fetch(\"/mock/orders\")` to trigger the order response.",
+      'Call `fetch("/mock/orders")` to trigger the order response.',
       "Let the tracker's fetch interceptor parse the order-shaped JSON body.",
       "Confirm transaction `NET-7700` is captured from the response.",
     ],
@@ -441,8 +448,14 @@ A mock checkout endpoint is wired up at **\`/mock/orders\`** and returns one suc
       const tx = txEvent(b);
       return [
         ok("captured", "The order was intercepted from the network response", !!tx),
-        ok("id", 'Transaction id is "NET-7700"', tx?.event?.tr_orderid === "NET-7700", tx?.event?.tr_orderid && `got "${tx.event.tr_orderid}"`),
+        ok(
+          "id",
+          'Transaction id is "NET-7700"',
+          tx?.event?.tr_orderid === "NET-7700",
+          tx?.event?.tr_orderid && `got "${tx.event.tr_orderid}"`,
+        ),
         ok("items", "Line item(s) carried through", txItems(b).length >= 1, `${txItems(b).length} item(s)`),
+        ok("valid", "Every event validated against its schema (none quarantined by Micro)", noBadEvents(b)),
       ];
     },
   },
@@ -450,8 +463,6 @@ A mock checkout endpoint is wired up at **\`/mock/orders\`** and returns one suc
   /* ---------------------------------------------------------------- 7. Iframes */
   {
     id: "iframes",
-    number: 9,
-    section: "Basics",
     title: "Listen to Iframes",
     tagline: "postMessage from embedded checkouts",
     difficulty: "Advanced",
@@ -486,9 +497,20 @@ window.postMessage(
       const tx = txEvent(b);
       return [
         ok("captured", "The iframe message was captured as a transaction", !!tx),
-        ok("id", 'Transaction id is "IF-9900"', tx?.event?.tr_orderid === "IF-9900", tx?.event?.tr_orderid && `got "${tx.event.tr_orderid}"`),
-        ok("total", "Total (250.00) carried through", Number(tx?.event?.tr_total) === 250, tx?.event?.tr_total != null && `got ${tx.event.tr_total}`),
+        ok(
+          "id",
+          'Transaction id is "IF-9900"',
+          tx?.event?.tr_orderid === "IF-9900",
+          tx?.event?.tr_orderid && `got "${tx.event.tr_orderid}"`,
+        ),
+        ok(
+          "total",
+          "Total (250.00) carried through",
+          Number(tx?.event?.tr_total) === 250,
+          tx?.event?.tr_total != null && `got ${tx.event.tr_total}`,
+        ),
         ok("items", "Line item(s) carried through", txItems(b).length >= 1, `${txItems(b).length} item(s)`),
+        ok("valid", "Every event validated against its schema (none quarantined by Micro)", noBadEvents(b)),
       ];
     },
   },
@@ -496,8 +518,6 @@ window.postMessage(
   /* ---------------------------------------------------------------- 5. Add to cart */
   {
     id: "add-to-cart",
-    number: 5,
-    section: "Basics",
     title: "Track Add to Cart",
     tagline: "Cart engagement",
     difficulty: "Intermediate",
@@ -521,11 +541,12 @@ window.addToCart({
     buildSandbox: (code, ctx) => jsSandbox(code, ctx, "training"),
     validate: (b) => {
       const ev = findSelfDescribing(b, "add_to_cart");
-      const data = ev ? unstructData(ev)?.data ?? ev.event?.unstruct_event?.data?.data : null;
+      const data = ev ? (unstructData(ev)?.data ?? ev.event?.unstruct_event?.data?.data) : null;
       return [
         ok("captured", "An add_to_cart event reached the pipeline", !!ev),
         ok("sku", 'sku is "SKU-9"', data?.sku === "SKU-9", data?.sku && `got "${data.sku}"`),
         ok("name", "A product name was tracked", !!data?.name, data?.name),
+        ok("valid", "Validated against the add_to_cart schema (none quarantined by Micro)", noBadEvents(b)),
       ];
     },
   },
@@ -533,8 +554,6 @@ window.addToCart({
   /* ---------------------------------------------------------------- 6. Remove from cart */
   {
     id: "remove-from-cart",
-    number: 6,
-    section: "Basics",
     title: "Track Remove from Cart",
     tagline: "Cart abandonment",
     difficulty: "Intermediate",
@@ -558,10 +577,11 @@ window.removeFromCart({
     buildSandbox: (code, ctx) => jsSandbox(code, ctx, "training"),
     validate: (b) => {
       const ev = findSelfDescribing(b, "remove_from_cart");
-      const data = ev ? unstructData(ev)?.data ?? ev.event?.unstruct_event?.data?.data : null;
+      const data = ev ? (unstructData(ev)?.data ?? ev.event?.unstruct_event?.data?.data) : null;
       return [
         ok("captured", "A remove_from_cart event reached the pipeline", !!ev),
         ok("sku", 'sku is "SKU-9"', data?.sku === "SKU-9", data?.sku && `got "${data.sku}"`),
+        ok("valid", "Validated against the remove_from_cart schema (none quarantined by Micro)", noBadEvents(b)),
       ];
     },
   },
@@ -569,8 +589,6 @@ window.removeFromCart({
   /* ---------------------------------------------------------------- 10. Build an extension (Advanced) */
   {
     id: "extension",
-    number: 10,
-    section: "Advanced",
     title: "Build a Tracker Extension",
     tagline: "Intercept signals with (tracker) => tracker",
     difficulty: "Advanced",
@@ -615,8 +633,19 @@ window.trackTrans({ id: "EXT-1", total: 100, currency: "USD", tax: 0, shipping: 
       const tx = txEvent(b);
       return [
         ok("captured", "The transaction reached the pipeline", !!tx),
-        ok("id", 'Transaction id is "EXT-1"', tx?.event?.tr_orderid === "EXT-1", tx?.event?.tr_orderid && `got "${tx.event.tr_orderid}"`),
-        ok("intercepted", "Your extension intercepted it — total is 105 (100 + $5 fee)", Number(tx?.event?.tr_total) === 105, tx?.event?.tr_total != null && `got ${tx.event.tr_total}`),
+        ok(
+          "id",
+          'Transaction id is "EXT-1"',
+          tx?.event?.tr_orderid === "EXT-1",
+          tx?.event?.tr_orderid && `got "${tx.event.tr_orderid}"`,
+        ),
+        ok(
+          "intercepted",
+          "Your extension intercepted it — total is 105 (100 + $5 fee)",
+          Number(tx?.event?.tr_total) === 105,
+          tx?.event?.tr_total != null && `got ${tx.event.tr_total}`,
+        ),
+        ok("valid", "Every event validated against its schema (none quarantined by Micro)", noBadEvents(b)),
       ];
     },
   },
@@ -624,8 +653,6 @@ window.trackTrans({ id: "EXT-1", total: 100, currency: "USD", tax: 0, shipping: 
   /* ---------------------------------------------------------------- 11. Frictionless custom tag (Advanced) */
   {
     id: "frictionless",
-    number: 11,
-    section: "Advanced",
     title: "Deploy a Frictionless Custom Tag",
     tagline: "Per-domain one-off scripts",
     difficulty: "Advanced",
@@ -672,11 +699,12 @@ submit.addEventListener("click", function () {
     buildSandbox: (code, ctx) => frictionlessSandbox(code, ctx),
     validate: (b) => {
       const ev = findSelfDescribing(b, "sign_up");
-      const data = ev ? unstructData(ev)?.data ?? ev.event?.unstruct_event?.data?.data : null;
+      const data = ev ? (unstructData(ev)?.data ?? ev.event?.unstruct_event?.data?.data) : null;
       return [
         ok("captured", "A sign_up fired when the form was submitted", !!ev),
         ok("email", "The visitor's email was captured", !!data?.emailAddress, data?.emailAddress),
         ok("name", "The visitor's name was captured", !!data?.firstName, data?.firstName),
+        ok("valid", "Validated against the sign_up schema (none quarantined by Micro)", noBadEvents(b)),
       ];
     },
   },
@@ -684,11 +712,43 @@ submit.addEventListener("click", function () {
 
 export const lessonById = (id: string) => LESSONS.find((l) => l.id === id);
 
-/** Lessons grouped by section, in display order. */
-export const SECTIONS: { id: import("./lib/core").Section; label: string; blurb: string }[] = [
-  { id: "Basics", label: "Basics", blurb: "Install the tag and capture the core events." },
-  { id: "Advanced", label: "Advanced", blurb: "Extend the tracker and ship per-domain custom tags." },
+/* ------------------------------------------------------------------ curriculum */
+
+/**
+ * The curriculum: a flat list of sections, each a card on the Courses page. "Getting Started" folds
+ * in everything an advertiser needs first — the tag, the basics, and the core conversions; "Advanced"
+ * holds the rest. This is the SINGLE source of truth for grouping and ordering — change a `lessonIds`
+ * array to reorder or regroup; the LESSONS array order is irrelevant. (Pre-requisites — the debugging
+ * extensions — is a separate, lesson-free card handled in the UI.)
+ */
+export const SECTIONS: Section[] = [
+  {
+    id: "getting-started",
+    label: "Getting Started",
+    icon: "🚀",
+    blurb: "Install the tag, learn how the pipeline works, and capture the core conversions every advertiser needs.",
+    lessonIds: ["add-tag", "basics", "transactions", "signups", "add-to-cart", "remove-from-cart"],
+  },
+  {
+    id: "advanced",
+    label: "Advanced",
+    icon: "⚡",
+    blurb:
+      "Auto-capture from the page, fire raw self-describing events, extend the tracker, and ship per-domain custom tags.",
+    lessonIds: ["datalayer", "network", "iframes", "impressions", "extension", "frictionless"],
+  },
 ];
 
-export const lessonsBySection = (section: import("./lib/core").Section) =>
-  LESSONS.filter((l) => l.section === section).sort((a, b) => a.number - b.number);
+/** All lessons in curriculum (display) order — the canonical sequence for stepping & numbering. */
+export const ORDERED_LESSONS: Lesson[] = SECTIONS.flatMap((s) =>
+  s.lessonIds.map((id) => lessonById(id)).filter((l): l is Lesson => !!l),
+);
+
+/** Zero-based position of a lesson in the overall curriculum (−1 if not found). */
+export const lessonIndex = (id: string) => ORDERED_LESSONS.findIndex((l) => l.id === id);
+
+/** The next lesson in curriculum order, or undefined at the end. */
+export const nextLesson = (id: string): Lesson | undefined => ORDERED_LESSONS[lessonIndex(id) + 1];
+
+/** The section a lesson belongs to. */
+export const sectionOf = (id: string) => SECTIONS.find((s) => s.lessonIds.includes(id));

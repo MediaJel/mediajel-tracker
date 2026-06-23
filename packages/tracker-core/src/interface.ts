@@ -50,5 +50,18 @@ declare global {
     mj_liquidm_click_macros?: unknown;
     navigation?: { addEventListener: (type: string, cb: (e: Event) => void) => void };
     "$sl"?: { cartReview?: { form?: { name?: string } } };
+
+    // --- Exposed only by the `exercise` environment (apps/integrations Exercises feature) ---
+    // The real tracker-core data sources, surfaced as globals so learner code can wire capture itself.
+    datalayerSource?: (callback: (data: any) => void, dataLayer?: any[]) => void;
+    xhrRequestSource?: (callback: (xhrRequest: Document | XMLHttpRequestBodyInit) => void) => void;
+    xhrResponseSource?: (callback: (xhrResponse: XMLHttpRequest) => void) => void;
+    fetchSource?: (
+      requestCallback: (input: RequestInfo | URL, init?: RequestInit) => void,
+      responseCallback: (response: Response, responseBody: any) => void,
+    ) => void;
+    postMessageSource?: (callback: (event: MessageEvent<any>) => void) => void;
+    formatXhrPayload?: (data: Document | XMLHttpRequestBodyInit) => unknown;
+    mjApplyExtension?: (ext: (t: any) => any) => any;
   }
 }

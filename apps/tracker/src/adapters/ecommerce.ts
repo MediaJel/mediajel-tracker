@@ -28,6 +28,13 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
         // Generic data source for the Integrations training site (dataLayer + fetch + postMessage).
         import("@mediajel/tracker-environments/environment-data-sources/training").then(({ default: load }): void => load(tracker));
         break;
+      case "exercise":
+        // Exercises feature (apps/integrations): exposes the raw data sources as globals so the
+        // learner writes capture by hand. NO auto-capture — never notifies the observable above.
+        import("@mediajel/tracker-environments/environment-data-sources/exercise").then(({ default: load }): void => load(tracker));
+        // description: "exercise powers the apps/integrations Exercises feature (learner-written capture)"
+        // events-tracked: [{ "value": "transaction", "label": "Transaction" }, { "value": "add_to_cart", "label": "Add to Cart" }, { "value": "remove_from_cart", "label": "Remove from Cart" }, { "value": "sign_up", "label": "Sign Up" }]
+        break;
       case "bigcommerce":
         import("@mediajel/tracker-environments/environment-data-sources/bigcommerce").then(({ default: load }): void => load(tracker));
         // description: "bigcommerce is just a test description"

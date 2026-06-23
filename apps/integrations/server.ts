@@ -86,6 +86,14 @@ Bun.serve({
       // Lesson 6 mock order endpoint — order-shaped JSON the tracker's fetch source auto-detects.
       if (p === "/mock/orders") return Response.json(MOCK_ORDER, { headers: CORS });
 
+      // Exercises feature — the simulated store/form POSTs here on checkout / sign-up. We echo the
+      // posted JSON back so the learner's fetch/XHR capture (and the inspector's Network sniffer)
+      // see a clean 200 with the order/user body; the request body is what the capture reads.
+      if (p === "/api/checkout" || p === "/api/signup") {
+        const body = await req.json().catch(() => ({}));
+        return Response.json(body, { headers: CORS });
+      }
+
       // Proxy collector + Micro REST API.
       if (isMicro(p)) {
         try {

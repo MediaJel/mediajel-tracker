@@ -162,7 +162,6 @@ export function runSandbox(srcdoc: string, maxMs = 9000): Promise<SandboxResult>
 
 // ---------------------------------------------------------------------------- Lesson model
 export type Difficulty = "Basics" | "Intermediate" | "Advanced";
-export type Section = "Basics" | "Advanced";
 
 export interface Check {
   id: string;
@@ -180,10 +179,16 @@ export interface SandboxContext {
   tagUrl: (params: Record<string, string>) => string;
 }
 
+/** Build a SandboxContext for an appId against the current origin (shared by lessons & exercises). */
+export const ctxFor = (appId: string): SandboxContext => ({
+  origin: location.origin,
+  appId,
+  host: location.host,
+  tagUrl: (params) => "/tag/index.js?" + new URLSearchParams(params).toString(),
+});
+
 export interface Lesson {
   id: string;
-  number: number;
-  section: Section;
   title: string;
   tagline: string;
   difficulty: Difficulty;
@@ -203,12 +208,36 @@ export interface Lesson {
   validate: (bundle: MicroBundle) => Check[];
 }
 
-// ---------------------------------------------------------------------------- Validator helpers
-export const findGood = (b: MicroBundle, pred: (e: MicroGoodEvent) => boolean) =>
-  b.good.find(pred);
+// ---------------------------------------------------------------------------- Curriculum model
+/**
+ * The curriculum is a flat list of Sections, each a card on the Courses page (mirroring Exercises).
+ * A Section lists its lessons by id in display order. This manifest (in lessons.tsx) is the single
+ * source of truth for grouping AND ordering — the LESSONS array order is irrelevant and lessons
+ * carry no position field of their own. (Pre-requisites is handled separately in the UI — it has no
+ * lessons, just the debugging tools to install.)
+ */
+export interface Section {
+  id: string;
+  label: string;
+  blurb: string;
+  /** Emoji shown on the section card. */
+  icon: string;
+  /** Lesson ids, in the order they should appear within this section. */
+  lessonIds: string[];
+}
 
-export const hasEventType = (b: MicroBundle, t: string) =>
-  b.good.some((e) => e.eventType === t);
+// ---------------------------------------------------------------------------- Validator helpers
+export const findGood = (b: MicroBundle, pred: (e: MicroGoodEvent) => boolean) => b.good.find(pred);
+
+export const hasEventType = (b: MicroBundle, t: string) => b.good.some((e) => e.eventType === t);
+
+/**
+ * True when Micro quarantined nothing — i.e. every event the learner produced validated against
+ * its Iglu schema and reached `/micro/good`, with none routed to `/micro/bad`. This is the literal
+ * "the events received are correct" guarantee: a malformed payload (wrong type, missing required
+ * field, unknown property) lands in `bad` and flips this to false.
+ */
+export const noBadEvents = (b: MicroBundle) => b.bad.length === 0;
 
 /** Pull the inner self-describing event data (works for good events). */
 export function unstructData(e: MicroGoodEvent): { schema?: string; data?: any } | null {
