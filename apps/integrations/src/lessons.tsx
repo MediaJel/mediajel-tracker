@@ -14,7 +14,24 @@ import {
 export const consoleBridge = `
 ['log','info','warn','error'].forEach(function(l){
   var o=console[l]?console[l].bind(console):function(){};
-  console[l]=function(){ try{parent.postMessage({__mj:'log',level:l,text:[].slice.call(arguments).map(function(a){return typeof a==='object'?JSON.stringify(a):String(a);}).join(' ')},'*');}catch(e){} o.apply(null,arguments); };
+  console[l]=function(){
+    try{
+      var a=[].slice.call(arguments);
+      var ser=function(x){ return (typeof x==='object'&&x!==null)?JSON.stringify(x,null,2):String(x); };
+      var text='', css='';
+      if (typeof a[0]==='string' && a[0].indexOf('%c')!==-1){
+        // console.log("%c<msg>", "<css>") — keep the css so the inspector can render the colored badge.
+        text=a[0].replace(/%c/g,'');
+        css=(typeof a[1]==='string')?a[1]:'';
+        var extra=a.slice(2).map(ser);
+        if (extra.length) text+=' '+extra.join(' ');
+      } else {
+        text=a.map(ser).join(' ');
+      }
+      parent.postMessage({__mj:'log',level:l,text:text,css:css},'*');
+    }catch(e){}
+    o.apply(null,arguments);
+  };
 });
 window.addEventListener('error',function(e){ try{parent.postMessage({__mj:'error',error:e.message},'*');}catch(_){} });`;
 
@@ -102,6 +119,53 @@ ${appId ? `<script src="${tag}"></script>` : "<!-- no appId found in your tag --
 </body></html>`;
   return { srcdoc, appId };
 }
+
+/**
+ * "Listen" sandbox for the auto-capture lessons (dataLayer / network / iframe). Loads the tag in
+ * `environment=exercise`, which EXPOSES the data sources on `window` but auto-captures nothing — so
+ * the learner writes the listener themselves. The site emits the signal: `seedJs` runs before the
+ * tag (e.g. pre-populates window.dataLayer, which `datalayerSource` replays on subscribe), and
+ * `emitJs` runs just AFTER the learner's listener is attached (e.g. fires the XHR / postMessage).
+ * The learner debugs by logging inside their callback; nothing reaches Micro unless they forward it.
+ */
+function listenSandbox(
+  code: string,
+  ctx: SandboxContext,
+  opts: { readyExpr: string; seedJs?: string; emitJs?: string },
+): string {
+  const tag = ctx.tagUrl({ appId: ctx.appId, environment: "exercise", version: "2" });
+  const overrides = JSON.stringify({ [ctx.appId]: { collector: "//" + ctx.host } });
+  return `<!doctype html><html><head><base href="${ctx.origin}/"><meta charset="utf-8">
+<script>window.overrides=${overrides};window.dataLayer=window.dataLayer||[];${opts.seedJs || ""}${consoleBridge}</script>
+<script src="${tag}"></script>
+</head><body>
+<script>
+(function(){
+  function ready(){ return ${opts.readyExpr}; }
+  function run(){
+    setTimeout(function(){
+      try { ${code} } catch(err){ parent.postMessage({__mj:'error',error:String(err&&err.message||err)},'*'); }
+      setTimeout(function(){
+        try { ${opts.emitJs || ""} } catch(e){ parent.postMessage({__mj:'error',error:String(e&&e.message||e)},'*'); }
+        setTimeout(function(){ parent.postMessage({__mj:'done'},'*'); }, 1600);
+      }, 350);
+    }, 450);
+  }
+  var n=0,iv=setInterval(function(){ if(ready()){clearInterval(iv);run();} else if(++n>240){clearInterval(iv);run();} },50);
+})();
+</script>
+</body></html>`;
+}
+
+// Signals the simulated site emits for the "listen" lessons (ES5 strings, run raw in the iframe).
+// dataLayer: seeded BEFORE the tag so window.dataLayer is populated and datalayerSource replays it.
+const DL_SEED = `
+window.dataLayer.push({ event: "view_item", ecommerce: { currency: "USD", items: [{ item_id: "GA-1", item_name: "Gummies", item_category: "edibles", price: 42.0, quantity: 1 }] } });
+window.dataLayer.push({ event: "purchase", ecommerce: { transaction_id: "DL-5500", value: 84.0, tax: 6.0, shipping: 0, currency: "USD", items: [{ item_id: "GA-1", item_name: "Gummies", item_category: "edibles", price: 42.0, quantity: 2 }] } });`;
+// network: the storefront fetches its order from /mock/orders (returns the NET-7700 order).
+const NET_EMIT = `var xhr=new XMLHttpRequest(); xhr.open("GET","/mock/orders"); xhr.send();`;
+// iframe: an embedded checkout posts the purchase to the parent window.
+const IFRAME_EMIT = `window.postMessage({ type: "TRAINING_PURCHASE", order: { id: "IF-9900", total: 250.0, currency: "USD", city: "Denver", state: "CO", country: "USA", items: [{ sku: "IF-1", name: "Vape Cart", category: "vape", unitPrice: 125.0, quantity: 2 }] } }, "*");`;
 
 /* ------------------------------------------------------------------ validator helpers */
 
@@ -371,30 +435,56 @@ window.tracker("trackSelfDescribingEvent", {
     icon: "⧉",
     appId: APP + "-dl",
     language: "javascript",
-    mission: `Most storefronts already push GA4 ecommerce events to Google's **\`window.dataLayer\`** for Google Tag Manager. Rather than ask every client to add \`trackTrans\` calls, MediaJel can subscribe to that same dataLayer and translate a GA4 **\`purchase\`** into a Snowplow transaction **automatically**.
+    mission: `This storefront already pushes GA4 ecommerce events to Google's **\`window.dataLayer\`** for Google Tag Manager — including a **\`purchase\`** when an order completes. Your job is to **listen** to that dataLayer and forward the purchase to Snowplow, without touching the site's code.
 
-This is the first of three **auto-capture** sources (dataLayer, network, iframe). You write no tracker call at all — you just produce the signal the site already produces, and the tracker (running in \`environment=training\`) does the mapping.`,
+The tag exposes the same source the real tracker uses: **\`window.datalayerSource(callback)\`**. It calls your callback for every dataLayer entry (replaying ones already there), so you can read the GA4 \`purchase\` and map it onto **\`window.trackTrans\`**. Open the **Console** and log inside your callback — or log \`window.dataLayer\` — to see what the site emits.`,
     objectives: [
-      "Push a GA4 `purchase` object to `window.dataLayer` (an `event` plus an `ecommerce` block with `items`).",
-      "Use transaction_id `DL-5500`, value `84.00`, currency `USD`, and GA4 item keys (item_id, item_name, …).",
-      "Confirm the tracker auto-detects it and forwards a `transaction` with the id and total intact.",
+      "Subscribe with `window.datalayerSource(function (entry) { … })` — don't push anything yourself.",
+      "When `entry.event === \"purchase\"`, map `entry.ecommerce` (transaction_id, value, items…) onto `window.trackTrans`.",
+      "Confirm a `transaction` with id `DL-5500` and total `84.00` reaches the pipeline.",
     ],
     hints: [
-      'GA4 shape: dataLayer.push({ event: "purchase", ecommerce: { transaction_id, value, currency, items:[...] } })',
-      "items use GA4 keys: item_id, item_name, item_category, price, quantity",
+      "Subscribe: window.datalayerSource(function (entry) { if (entry.event === 'purchase') { … } })",
+      "GA4 → order: ecommerce.transaction_id → id, ecommerce.value → total, items[].item_id → sku, item_name → name, price → unitPrice.",
+      "Forward with window.trackTrans({ id, total, currency, items: [{ sku, name, category, unitPrice, quantity, orderId, currency }] }).",
     ],
-    starterCode: `// Push a GA4 "purchase" event to window.dataLayer.
-// Use transaction_id "DL-5500", value 84.00, currency "USD", and one item.
-// The tracker (environment=training) auto-detects it — no trackTrans call needed.
+    starterCode: `// The storefront already pushes GA4 events to window.dataLayer (incl. a "purchase").
+// LISTEN to it and forward the purchase — don't push anything yourself.
+// Tip: console.log(entry) inside the callback (or console.log(window.dataLayer)) to debug.
 
-window.dataLayer = window.dataLayer || [];
-window.dataLayer.push({
-  // TODO: event: "purchase", ecommerce: { transaction_id, value, tax, shipping, currency, items: [...] }
-  // GA4 item keys: item_id, item_name, item_category, price, quantity
+window.datalayerSource(function (entry) {
+  // TODO: when entry.event === "purchase", map entry.ecommerce -> window.trackTrans({...})
 });`,
-    solutionCode: `window.dataLayer = window.dataLayer || [];
-window.dataLayer.push({ event: "purchase", ecommerce: { transaction_id: "DL-5500", value: 84.0, tax: 6.0, shipping: 0, currency: "USD", items: [{ item_id: "GA-1", item_name: "Gummies", item_category: "edibles", price: 42.0, quantity: 2 }] } });`,
-    buildSandbox: (code, ctx) => jsSandbox(code, ctx, "training"),
+    solutionCode: `window.datalayerSource(function (entry) {
+  if (!entry || entry.event !== "purchase" || !entry.ecommerce) return;
+  var ec = entry.ecommerce;
+  window.trackTrans({
+    id: ec.transaction_id,
+    total: ec.value,
+    tax: ec.tax || 0,
+    shipping: ec.shipping || 0,
+    currency: ec.currency || "USD",
+    city: "N/A",
+    state: "N/A",
+    country: "USA",
+    items: (ec.items || []).map(function (i) {
+      return {
+        sku: i.item_id,
+        name: i.item_name,
+        category: i.item_category,
+        unitPrice: i.price,
+        quantity: i.quantity,
+        orderId: ec.transaction_id,
+        currency: ec.currency || "USD",
+      };
+    }),
+  });
+});`,
+    buildSandbox: (code, ctx) =>
+      listenSandbox(code, ctx, {
+        readyExpr: "typeof window.datalayerSource==='function' && typeof window.trackTrans==='function'",
+        seedJs: DL_SEED,
+      }),
     validate: (b) => {
       const tx = txEvent(b);
       return [
@@ -426,24 +516,58 @@ window.dataLayer.push({ event: "purchase", ecommerce: { transaction_id: "DL-5500
     icon: "⇄",
     appId: APP + "-net",
     language: "javascript",
-    mission: `Some platforms never populate a dataLayer — the order only exists in an **API response** the storefront fetches. For those, MediaJel patches \`fetch\` and \`XMLHttpRequest\` so it can read order-shaped JSON straight out of the response body, no cooperation from the page required.
+    mission: `Some platforms never populate a dataLayer — the order only exists in an **API response** the storefront fetches. This site requests its order from **\`/mock/orders\`** on checkout. Rather than call that endpoint yourself, you **listen** to the network and forward whatever order comes back.
 
-A mock checkout endpoint is wired up at **\`/mock/orders\`** and returns one such order. Trigger the request and let the tracker's interceptor recognise and forward it.`,
+The tag exposes **\`window.xhrResponseSource(callback)\`** — it calls your callback with the \`XMLHttpRequest\` for every request that completes. Read \`xhr.responseText\`, parse the order, and forward it with **\`window.trackTrans\`**. Filter by \`xhr.responseURL\` so you ignore the tracker's own beacons.`,
     objectives: [
-      'Call `fetch("/mock/orders")` to trigger the order response.',
-      "Let the tracker's fetch interceptor parse the order-shaped JSON body.",
+      "Subscribe with `window.xhrResponseSource(function (xhr) { … })` — don't fetch anything yourself.",
+      "When `xhr.responseURL` is the `/mock/orders` call, `JSON.parse(xhr.responseText)` and forward it with `window.trackTrans`.",
       "Confirm transaction `NET-7700` is captured from the response.",
     ],
     hints: [
-      "Just fetch it: fetch('/mock/orders')",
-      "The tracker's fetch source reads the JSON response and auto-detects the order.",
+      "Subscribe: window.xhrResponseSource(function (xhr) { … })",
+      "Guard by URL: if (xhr.responseURL.indexOf('/mock/orders') === -1) return;",
+      "Parse + forward: var o = JSON.parse(xhr.responseText); window.trackTrans({ id: o.id, total: o.total, items: o.items.map(...) });",
     ],
-    starterCode: `// Your checkout backend exposes the order at /mock/orders (order-shaped JSON).
-// Trigger that request — the tracker intercepts the response and reads the order.
+    starterCode: `// The storefront fetches its order from /mock/orders on checkout.
+// LISTEN to the network and forward the order — don't fetch it yourself.
+// Tip: console.log(xhr.responseURL, xhr.responseText) inside the callback to debug.
 
-// TODO: fetch the order endpoint`,
-    solutionCode: `fetch("/mock/orders").then((r) => r.json()).then((o) => console.log(o));`,
-    buildSandbox: (code, ctx) => jsSandbox(code, ctx, "training"),
+window.xhrResponseSource(function (xhr) {
+  // TODO: when xhr.responseURL is /mock/orders, JSON.parse(xhr.responseText) and window.trackTrans({...})
+});`,
+    solutionCode: `window.xhrResponseSource(function (xhr) {
+  if (!xhr.responseURL || xhr.responseURL.indexOf("/mock/orders") === -1) return;
+  var o;
+  try { o = JSON.parse(xhr.responseText); } catch (e) { return; }
+  if (!o || !o.items) return;
+  window.trackTrans({
+    id: o.id,
+    total: o.total,
+    tax: o.tax || 0,
+    shipping: o.shipping || 0,
+    currency: o.currency || "USD",
+    city: o.city,
+    state: o.state,
+    country: o.country,
+    items: o.items.map(function (it) {
+      return {
+        sku: it.sku,
+        name: it.name,
+        category: it.category,
+        unitPrice: it.unitPrice,
+        quantity: it.quantity,
+        orderId: o.id,
+        currency: o.currency || "USD",
+      };
+    }),
+  });
+});`,
+    buildSandbox: (code, ctx) =>
+      listenSandbox(code, ctx, {
+        readyExpr: "typeof window.xhrResponseSource==='function' && typeof window.trackTrans==='function'",
+        emitJs: NET_EMIT,
+      }),
     validate: (b) => {
       const tx = txEvent(b);
       return [
@@ -469,30 +593,57 @@ A mock checkout endpoint is wired up at **\`/mock/orders\`** and returns one suc
     icon: "❒",
     appId: APP + "-iframe",
     language: "javascript",
-    mission: `Many dispensaries run their checkout inside an embedded provider — Dutchie, Jane, Meadow — that lives in a cross-origin **iframe**. Browser security stops that iframe from writing to the parent page, so it broadcasts what happened with **\`postMessage\`** instead. MediaJel listens for those messages on the parent window and reconstructs the purchase.
+    mission: `Many dispensaries run their checkout inside an embedded provider — Dutchie, Jane, Meadow — that lives in a cross-origin **iframe**. Browser security stops that iframe from writing to the parent page, so it broadcasts what happened with **\`postMessage\`** instead. Here, the embedded checkout posts a **\`TRAINING_PURCHASE\`** message when the order completes — your job is to **listen** for it and forward the purchase.
 
-This is the third auto-capture source. Here you play the role of the checkout iframe and post the message the tracker is waiting for.`,
+The tag exposes **\`window.postMessageSource(callback)\`** — it calls your callback with each \`message\` event the page receives. Read \`event.data.order\` and forward it with **\`window.trackTrans\`**.`,
     objectives: [
-      'Post a `TRAINING_PURCHASE` message via `window.postMessage(payload, "*")`.',
-      "Include the `order` (id `IF-9900`, total `250.00`, currency, and one item).",
+      "Subscribe with `window.postMessageSource(function (event) { … })` — don't post anything yourself.",
+      'When `event.data.type === "TRAINING_PURCHASE"`, forward `event.data.order` with `window.trackTrans`.',
       "Confirm the tracker captures it as transaction `IF-9900`.",
     ],
     hints: [
-      'window.postMessage({ type: "TRAINING_PURCHASE", order: { id, total, currency, items:[...] } }, "*")',
-      "This is exactly what a real checkout iframe posts to its parent.",
+      "Subscribe: window.postMessageSource(function (event) { var msg = event.data; … })",
+      'Guard: if (!msg || msg.type !== "TRAINING_PURCHASE") return;',
+      "Forward: window.trackTrans({ id: msg.order.id, total: msg.order.total, items: msg.order.items.map(...) }).",
     ],
-    starterCode: `// Simulate an embedded checkout iframe by posting a TRAINING_PURCHASE message.
-// The tracker is listening on the window and will capture the order.
-// Use order id "IF-9900", total 250.00, currency "USD", and one item.
+    starterCode: `// An embedded checkout iframe posts a TRAINING_PURCHASE message when the order completes.
+// LISTEN for it and forward the order — don't post anything yourself.
+// Tip: console.log(event.data) inside the callback to debug.
 
-window.postMessage(
-  {
-    // TODO: type: "TRAINING_PURCHASE", order: { id, total, currency, items: [...] }
-  },
-  "*",
-);`,
-    solutionCode: `window.postMessage({ type: "TRAINING_PURCHASE", order: { id: "IF-9900", total: 250.0, currency: "USD", items: [{ sku: "IF-1", name: "Vape Cart", category: "vape", unitPrice: 125.0, quantity: 2 }] } }, "*");`,
-    buildSandbox: (code, ctx) => jsSandbox(code, ctx, "training"),
+window.postMessageSource(function (event) {
+  // TODO: when event.data.type === "TRAINING_PURCHASE", map event.data.order -> window.trackTrans({...})
+});`,
+    solutionCode: `window.postMessageSource(function (event) {
+  var msg = event && event.data;
+  if (!msg || msg.type !== "TRAINING_PURCHASE" || !msg.order) return;
+  var o = msg.order;
+  window.trackTrans({
+    id: o.id,
+    total: o.total,
+    tax: o.tax || 0,
+    shipping: o.shipping || 0,
+    currency: o.currency || "USD",
+    city: o.city || "N/A",
+    state: o.state || "N/A",
+    country: o.country || "USA",
+    items: (o.items || []).map(function (it) {
+      return {
+        sku: it.sku,
+        name: it.name,
+        category: it.category,
+        unitPrice: it.unitPrice,
+        quantity: it.quantity,
+        orderId: o.id,
+        currency: o.currency || "USD",
+      };
+    }),
+  });
+});`,
+    buildSandbox: (code, ctx) =>
+      listenSandbox(code, ctx, {
+        readyExpr: "typeof window.postMessageSource==='function' && typeof window.trackTrans==='function'",
+        emitJs: IFRAME_EMIT,
+      }),
     validate: (b) => {
       const tx = txEvent(b);
       return [

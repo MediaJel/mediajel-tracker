@@ -2,7 +2,7 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import { Accent, ACCENTS, useTheme } from "./theme/ThemeProvider";
-import { AttemptStat, Check, Lesson, MicroBundle, Progress } from "./lib/core";
+import { AttemptStat, Check, ConsoleLog, Lesson, MicroBundle, Progress } from "./lib/core";
 import { ExerciseResults, fmtMs } from "./lib/exerciseResults";
 import { Badge } from "./components/ui/badge";
 import { SECTIONS, lessonById, lessonIndex } from "./lessons";
@@ -139,13 +139,55 @@ export function CheckRow({ c, index }: { c: Check; index: number }) {
   );
 }
 
+/* ----------------------------------------------------------------- console */
+/** Turn a CSS string (from a console `%c` style arg) into a React style object. */
+function cssToStyle(css: string): React.CSSProperties {
+  const style: Record<string, string> = {};
+  css.split(";").forEach((decl) => {
+    const i = decl.indexOf(":");
+    if (i === -1) return;
+    const prop = decl.slice(0, i).trim().replace(/-([a-z])/g, (_m, c) => c.toUpperCase());
+    const val = decl.slice(i + 1).trim();
+    if (prop) style[prop] = val;
+  });
+  return style as React.CSSProperties;
+}
+
+/** Render captured console output, applying `%c` styles as colored badges like the real DevTools console. */
+export function ConsoleLines({ logs }: { logs: ConsoleLog[] }) {
+  if (logs.length === 0) return <Empty>console output appears here.</Empty>;
+  return (
+    <div className="space-y-1">
+      {logs.map((l, i) => (
+        <div key={i} className="flex items-start gap-1.5">
+          <span className="shrink-0 select-none text-ink-faint">{l.level} ›</span>
+          {l.css ? (
+            <span className="whitespace-pre-wrap break-all" style={cssToStyle(l.css)}>
+              {l.text}
+            </span>
+          ) : (
+            <span
+              className={cx(
+                "whitespace-pre-wrap break-all",
+                l.level === "error" ? "text-bad" : l.level === "warn" ? "text-accent" : "text-ink-soft",
+              )}
+            >
+              {l.text}
+            </span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ----------------------------------------------------------------- event inspector */
 export function EventInspector({
   bundle,
   logs,
 }: {
   bundle: MicroBundle | null;
-  logs: { level: string; text: string }[];
+  logs: ConsoleLog[];
 }) {
   const [tab, setTab] = React.useState<"events" | "console">("events");
   return (
@@ -182,22 +224,8 @@ export function EventInspector({
               ))}
             </div>
           )
-        ) : logs.length === 0 ? (
-          <Empty>console output appears here.</Empty>
         ) : (
-          <div className="space-y-0.5">
-            {logs.map((l, i) => (
-              <div
-                key={i}
-                className={cx(
-                  "whitespace-pre-wrap break-all",
-                  l.level === "error" ? "text-bad" : l.level === "warn" ? "text-accent" : "text-ink-soft",
-                )}
-              >
-                <span className="text-ink-faint">{l.level} ›</span> {l.text}
-              </div>
-            ))}
-          </div>
+          <ConsoleLines logs={logs} />
         )}
       </div>
     </div>
@@ -265,7 +293,7 @@ export function ExerciseInspector({
   netReqs,
 }: {
   bundle: MicroBundle | null;
-  logs: { level: string; text: string }[];
+  logs: ConsoleLog[];
   dlPushes: any[];
   netReqs: NetReq[];
 }) {
@@ -334,24 +362,7 @@ export function ExerciseInspector({
               ))}
             </div>
           ))}
-        {tab === "console" &&
-          (logs.length === 0 ? (
-            <Empty>console output appears here.</Empty>
-          ) : (
-            <div className="space-y-0.5">
-              {logs.map((l, i) => (
-                <div
-                  key={i}
-                  className={cx(
-                    "whitespace-pre-wrap break-all",
-                    l.level === "error" ? "text-bad" : l.level === "warn" ? "text-accent" : "text-ink-soft",
-                  )}
-                >
-                  <span className="text-ink-faint">{l.level} ›</span> {l.text}
-                </div>
-              ))}
-            </div>
-          ))}
+        {tab === "console" && <ConsoleLines logs={logs} />}
       </div>
     </div>
   );

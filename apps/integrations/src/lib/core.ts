@@ -112,10 +112,17 @@ export function clearTrackerState(appId: string): void {
 }
 
 // ---------------------------------------------------------------------------- Sandbox
+/** A captured console line. `css` is the style from a `console.log("%c…", css)` call (the tag's
+ * logger uses these), rendered as a colored badge in the inspector's Console tab. */
+export interface ConsoleLog {
+  level: string;
+  text: string;
+  css?: string;
+}
 export interface SandboxResult {
   ran: boolean;
   error?: string;
-  logs: { level: string; text: string }[];
+  logs: ConsoleLog[];
 }
 
 /**
@@ -125,7 +132,7 @@ export interface SandboxResult {
  */
 export function runSandbox(srcdoc: string, maxMs = 9000): Promise<SandboxResult> {
   return new Promise((resolve) => {
-    const logs: { level: string; text: string }[] = [];
+    const logs: ConsoleLog[] = [];
     let settled = false;
     const prev = document.getElementById("mj-sandbox");
     if (prev) prev.remove();
@@ -139,7 +146,7 @@ export function runSandbox(srcdoc: string, maxMs = 9000): Promise<SandboxResult>
     const onMsg = (e: MessageEvent) => {
       const d = e.data;
       if (!d || typeof d !== "object" || (d as any).__mj === undefined) return;
-      if (d.__mj === "log") logs.push({ level: d.level || "log", text: d.text });
+      if (d.__mj === "log") logs.push({ level: d.level || "log", text: d.text, css: d.css });
       if (d.__mj === "error") logs.push({ level: "error", text: d.error });
       if (d.__mj === "done") finish(d.error);
     };

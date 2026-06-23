@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { CodeEditor } from "./CodeEditor";
 import { Button } from "./components/ui/button";
 import { ExerciseInspector, Stat, celebrate, cx, motion, NetReq } from "./components";
-import { MicroBundle, clearTrackerState, ctxFor, micro } from "./lib/core";
+import { ConsoleLog, MicroBundle, clearTrackerState, ctxFor, micro } from "./lib/core";
 import { ExerciseResults, fmtMs, recordExerciseAttempt, scoreAttempt } from "./lib/exerciseResults";
 import { Exercise, Goal } from "./exercises";
 
@@ -75,7 +75,7 @@ type Phase = "idle" | "running" | "complete";
 function useExerciseRun(exercise: Exercise, code: string, onComplete: (r: ExerciseReport) => void) {
   const [phase, setPhase] = useState<Phase>("idle");
   const [bundle, setBundle] = useState<MicroBundle | null>(null);
-  const [logs, setLogs] = useState<{ level: string; text: string }[]>([]);
+  const [logs, setLogs] = useState<ConsoleLog[]>([]);
   const [dlPushes, setDlPushes] = useState<any[]>([]);
   const [netReqs, setNetReqs] = useState<NetReq[]>([]);
   const [startedAt, setStartedAt] = useState<number | null>(null);
@@ -91,7 +91,7 @@ function useExerciseRun(exercise: Exercise, code: string, onComplete: (r: Exerci
     const onMsg = (e: MessageEvent) => {
       const d = e.data;
       if (!d || typeof d !== "object" || (d as any).__mj === undefined) return;
-      if (d.__mj === "log") setLogs((l) => [...l, { level: d.level || "log", text: d.text }]);
+      if (d.__mj === "log") setLogs((l) => [...l, { level: d.level || "log", text: d.text, css: d.css }]);
       else if (d.__mj === "error") setLogs((l) => [...l, { level: "error", text: d.error }]);
       else if (d.__mj === "datalayer") setDlPushes((a) => [...a, d.data]);
       else if (d.__mj === "network") setNetReqs((a) => [...a, d.req]);

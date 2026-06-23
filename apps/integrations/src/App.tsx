@@ -6,6 +6,7 @@ import { Button } from "./components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./components/ui/accordion";
 import {
   Check,
+  ConsoleLog,
   Lesson,
   MicroBundle,
   Progress,
@@ -439,7 +440,7 @@ function Workspace({
   const [running, setRunning] = useState(false);
   const [checks, setChecks] = useState<Check[]>([]);
   const [bundle, setBundle] = useState<MicroBundle | null>(null);
-  const [logs, setLogs] = useState<{ level: string; text: string }[]>([]);
+  const [logs, setLogs] = useState<ConsoleLog[]>([]);
 
   useEffect(() => {
     setCode(loadCode(lesson));
