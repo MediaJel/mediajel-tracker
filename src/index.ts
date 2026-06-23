@@ -53,7 +53,10 @@ import { createRetailId } from "./shared/utils/retail-id-parser";
     // toggled per-appId via overrides too. The query-string value is already live from
     // logger module-init (earliest point); this only changes things when an override
     // sets `logs`. Opt-out default: logging stays on unless explicitly "false".
-    setLoggingEnabled(modifiedContext.logs !== "false");
+    // setLoggingEnabled(modifiedContext.logs !== "false");
+
+    // Temporarily disable all logs
+    setLoggingEnabled(false);
 
     if (modifiedContext.enable === "false") {
       logger.debug("Tag has been disabled. Reach out to your pixel provider for more information.");
