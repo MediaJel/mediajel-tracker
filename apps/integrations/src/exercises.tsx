@@ -559,7 +559,6 @@ export const EXERCISES: Exercise[] = [
       },
     ],
     starterCode: ECOMMERCE_STARTER,
-    solutionCode: ECOMMERCE_SOLUTION,
     buildSandbox: (code, ctx) =>
       buildExerciseSandbox({ code, ctx, styleCss: STORE_CSS, bodyHtml: STORE_BODY, setupJs: STORE_SETUP }),
   },
@@ -605,7 +604,6 @@ export const EXERCISES: Exercise[] = [
     ],
 
     starterCode: SIGNUP_STARTER,
-    solutionCode: SIGNUP_SOLUTION,
     buildSandbox: (code, ctx) =>
       buildExerciseSandbox({ code, ctx, styleCss: FORM_CSS, bodyHtml: FORM_BODY, setupJs: FORM_SETUP }),
   },

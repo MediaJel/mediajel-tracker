@@ -455,31 +455,6 @@ The tag exposes the same source the real tracker uses: **\`window.datalayerSourc
 window.datalayerSource(function (entry) {
   // TODO: when entry.event === "purchase", map entry.ecommerce -> window.trackTrans({...})
 });`,
-    solutionCode: `window.datalayerSource(function (entry) {
-  if (!entry || entry.event !== "purchase" || !entry.ecommerce) return;
-  var ec = entry.ecommerce;
-  window.trackTrans({
-    id: ec.transaction_id,
-    total: ec.value,
-    tax: ec.tax || 0,
-    shipping: ec.shipping || 0,
-    currency: ec.currency || "USD",
-    city: "N/A",
-    state: "N/A",
-    country: "USA",
-    items: (ec.items || []).map(function (i) {
-      return {
-        sku: i.item_id,
-        name: i.item_name,
-        category: i.item_category,
-        unitPrice: i.price,
-        quantity: i.quantity,
-        orderId: ec.transaction_id,
-        currency: ec.currency || "USD",
-      };
-    }),
-  });
-});`,
     buildSandbox: (code, ctx) =>
       listenSandbox(code, ctx, {
         readyExpr: "typeof window.datalayerSource==='function' && typeof window.trackTrans==='function'",
@@ -535,33 +510,6 @@ The tag exposes **\`window.xhrResponseSource(callback)\`** — it calls your cal
 
 window.xhrResponseSource(function (xhr) {
   // TODO: when xhr.responseURL is /mock/orders, JSON.parse(xhr.responseText) and window.trackTrans({...})
-});`,
-    solutionCode: `window.xhrResponseSource(function (xhr) {
-  if (!xhr.responseURL || xhr.responseURL.indexOf("/mock/orders") === -1) return;
-  var o;
-  try { o = JSON.parse(xhr.responseText); } catch (e) { return; }
-  if (!o || !o.items) return;
-  window.trackTrans({
-    id: o.id,
-    total: o.total,
-    tax: o.tax || 0,
-    shipping: o.shipping || 0,
-    currency: o.currency || "USD",
-    city: o.city,
-    state: o.state,
-    country: o.country,
-    items: o.items.map(function (it) {
-      return {
-        sku: it.sku,
-        name: it.name,
-        category: it.category,
-        unitPrice: it.unitPrice,
-        quantity: it.quantity,
-        orderId: o.id,
-        currency: o.currency || "USD",
-      };
-    }),
-  });
 });`,
     buildSandbox: (code, ctx) =>
       listenSandbox(code, ctx, {
