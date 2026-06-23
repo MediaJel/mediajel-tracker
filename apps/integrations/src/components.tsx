@@ -146,7 +146,10 @@ function cssToStyle(css: string): React.CSSProperties {
   css.split(";").forEach((decl) => {
     const i = decl.indexOf(":");
     if (i === -1) return;
-    const prop = decl.slice(0, i).trim().replace(/-([a-z])/g, (_m, c) => c.toUpperCase());
+    const prop = decl
+      .slice(0, i)
+      .trim()
+      .replace(/-([a-z])/g, (_m, c) => c.toUpperCase());
     const val = decl.slice(i + 1).trim();
     if (prop) style[prop] = val;
   });
@@ -182,13 +185,7 @@ export function ConsoleLines({ logs }: { logs: ConsoleLog[] }) {
 }
 
 /* ----------------------------------------------------------------- event inspector */
-export function EventInspector({
-  bundle,
-  logs,
-}: {
-  bundle: MicroBundle | null;
-  logs: ConsoleLog[];
-}) {
+export function EventInspector({ bundle, logs }: { bundle: MicroBundle | null; logs: ConsoleLog[] }) {
   const [tab, setTab] = React.useState<"events" | "console">("events");
   return (
     <div className="flex h-full flex-col">

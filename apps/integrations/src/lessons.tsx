@@ -440,13 +440,13 @@ window.tracker("trackSelfDescribingEvent", {
 The tag exposes the same source the real tracker uses: **\`window.datalayerSource(callback)\`**. It calls your callback for every dataLayer entry (replaying ones already there), so you can read the GA4 \`purchase\` and map it onto **\`window.trackTrans\`**. Open the **Console** and log inside your callback — or log \`window.dataLayer\` — to see what the site emits.`,
     objectives: [
       "Subscribe with `window.datalayerSource(function (entry) { … })` — don't push anything yourself.",
-      "When `entry.event === \"purchase\"`, map `entry.ecommerce` (transaction_id, value, items…) onto `window.trackTrans`.",
+      'When `entry.event === "purchase"`, map `entry.ecommerce` (transaction_id, value, items…) onto `window.trackTrans`.',
       "Confirm a `transaction` with id `DL-5500` and total `84.00` reaches the pipeline.",
     ],
     hints: [
-      "Subscribe: window.datalayerSource(function (entry) { if (entry.event === 'purchase') { … } })",
-      "GA4 → order: ecommerce.transaction_id → id, ecommerce.value → total, items[].item_id → sku, item_name → name, price → unitPrice.",
-      "Forward with window.trackTrans({ id, total, currency, items: [{ sku, name, category, unitPrice, quantity, orderId, currency }] }).",
+      "The tag exposes window.datalayerSource(callback) — subscribe to it; it even replays entries already on the dataLayer.",
+      "Log inside your callback (or log window.dataLayer) to see the shapes. A GA4 purchase carries an ecommerce object: transaction_id, value, and items[] (item_id, item_name, price, quantity).",
+      "Map those fields onto a window.trackTrans order, then check the Events panel — a good `transaction` there is the only confirmation that counts.",
     ],
     starterCode: `// The storefront already pushes GA4 events to window.dataLayer (incl. a "purchase").
 // LISTEN to it and forward the purchase — don't push anything yourself.
@@ -463,7 +463,7 @@ window.datalayerSource(function (entry) {
     validate: (b) => {
       const tx = txEvent(b);
       return [
-        ok("captured", "The dataLayer purchase was auto-detected as a transaction", !!tx),
+        ok("captured", "Your listener forwarded the dataLayer purchase as a transaction", !!tx),
         ok(
           "id",
           'Transaction id is "DL-5500"',
@@ -500,9 +500,9 @@ The tag exposes **\`window.xhrResponseSource(callback)\`** — it calls your cal
       "Confirm transaction `NET-7700` is captured from the response.",
     ],
     hints: [
-      "Subscribe: window.xhrResponseSource(function (xhr) { … })",
-      "Guard by URL: if (xhr.responseURL.indexOf('/mock/orders') === -1) return;",
-      "Parse + forward: var o = JSON.parse(xhr.responseText); window.trackTrans({ id: o.id, total: o.total, items: o.items.map(...) });",
+      "The tag exposes window.xhrResponseSource(callback) — it hands you each XMLHttpRequest as it finishes.",
+      "Guard by xhr.responseURL so you ignore the tracker's own beacons, then read and parse xhr.responseText.",
+      "Map the order onto window.trackTrans, then check the Events panel — the `transaction` landing there is your proof.",
     ],
     starterCode: `// The storefront fetches its order from /mock/orders on checkout.
 // LISTEN to the network and forward the order — don't fetch it yourself.
@@ -519,7 +519,7 @@ window.xhrResponseSource(function (xhr) {
     validate: (b) => {
       const tx = txEvent(b);
       return [
-        ok("captured", "The order was intercepted from the network response", !!tx),
+        ok("captured", "Your listener forwarded the order from the network response", !!tx),
         ok(
           "id",
           'Transaction id is "NET-7700"',
@@ -550,9 +550,9 @@ The tag exposes **\`window.postMessageSource(callback)\`** — it calls your cal
       "Confirm the tracker captures it as transaction `IF-9900`.",
     ],
     hints: [
-      "Subscribe: window.postMessageSource(function (event) { var msg = event.data; … })",
-      'Guard: if (!msg || msg.type !== "TRAINING_PURCHASE") return;',
-      "Forward: window.trackTrans({ id: msg.order.id, total: msg.order.total, items: msg.order.items.map(...) }).",
+      "The tag exposes window.postMessageSource(callback) — it hands you each message event the page receives.",
+      'Read event.data and guard on its type ("TRAINING_PURCHASE") before using event.data.order.',
+      "Map the order onto window.trackTrans, then check the Events panel — the `transaction` there is the only confirmation that counts.",
     ],
     starterCode: `// An embedded checkout iframe posts a TRAINING_PURCHASE message when the order completes.
 // LISTEN for it and forward the order — don't post anything yourself.
@@ -595,7 +595,7 @@ window.postMessageSource(function (event) {
     validate: (b) => {
       const tx = txEvent(b);
       return [
-        ok("captured", "The iframe message was captured as a transaction", !!tx),
+        ok("captured", "Your listener forwarded the iframe order as a transaction", !!tx),
         ok(
           "id",
           'Transaction id is "IF-9900"',
