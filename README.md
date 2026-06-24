@@ -426,8 +426,7 @@ GDPR consent management.
 Formal opt-out / deletion requests are honored downstream by the sibling **`mediajel-gql-service`**
 (separate repository): a suppression-list ETL removes opted-out subjects from the analytics store.
 Layer 1 (this tag) stops *new* collection at the edge; Layer 2 handles *removal* of already-collected
-data. See [`privacy-compliance-deck.html`](privacy-compliance-deck.html) for the full briefing on both
-layers.
+data.
 
 ### Hardening backlog
 
