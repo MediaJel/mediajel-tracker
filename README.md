@@ -10,6 +10,34 @@
 
 ---
 
+## Table of contents
+
+- [Overview](#overview)
+- [Project structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Getting started](#getting-started)
+  - [Expected logs](#expected-logs)
+  - [Ports & URLs](#ports--urls)
+  - [Scripts](#scripts)
+- [Tag parameters](#tag-parameters)
+  - [Core](#core)
+  - [E-commerce](#e-commerce)
+  - [Plugins](#plugins)
+  - [Impressions / DSP macros](#impressions--dsp-macros)
+  - [Audience segments](#audience-segments)
+  - [Control & debugging](#control--debugging)
+  - [`window.overrides`](#windowoverrides)
+  - [Examples](#examples)
+- [Runtime `window.*` API](#runtime-window-api)
+- [Privacy & compliance](#privacy--compliance)
+  - [Standards & signals honored](#standards--signals-honored)
+  - [Layer 1 — edge opt-out gate (this tag)](#layer-1--edge-opt-out-gate-this-tag)
+  - [Data posture (when not opted out)](#data-posture-when-not-opted-out)
+  - [Layer 2 — server-side opt-out (reactive removal)](#layer-2--server-side-opt-out-reactive-removal)
+  - [Hardening backlog](#hardening-backlog)
+- [Deployment](#deployment)
+- [Tech stack](#tech-stack)
+
 ## Overview
 
 The **tag** (`apps/tracker`) is a small, plug-and-play script you drop onto a site. Out of the box
