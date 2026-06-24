@@ -1,0 +1,147 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light surfaces */
+    --surface: 244 244 247;
+    --surface-2: 255 255 255;
+    --surface-3: 236 236 241;
+    --ink: 18 18 22;
+    --ink-soft: 78 78 88;
+    --ink-faint: 142 142 154;
+    --hair: 10 10 14;
+    --good: 22 163 74;
+    --bad: 220 38 38;
+    /* Default accent (Cobalt) */
+    --accent: 10 132 255;
+    --accent-2: 88 86 224;
+    /* shadcn extras — most shadcn tokens (background, card, primary, muted, …) map to the
+       palette above in tailwind.config; only border/input/radius need their own values. */
+    --border: 226 226 232;
+    --input: 226 226 232;
+    --radius: 0.8rem;
+  }
+
+  html.dark {
+    --surface: 11 11 14;
+    --surface-2: 22 22 27;
+    --surface-3: 33 33 40;
+    --ink: 245 245 247;
+    --ink-soft: 176 176 188;
+    --ink-faint: 112 112 126;
+    --hair: 255 255 255;
+    --good: 48 209 88;
+    --bad: 255 69 58;
+    --border: 42 42 50;
+    --input: 42 42 50;
+  }
+
+  /* Fancy accent themes (set via data-accent on <html>) */
+  html[data-accent="aurora"] {
+    --accent: 48 209 88;
+    --accent-2: 10 132 255;
+  }
+  html[data-accent="sunset"] {
+    --accent: 255 99 72;
+    --accent-2: 255 159 10;
+  }
+  html[data-accent="grape"] {
+    --accent: 191 90 242;
+    --accent-2: 94 92 230;
+  }
+  html[data-accent="graphite"] {
+    --accent: 152 152 160;
+    --accent-2: 110 110 120;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-surface text-ink font-sans antialiased;
+    background-image: radial-gradient(
+        1100px 560px at 100% -8%,
+        rgb(var(--accent) / 0.12),
+        transparent 60%
+      ),
+      radial-gradient(900px 520px at -8% 2%, rgb(var(--accent-2) / 0.1), transparent 55%);
+    background-attachment: fixed;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: rgb(var(--accent) / 0.28);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .glass {
+    @apply border bg-surface-2/70 shadow-glass backdrop-blur-xl;
+    border-color: rgb(var(--hair) / 0.1);
+  }
+  .card {
+    @apply glass rounded-3xl;
+  }
+  .hairline {
+    border-color: rgb(var(--hair) / 0.1);
+  }
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-[0.97];
+  }
+  .btn-accent {
+    @apply btn text-white shadow-glow;
+    background-image: linear-gradient(135deg, rgb(var(--accent)), rgb(var(--accent-2)));
+  }
+  .btn-accent:hover {
+    filter: brightness(1.06);
+  }
+  .btn-ghost {
+    @apply btn border bg-surface-3/60 text-ink hover:bg-surface-3;
+    border-color: rgb(var(--hair) / 0.1);
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+  .grad-text {
+    background-image: linear-gradient(120deg, rgb(var(--accent)), rgb(var(--accent-2)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--ink-faint) / 0.4) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgb(var(--ink-faint) / 0.34);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--ink-faint) / 0.55);
+  background-clip: content-box;
+}

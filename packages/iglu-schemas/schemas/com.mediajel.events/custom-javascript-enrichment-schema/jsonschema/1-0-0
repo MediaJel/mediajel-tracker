@@ -1,0 +1,12 @@
+{
+	"$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+	"description": "Schema for configuration of a JavaScript dynamic scripting enrichment",
+	"self": {
+		"vendor": "com.snowplowanalytics.snowplow",
+		"name": "javascript_script_config",
+		"format": "jsonschema",
+		"version": "1-0-0"
+	},
+	"type": "object",
+	"additionalProperties": true
+}
