@@ -9,6 +9,11 @@ import { createRetailId } from '@mediajel/tracker-core/utils/retail-id-parser';
 
 (async (): Promise<void> => {
   try {
+    // Temporarily disable all logs. Set this first — before getCustomTags/getAppIdTags —
+    // so their logger.info/warn calls are silenced too. Previously this ran after the
+    // overrides merge, which let logs leak from the calls above it.
+    setLoggingEnabled(false);
+
     const context: QueryStringContext = getContext();
 
     // US privacy opt-out gate — honor GPC / DNT before any tracking or network activity.
@@ -57,10 +62,10 @@ import { createRetailId } from '@mediajel/tracker-core/utils/retail-id-parser';
 
     const modifiedContext = { ...context, ...overrides };
 
-    // Re-apply the logging flag now that window.overrides are merged, so logs can be
-    // toggled per-appId via overrides too. The query-string value is already live from
-    // logger module-init (earliest point); this only changes things when an override
-    // sets `logs`. Opt-out default: logging stays on unless explicitly "false".
+    // Restore logging after the bootstrap silence above: getCustomTags/getAppIdTags ran quiet
+    // (per the merged-in fix), now honor the `logs` flag from the query string + any
+    // window.overrides. Default: logging stays on unless explicitly `logs=false`. This is also
+    // what lets `debug=true` (gated on isLoggingEnabled below) actually emit.
     setLoggingEnabled(modifiedContext.logs !== "false");
 
     if (modifiedContext.enable === "false") {
