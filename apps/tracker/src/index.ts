@@ -1,13 +1,11 @@
 import logger, { isLoggingEnabled, setLoggingEnabled } from '@mediajel/tracker-core/logger';
 
 import { QueryStringContext } from '@mediajel/tracker-core/types';
-import { datasourceLogger } from '@mediajel/tracker-core/utils/datasource-logger';
 import { getAppIdTags } from '@mediajel/tracker-core/utils/get-appId-tags';
 import getContext from '@mediajel/tracker-core/utils/get-context';
 import { getCustomTags } from '@mediajel/tracker-core/utils/get-custom-tags';
 import isUsPrivacyOptOut from '@mediajel/tracker-core/utils/privacy-opt-out';
 import { createRetailId } from '@mediajel/tracker-core/utils/retail-id-parser';
-import { initializeSessionTracking } from '@mediajel/tracker-core/utils/session-tracking';
 
 (async (): Promise<void> => {
   try {
@@ -76,8 +74,10 @@ import { initializeSessionTracking } from '@mediajel/tracker-core/utils/session-
     // Validations
     if (!modifiedContext.appId) throw new Error("appId is required");
     if (modifiedContext.debug && modifiedContext.debug === "true" && isLoggingEnabled()) {
+      // Debug-only datasource logging is dynamically imported so it splits into its own chunk
+      // and stays out of the always-loaded index.js.
+      const { datasourceLogger } = await import("@mediajel/tracker-core/utils/datasource-logger");
       datasourceLogger();
-      initializeSessionTracking(modifiedContext);
     }
 
     window.parseRetailId = createRetailId;

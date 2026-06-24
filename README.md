@@ -248,7 +248,7 @@ Fire third-party audience beacons alongside tracking:
 |---|---|---|
 | `logs` | `true` | Console logging. Set `logs=false` to silence the tag (opt-out: logging is on unless disabled). |
 | `enable` | `true` | Set `enable=false` to short-circuit the tag — it loads but does nothing. |
-| `debug` | — | `debug=true` (with logging on) enables Highlight.run session replay for debugging. |
+| `debug` | — | `debug=true` (with logging on) enables verbose data-source logging for debugging. |
 | `sdkUrl` | — | Advanced: override the Snowplow SDK URL. |
 
 ### `window.overrides`
@@ -322,13 +322,91 @@ type CartEvent = { sku: string; name: string; category: string; unitPrice: numbe
 type SignupParams = { uuid: string; firstName?: string; lastName?: string; gender?: string; emailAddress?: string; hashedEmailAddress?: string; address?: string; city?: string; state?: string; phoneNumber?: string; advertiser?: string };
 ```
 
-## Privacy & opt-out
+## Privacy & compliance
 
-The tag honors **Global Privacy Control (GPC)** and **Do Not Track (DNT)** as browser signals (not
-query params). If `navigator.globalPrivacyControl` is `true`, or DNT is set, the tag **hard-exits
-before any tracking or network activity** — no events, no cookies. See
-[`privacy-opt-out.ts`](packages/tracker-core/src/utils/privacy-opt-out.ts) and the gate at the top of
-[`apps/tracker/src/index.ts`](apps/tracker/src/index.ts).
+The tag is **opt-out-first**: it reads the visitor's browser privacy signals and, if they have opted
+out, does nothing at all. This section documents the mechanisms we implement and the regulations they
+are designed to support.
+
+> **Not legal advice.** These mechanisms *support* compliance; whether a given deployment is compliant
+> also depends on how the embedding site is configured, what data it passes to the tag, and the
+> contracts governing downstream use.
+
+### Standards & signals honored
+
+| Signal | Read from | Recognized by |
+|---|---|---|
+| **Global Privacy Control (GPC)** | `navigator.globalPrivacyControl === true` | The primary, legally-recognized opt-out signal under **California CCPA/CPRA**, the **Colorado Privacy Act (CPA)**, and the **Connecticut Data Privacy Act (CTDPA)**, and honored under other US state laws that recognize a universal opt-out mechanism (e.g. Texas TDPSA, Oregon OCPA, Montana MCDPA). |
+| **Do Not Track (DNT)** | `navigator.doNotTrack` / `navigator.msDoNotTrack` / `window.doNotTrack` = `"1"` or `"yes"` | Legacy [W3C DNT](https://www.w3.org/TR/tracking-dnt/), honored as a courtesy fallback. |
+
+GPC is the [Global Privacy Control](https://globalprivacycontrol.org/) spec. The tag reads these
+signals **directly from the browser** — no consent banner, cookie, or per-site integration required —
+and they are **not** overridable by query-string params.
+
+### Layer 1 — edge opt-out gate (this tag)
+
+`isUsPrivacyOptOut()` ([`privacy-opt-out.ts`](packages/tracker-core/src/utils/privacy-opt-out.ts))
+runs at the very top of [`apps/tracker/src/index.ts`](apps/tracker/src/index.ts), right after the
+script URL is parsed and **before any network or storage**. If any opt-out signal is present the tag
+**hard-exits** — a true no-track:
+
+- ❌ no Snowplow events (pageview, e-commerce, sign-up, impression)
+- ❌ no cookies, `localStorage`, or `sessionStorage`
+- ❌ no third-party audience beacons
+- ❌ no custom-tag or app-ID tag loads
+
+All four signals are covered by E2E tests in
+[`privacy-opt-out.spec.cy.ts`](apps/tracker/cypress/e2e/privacy-opt-out.spec.cy.ts), which assert
+zero collector requests **and** zero Snowplow cookies/`localStorage` on opt-out.
+
+### Data posture (when **not** opted out)
+
+The Snowplow tracker is created with a privacy-conscious configuration
+([`snowplow/v1/init.ts`](packages/tracker-core/src/snowplow/v1/init.ts) /
+[`v2/init.ts`](packages/tracker-core/src/snowplow/v2/init.ts)):
+
+| Setting | Value | Why |
+|---|---|---|
+| `stateStorageStrategy` | `cookieAndLocalStorage` | First-party identity only; no third-party cookies. |
+| `cookieSameSite` | `Lax` | Cookies are not sent on cross-site subrequests. |
+| `cookieSecure` | `true` | Cookies only travel over HTTPS. |
+| `respectDoNotTrack` | `true` | SDK-level DNT respect, as defense-in-depth behind the edge gate. |
+| `eventMethod` | `post` | Events are POSTed to a first-party collector path (`/analytics/track`). |
+
+**Storage used:** the Snowplow session/identity (first-party cookie + `localStorage`), a
+de-duplication list in `localStorage` (keys `${appId}_<event>`), and a retail-id marker in
+`sessionStorage`.
+
+**Data categories:** page views (with Snowplow's standard browser context — user agent, screen,
+referrer, locale), e-commerce transactions and cart items, optional sign-up identifiers, and — for
+impression tags — DSP macros (advertiser/creative ids and mobile ad ids such as GAID/IDFA). The tag
+collects only what the embedding site passes to it plus Snowplow's standard context.
+
+**Form tracking:** form interactions are captured with **PII/sensitive fields excluded** — fields
+whose `name`, `id`, or input `type` matches email, password, phone, payment, SSN, or similar are
+filtered out and never recorded
+([`form-pii-filter.ts`](packages/tracker-core/src/snowplow/form-pii-filter.ts)).
+
+**Third-party audience beacons:** when audience segment ids are supplied (`s1` / `s2*` / `s3*`), the
+tag also fires partner pixels — LiquidM, Nexxen, Dstillery
+([`segment-builder`](packages/tracker-core/src/segment-builder)). The LiquidM beacon forwards
+`gdpr` / `gdpr_consent` parameters. This is a US-opt-out model; the tag does **not** itself implement
+GDPR consent management.
+
+### Layer 2 — server-side opt-out (reactive removal)
+
+Formal opt-out / deletion requests are honored downstream by the sibling **`mediajel-gql-service`**
+(separate repository): a suppression-list ETL removes opted-out subjects from the analytics store.
+Layer 1 (this tag) stops *new* collection at the edge; Layer 2 handles *removal* of already-collected
+data. See [`privacy-compliance-deck.html`](privacy-compliance-deck.html) for the full briefing on both
+layers.
+
+### Hardening backlog
+
+Tracked follow-ups (not yet implemented):
+
+- **E-mail minimization** — prefer `hashedEmailAddress` over plaintext `emailAddress` in sign-up and
+  transaction `userId`, so raw PII never reaches the collector.
 
 ## Deployment
 

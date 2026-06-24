@@ -1,3 +1,4 @@
+import { isNonSensitiveFormField } from "@mediajel/tracker-core/snowplow/form-pii-filter";
 import logger from "@mediajel/tracker-core/logger";
 import { SnowplowTrackerInitializeInput } from "@mediajel/tracker-core/snowplow/types";
 
@@ -28,13 +29,19 @@ export const initialize = ({ appId, collector, event, sdkUrl }: SnowplowTrackerI
     discoverRootDomain: true,
     stateStorageStrategy: "cookieAndLocalStorage",
     cookieSameSite: "Lax",
-    respectDoNotTrack: false,
+    // Privacy-compliant posture: first-party Secure cookies, and honor Do Not Track at the SDK
+    // level too. The tag's edge gate (isUsPrivacyOptOut) already hard-exits on GPC/DNT before the
+    // tracker loads; respectDoNotTrack is a second, SDK-level guard so DNT is still honored on any
+    // path that reaches the Snowplow tracker.
+    cookieSecure: true,
+    respectDoNotTrack: true,
     eventMethod: "post",
   });
 
   window.tracker("enableActivityTracking", 30, 10);
   window.tracker("trackPageView");
-  window.tracker("enableFormTracking");
+  // Exclude PII/sensitive fields (email, password, phone, payment…) from form capture.
+  window.tracker("enableFormTracking", { fields: { filter: isNonSensitiveFormField } });
 
   /**
    * !IMPORTANT: We are disabling this as to not override Link click config for the impression pixel.
