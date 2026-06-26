@@ -1,5 +1,0 @@
-# Parcel's resolver/package-manager expects a flat (npm/yarn-style) node_modules.
-# Bun's default "isolated" linker (central .bun/ store + symlinks) breaks Parcel's
-# plugin loading (`options.packageManager.resolve is not a function`). Hoisted = flat.
-[install]
-linker = "hoisted"

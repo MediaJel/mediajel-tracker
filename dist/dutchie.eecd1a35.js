@@ -1,0 +1,2 @@
+var e;(0,(e=("undefined"!=typeof globalThis?globalThis:"undefined"!=typeof self?self:"undefined"!=typeof window?window:"undefined"!=typeof global?global:{}).parcelRequire07df).register)("gHuXK",function(f,l){Object.defineProperty(f.exports,"default",{get:function(){return t},set:void 0,enumerable:!0,configurable:!0});var n=e("4IGTl"),d=e("45EB9"),o=e("jPBao"),t=()=>{(0,o.default)(),(0,d.default)(),(0,n.default)()}});
+//# sourceMappingURL=dutchie.eecd1a35.js.map

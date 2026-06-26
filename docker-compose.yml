@@ -1,21 +1,5 @@
-# Local Snowplow Micro pipeline used by the Integrations training site (apps/integrations)
-# to validate learner tracking code. The tag posts to /analytics/track; micro.conf maps that
-# to the standard collector endpoint. com.mediajel.* schemas resolve live from the PUBLIC Iglu
-# registry http://iglu.mediajel.ninja (see infra/micro/iglu.json); the mounted ./packages/iglu-schemas
-# copy is only an offline fallback. So self-describing events (sign_up, ad_impression, ...) validate GOOD.
-#
-#   bun run micro:up      # start
-#   bun run micro:down    # stop
-#   curl localhost:9090/micro/all
+version: "3.0"
 services:
-  snowplow-micro:
-    image: snowplow/snowplow-micro:4.2.0
-    container_name: snowplow-micro
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./infra/micro/iglu.json:/config/iglu.json:ro
-      - ./infra/micro/micro.conf:/config/micro.conf:ro
-      - ./packages/iglu-schemas/schemas:/config/iglu-client-embedded/schemas:ro
-    command: ["--iglu", "/config/iglu.json", "--config", "/config/micro.conf"]
-    restart: unless-stopped
+  cypress:
+    container_name: cypress
+    image: cypress/base

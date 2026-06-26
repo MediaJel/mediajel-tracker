@@ -1,8 +1,6 @@
-# CircleCI 2.1 — builds & deploys the universal tag (apps/tracker) from the Turborepo.
-# The monorepo uses Bun (package manager + workspaces) and Turborepo. Parcel runs under
-# Node via apps/tracker/scripts/run-parcel.mjs. node_modules is hoisted (bunfig.toml) so
-# Parcel's resolver works. Buckets and all CloudFront distribution IDs are unchanged from
-# the pre-monorepo pipeline — only the build commands and the dist path (apps/tracker/dist) changed.
+# Note that the following stanza uses CircleCI 2.1 to make use of a Reusable Executor
+# This allows defining a docker image to reuse across jobs.
+# visit https://circleci.com/docs/2.0/reusing-config/#authoring-reusable-executors to learn more.
 
 version: 2.1
 
@@ -16,49 +14,33 @@ orbs:
   aws-cli: circleci/aws-cli@4.0
   aws-s3: circleci/aws-s3@2.0.0
   aws-cloudfront: topmonks/aws-cloudfront@1.0.0
-
-commands:
-  install-bun:
-    description: Install Bun (pinned) and put it on PATH for later steps
-    steps:
-      - run:
-          name: Install Bun
-          command: |
-            curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.8"
-            echo 'export PATH="$HOME/.bun/bin:$PATH"' >> "$BASH_ENV"
-  install-and-check:
-    description: Install dependencies (hoisted) and type-check the tracker + its packages
-    steps:
-      - run:
-          name: Install project dependencies
-          command: bun install --frozen-lockfile
-      - run:
-          name: Type checking (tracker + shared packages)
-          command: bunx turbo run check --filter=mediajel-tracker
-      - run:
-          name: Build tag
-          command: bunx turbo run build --filter=mediajel-tracker
-
 jobs:
   build-staging:
     executor: the-executor
     steps:
       - checkout
-      - install-bun
-      - install-and-check
+      - run:
+          name: Install project dependencies
+          command: yarn install
+      - run:
+          name: type checking
+          command: yarn tsc --noEmit
         #   TODO: UNCOMMENT LATER
       # - run:
       #     name: Cypress Install
       #     command: sudo apt-get update && sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
       # - run:
       #     name: cypress tests
-      #     command: bunx turbo run test --filter=mediajel-tracker
+      #     command: npm run test
+      - run:
+          name: Build
+          command: npm run deploy
       - aws-cli/install:
           version: latest
       - run:
           name: Sync to S3
           command: |
-            aws s3 sync apps/tracker/dist/ s3://mediajel-tracker-staging
+            aws s3 sync dist/ s3://mediajel-tracker-staging
       - run:
           name: Invalidate CloudFront
           command: |
@@ -68,20 +50,28 @@ jobs:
     executor: the-executor
     steps:
       - checkout
-      - install-bun
-      - install-and-check
+      - run:
+          name: Install project dependencies
+          command: yarn install
+  
+      - run:
+          name: type checking
+          command: yarn tsc --noEmit
       # - run:
       #     name: Cypress Install
       #     command: sudo apt-get update && sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
       # - run:
       #     name: cypress tests
-      #     command: bunx turbo run test --filter=mediajel-tracker
+      #     command: npm run test
+      - run:
+          name: Build
+          command: yarn deploy
       - aws-cli/install:
           version: latest
       - run:
           name: Sync to S3
           command: |
-            aws s3 sync apps/tracker/dist/ s3://mediajel-tracker-production
+            aws s3 sync dist/ s3://mediajel-tracker-production
       - run:
           name: Invalidate CloudFront
           command: |
@@ -112,7 +102,7 @@ jobs:
             aws cloudfront create-invalidation --distribution-id ELFZ8CP0408WK --paths "/*"
       - run:
           name: Run Tracker
-          command: bunx turbo run generate-environments --filter=mediajel-tracker
+          command: npm run tracker:generate-environments
 
 workflows:
   version: 2
