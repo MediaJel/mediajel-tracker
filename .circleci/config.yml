@@ -34,10 +34,10 @@ commands:
           command: bun install --frozen-lockfile
       - run:
           name: Type checking (tracker + shared packages)
-          command: bun x turbo run check --filter=mediajel-tracker
+          command: bunx turbo run check --filter=mediajel-tracker
       - run:
           name: Build tag
-          command: bun x turbo run build --filter=mediajel-tracker
+          command: bunx turbo run build --filter=mediajel-tracker
 
 jobs:
   build-staging:
@@ -52,7 +52,7 @@ jobs:
       #     command: sudo apt-get update && sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
       # - run:
       #     name: cypress tests
-      #     command: bun x turbo run test --filter=mediajel-tracker
+      #     command: bunx turbo run test --filter=mediajel-tracker
       - aws-cli/install:
           version: latest
       - run:
@@ -75,7 +75,7 @@ jobs:
       #     command: sudo apt-get update && sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
       # - run:
       #     name: cypress tests
-      #     command: bun x turbo run test --filter=mediajel-tracker
+      #     command: bunx turbo run test --filter=mediajel-tracker
       - aws-cli/install:
           version: latest
       - run:
@@ -112,7 +112,7 @@ jobs:
             aws cloudfront create-invalidation --distribution-id ELFZ8CP0408WK --paths "/*"
       - run:
           name: Run Tracker
-          command: bun x turbo run generate-environments --filter=mediajel-tracker
+          command: bunx turbo run generate-environments --filter=mediajel-tracker
 
 workflows:
   version: 2

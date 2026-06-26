@@ -111,7 +111,7 @@ Bun.serve({
         const rel = p.slice("/tag/".length) || "index.js";
         return (
           (await fileAt(TAG_DIST, rel, true)) ??
-          new Response(`tag asset not found: ${rel} (run: bun x turbo run build --filter=mediajel-tracker)`, {
+          new Response(`tag asset not found: ${rel} (run: bunx turbo run build --filter=mediajel-tracker)`, {
             status: 404,
           })
         );
@@ -134,7 +134,7 @@ Bun.serve({
         index.headers.set("content-type", "text/html; charset=utf-8");
         return index;
       }
-      return new Response("Site not built. Run: bun x turbo run build --filter=@mediajel/integrations", {
+      return new Response("Site not built. Run: bunx turbo run build --filter=@mediajel/integrations", {
         status: 404,
       });
     } catch (e) {
