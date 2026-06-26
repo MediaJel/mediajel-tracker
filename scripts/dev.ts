@@ -55,7 +55,7 @@ ok("Micro ready");
 
 // 4. Build the tag so /tag/* is served by the site's dev server
 step("Building the tag (apps/tracker) for /tag …");
-const tag = sync(["bunx", "turbo", "run", "build", "--filter=mediajel-tracker"]);
+const tag = sync(["bun", "x", "turbo", "run", "build", "--filter=mediajel-tracker"]);
 if (tag.exitCode !== 0) {
   fail("tag build failed");
   process.exit(1);
@@ -63,7 +63,7 @@ if (tag.exitCode !== 0) {
 
 // 5. Launch the training site (persistent)
 step("Launching the training site …");
-const dev = Bun.spawn(["bunx", "turbo", "run", "dev", "--filter=@mediajel/integrations"], {
+const dev = Bun.spawn(["bun", "x", "turbo", "run", "dev", "--filter=@mediajel/integrations"], {
   stdout: "inherit",
   stderr: "inherit",
   stdin: "inherit",
