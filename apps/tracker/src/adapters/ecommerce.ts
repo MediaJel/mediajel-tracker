@@ -229,7 +229,7 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
     case "treez":
-      import("@mediajel/tracker-environments/environment-data-sources/treez").then(({ default: load }): void => load(tracker));
+      import("@mediajel/tracker-environments/environment-data-sources/treez").then(({ default: load }): void => load());
       // description: "treez is a just a test descriptions"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
