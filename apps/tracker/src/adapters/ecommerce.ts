@@ -20,7 +20,10 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
     return;
   }
 
-  const environments = context.environment.split(',').map(env => env.trim()).filter(env => env.length > 0);
+  const environments = context.environment
+    .split(",")
+    .map((env) => env.trim())
+    .filter((env) => env.length > 0);
 
   for (const env of environments) {
     switch (env) {
@@ -225,10 +228,15 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       // description: "carrot is a just a test descriptions"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
-
-    default:
-      logger.warn("No event/environment specified, Only pageview is active");
+    case "treez":
+      import("@mediajel/tracker-environments/environment-data-sources/treez").then(({ default: load }): void => load(tracker));
+      // description: "treez is a just a test descriptions"
+      // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
+
+      default:
+        logger.warn("No event/environment specified, Only pageview is active");
+        break;
+    }
   }
 };
-}

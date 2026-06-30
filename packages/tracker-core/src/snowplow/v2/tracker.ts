@@ -27,10 +27,11 @@ const createSnowplowV2Tracker = async (input: CreateSnowplowTrackerInput): Promi
         state,
         phoneNumber,
         advertiser,
+        test,
       } = input;
       window.tracker("trackSelfDescribingEvent", {
         event: {
-          schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-2",
+          schema: "iglu:com.mediajel.events/sign_up/jsonschema/1-0-4",
           data: {
             uuid,
             firstName,
@@ -43,6 +44,7 @@ const createSnowplowV2Tracker = async (input: CreateSnowplowTrackerInput): Promi
             state,
             phoneNumber,
             advertiser,
+            test,
           },
         },
       });
