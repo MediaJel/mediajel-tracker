@@ -1,6 +1,6 @@
-import observable from "src/shared/utils/create-events-observable";
-import { xhrResponseSource } from "../sources/xhr-response-source";
-import { EnvironmentEvents, TransactionCartItem } from "../types";
+import observable from "@mediajel/tracker-core/utils/create-events-observable";
+import { xhrResponseSource } from "@mediajel/tracker-core/sources/xhr-response-source";
+import { TransactionCartItem } from "@mediajel/tracker-core/types";
 
 const treezDataSource = () => {
   xhrResponseSource((xhr) => {
