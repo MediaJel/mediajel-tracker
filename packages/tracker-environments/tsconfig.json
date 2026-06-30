@@ -1,0 +1,12 @@
+{
+  "extends": "@mediajel/tsconfig/base.json",
+  "compilerOptions": {
+    "paths": {
+      "@mediajel/tracker-core/*": ["../tracker-core/src/*"],
+      "@mediajel/tracker-environments/*": ["./src/*"]
+    }
+  },
+  "//include": "interface.ts carries the shared `declare global { Window }` augmentation; ambient globals only apply to compilations that include the file, so each consumer pulls it in.",
+  "include": ["src/**/*", "../tracker-core/src/interface.ts"],
+  "exclude": ["node_modules", "dist"]
+}

@@ -1,0 +1,498 @@
+{
+	"$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+	"description": "Iglu Schema for adjust placeholders",
+	"self": {
+		"vendor": "com.mediajel.events",
+		"name": "adjust",
+		"format": "jsonschema",
+		"version": "1-0-0"
+	},
+	"type": "object",
+	"properties": {
+		"adjust_app_id": {
+			"type": "string"
+		},
+		"adjust_app_name": {
+			"type": "string"
+		},
+		"adjust_app_name_dashboard": {
+			"type": "string"
+		},
+		"adjust_app_version": {
+			"type": "string"
+		},
+		"adjust_app_version_raw": {
+			"type": "string"
+		},
+		"adjust_app_version_short": {
+			"type": "string"
+		},
+		"adjust_store": {
+			"type": "string"
+		},
+		"adjust_tracker": {
+			"type": "string"
+		},
+		"adjust_tracker_name": {
+			"type": "string"
+		},
+		"adjust_first_tracker": {
+			"type": "string"
+		},
+		"adjust_first_tracker_name": {
+			"type": "string"
+		},
+		"adjust_last_tracker": {
+			"type": "string"
+		},
+		"adjust_last_tracker_name": {
+			"type": "string"
+		},
+		"adjust_outdated_tracker": {
+			"type": "string"
+		},
+		"adjust_network_name": {
+			"type": "string"
+		},
+		"adjust_campaign_name": {
+			"type": "string"
+		},
+		"adjust_creative_name": {
+			"type": "string"
+		},
+		"adjust_impression_based": {
+			"type": "string"
+		},
+		"adjust_is_organic": {
+			"type": "string"
+		},
+		"adjust_rejection_reason": {
+			"type": "string"
+		},
+		"adjust_click_referer": {
+			"type": "string"
+		},
+		"adjust_activity_kind": {
+			"type": "string"
+		},
+		"adjust_click_time": {
+			"type": "string"
+		},
+		"adjust_click_time_hour": {
+			"type": "string"
+		},
+		"adjust_impression_time": {
+			"type": "string"
+		},
+		"adjust_impression_time_hour": {
+			"type": "string"
+		},
+		"adjust_conversion_duration": {
+			"type": "string"
+		},
+		"adjust_engagement_time": {
+			"type": "string"
+		},
+		"adjust_engagement_time_hour": {
+			"type": "string"
+		},
+		"adjust_installed_at": {
+			"type": "string"
+		},
+		"adjust_installed_at_hour": {
+			"type": "string"
+		},
+		"adjust_install_finish_time": {
+			"type": "string"
+		},
+		"adjust_install_begin_time": {
+			"type": "string"
+		},
+		"adjust_time_to_uninstall": {
+			"type": "string"
+		},
+		"adjust_time_to_reinstall": {
+			"type": "string"
+		},
+		"adjust_uninstalled_at": {
+			"type": "string"
+		},
+		"adjust_reinstalled_at": {
+			"type": "string"
+		},
+		"adjust_referral_time": {
+			"type": "string"
+		},
+		"adjust_created_at": {
+			"type": "string"
+		},
+		"adjust_created_at_milli": {
+			"type": "string"
+		},
+		"adjust_created_at_hour": {
+			"type": "string"
+		},
+		"adjust_received_at": {
+			"type": "string"
+		},
+		"adjust_last_session_time": {
+			"type": "string"
+		},
+		"adjust_connection_type": {
+			"type": "string"
+		},
+		"adjust_cpu_type": {
+			"type": "string"
+		},
+		"adjust_hardware_name": {
+			"type": "string"
+		},
+		"adjust_network_type": {
+			"type": "string"
+		},
+		"adjust_device_manufacturer": {
+			"type": "string"
+		},
+		"adjust_proxy_ip_address": {
+			"type": "string"
+		},
+		"adjust_ad_revenue_network": {
+			"type": "string"
+		},
+		"adjust_ad_revenue_unit": {
+			"type": "string"
+		},
+		"adjust_ad_revenue_placement": {
+			"type": "string"
+		},
+		"adjust_ad_mediation_platform": {
+			"type": "string"
+		},
+		"adjust_ad_revenue_payload": {
+			"type": "string"
+		},
+		"adjust_ad_impressions_count": {
+			"type": "string"
+		},
+		"adjust_dcp_xxx": {
+			"type": "string"
+		},
+		"adjust_is_deeplink_click": {
+			"type": "string"
+		},
+		"adjust_san_engagement_times": {
+			"type": "string"
+		},
+		"adjust_device_atlas_id": {
+			"type": "string"
+		},
+		"adjust_click_attribution_window": {
+			"type": "string"
+		},
+		"adjust_impression_attribution_window": {
+			"type": "string"
+		},
+		"adjust_probmatching_attribution_window": {
+			"type": "string"
+		},
+		"adjust_reattribution_attribution_window": {
+			"type": "string"
+		},
+		"adjust_inactive_user_definition": {
+			"type": "string"
+		},
+		"adjust_attribution_ttl": {
+			"type": "string"
+		},
+		"adjust_reattribution_attribution_ttl": {
+			"type": "string"
+		},
+		"adjust_reattribution_fallback_type": {
+			"type": "string"
+		},
+		"adjust_last_fallback_time": {
+			"type": "string"
+		},
+		"adjust_attribution_expires_at": {
+			"type": "string"
+		},
+		"adjust_callback_ttl": {
+			"type": "string"
+		},
+		"adjust_within_callback_ttl": {
+			"type": "string"
+		},
+		"adjust_adid": {
+			"type": "string"
+		},
+		"adjust_idfa": {
+			"type": "string"
+		},
+		"adjust_android_id": {
+			"type": "string"
+		},
+		"adjust_android_id_md5": {
+			"type": "string"
+		},
+		"adjust_mac_sha1": {
+			"type": "string"
+		},
+		"adjust_mac_md5": {
+			"type": "string"
+		},
+		"adjust_idfa_md5": {
+			"type": "string"
+		},
+		"adjust_idfa_md5_hex": {
+			"type": "string"
+		},
+		"adjust_idfa_upper": {
+			"type": "string"
+		},
+		"adjust_idfv": {
+			"type": "string"
+		},
+		"adjust_gps_adid": {
+			"type": "string"
+		},
+		"adjust_gps_adid_md5": {
+			"type": "string"
+		},
+		"adjust_oaid": {
+			"type": "string"
+		},
+		"adjust_oaid_md5": {
+			"type": "string"
+		},
+		"adjust_web_uuid": {
+			"type": "string"
+		},
+		"adjust_win_udid": {
+			"type": "string"
+		},
+		"adjust_win_hwid": {
+			"type": "string"
+		},
+		"adjust_win_naid": {
+			"type": "string"
+		},
+		"adjust_win_adid": {
+			"type": "string"
+		},
+		"adjust_fire_adid": {
+			"type": "string"
+		},
+		"adjust_match_type": {
+			"type": "string"
+		},
+		"adjust_reftag": {
+			"type": "string"
+		},
+		"adjust_reftags": {
+			"type": "string"
+		},
+		"adjust_referrer": {
+			"type": "string"
+		},
+		"adjust_user_agent": {
+			"type": "string"
+		},
+		"adjust_mcc": {
+			"type": "string"
+		},
+		"adjust_mnc": {
+			"type": "string"
+		},
+		"adjust_ip_address": {
+			"type": "string"
+		},
+		"adjust_isp": {
+			"type": "string"
+		},
+		"adjust_region": {
+			"type": "string"
+		},
+		"adjust_country": {
+			"type": "string"
+		},
+		"adjust_country_subdivision": {
+			"type": "string"
+		},
+		"adjust_city": {
+			"type": "string"
+		},
+		"adjust_postal_code": {
+			"type": "string"
+		},
+		"adjust_language": {
+			"type": "string"
+		},
+		"adjust_device_name": {
+			"type": "string"
+		},
+		"adjust_device_type": {
+			"type": "string"
+		},
+		"adjust_os_name": {
+			"type": "string"
+		},
+		"adjust_platform": {
+			"type": "string"
+		},
+		"adjust_api_level": {
+			"type": "string"
+		},
+		"adjust_sdk_version": {
+			"type": "string"
+		},
+		"adjust_os_version": {
+			"type": "string"
+		},
+		"adjust_random": {
+			"type": "string"
+		},
+		"adjust_nonce": {
+			"type": "string"
+		},
+		"adjust_random_user_id": {
+			"type": "string"
+		},
+		"adjust_environment": {
+			"type": "string"
+		},
+		"adjust_tracking_enabled": {
+			"type": "string"
+		},
+		"adjust_tracking_limited": {
+			"type": "string"
+		},
+		"adjust_att_status": {
+			"type": "string"
+		},
+		"adjust_third_party_sharing_disabled": {
+			"type": "string"
+		},
+		"adjust_timezone": {
+			"type": "string"
+		},
+		"adjust_event": {
+			"type": "string"
+		},
+		"adjust_event_name": {
+			"type": "string"
+		},
+		"adjust_last_time_spent": {
+			"type": "string"
+		},
+		"adjust_time_spent": {
+			"type": "string"
+		},
+		"adjust_session_count": {
+			"type": "string"
+		},
+		"adjust_lifetime_session_count": {
+			"type": "string"
+		},
+		"adjust_is_reattributed": {
+			"type": "string"
+		},
+		"adjust_is_imported": {
+			"type": "string"
+		},
+		"adjust_deeplink": {
+			"type": "string"
+		},
+		"adjust_partner_parameters": {
+			"type": "string"
+		},
+		"adjust_revenue_float": {
+			"type": "string"
+		},
+		"adjust_revenue": {
+			"type": "string"
+		},
+		"adjust_currency": {
+			"type": "string"
+		},
+		"adjust_revenue_usd": {
+			"type": "string"
+		},
+		"adjust_revenue_usd_cents": {
+			"type": "string"
+		},
+		"adjust_reporting_revenue": {
+			"type": "string"
+		},
+		"adjust_reporting_currency": {
+			"type": "string"
+		},
+		"adjust_cost_type": {
+			"type": "string"
+		},
+		"adjust_cost_amount": {
+			"type": "string"
+		},
+		"adjust_cost_currency": {
+			"type": "string"
+		},
+		"adjust_reporting_cost": {
+			"type": "string"
+		},
+		"adjust_cost_id_md5": {
+			"type": "string"
+		},
+		"adjust_push_token": {
+			"type": "string"
+		},
+		"adjust_gclid": {
+			"type": "string"
+		},
+		"adjust_google_ads_campaign_type": {
+			"type": "string"
+		},
+		"adjust_google_ads_campaign_name": {
+			"type": "string"
+		},
+		"adjust_google_ads_campaign_id": {
+			"type": "string"
+		},
+		"adjust_google_ads_adgroup_name": {
+			"type": "string"
+		},
+		"adjust_google_ads_adgroup_id": {
+			"type": "string"
+		},
+		"adjust_google_ads_creative_id": {
+			"type": "string"
+		},
+		"adjust_google_ads_network_type": {
+			"type": "string"
+		},
+		"adjust_google_ads_network_subtype": {
+			"type": "string"
+		},
+		"adjust_google_ads_keyword": {
+			"type": "string"
+		},
+		"adjust_google_ads_matchtype": {
+			"type": "string"
+		},
+		"adjust_google_ads_placement": {
+			"type": "string"
+		},
+		"adjust_google_ads_video_id": {
+			"type": "string"
+		},
+		"adjust_google_ads_external_customer_id": {
+			"type": "string"
+		},
+		"adjust_google_ads_ad_type": {
+			"type": "string"
+		},
+		"adjust_search_term": {
+			"type": "string"
+		}
+	},
+	"minProperties": 1,
+	"additionalProperties": true
+}

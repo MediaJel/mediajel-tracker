@@ -1,0 +1,224 @@
+{
+	"$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+	"description": "Schema app nexus consolidated macros",
+	"self": {
+		"vendor": "com.mediajel",
+		"name": "macros_appnexus",
+		"format": "jsonschema",
+		"version": "1-1-0"
+	},
+
+	"type": "object",
+	"properties": {
+		"advertiserCode": {
+			"type": ["string", "null"]
+		},
+		"advertiserFrequency": {
+			"type": ["string", "null"]
+		},
+		"advertiserId": {
+			"type": ["string", "null"]
+		},
+		"age": {
+			"type": ["string", "null"]
+		},
+		"auctionId": {
+			"type": ["string", "null"]
+		},
+		"bidPrice": {
+			"type": ["string", "null"]
+		},
+		"cachebuster": {
+			"type": ["string", "null"]
+		},
+		"carrierId": {
+			"type": ["string", "null"]
+		},
+		"clickUrl": {
+			"type": ["string", "null"]
+		},
+		"campaignCode": {
+			"type": ["string", "null"]
+		},
+		"campaignId": {
+			"type": ["string", "null"]
+		},
+		"creativeCode": {
+			"type": ["string", "null"]
+		},
+		"lineItemCode": {
+			"type": ["string", "null"]
+		},
+		"lineItemId": {
+			"type": ["string", "null"]
+		},
+		"creativeId": {
+			"type": ["string", "null"]
+		},
+		"creativeSize": {
+			"type": ["string", "null"]
+		},
+		"customModelId": {
+			"type": ["string", "null"]
+		},
+		"customModelLastModified": {
+			"type": ["string", "null"]
+		},
+		"customModelLeafName": {
+			"type": ["string", "null"]
+		},
+		"datacenter": {
+			"type": ["string", "null"]
+		},
+		"dealId": {
+			"type": ["string", "null"]
+		},
+		"deviceAndroidAdvertisingId": {
+			"type": ["string", "null"]
+		},
+		"deviceAppleAdvertisingId": {
+			"type": ["string", "null"]
+		},
+		"deviceMakeId": {
+			"enum": ["0", "1", "2", "3", "null"]
+		},
+		"deviceMD5Id": {
+			"type": ["string", "null"]
+		},
+		"deviceModelId": {
+			"type": ["string", "null"]
+		},
+		"deviceODIN": {
+			"type": ["string", "null"]
+		},
+		"deviceOPENUDID": {
+			"type": ["string", "null"]
+		},
+		"deviceSHA1": {
+			"type": ["string", "null"]
+		},
+		"deviceWindowsId": {
+			"type": ["string", "null"]
+		},
+		"estimatedClearPrice": {
+			"type": ["string", "null"]
+		},
+		"externalApplicationId": {
+			"type": ["string", "null"]
+		},
+		"gender": {
+			"type": ["string", "null"]
+		},
+		"geoLatitude": {
+			"type": ["string", "null"]
+		},
+		"geoLongitude": {
+			"type": ["string", "null"]
+		},
+		"height": {
+			"type": ["string", "null"]
+		},
+		"ioCode": {
+			"type": ["string", "null"]
+		},
+		"ioId": {
+			"type": ["string", "null"]
+		},
+		"ozoneId": {
+			"type": ["string", "null"]
+		},
+		"paymentRuleId": {
+			"type": ["string", "null"]
+		},
+		"postalCode": {
+			"type": ["string", "null"]
+		},
+		"pricePaid": {
+			"type": ["string", "null"]
+		},
+		"publisherCode": {
+			"type": ["string", "null"]
+		},
+		"publisherId": {
+			"type": ["string", "null"]
+		},
+		"referrerUrl": {
+			"type": ["string", "null"]
+		},
+		"remarketingUser": {
+			"type": ["string", "null"]
+		},
+		"reservePrice": {
+			"type": ["string", "null"]
+		},
+		"schemeApplicationProtocol": {
+			"type": ["string", "null"]
+		},
+		"segmentCodes": {
+			"type": ["string", "null"]
+		},
+		"segmentIds": {
+			"type": ["string", "null"]
+		},
+		"sellerMemberId": {
+			"type": ["string", "null"]
+		},
+		"siteId": {
+			"type": ["string", "null"]
+		},
+		"serverSideData": {
+			"type": ["string", "null"]
+		},
+		"supplyType": {
+			"type": ["string", "null"]
+		},
+		"tagCode1": {
+			"type": ["string", "null"]
+		},
+		"tagCode2": {
+			"type": ["string", "null"]
+		},
+		"tagId": {
+			"type": ["string", "null"]
+		},
+		"timestamp": {
+			"type": ["string", "null"]
+		},
+		"usesCookies": {
+			"type": ["string", "null"]
+		},
+		"userAgent": {
+			"type": ["string", "null"]
+		},
+		"userCity": {
+			"type": ["string", "null"]
+		},
+		"userCountry": {
+			"type": ["string", "null"]
+		},
+		"userId": {
+			"type": ["string", "null"]
+		},
+		"userState": {
+			"type": ["string", "null"]
+		},
+		"videoContext": {
+			"type": ["string", "null"]
+		},
+		"videoPlaybackMethod": {
+			"type": ["string", "null"]
+		},
+		"videoPlayerHeight": {
+			"type": ["string", "null"]
+		},
+		"videoPlayerWidth": {
+			"type": ["string", "null"]
+		},
+		"width": {
+			"type": ["string", "null"]
+		}
+
+	},
+	"minProperties": 1,
+	"additionalProperties": false
+}

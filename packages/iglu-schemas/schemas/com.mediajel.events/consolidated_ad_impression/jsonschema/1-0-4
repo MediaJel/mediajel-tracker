@@ -1,0 +1,339 @@
+{
+  "$schema": "http://iglucentral.com/schemas/com.snowplowanalytics.self-desc/schema/jsonschema/1-0-0#",
+  "description": "Complete Ad Impression event optimized for image, video, and audio formats",
+  "self": {
+    "vendor": "com.mediajel.events",
+    "name": "consolidated_ad_impression",
+    "format": "jsonschema",
+    "version": "1-0-4"
+  },
+  "type": "object",
+  "properties": {
+    "advertiserId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "insertionOrder": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lineItemId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "creativeId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "creativeName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "campaignOrderId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "publisherId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "publisherName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "siteId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "siteName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "appId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "appName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "GAID": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "GAID_MD5": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "GAID_SHA1": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "IDFA": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "IDFA_MD5": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "IDFA_SHA1": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "DSP": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "DSPIDENTIFIER": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "DEVICEID": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "impressionId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "campaignId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "targetUrl": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sasTimestamp": {
+      "type": [
+        "string",
+        "integer"
+      ]
+    },
+    "costModel": {
+      "enum": [
+        "cpa",
+        "cpc",
+        "cpm"
+      ]
+    },
+    "cost": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "n3pc": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mediaType": {
+      "enum": [
+        "display",
+        "video",
+        "audio",
+        "other",
+        null
+      ]
+    },
+    "mediaFormat": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Format of the media (e.g., mp4, webm, mp3, etc.)"
+    },
+    "mediaDuration": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Duration of the media in seconds"
+    },
+    "mediaPlaybackEvent": {
+      "enum": [
+        "start",
+        "firstQuartile",
+        "midpoint",
+        "thirdQuartile",
+        "complete",
+        "mute",
+        "unmute",
+        "pause",
+        "resume",
+        "skip",
+        "fullscreen",
+        "exitFullscreen",
+        null
+      ],
+      "description": "The type of playback event that occurred"
+    },
+    "mediaPlaybackPosition": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Position in seconds when the event occurred"
+    },
+    "mediaPlaybackPercentage": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Percentage of media played (0-100)"
+    },
+    "mediaAutoplay": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Whether the media was autoplayed"
+    },
+    "mediaMuted": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Whether the media was muted"
+    },
+    "mediaPlayerVolume": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Volume level (0-100)"
+    },
+    "mediaPlayerWidth": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ],
+      "description": "Width of the media player in pixels"
+    },
+    "mediaPlayerHeight": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ],
+      "description": "Height of the media player in pixels"
+    },
+    "mediaQuality": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Quality of the media (e.g., SD, HD, 4K)"
+    },
+    "mediaBitrate": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "description": "Bitrate of the media in kbps"
+    },
+    "mediaSkippable": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Whether the media was skippable"
+    },
+    "mediaSkipPosition": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Position in seconds when skip becomes available"
+    },
+    "mediaViewability": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Percentage of media that was viewable (0-100)"
+    },
+    "mediaInView": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Whether the media was in view"
+    },
+    "mediaCompletionRate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Completion rate of the media (0-100)"
+    },
+    "mediaInteractive": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "Whether the media had interactive elements"
+    },
+    "dealId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "ID of the deal targeted during ad serving"
+    }
+  },
+  "minProperties": 1,
+  "additionalProperties": true
+}
