@@ -19,7 +19,7 @@ const getContext = (): QueryStringContext => {
     appId: appId || mediajelAppId || "", // Legacy support for old universal tag
     version: version || "1", // tracker version
     environment: params.environment || "production",
-    collector: (params.test ? process.env.MJ_STAGING_COLLECTOR_URL : process.env.MJ_PRODUCTION_COLLECTOR_URL) || "",
+    collector: process.env.COLLECTOR_URL || "",
     // Regex mainly used to remove the "&amp;" and the '\\"' from the outerHTML
     tag: target.outerHTML.replace(/&amp;/g, "&").replace(/\\"/g, '"'),
   };

@@ -282,8 +282,8 @@ Fire third-party audience beacons alongside tracking:
 ### `window.overrides`
 
 Define `window.overrides` **before** the tag loads to override context values per `appId` (e.g. a
-custom `collector` or `logs`). The collector itself defaults from the `MJ_PRODUCTION_COLLECTOR_URL`
-/ `MJ_STAGING_COLLECTOR_URL` env vars baked at build time.
+custom `collector` or `logs`). The collector itself defaults from the `COLLECTOR_URL`
+env var baked at build time.
 
 ```html
 <script>
