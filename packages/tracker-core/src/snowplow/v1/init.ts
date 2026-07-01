@@ -34,7 +34,7 @@ export const initialize = ({ appId, collector, event, sdkUrl }: SnowplowTrackerI
   });
 
   // Second tracker for new pipeline collector
-  window.tracker("newTracker", appId, "collector-latest.dmp.cnna.io", {
+  window.tracker("newTracker", appId, process.env.COLLECTOR_URL, {
     appId: appId,
     postPath: "/analytics/track",
     discoverRootDomain: true,
