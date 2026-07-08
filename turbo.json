@@ -1,6 +1,9 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "stream",
+  // Parcel inlines these into the tag bundle. Declare them so turbo's strict mode (default)
+  // doesn't drop them in CI. globalEnv (not passThroughEnv) also busts the cache when they change.
+  "globalEnv": ["COLLECTOR_URL", "FRICTIONLESS_CUSTOMTAG_URL"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
