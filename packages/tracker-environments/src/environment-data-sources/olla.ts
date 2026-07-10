@@ -1,4 +1,4 @@
-import { notifyError } from "src/shared/sources/error-tracking-source";
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 
 import observable from '@mediajel/tracker-core/utils/create-events-observable';
 
