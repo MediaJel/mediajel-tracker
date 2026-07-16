@@ -25,10 +25,22 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
     withSnowplowSegmentsExtension,
     /** Dynamically add Google Ads plugin/extension */
     plugins.includes("googleAds") &&
-      (await import("@mediajel/tracker-core/snowplow/extensions").then(({ withGoogleAdsExtension }) => withGoogleAdsExtension)),
+      (await import("@mediajel/tracker-core/snowplow/extensions")
+        .then(({ withGoogleAdsExtension }) => withGoogleAdsExtension)
+        // Degrade gracefully: report the failed plugin chunk and skip the
+        // extension (falsy entries are filtered) instead of killing the tracker.
+        .catch((error) => {
+          notifyError(error, "load:googleAds");
+          return false as const;
+        })),
     /** Dynamically add Bing Ads plugin/extension */
     plugins.includes("bingAds") &&
-      (await import("@mediajel/tracker-core/snowplow/extensions").then(({ withBingAdsExtension }) => withBingAdsExtension)),
+      (await import("@mediajel/tracker-core/snowplow/extensions")
+        .then(({ withBingAdsExtension }) => withBingAdsExtension)
+        .catch((error) => {
+          notifyError(error, "load:bingAds");
+          return false as const;
+        })),
   ]);
 
   // Always-on error capture, independent of context.event. Static import (not a
@@ -49,10 +61,14 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
 
   switch (context.event) {
     case "transaction":
-      import("./ecommerce").then(({ default: load }): Promise<void> => load(tracker));
+      import("./ecommerce")
+        .then(({ default: load }): Promise<void> => load(tracker))
+        .catch((error) => notifyError(error, "load:ecommerce"));
       break;
     case "impression":
-      import("./impressions").then(({ default: load }): Promise<void> => load(tracker));
+      import("./impressions")
+        .then(({ default: load }): Promise<void> => load(tracker))
+        .catch((error) => notifyError(error, "load:impressions"));
       break;
     case "signup":
       tracker.trackSignup(context);
@@ -62,7 +78,9 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
         logger.warn("No event/environment specified, Only pageview is active");
         return;
       }
-      import("./ecommerce").then(({ default: load }): Promise<void> => load(tracker));
+      import("./ecommerce")
+        .then(({ default: load }): Promise<void> => load(tracker))
+        .catch((error) => notifyError(error, "load:ecommerce"));
       logger.warn(`No event specified, Loading ${context.environment}`);
   }
 };
