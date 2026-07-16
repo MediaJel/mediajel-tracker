@@ -1,5 +1,6 @@
 import logger from "@mediajel/tracker-core/logger";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 
 import { EnvironmentEvents, TransactionCartItem } from "@mediajel/tracker-core/types";
 import { guard } from "@mediajel/tracker-core/utils/guard";
@@ -37,7 +38,9 @@ const weaveDataSource = () => {
         });
       }
     }, "weave"));
-  } catch {}
+  } catch (error) {
+    notifyError(error, "weave");
+  }
 };
 
 export default weaveDataSource;

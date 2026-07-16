@@ -1,5 +1,6 @@
 import logger from "@mediajel/tracker-core/logger";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 
 import { pollForElement } from "@mediajel/tracker-core/sources/utils/poll-for-element";
 import { TransactionCartItem } from "@mediajel/tracker-core/types";
@@ -47,6 +48,7 @@ const ecwidTracker = () => {
     success = true;
   } catch (error) {
     logger.info("trackError", JSON.stringify(error), "ECWID IMPLEMENTATION 1");
+    notifyError(error, "ecwid");
   }
 
   // In the instance the above code doesn't work, the code below will execute since the if statement is true.
@@ -100,6 +102,7 @@ const ecwidTracker = () => {
       );
     } catch (error) {
       logger.info("trackError", JSON.stringify(error), "ECWID IMPLEMENTATION 2");
+      notifyError(error, "ecwid");
     }
   }
 };

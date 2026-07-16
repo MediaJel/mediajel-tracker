@@ -1,5 +1,6 @@
 import logger from "@mediajel/tracker-core/logger";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import { SnowplowTracker } from "@mediajel/tracker-core/snowplow/types";
 import { datalayerSource } from "@mediajel/tracker-core/sources/google-datalayer-source";
 import { TransactionCartItem } from "@mediajel/tracker-core/types";
@@ -44,6 +45,7 @@ const FlowhubDataSource = (snowplow: SnowplowTracker) => {
                     });
                 } catch (error) {
                     logger.debug("Log Warn Purchase Event: ", error);
+                    notifyError(error, "flowhub");
                 }
             }
         });

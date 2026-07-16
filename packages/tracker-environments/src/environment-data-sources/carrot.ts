@@ -1,4 +1,5 @@
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import { isTrackerLoaded } from "@mediajel/tracker-core/sources/utils/is-tracker-loaded";
 import { TransactionCartItem } from "@mediajel/tracker-core/types";
 import { fetchSource } from "@mediajel/tracker-core/sources/fetch-source";
@@ -48,6 +49,7 @@ const carrotDataSource = (snowplow: SnowplowTracker) => {
               });
             } catch (error) {
               logger.error("Carrot: Error parsing response body", error);
+              notifyError(error, "carrot");
             }
           }
         });

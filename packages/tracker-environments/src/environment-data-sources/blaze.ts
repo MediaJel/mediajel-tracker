@@ -1,4 +1,5 @@
 import observable from '@mediajel/tracker-core/utils/create-events-observable';
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import { xhrResponseSource } from "@mediajel/tracker-core/sources/xhr-response-source";
 import { TransactionCartItem } from '@mediajel/tracker-core/types';
 
@@ -44,7 +45,9 @@ const blazeDataSource = () => {
                     });
                 }
             }
-            catch (error) { }
+            catch (error) {
+                notifyError(error, "blaze");
+            }
         });
     }
 
