@@ -233,6 +233,11 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       // description: "treez is a just a test descriptions"
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
+    case "posabit":
+      import("@mediajel/tracker-environments/environment-data-sources/posabit").then(({ default: load }): void => load());
+      // description: "posabit is a just a test description"
+      // events-tracked: [{ "value": "add_to_cart", "label": "Add to Cart" }, { "value": "transaction", "label": "Transaction" }]
+      break;
 
       default:
         logger.warn("No event/environment specified, Only pageview is active");
