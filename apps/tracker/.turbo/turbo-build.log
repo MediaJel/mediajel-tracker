@@ -1,0 +1,64 @@
+[0m[2m[35m$[0m [2m[1mnode scripts/run-parcel.mjs build src/index.ts --no-scope-hoist[0m
+[0J[0J[?25l[32m⠋[39m [90m[1mBuilding index.ts...[22m[39m
+[2K[1G[1A[2K[1G[32m⠙[39m [90m[1mBuilding index.ts...[22m[39m
+[2K[1G[1A[2K[1G[32m⠹[39m [90m[1mBuilding index.ts...[22m[39m
+[2K[1G[1A[2K[1G[32m⠸[39m [90m[1mBuilding logger.ts...[22m[39m
+[2K[1G[1A[2K[1G[32m⠼[39m [90m[1mBuilding logger.ts...[22m[39m
+[2K[1G[1A[2K[1G[32m⠴[39m [90m[1mBuilding _object_spread_props.js...[22m[39m
+[2K[1G[1A[2K[1G[32m⠦[39m [90m[1mBuilding liquidm.ts...[22m[39m
+[2K[1G[1A[2K[1G[32m⠧[39m [90m[1mBuilding liquidm.ts...[22m[39m
+[2K[1G[1A[2K[1G[32m⠇[39m [90m[1mBuilding js-loader.js...[22m[39m
+[2K[1G[1A[2K[1G[32m⠏[39m [90m[1mOptimizing tracker.[hash].js...[22m[39m
+[2K[1G[1A[2K[1G[?25h✨ [32m[1mBuilt in 1.05s[22m[39m
+
+[2mdist/[22m[36m[1mindex.js[22m[39m                         [1m[35m22.18 KB[39m[22m    [32m[1m102ms[22m[39m
+[2mdist/[22m[36m[1madapters.0feb41ea.js[22m[39m             [1m[35m18.48 KB[39m[22m    [32m[1m100ms[22m[39m
+[2mdist/[22m[36m[1mtracker.89689c93.js[22m[39m               [1m[35m3.59 KB[39m[22m    [32m[1m101ms[22m[39m
+[2mdist/[22m[36m[1mecommerce.c53ffb26.js[22m[39m             [1m[35m1.95 KB[39m[22m     [32m[1m97ms[22m[39m
+[2mdist/[22m[36m[1mimpressions.5ccfe467.js[22m[39m           [1m[35m4.33 KB[39m[22m     [32m[1m98ms[22m[39m
+[2mdist/[22m[36m[1mtracker.34fcaa29.js[22m[39m               [1m[35m3.72 KB[39m[22m    [32m[1m100ms[22m[39m
+[2mdist/[22m[36m[1mecommerce.8e9bee37.js[22m[39m             [1m[35m2.17 KB[39m[22m    [32m[1m101ms[22m[39m
+[2mdist/[22m[36m[1mimpressions.355de651.js[22m[39m           [1m[35m4.36 KB[39m[22m     [32m[1m96ms[22m[39m
+[2mdist/[22m[36m[1mecommerce.c90afe59.js[22m[39m            [1m[35m13.56 KB[39m[22m     [32m[1m99ms[22m[39m
+[2mdist/[22m[36m[1mtraining.8d613271.js[22m[39m              [1m[35m4.16 KB[39m[22m    [32m[1m100ms[22m[39m
+[2mdist/[22m[36m[1mexercise.0860022d.js[22m[39m              [1m[35m3.12 KB[39m[22m    [32m[1m101ms[22m[39m
+[2mdist/[22m[36m[1mbigcommerce.3b11d2fb.js[22m[39m           [1m[35m6.28 KB[39m[22m     [32m[1m96ms[22m[39m
+[2mdist/[22m[36m[1mblaze.d3d2b2c4.js[22m[39m                 [1m[35m2.21 KB[39m[22m     [32m[1m98ms[22m[39m
+[2mdist/[22m[36m[1mbuddi.0cefd3ba.js[22m[39m                 [1m[35m3.31 KB[39m[22m    [32m[1m100ms[22m[39m
+[2mdist/[22m[36m[1mdispense.b4a777ef.js[22m[39m              [1m[35m5.08 KB[39m[22m    [32m[1m101ms[22m[39m
+[2mdist/[22m[36m[1mdrupal.ddd69ce5.js[22m[39m                [1m[35m3.65 KB[39m[22m     [32m[1m96ms[22m[39m
+[2mdist/[22m[36m[1mdutchie-iframe.045224c4.js[22m[39m        [1m[35m4.35 KB[39m[22m     [32m[1m98ms[22m[39m
+[2mdist/[22m[36m[1mdutchie-subdomain.1a00cae4.js[22m[39m     [1m[35m4.04 KB[39m[22m    [32m[1m100ms[22m[39m
+[2mdist/[22m[36m[1mdutchie-plus.29e73d94.js[22m[39m          [1m[35m4.24 KB[39m[22m    [32m[1m101ms[22m[39m
+[2mdist/[22m[36m[1mdutchie.c015df71.js[22m[39m                [1m[35m1.5 KB[39m[22m     [32m[1m96ms[22m[39m
+[2mdist/[22m[36m[1mecwid.806f1ecf.js[22m[39m                 [1m[35m4.24 KB[39m[22m     [32m[1m99ms[22m[39m
+[2mdist/[22m[36m[1mevenue.753388f0.js[22m[39m                [1m[35m3.88 KB[39m[22m    [32m[1m100ms[22m[39m
+[2mdist/[22m[36m[1mfoxy.c6ca8fb0.js[22m[39m                  [1m[35m2.95 KB[39m[22m    [32m[1m101ms[22m[39m
+[2mdist/[22m[36m[1mgrassdoor.a96a2fe2.js[22m[39m             [1m[35m2.58 KB[39m[22m     [32m[1m96ms[22m[39m
+[2mdist/[22m[36m[1mgreenrush.2576c237.js[22m[39m             [1m[35m2.04 KB[39m[22m     [32m[1m99ms[22m[39m
+[2mdist/[22m[36m[1miqmetrix.1f1a874d.js[22m[39m              [1m[35m2.09 KB[39m[22m    [32m[1m100ms[22m[39m
+[2mdist/[22m[36m[1mjane.89210c91.js[22m[39m                  [1m[35m4.86 KB[39m[22m    [32m[1m101ms[22m[39m
+[2mdist/[22m[36m[1mleafly.88774feb.js[22m[39m                [1m[35m2.73 KB[39m[22m     [32m[1m96ms[22m[39m
+[2mdist/[22m[36m[1mlightspeed.721a301b.js[22m[39m            [1m[35m1.94 KB[39m[22m     [32m[1m99ms[22m[39m
+[2mdist/[22m[36m[1mmagento.90152687.js[22m[39m               [1m[35m6.28 KB[39m[22m    [32m[1m100ms[22m[39m
+[2mdist/[22m[36m[1mmeadow.b41ecbab.js[22m[39m                [1m[35m3.14 KB[39m[22m    [32m[1m101ms[22m[39m
+[2mdist/[22m[36m[1molla.5e1fa27e.js[22m[39m                  [1m[35m2.68 KB[39m[22m     [32m[1m96ms[22m[39m
+[2mdist/[22m[36m[1mshopify.e070feba.js[22m[39m               [1m[35m3.38 KB[39m[22m     [32m[1m99ms[22m[39m
+[2mdist/[22m[36m[1msquare.100b0fcc.js[22m[39m                [1m[35m1.91 KB[39m[22m    [32m[1m100ms[22m[39m
+[2mdist/[22m[36m[1msticky-leaf.d99ad5f9.js[22m[39m           [1m[35m1.81 KB[39m[22m    [32m[1m101ms[22m[39m
+[2mdist/[22m[36m[1msweed.a63bb7ec.js[22m[39m                 [1m[35m3.11 KB[39m[22m     [32m[1m96ms[22m[39m
+[2mdist/[22m[36m[1mtymber.2e7912c9.js[22m[39m                [1m[35m4.12 KB[39m[22m     [32m[1m99ms[22m[39m
+[2mdist/[22m[36m[1mticketmaster.8ba07a6b.js[22m[39m          [1m[35m3.36 KB[39m[22m    [32m[1m100ms[22m[39m
+[2mdist/[22m[36m[1mticketure.5034715e.js[22m[39m             [1m[35m1.32 KB[39m[22m    [32m[1m101ms[22m[39m
+[2mdist/[22m[36m[1mtnew.9093151c.js[22m[39m                   [1m[35m1.3 KB[39m[22m     [32m[1m96ms[22m[39m
+[2mdist/[22m[36m[1mweave.d3143dfc.js[22m[39m                 [1m[35m2.01 KB[39m[22m     [32m[1m99ms[22m[39m
+[2mdist/[22m[36m[1mwebjoint.c0a92f84.js[22m[39m              [1m[35m2.04 KB[39m[22m    [32m[1m100ms[22m[39m
+[2mdist/[22m[36m[1mwefunder.924257c7.js[22m[39m              [1m[35m2.12 KB[39m[22m    [32m[1m101ms[22m[39m
+[2mdist/[22m[36m[1mwix.5d8c8894.js[22m[39m                   [1m[35m2.96 KB[39m[22m     [32m[1m96ms[22m[39m
+[2mdist/[22m[36m[1mwoocommerce.5176eddc.js[22m[39m           [1m[35m2.73 KB[39m[22m     [32m[1m99ms[22m[39m
+[2mdist/[22m[36m[1myotpo.ffc45183.js[22m[39m                 [1m[35m2.01 KB[39m[22m    [32m[1m100ms[22m[39m
+[2mdist/[22m[36m[1mflowhub.e212732d.js[22m[39m               [1m[35m3.36 KB[39m[22m    [32m[1m101ms[22m[39m
+[2mdist/[22m[36m[1mthirdparty.6cf261c2.js[22m[39m            [1m[35m1.37 KB[39m[22m     [32m[1m96ms[22m[39m
+[2mdist/[22m[36m[1mcarrot.f5b8af39.js[22m[39m                [1m[35m4.11 KB[39m[22m     [32m[1m99ms[22m[39m
+[2mdist/[22m[36m[1mimpressions.2dd2c855.js[22m[39m           [1m[35m1.69 KB[39m[22m    [32m[1m100ms[22m[39m
+[?25h
