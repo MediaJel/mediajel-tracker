@@ -33,16 +33,18 @@ export const initialize = ({ appId, collector, event, sdkUrl }: SnowplowTrackerI
     respectDoNotTrack: true,
     eventMethod: "post",
   });
-  // Second tracker for new pipeline collector
-  window.tracker("newTracker", `${appId}_v2`, process.env.COLLECTOR_URL, {
-    appId,
-    postPath: "/analytics/track",
-    discoverRootDomain: true,
-    stateStorageStrategy: "cookieAndLocalStorage",
-    cookieSameSite: "Lax",
-    respectDoNotTrack: false,
-    eventMethod: "post",
-  });
+  // Second tracker for new pipeline collector.
+  // Disabled: intended for testing the new pipeline collector, so events are not
+  // double-sent in normal operation.
+  // window.tracker("newTracker", `${appId}_v2`, process.env.COLLECTOR_URL, {
+  //   appId,
+  //   postPath: "/analytics/track",
+  //   discoverRootDomain: true,
+  //   stateStorageStrategy: "cookieAndLocalStorage",
+  //   cookieSameSite: "Lax",
+  //   respectDoNotTrack: false,
+  //   eventMethod: "post",
+  // });
   window.tracker("enableActivityTracking", {
     minimumVisitLength: 30,
     heartbeatDelay: 10,

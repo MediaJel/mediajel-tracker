@@ -29,17 +29,6 @@ export const initialize = ({ appId, collector, event, sdkUrl }: SnowplowTrackerI
     discoverRootDomain: true,
     stateStorageStrategy: "cookieAndLocalStorage",
     cookieSameSite: "Lax",
-    respectDoNotTrack: false,
-    eventMethod: "post",
-  });
-
-  // Second tracker for new pipeline collector
-  window.tracker("newTracker", appId, process.env.COLLECTOR_URL, {
-    appId: appId,
-    postPath: "/analytics/track",
-    discoverRootDomain: true,
-    stateStorageStrategy: "cookieAndLocalStorage",
-    cookieSameSite: "Lax",
     // Privacy-compliant posture: first-party Secure cookies, and honor Do Not Track at the SDK
     // level too. The tag's edge gate (isUsPrivacyOptOut) already hard-exits on GPC/DNT before the
     // tracker loads; respectDoNotTrack is a second, SDK-level guard so DNT is still honored on any
@@ -48,6 +37,20 @@ export const initialize = ({ appId, collector, event, sdkUrl }: SnowplowTrackerI
     respectDoNotTrack: true,
     eventMethod: "post",
   });
+
+  // Second tracker for new pipeline collector.
+  // Disabled: intended for testing the new pipeline collector, so events are not
+  // double-sent in normal operation.
+  // window.tracker("newTracker", appId, process.env.COLLECTOR_URL, {
+  //   appId: appId,
+  //   postPath: "/analytics/track",
+  //   discoverRootDomain: true,
+  //   stateStorageStrategy: "cookieAndLocalStorage",
+  //   cookieSameSite: "Lax",
+  //   cookieSecure: true,
+  //   respectDoNotTrack: true,
+  //   eventMethod: "post",
+  // });
 
   window.tracker("enableActivityTracking", 30, 10);
   window.tracker("trackPageView");
