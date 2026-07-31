@@ -1,5 +1,4 @@
 import logger from "@mediajel/tracker-core/logger";
-import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import { guard } from "@mediajel/tracker-core/utils/guard";
 
 /**
@@ -29,7 +28,6 @@ export const fetchSource = (
       })
       .catch((error: Error) => {
         logger.error("Fetch error:", error);
-        notifyError(error, "fetch");
         throw error;
       });
   };
