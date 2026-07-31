@@ -6,8 +6,11 @@ import observable from "@mediajel/tracker-core/utils/create-events-observable";
  * and the implementation behind the public `window.trackError` global.
  */
 export const notifyError = (error: unknown, environment?: string): void => {
+  // Strings keep their text (a plain-string report would otherwise become
+  // "Unknown error" and collapse the dedupe key to one slot per environment).
+  const message = typeof error === "string" ? error : (error as Error)?.message;
   observable.notify({
-    errorEvent: { message: (error as Error)?.message, error: error as Error, environment },
+    errorEvent: { message, error: error as Error, environment },
   });
 };
 
