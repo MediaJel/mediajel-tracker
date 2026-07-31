@@ -41,9 +41,6 @@ export interface ApplicationErrorEvent {
   message?: string; // explicit message; falls back to error.message
   error?: Error; // raw Error — the SDK derives stackTrace from error.stack
   environment?: string; // integration/override attribution: "shopify", "menu.foo.com", appId…
-  filename?: string;
-  lineno?: number;
-  colno?: number;
 }
 
 export interface EventsObservableEvents {
