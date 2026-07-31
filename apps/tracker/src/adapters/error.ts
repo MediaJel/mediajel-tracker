@@ -1,7 +1,10 @@
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
 import { SnowplowTracker } from "@mediajel/tracker-core/snowplow";
 
-const STORM_CAP = 10; // distinct reports per page load
+// First-come-first-served and per bundle instance (N tags on one page = N×STORM_CAP).
+// Boot-phase errors (load:*/guard:*) can claim slots before checkout-time errors fire —
+// if volumes look wrong, check this bias first. Distinct environment|message pairs; never reset.
+const STORM_CAP = 10;
 const seen = new Set<string>();
 let count = 0;
 
