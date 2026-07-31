@@ -8,8 +8,20 @@ const greenrushDataSource = () => {
   xhrResponseSource((xhr: XMLHttpRequest) => {
     const response = xhr.responseText;
     if (xhr.responseURL.includes("cart") && xhr.response.includes("pending")) {
+      let transaction;
       try {
-        const transaction = JSON.parse(response);
+        const parsedData = JSON.parse(response);
+        // Verify parsed data is actually an object
+        if (!parsedData || typeof parsedData !== "object") {
+          return;
+        }
+        transaction = parsedData;
+      } catch (e) {
+        // Silent fail if JSON parsing fails — a SyntaxError would carry the host response body
+        return;
+      }
+
+      try {
         const product = transaction.data.items.data;
 
         observable.notify({

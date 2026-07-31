@@ -7,9 +7,20 @@ import { EnvironmentEvents, TransactionCartItem } from "@mediajel/tracker-core/t
 const wefunderTracker = () => {
   xhrResponseSource((xhr) => {
     if (xhr.responseURL.includes("investments") && typeof xhr.responseText === "string") {
+      let transaction;
       try {
-        const response = JSON.parse(xhr.responseText);
-        const transaction = response;
+        const parsedData = JSON.parse(xhr.responseText);
+        // Verify parsed data is actually an object
+        if (!parsedData || typeof parsedData !== "object") {
+          return;
+        }
+        transaction = parsedData;
+      } catch (e) {
+        // Silent fail if JSON parsing fails — a SyntaxError would carry the host response body
+        return;
+      }
+
+      try {
         const products = transaction.products;
 
         observable.notify({
