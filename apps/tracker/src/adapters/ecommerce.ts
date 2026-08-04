@@ -235,7 +235,9 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
       // events-tracked: [{ "value": "transaction", "label": "Transaction" }]
       break;
     case "posabit":
-      import("@mediajel/tracker-environments/environment-data-sources/posabit").then(({ default: load }): void => load());
+      import("@mediajel/tracker-environments/environment-data-sources/posabit")
+        .then(({ default: load }): void => load())
+        .catch((error) => notifyError(error, "load:posabit"));
       // description: "posabit is a just a test description"
       // events-tracked: [{ "value": "add_to_cart", "label": "Add to Cart" }, { "value": "transaction", "label": "Transaction" }]
       break;
