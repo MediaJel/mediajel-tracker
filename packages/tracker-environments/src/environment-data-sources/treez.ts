@@ -5,8 +5,20 @@ import { TransactionCartItem } from "@mediajel/tracker-core/types";
 
 const treezDataSource = () => {
   xhrResponseSource((xhr) => {
+    let getData;
     try {
-      const getData = JSON.parse(xhr.responseText);
+      const parsedData = JSON.parse(xhr.responseText);
+      // Verify parsed data is actually an object
+      if (!parsedData || typeof parsedData !== "object") {
+        return;
+      }
+      getData = parsedData;
+    } catch (e) {
+      // Silent fail if JSON parsing fails — a SyntaxError would carry the host response body
+      return;
+    }
+
+    try {
       if (getData.orderNumber && getData.total) {
         const items = getData?.items;
 
