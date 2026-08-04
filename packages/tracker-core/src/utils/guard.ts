@@ -14,6 +14,11 @@ import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-sourc
  * environment attribution) — a `guard:*` report is a signal that instrumentation
  * is missing closer to the throw.
  *
+ * Bundle note: guard is on the entry path (index.ts → retail-id-parser → guard),
+ * so anything imported here — currently logger and notifyError (which pulls in
+ * the events observable) — ships in the always-loaded entry bundle, not a lazy
+ * chunk. It also has ~10 importers across sources/. Weigh new imports accordingly.
+ *
  * @param fn    the callback to protect
  * @param label short tag for the log line (e.g. "xhr-response", "post-message")
  */
