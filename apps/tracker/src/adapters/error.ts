@@ -18,7 +18,12 @@ export default async (tracker: SnowplowTracker): Promise<void> => {
     try {
       tracker.trackError(errorEvent);
     } catch {
-      /* the reporter must never throw */
+      // The reporter must never throw — but a failed send must not burn the
+      // dedupe slot or a storm-cap slot, so the same error can retry once the
+      // SDK is healthy. (Adding to `seen` before the send stays: it suppresses
+      // any re-entrant notify of the same error during trackError.)
+      seen.delete(key);
+      count -= 1;
     }
   });
 };
