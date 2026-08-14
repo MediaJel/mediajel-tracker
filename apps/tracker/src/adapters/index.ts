@@ -17,6 +17,14 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   logger.debug("Adapter Context", context);
   const snowplow = await createSnowplowTracker(context);
 
+  // Always-on error capture, independent of context.event. Static import (not a
+  // dynamic chunk) and subscribed before the extensions array below is built —
+  // the load:googleAds/load:bingAds catches notify while that array is still
+  // evaluating, and a report fired before this subscription is dropped (the
+  // observable has no replay). The raw tracker is enough here: no extension
+  // wraps trackError.
+  loadErrorAdapter(snowplow);
+
   // Apply extensions to the tracker
   const tracker = applyExtensions(snowplow, [
     withDeduplicationExtension,
@@ -42,13 +50,6 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
           return false as const;
         })),
   ]);
-
-  // Always-on error capture, independent of context.event. Static import (not a
-  // dynamic chunk) so the observable subscription is registered synchronously,
-  // before window.trackError is exposed and before the event switch loads any
-  // data source — otherwise an error fired in the import gap is dropped (the
-  // observable has no replay).
-  loadErrorAdapter(tracker);
 
   // Public API: external appId/domain overrides report caught errors through the
   // same observable funnel (cap/dedupe/attribution shared with internal producers).
