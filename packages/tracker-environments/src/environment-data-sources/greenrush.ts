@@ -29,6 +29,11 @@ const greenrushDataSource = () => {
       }
 
       try {
+        // Unrelated host JSON reaches here — skip it silently
+        // instead of filing its TypeError as a [greenrush] report.
+        if (!Array.isArray(transaction.data?.items?.data) || transaction.data.id == null) {
+          return;
+        }
         const product = transaction.data.items.data;
 
         observable.notify({

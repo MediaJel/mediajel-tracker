@@ -24,6 +24,11 @@ const wefunderTracker = () => {
       }
 
       try {
+        // Unrelated "investments" JSON without an order
+        // shape must skip silently, not report a TypeError.
+        if (!Array.isArray(transaction.products) || transaction.id == null) {
+          return;
+        }
         const products = transaction.products;
 
         observable.notify({
