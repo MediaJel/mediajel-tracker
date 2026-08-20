@@ -6,10 +6,11 @@ import { TransactionCartItem } from "@mediajel/tracker-core/types";
 
 const iqmetrixDataSource = () => {
     xhrResponseSource((xhr: XMLHttpRequest) => {
-        const response = xhr.responseText;
         let transaction;
         try {
-            const parsedData = JSON.parse(response);
+            // xhr.responseText is a throwing getter (InvalidStateError when the
+            // host set a non-text responseType), so it must stay inside the try.
+            const parsedData = JSON.parse(xhr.responseText);
             // Verify parsed data is actually an object
             if (!parsedData || typeof parsedData !== "object") {
                 return;

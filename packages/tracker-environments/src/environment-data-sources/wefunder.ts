@@ -6,9 +6,12 @@ import { EnvironmentEvents, TransactionCartItem } from "@mediajel/tracker-core/t
 
 const wefunderTracker = () => {
   xhrResponseSource((xhr) => {
-    if (xhr.responseURL.includes("investments") && typeof xhr.responseText === "string") {
+    if (xhr.responseURL.includes("investments")) {
       let transaction;
       try {
+        // xhr.responseText is a throwing getter (InvalidStateError when the host
+        // set a non-text responseType), so it may only be read inside the try —
+        // a typeof check cannot help, since typeof still invokes the getter.
         const parsedData = JSON.parse(xhr.responseText);
         // Verify parsed data is actually an object
         if (!parsedData || typeof parsedData !== "object") {

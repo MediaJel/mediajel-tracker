@@ -6,10 +6,17 @@ import { TransactionCartItem } from "@mediajel/tracker-core/types";
 
 const greenrushDataSource = () => {
   xhrResponseSource((xhr: XMLHttpRequest) => {
-    const response = xhr.responseText;
-    if (xhr.responseURL.includes("cart") && xhr.response.includes("pending")) {
+    if (xhr.responseURL.includes("cart")) {
       let transaction;
       try {
+        // xhr.responseText is a throwing getter (InvalidStateError when the host
+        // set a non-text responseType), so it must stay inside the try — and the
+        // "pending" filter reads the same text, not xhr.response, which is a
+        // non-string for those responseTypes.
+        const response = xhr.responseText;
+        if (!response.includes("pending")) {
+          return;
+        }
         const parsedData = JSON.parse(response);
         // Verify parsed data is actually an object
         if (!parsedData || typeof parsedData !== "object") {
