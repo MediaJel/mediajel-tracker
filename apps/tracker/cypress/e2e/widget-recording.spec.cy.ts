@@ -146,8 +146,18 @@ describe("Integrations Assistant — evidence & settings", () => {
         desc?.set?.call(el, value);
         el.dispatchEvent(new Event("input", { bubbles: true }));
       };
-      const key = inputs.find((el) => (el as HTMLInputElement).type === "password") as HTMLInputElement;
-      setNative(key, "test-key-1234567890");
+      const secrets = inputs.filter((el) => (el as HTMLInputElement).type === "password") as HTMLInputElement[];
+      setNative(secrets[0], "test-key-1234567890"); // provider API key
+      setNative(secrets[1], "ghp_test_token_1234567890"); // GitHub token
+      const named = inputs.filter((el) => (el as HTMLInputElement).type === "text") as HTMLInputElement[];
+      // model input first, then actor name/email — identify by surrounding label text instead:
+      const byLabel = (label: string): HTMLInputElement => {
+        const field = Array.from(root.querySelectorAll(".mj-field")).find((f) => f.textContent?.includes(label));
+        return field?.querySelector("input") as HTMLInputElement;
+      };
+      setNative(byLabel("Your name"), "Jane Doe");
+      setNative(byLabel("Your email"), "jane@mediajel.com");
+      void named;
       const ack = root.querySelector(".mj-check input") as HTMLInputElement;
       ack.click();
     });
@@ -220,6 +230,71 @@ describe("Integrations Assistant — evidence & settings", () => {
       expect(session.step).to.equal("result");
       expect(session.generation.model).to.be.a("string");
       expect(session.generation.violations).to.have.length(0);
+    });
+
+    // ---- 04 Verify: the generated tag runs HERE, intercepted; redo the purchase. ----
+    let collectorHits = 0;
+    cy.intercept("POST", "**/analytics/track", () => {
+      collectorHits += 1;
+    });
+    click(".mj-btn", "Run on this page");
+    // The dataLayer already holds the recorded purchase, so the tag fires from replay at once.
+    cy.get("#mj-widget-host").should(($host) => {
+      const root = $host[0].shadowRoot as ShadowRoot;
+      expect(root.querySelector(".mj-captures"), "captures list").to.not.equal(null);
+      expect(root.querySelector(".mj-capture-name")?.textContent).to.include("trackTrans");
+    });
+    // A fresh action captures again — still nothing to the collector.
+    cy.get("#buy").click();
+    cy.get("#mj-widget-host").should(($host) => {
+      const root = $host[0].shadowRoot as ShadowRoot;
+      expect(root.querySelectorAll(".mj-capture").length).to.be.greaterThan(1);
+    });
+    cy.then(() => expect(collectorHits, "collector hits during verify").to.equal(0));
+
+    // ---- 05 Deploy: GitHub intercepted; commit convention asserted byte for byte. ----
+    cy.intercept("GET", "https://api.github.com/repos/MediaJel/mediajel-frictionless-custom-tag/contents/**", {
+      statusCode: 404,
+      body: { message: "Not Found" },
+    }).as("ghCheck");
+    cy.intercept("PUT", "https://api.github.com/repos/MediaJel/mediajel-frictionless-custom-tag/contents/**", {
+      statusCode: 201,
+      body: {
+        commit: { html_url: "https://github.com/MediaJel/mediajel-frictionless-custom-tag/commit/e2e", sha: "e2e" },
+        content: { html_url: "https://github.com/MediaJel/mediajel-frictionless-custom-tag/blob/master/x.ts" },
+      },
+    }).as("ghPut");
+
+    click(".mj-btn", "Approve → Deploy");
+    cy.wait("@ghCheck");
+    cy.get("#mj-widget-host").should(($host) => {
+      const root = $host[0].shadowRoot as ShadowRoot;
+      const body = root.querySelector(".mj-section-body")?.textContent ?? "";
+      expect(body).to.include("Where should this tag live?");
+      expect(body).to.include("src/domains/localhost.ts");
+      expect(body).to.include("new file");
+    });
+    click(".mj-btn", "Deploy to master");
+    cy.wait("@ghPut").then(({ request }) => {
+      expect(request.body.branch).to.equal("master");
+      expect(request.body.committer).to.deep.equal({
+        name: "Frictionless Tags Factory",
+        email: "frictionless-tags-factory@mediajel.com",
+      });
+      expect(request.body.message).to.equal("Add domain tag localhost\n\nCreated by: Jane Doe (jane@mediajel.com)");
+      expect(atob(request.body.content)).to.include("window.trackTrans");
+    });
+    cy.get("#mj-widget-host").should(($host) => {
+      const root = $host[0].shadowRoot as ShadowRoot;
+      const body = root.querySelector(".mj-section-body")?.textContent ?? "";
+      expect(body).to.include("is on master");
+      expect(body).to.include("The commit");
+    });
+    cy.window().then((win) => {
+      const session = JSON.parse(win.sessionStorage.getItem("mj-widget:session") as string);
+      expect(session.step).to.equal("done");
+      expect(session.deploy.path).to.equal("src/domains/localhost.ts");
+      expect(session.deploy.commitUrl).to.include("/commit/e2e");
     });
   });
 });

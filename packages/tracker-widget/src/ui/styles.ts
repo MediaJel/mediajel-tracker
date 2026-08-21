@@ -933,6 +933,84 @@ export const styles = `
   color: var(--mj-ink-soft);
 }
 
+
+/* --- verify & deploy ---------------------------------------------------------------------- */
+
+.mj-captures {
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--mj-rule);
+  border-radius: 3px;
+}
+
+.mj-capture {
+  padding: 6px 8px;
+}
+
+.mj-capture + .mj-capture {
+  border-top: 1px solid var(--mj-rule);
+}
+
+.mj-capture--bad {
+  border-left: 3px solid var(--mj-partner);
+}
+
+.mj-capture-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+}
+
+.mj-capture-name {
+  font-family: var(--mj-mono);
+  font-size: 11px;
+}
+
+.mj-capture-verdict {
+  margin-left: auto;
+  font-family: var(--mj-display);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mj-partner);
+}
+
+.mj-capture-verdict--ok {
+  color: var(--mj-platform);
+}
+
+.mj-capture-problem {
+  margin: 0 0 2px;
+  font-size: 11px;
+  color: var(--mj-partner);
+}
+
+.mj-capture-hint {
+  margin: 0 0 2px;
+  font-size: 11px;
+  color: var(--mj-ink-soft);
+}
+
+.mj-target-path {
+  font-family: var(--mj-mono);
+}
+
+.mj-commit-preview {
+  max-height: 90px;
+}
+
+.mj-links {
+  margin: 0 0 10px;
+  padding: 0 0 0 18px;
+  font-size: 12px;
+}
+
+.mj-links a {
+  color: var(--mj-identity);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mj-root *,
   .mj-root *::before,

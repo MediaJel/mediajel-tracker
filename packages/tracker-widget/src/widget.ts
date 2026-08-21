@@ -7,7 +7,13 @@ import { snapshotTracker } from "@mediajel/tracker-widget/recorder/context";
 import { Recorder, createRecorder } from "@mediajel/tracker-widget/recorder/recorder";
 import { captureRuntime } from "@mediajel/tracker-widget/runtime";
 import { generateTag } from "@mediajel/tracker-widget/ai/generate";
-import { canGenerate } from "@mediajel/tracker-widget/state/machine";
+import { cdnUrl, pollCdn, CdnPoller } from "@mediajel/tracker-widget/deploy/cdn";
+import { deployTag, deployTargets } from "@mediajel/tracker-widget/deploy/deploy";
+import { GitHubClient, createGitHubClient } from "@mediajel/tracker-widget/deploy/github";
+import { canDeploy, canGenerate } from "@mediajel/tracker-widget/state/machine";
+import { AppFlowState } from "@mediajel/tracker-widget/ui/App";
+import { TargetState } from "@mediajel/tracker-widget/ui/screens/DeploySection";
+import { runGenerated } from "@mediajel/tracker-widget/verify/runner";
 import { WIDGET_ACTIVE_KEY, WIDGET_SESSION_KEY } from "@mediajel/tracker-widget/session/keys";
 import { WidgetSettingsPatch, createSettingsStore } from "@mediajel/tracker-widget/session/settings";
 import { createSessionStore } from "@mediajel/tracker-widget/session/store";
@@ -72,6 +78,16 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
   let open = false;
   let settingsOpen = false;
   let generationAbort: AbortController | null = null;
+
+  // Verify/deploy view state — per page, not persisted (the session carries the durable half).
+  let verifyRunErrors: string[] = [];
+  let lastInjectedCode: string | null = null;
+  let targetStates: { domain: TargetState; appId: TargetState | null } | null = null;
+  let selectedTarget: "domain" | "app-id" = "domain";
+  let deploying = false;
+  let deployError = "";
+  let cdnState: "idle" | "waiting" | "live" | "gave-up" = "idle";
+  let cdnPoller: CdnPoller | null = null;
 
   /**
    * House rule: anything the browser calls back into is wrapped, so a throw inside the widget
@@ -159,9 +175,51 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
     }, "widget-code-edit"),
 
     onVerify: guard((): void => {
-      ctx?.session.transition("verify");
-      // The on-page runner arrives with the next build; the step and its body are real.
+      if (!ctx) return;
+      if (ctx.session.transition("verify") === "verify") startVerify();
     }, "widget-verify"),
+
+    onVerifyRunAgain: guard((): void => {
+      startVerify();
+    }, "widget-verify-again"),
+
+    onBackToCode: guard((): void => {
+      ctx?.session.transition("result");
+    }, "widget-back-to-code"),
+
+    onApproveVerify: guard((): void => {
+      if (!ctx) return;
+      if (ctx.session.transition("deploy") !== "deploy") return;
+      selectedTarget =
+        ctx.session.get().generation?.suggestedTarget.kind === "app-id" && ctx.tag.appId ? "app-id" : "domain";
+      void checkTargets();
+    }, "widget-approve-verify"),
+
+    onSelectTarget: guard((kind: "domain" | "app-id"): void => {
+      selectedTarget = kind;
+      draw();
+    }, "widget-select-target"),
+
+    onDeploy: guard((): void => {
+      void runDeploy();
+    }, "widget-deploy"),
+
+    onStartAnother: guard((): void => {
+      if (!ctx) return;
+      cdnPoller?.stop();
+      cdnPoller = null;
+      cdnState = "idle";
+      targetStates = null;
+      deployError = "";
+      verifyRunErrors = [];
+      ctx.session.reset();
+    }, "widget-start-another"),
+
+    onExit: guard((): void => {
+      cdnPoller?.stop();
+      cdnPoller = null;
+      void disable();
+    }, "widget-exit"),
 
     onSettingsPatch: guard((patch: Parameters<WidgetContext["settings"]["update"]>[0]): void => {
       ctx?.settings.update(patch);
@@ -239,6 +297,149 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
     }
   };
 
+  /**
+   * Injects the generated code on this page with the interceptor live. Re-injecting the SAME
+   * text is skipped (its listeners are already attached); edited code layers a new version on
+   * top — the fine print warns that the old one keeps listening until a reload.
+   */
+  const startVerify = (): void => {
+    if (!ctx) return;
+    const generation = ctx.session.get().generation;
+    if (!generation) return;
+
+    ctx.session.update((draft) => {
+      draft.verify = { captured: draft.verify?.captured ?? [], errors: [] };
+    });
+
+    if (lastInjectedCode === generation.code) {
+      verifyRunErrors = [];
+      draw();
+      return;
+    }
+
+    const result = runGenerated(generation.code, (capture) => {
+      if (!ctx) return;
+      ctx.session.update((draft) => {
+        const verify = draft.verify ?? { captured: [], errors: [] };
+        draft.verify = { ...verify, captured: [...verify.captured, capture] };
+      });
+      ctx.session.flush();
+    });
+    verifyRunErrors = result.errors;
+    if (result.ok) lastInjectedCode = generation.code;
+    draw();
+  };
+
+  const githubClient = (): GitHubClient | null => {
+    if (!ctx) return null;
+    const token = ctx.settings.get().githubToken.trim();
+    return token ? createGitHubClient(token, ctx.runtime) : null;
+  };
+
+  /** Reads both candidate files from the repo so the choice shows new-vs-update honestly. */
+  const checkTargets = async (): Promise<void> => {
+    if (!ctx) return;
+    const targets = deployTargets(String(ctx.tag.appId ?? ""));
+    targetStates = {
+      domain: { info: targets.domain, existing: null },
+      appId: targets.appId ? { info: targets.appId, existing: null } : null,
+    };
+    const client = githubClient();
+    if (!client) {
+      draw();
+      return;
+    }
+    const check = async (state: TargetState): Promise<void> => {
+      state.existing = "checking";
+      draw();
+      try {
+        const file = await client.getFile(state.info.path);
+        state.existing = file ? { preview: file.content.slice(0, 400), sha: file.sha } : "new";
+      } catch (err) {
+        logger.warn("Could not check the repo for an existing tag:", err);
+        state.existing = null;
+      }
+      draw();
+    };
+    await check(targetStates.domain);
+    if (targetStates.appId) await check(targetStates.appId);
+  };
+
+  const runDeploy = async (): Promise<void> => {
+    if (!ctx || deploying || !targetStates) return;
+    const generation = ctx.session.get().generation;
+    if (!generation) return;
+    const client = githubClient();
+    if (!client) {
+      settingsOpen = true;
+      draw();
+      return;
+    }
+
+    const state = selectedTarget === "app-id" && targetStates.appId ? targetStates.appId : targetStates.domain;
+    deploying = true;
+    deployError = "";
+    draw();
+    try {
+      const outcome = await deployTag({
+        client,
+        target: state.info,
+        code: generation.code,
+        goal: ctx.session.get().goal,
+        actor: ctx.settings.get().actor,
+        existingSha: state.existing !== null && typeof state.existing === "object" ? state.existing.sha : undefined,
+      });
+      const cdn = cdnUrl(state.info.kind, state.info.name);
+      ctx.session.update((draft) => {
+        draft.deploy = {
+          at: Date.now(),
+          kind: state.info.kind,
+          path: outcome.path,
+          commitUrl: outcome.commitUrl,
+          fileUrl: outcome.fileUrl,
+          update: outcome.update,
+          cdnUrl: cdn ?? undefined,
+        };
+      });
+      ctx.session.transition("done");
+      if (cdn) {
+        cdnState = "waiting";
+        cdnPoller = pollCdn(cdn, ctx.runtime, (next) => {
+          cdnState = next;
+          draw();
+        });
+      }
+    } catch (err) {
+      deployError = err instanceof Error ? err.message : String(err);
+    } finally {
+      deploying = false;
+      draw();
+    }
+  };
+
+  const deployBlocked = (): string => {
+    if (!ctx) return "";
+    return canDeploy(ctx.settings.get()) ? "" : "Add a GitHub token and your name/email";
+  };
+
+  const flowState = (): AppFlowState => {
+    const fallbackTargets = deployTargets(String(ctx?.tag.appId ?? ""));
+    return {
+      verifyRunErrors,
+      deploy: {
+        targets: targetStates ?? {
+          domain: { info: fallbackTargets.domain, existing: null },
+          appId: fallbackTargets.appId ? { info: fallbackTargets.appId, existing: null } : null,
+        },
+        selected: selectedTarget,
+        deploying,
+        deployError,
+        deployBlocked: deployBlocked(),
+        cdnState,
+      },
+    };
+  };
+
   const generateBlocked = (): string => {
     if (!ctx) return "";
     if (ctx.session.get().markedIds.length === 0) return "Pin at least one event as evidence first.";
@@ -267,6 +468,7 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
         settings: ctx.settings.get(),
         status: snapshotTracker(ctx),
         handlers,
+        flow: flowState(),
         generateBlocked: generateBlocked(),
         open,
         onToggleOpen,
@@ -335,6 +537,8 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
 
     // A recording that spanned a navigation re-arms itself: new page entry, sources back on.
     if (context.session.get().step === "recording") recorder?.start();
+    // A verify in flight re-injects on every page, the way the deployed tag will run.
+    if (context.session.get().step === "verify") startVerify();
 
     // Collapsed on purpose: a resume happens mid-recording, on a page the operator is trying
     // to drive. The chip states the step it came back to; opening it is one click.

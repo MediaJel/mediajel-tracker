@@ -15,9 +15,11 @@ import { WidgetGoal, WidgetSession, WidgetStep } from "@mediajel/tracker-widget/
 import Stamp from "@mediajel/tracker-widget/ui/components/Stamp";
 import { ChevronDown, Gear, Mark, Zigzag } from "@mediajel/tracker-widget/ui/icons";
 import CodeSection from "@mediajel/tracker-widget/ui/screens/CodeSection";
+import DeploySection, { TargetState } from "@mediajel/tracker-widget/ui/screens/DeploySection";
 import EvidenceSection from "@mediajel/tracker-widget/ui/screens/EvidenceSection";
 import RecordSection from "@mediajel/tracker-widget/ui/screens/RecordSection";
 import SettingsOverlay from "@mediajel/tracker-widget/ui/screens/SettingsOverlay";
+import VerifySection from "@mediajel/tracker-widget/ui/screens/VerifySection";
 import { ComponentChildren, VNode } from "@mediajel/tracker-widget/vendor";
 
 /**
@@ -53,9 +55,29 @@ export interface AppHandlers {
   onRegenerate(): void;
   onCodeEdit(code: string): void;
   onVerify(): void;
+  onVerifyRunAgain(): void;
+  onBackToCode(): void;
+  onApproveVerify(): void;
+  onSelectTarget(kind: "domain" | "app-id"): void;
+  onDeploy(): void;
+  onStartAnother(): void;
+  onExit(): void;
   onSettingsPatch(patch: WidgetSettingsPatch): void;
   onForget(): void;
   onClearDedup(): void;
+}
+
+/** Verify/deploy view state the widget owns outside the persisted session. */
+export interface AppFlowState {
+  verifyRunErrors: string[];
+  deploy: {
+    targets: { domain: TargetState; appId: TargetState | null };
+    selected: "domain" | "app-id";
+    deploying: boolean;
+    deployError: string;
+    deployBlocked: string;
+    cdnState: "idle" | "waiting" | "live" | "gave-up";
+  };
 }
 
 export interface AppProps {
@@ -65,6 +87,7 @@ export interface AppProps {
   settings: WidgetSettings;
   status: TrackerStatus;
   handlers: AppHandlers;
+  flow: AppFlowState;
   /** Why Generate is unavailable ("" when it may run). Drives the Evidence footer. */
   generateBlocked: string;
   /** False shows the launcher chip, true the card. */
@@ -103,6 +126,8 @@ const sectionState = (section: (typeof SECTIONS)[number], session: WidgetSession
     return <Stamp label={`${session.markedIds.length} pinned`} />;
   }
   if (section.number === "03" && currentIndex > lastOwned) return <Stamp label="Generated" />;
+  if (section.number === "04" && currentIndex > lastOwned) return <Stamp label="Verified" tone="platform" />;
+  if (section.number === "05" && session.step === "done") return <Stamp label="Deployed" tone="platform" filled />;
   if (currentIndex > lastOwned) return <Stamp label="Done" />;
   return null;
 };
@@ -145,6 +170,7 @@ export const App = ({
   settings,
   status,
   handlers,
+  flow,
   generateBlocked,
   open,
   onToggleOpen,
@@ -199,6 +225,32 @@ export const App = ({
         onRegenerate={handlers.onRegenerate}
         onCodeEdit={handlers.onCodeEdit}
         onVerify={handlers.onVerify}
+      />
+    ),
+    "04": (
+      <VerifySection
+        session={session}
+        runErrors={flow.verifyRunErrors}
+        onRunAgain={handlers.onVerifyRunAgain}
+        onBackToCode={handlers.onBackToCode}
+        onApprove={handlers.onApproveVerify}
+      />
+    ),
+    "05": (
+      <DeploySection
+        session={session}
+        settings={settings}
+        targets={flow.deploy.targets}
+        selected={flow.deploy.selected}
+        deploying={flow.deploy.deploying}
+        deployError={flow.deploy.deployError}
+        deployBlocked={flow.deploy.deployBlocked}
+        cdnState={flow.deploy.cdnState}
+        onSelectTarget={handlers.onSelectTarget}
+        onDeploy={handlers.onDeploy}
+        onOpenSettings={onOpenSettings}
+        onStartAnother={handlers.onStartAnother}
+        onExit={handlers.onExit}
       />
     ),
   };

@@ -218,6 +218,8 @@ export interface VerifyCapture {
   payload: unknown;
   /** Epoch ms. */
   at: number;
+  /** True when it fired from a replayed dataLayer entry rather than a fresh action. */
+  fromReplay?: boolean;
 }
 
 export interface WidgetVerify {
@@ -225,7 +227,7 @@ export interface WidgetVerify {
   errors: string[];
 }
 
-/** Where the generated tag landed. Task 7 fills this in from the GitHub response. */
+/** Where the generated tag landed, from the GitHub response. */
 export interface WidgetDeploy {
   /** Epoch ms. */
   at: number;
@@ -233,6 +235,11 @@ export interface WidgetDeploy {
   /** Repo-relative path, e.g. "src/domains/www.example.com.ts". */
   path: string;
   commitUrl: string;
+  fileUrl?: string;
+  /** True when an existing file was updated rather than created. */
+  update?: boolean;
+  /** Where the tag will be served from, when the build knows the CDN base. */
+  cdnUrl?: string;
 }
 
 /** Current schema version of the persisted blob. Bump it and old sessions are discarded. */
