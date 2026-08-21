@@ -148,8 +148,12 @@ describe("update", () => {
 describe("persistence", () => {
   test("does not write on every update — it debounces", () => {
     const s = open();
-    s.transition("recording");
-    s.transition("review");
+    s.update((draft) => {
+      draft.timeline.push(makeEvent({ kind: "dom" }));
+    });
+    s.update((draft) => {
+      draft.timeline.push(makeEvent({ kind: "click" }));
+    });
 
     expect(storage.getItem(WIDGET_SESSION_KEY)).toBeNull();
     expect(storage.writes).toBe(0);
@@ -157,20 +161,24 @@ describe("persistence", () => {
 
   test("writes once the debounce elapses", async () => {
     const s = open();
-    s.transition("recording");
+    s.update((draft) => {
+      draft.timeline.push(makeEvent({ kind: "dom" }));
+    });
 
     await sleep(PERSIST_DEBOUNCE_MS + 60);
 
-    expect(persisted().step).toBe("recording");
+    expect(persisted().timeline).toHaveLength(1);
     expect(storage.writes).toBe(1);
   });
 
   test("flush() writes synchronously and cancels the pending debounce", async () => {
     const s = open();
-    s.transition("recording");
+    s.update((draft) => {
+      draft.timeline.push(makeEvent({ kind: "dom" }));
+    });
     s.flush();
 
-    expect(persisted().step).toBe("recording");
+    expect(persisted().timeline).toHaveLength(1);
 
     await sleep(PERSIST_DEBOUNCE_MS + 60);
     expect(storage.writes).toBe(1);
@@ -178,16 +186,20 @@ describe("persistence", () => {
 
   test.each(["pagehide", "beforeunload"])("flushes on %s", (name) => {
     const s = open();
-    s.transition("recording");
+    s.update((draft) => {
+      draft.timeline.push(makeEvent({ kind: "dom" }));
+    });
 
     window.dispatchEvent(new Event(name));
 
-    expect(persisted().step).toBe("recording");
+    expect(persisted().timeline).toHaveLength(1);
   });
 
   test("flushes when the tab is hidden, not when it is shown again", () => {
     const s = open();
-    s.transition("recording");
+    s.update((draft) => {
+      draft.timeline.push(makeEvent({ kind: "dom" }));
+    });
 
     setVisibility("visible");
     document.dispatchEvent(new Event("visibilitychange"));
@@ -195,12 +207,14 @@ describe("persistence", () => {
 
     setVisibility("hidden");
     document.dispatchEvent(new Event("visibilitychange"));
-    expect(persisted().step).toBe("recording");
+    expect(persisted().timeline).toHaveLength(1);
   });
 
   test("dispose() detaches the lifecycle listeners and drops the pending write", async () => {
     const s = open();
-    s.transition("recording");
+    s.update((draft) => {
+      draft.timeline.push(makeEvent({ kind: "dom" }));
+    });
     s.dispose();
     store = null;
 
@@ -276,12 +290,11 @@ const setVisibility = (state: "visible" | "hidden"): void => {
 };
 
 describe("transition", () => {
-  test("moves along legal edges and persists on the debounce", async () => {
+  test("moves along legal edges and persists synchronously — a step is load-bearing", () => {
     const s = open();
     expect(s.transition("recording")).toBe("recording");
+    expect(persisted().step).toBe("recording");
     expect(s.transition("review")).toBe("review");
-
-    await sleep(PERSIST_DEBOUNCE_MS + 60);
     expect(persisted().step).toBe("review");
   });
 

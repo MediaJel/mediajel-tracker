@@ -3,6 +3,8 @@ import { guard } from "@mediajel/tracker-core/utils/guard";
 import { TrackerWidget, TrackerWidgetDisableOptions, TrackerWidgetPrefill } from "@mediajel/tracker-widget/api";
 import { WidgetContext } from "@mediajel/tracker-widget/context";
 import logger from "@mediajel/tracker-widget/log";
+import { snapshotTracker } from "@mediajel/tracker-widget/recorder/context";
+import { Recorder, createRecorder } from "@mediajel/tracker-widget/recorder/recorder";
 import { captureRuntime } from "@mediajel/tracker-widget/runtime";
 import { WIDGET_ACTIVE_KEY, WIDGET_SESSION_KEY } from "@mediajel/tracker-widget/session/keys";
 import { WidgetSettingsPatch, createSettingsStore } from "@mediajel/tracker-widget/session/settings";
@@ -61,7 +63,9 @@ const setActive = (active: boolean): void => {
  */
 export const createWidget = (tag: QueryStringContext): TrackerWidget => {
   let ctx: WidgetContext | null = null;
+  let recorder: Recorder | null = null;
   let unsubscribe: (() => void) | null = null;
+  let ticker: ReturnType<typeof setInterval> | null = null;
   let open = false;
 
   /**
@@ -74,14 +78,42 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
     draw();
   }, "widget-toggle");
 
-  /**
-   * `onOpenSettings` and `onSelectSection` are deliberately absent: the settings overlay and
-   * the section bodies are the screens, and until they exist their controls render in their
-   * disabled state rather than pretending to work.
-   */
+  const handlers = {
+    onStartRecording: guard((goal: "transaction" | "signup"): void => {
+      if (!ctx || !recorder) return;
+      // A fresh job: new session id, new startedAt (every `t` is measured from it).
+      ctx.session.reset({ goal });
+      ctx.session.transition("recording");
+      recorder.start();
+    }, "widget-start-recording"),
+
+    onStopRecording: guard((): void => {
+      if (!ctx || !recorder) return;
+      recorder.stop();
+      ctx.session.transition("review");
+    }, "widget-stop-recording"),
+
+    /** The Discard button IS the confirmation — one explicit click, clearly labeled. */
+    onDiscard: guard((): void => {
+      if (!ctx || !recorder) return;
+      recorder.stop();
+      ctx.session.reset();
+    }, "widget-discard"),
+  };
+
   const draw = (): void => {
     if (!ctx) return;
-    render(h(App, { context: ctx.tag, session: ctx.session.get(), open, onToggleOpen }), ctx.host.mount);
+    render(
+      h(App, {
+        context: ctx.tag,
+        session: ctx.session.get(),
+        status: snapshotTracker(ctx),
+        handlers,
+        open,
+        onToggleOpen,
+      }),
+      ctx.host.mount,
+    );
   };
 
   const mount = (): WidgetContext => {
@@ -92,9 +124,17 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
     const settings = createSettingsStore();
 
     ctx = { tag, runtime, host, session, settings, isOwn: host.isOwn };
+    recorder = createRecorder(ctx);
     // One re-render per change, from one place. The screens will move to hooks; the shell has
     // no local state worth the machinery.
     unsubscribe = session.subscribe(draw);
+    // The elapsed clock in the Record body. Redraws only while recording; cleared on disable.
+    ticker = setInterval(
+      guard(() => {
+        if (ctx?.session.get().step === "recording") draw();
+      }, "widget-ticker"),
+      1_000,
+    );
     return ctx;
   };
 
@@ -130,6 +170,9 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
   const resume = async (): Promise<void> => {
     const context = mount();
 
+    // A recording that spanned a navigation re-arms itself: new page entry, sources back on.
+    if (context.session.get().step === "recording") recorder?.start();
+
     // Collapsed on purpose: a resume happens mid-recording, on a page the operator is trying
     // to drive. The chip states the step it came back to; opening it is one click.
     open = false;
@@ -139,8 +182,15 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
   };
 
   const disable = async (opts?: TrackerWidgetDisableOptions): Promise<void> => {
-    // Ordering matters: the store is disposed before the key is removed, or its pending
-    // debounced write (or the next `pagehide`) would put the session straight back.
+    // Ordering matters: the recorder unpatches before anything else, and the store is
+    // disposed before the key is removed, or its pending debounced write (or the next
+    // `pagehide`) would put the session straight back.
+    recorder?.stop();
+    recorder = null;
+    if (ticker !== null) {
+      clearInterval(ticker);
+      ticker = null;
+    }
     unsubscribe?.();
     unsubscribe = null;
     ctx?.session.dispose();

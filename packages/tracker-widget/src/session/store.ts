@@ -258,7 +258,9 @@ export const createSessionStore = (
       const next = machineTransition(session.step, to, options);
       if (next !== session.step) {
         session = { ...session, step: next };
-        schedule();
+        // Synchronous on purpose: a step change is rare and load-bearing — losing "review" to
+        // a crash 200ms after Stop would resurrect a recording the operator ended.
+        persist();
         notify();
       }
       return session.step;

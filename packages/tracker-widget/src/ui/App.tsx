@@ -8,27 +8,28 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 */
 
 import { QueryStringContext } from "@mediajel/tracker-core/types";
+import { TrackerStatus } from "@mediajel/tracker-widget/recorder/context";
 import { STEP_ORDER } from "@mediajel/tracker-widget/state/machine";
 import { WidgetGoal, WidgetSession, WidgetStep } from "@mediajel/tracker-widget/types";
+import Stamp from "@mediajel/tracker-widget/ui/components/Stamp";
 import { ChevronDown, Gear, Mark, Zigzag } from "@mediajel/tracker-widget/ui/icons";
-import { VNode } from "@mediajel/tracker-widget/vendor";
+import RecordSection from "@mediajel/tracker-widget/ui/screens/RecordSection";
+import { ComponentChildren, VNode } from "@mediajel/tracker-widget/vendor";
 
 /**
  * The work order itself: a collapsed paper chip, or the card with its letterhead, its three
- * definition rows and its five numbered sections.
- *
- * This is the shell. The section bodies — Record, Evidence, Code, Verify, Deploy — arrive with
- * the screens; until a handler is passed for one, its row renders in its disabled state rather
- * than pretending to be a control that does nothing.
+ * definition rows and its five numbered sections. The section that owns the current step is
+ * open and carries the primary action in its footer; finished sections collapse to their
+ * stamped one-line summary. Nothing disappears.
  */
 
-/** The five sections of the work order and the step each one owns. */
-export const SECTIONS: readonly { number: string; label: string; step: WidgetStep }[] = [
-  { number: "01", label: "Record", step: "recording" },
-  { number: "02", label: "Evidence", step: "review" },
-  { number: "03", label: "Code", step: "generating" },
-  { number: "04", label: "Verify", step: "verify" },
-  { number: "05", label: "Deploy", step: "deploy" },
+/** The five sections of the work order and the step(s) each one owns. */
+export const SECTIONS: readonly { number: string; label: string; steps: readonly WidgetStep[] }[] = [
+  { number: "01", label: "Record", steps: ["home", "recording"] },
+  { number: "02", label: "Evidence", steps: ["review"] },
+  { number: "03", label: "Code", steps: ["generating", "result"] },
+  { number: "04", label: "Verify", steps: ["verify"] },
+  { number: "05", label: "Deploy", steps: ["deploy", "done"] },
 ];
 
 const JOB_TITLES: Record<WidgetGoal, string> = {
@@ -36,17 +37,23 @@ const JOB_TITLES: Record<WidgetGoal, string> = {
   signup: "Sign-up tag",
 };
 
+export interface AppHandlers {
+  onStartRecording(goal: WidgetGoal): void;
+  onStopRecording(): void;
+  onDiscard(): void;
+}
+
 export interface AppProps {
   /** The tag's parsed query string — what the operator is looking at, in its own words. */
   context: QueryStringContext;
   session: WidgetSession;
+  status: TrackerStatus;
+  handlers: AppHandlers;
   /** False shows the launcher chip, true the card. */
   open: boolean;
   onToggleOpen(): void;
   /** Absent until the settings overlay exists; the gear renders disabled until then. */
   onOpenSettings?: () => void;
-  /** Absent until the section bodies exist; the rows render disabled until then. */
-  onSelectSection?: (step: WidgetStep) => void;
 }
 
 /** A definition row from the letterhead: Site, App, Job. */
@@ -63,14 +70,32 @@ const Definition = ({ label, value, variant }: { label: string; value: string; v
   </>
 );
 
+/** What the collapsed row on the right says about a section's state. */
+const sectionState = (section: (typeof SECTIONS)[number], session: WidgetSession): VNode | string | null => {
+  const currentIndex = STEP_ORDER.indexOf(session.step);
+  const lastOwned = STEP_ORDER.indexOf(section.steps[section.steps.length - 1]);
+
+  if (section.number === "01") {
+    if (session.step === "recording") return `${session.timeline.length} events`;
+    if (currentIndex > lastOwned) return <Stamp label="Recorded" />;
+    return null;
+  }
+  if (currentIndex > lastOwned) return <Stamp label="Done" />;
+  return null;
+};
+
 const Section = ({
   section,
+  session,
+  isOpen,
   reached,
-  onSelect,
+  children,
 }: {
   section: (typeof SECTIONS)[number];
+  session: WidgetSession;
+  isOpen: boolean;
   reached: boolean;
-  onSelect?: (step: WidgetStep) => void;
+  children?: ComponentChildren;
 }): VNode => (
   <li class="mj-section">
     {/* aria-disabled without `disabled`: the row stays in the tab order (keyboard reachable
@@ -79,19 +104,19 @@ const Section = ({
       type="button"
       class="mj-section-row"
       data-reached={String(reached)}
-      aria-expanded="false"
-      aria-disabled={!onSelect || !reached}
-      onClick={onSelect && reached ? () => onSelect(section.step) : undefined}
+      aria-expanded={String(isOpen) as "true" | "false"}
+      aria-disabled={!reached}
     >
       <span class="mj-section-number">{section.number}</span>
       <span class="mj-section-label">{section.label}</span>
-      <span class="mj-section-state" />
+      <span class="mj-section-state">{sectionState(section, session)}</span>
       <ChevronDown class="mj-chevron" />
     </button>
+    {isOpen && children}
   </li>
 );
 
-export const App = ({ context, session, open, onToggleOpen, onOpenSettings, onSelectSection }: AppProps): VNode => {
+export const App = ({ context, session, status, handlers, open, onToggleOpen, onOpenSettings }: AppProps): VNode => {
   const job = JOB_TITLES[session.goal];
 
   if (!open) {
@@ -103,12 +128,25 @@ export const App = ({ context, session, open, onToggleOpen, onOpenSettings, onSe
         aria-label={`MediaJel work order — ${job}, ${session.step}. Open.`}
       >
         <Mark class="mj-chip-mark" />
-        <span class="mj-chip-label">Work order</span>
+        <span class="mj-chip-label">{session.step === "recording" ? "REC" : "Work order"}</span>
+        {session.step === "recording" && <span class="mj-rec-dot" aria-hidden="true" />}
       </button>
     );
   }
 
   const currentIndex = STEP_ORDER.indexOf(session.step);
+
+  const bodies: Partial<Record<string, ComponentChildren>> = {
+    "01": (
+      <RecordSection
+        session={session}
+        status={status}
+        onStart={handlers.onStartRecording}
+        onStop={handlers.onStopRecording}
+        onDiscard={handlers.onDiscard}
+      />
+    ),
+  };
 
   return (
     <section class="mj-card" aria-label="MediaJel Integration Work Order">
@@ -141,16 +179,19 @@ export const App = ({ context, session, open, onToggleOpen, onOpenSettings, onSe
         </dl>
       </header>
 
-      <Zigzag />
+      <Zigzag live={session.step === "recording"} />
 
       <ol class="mj-sections">
         {SECTIONS.map((section) => (
           <Section
             key={section.number}
             section={section}
-            reached={currentIndex >= STEP_ORDER.indexOf(section.step)}
-            onSelect={onSelectSection}
-          />
+            session={session}
+            isOpen={section.steps.includes(session.step)}
+            reached={currentIndex >= STEP_ORDER.indexOf(section.steps[0])}
+          >
+            {bodies[section.number]}
+          </Section>
         ))}
       </ol>
     </section>

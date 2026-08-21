@@ -74,12 +74,18 @@ describe("enable", () => {
     expect(chip?.getAttribute("aria-label")).toContain("home");
   });
 
-  test("dims every section that the session has not reached yet", async () => {
+  test("opens 01 Record at home and dims every section the session has not reached", async () => {
     await widget.enable();
 
     const rows = Array.from(shadow().querySelectorAll(".mj-section-row"));
-    expect(rows.every((row) => row.getAttribute("aria-disabled") === "true")).toBe(true);
-    expect(rows.every((row) => row.getAttribute("data-reached") === "false")).toBe(true);
+    expect(rows).toHaveLength(5);
+    // 01 owns `home`: reached, expanded, and carrying the goal picker.
+    expect(rows[0].getAttribute("data-reached")).toBe("true");
+    expect(rows[0].getAttribute("aria-expanded")).toBe("true");
+    expect(shadow().querySelectorAll(".mj-goals .mj-btn")).toHaveLength(2);
+    // The other four are ahead of the work and dimmed.
+    expect(rows.slice(1).every((row) => row.getAttribute("aria-disabled") === "true")).toBe(true);
+    expect(rows.slice(1).every((row) => row.getAttribute("data-reached") === "false")).toBe(true);
   });
 
   test("carries prefilled settings into the store without touching what was not passed", async () => {
