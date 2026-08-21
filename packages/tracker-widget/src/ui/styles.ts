@@ -342,10 +342,13 @@ export const styles = `
   color: var(--mj-ink-soft);
 }
 
+/* Notices are paper slips with a full hairline in the role colour — a work order carries
+   ruled boxes, not accent bars. */
 .mj-notice {
   margin: 0 0 12px;
   padding: 8px 10px;
-  border-left: 3px solid var(--mj-identity);
+  border: 1px solid var(--mj-identity);
+  border-radius: 3px;
   background: var(--mj-paper);
   font-size: 12px;
 }
@@ -359,11 +362,11 @@ export const styles = `
 }
 
 .mj-notice--warn {
-  border-left-color: var(--mj-partner);
+  border-color: var(--mj-partner);
 }
 
 .mj-notice--privacy {
-  border-left-color: var(--mj-privacy);
+  border-color: var(--mj-privacy);
 }
 
 .mj-goals {
@@ -541,9 +544,10 @@ export const styles = `
   border-top: 0;
 }
 
+/* A pinned exhibit reads as attached: tinted ground inside the exhibits box (which carries
+   the identity border), plus the pin's own state — no accent bar. */
 .mj-ev--marked {
-  border-left: 3px solid var(--mj-identity);
-  background: rgba(31, 79, 224, 0.04);
+  background: rgba(31, 79, 224, 0.05);
 }
 
 .mj-ev-row {
@@ -953,7 +957,7 @@ export const styles = `
 }
 
 .mj-capture--bad {
-  border-left: 3px solid var(--mj-partner);
+  box-shadow: inset 0 0 0 1px var(--mj-partner);
 }
 
 .mj-capture-head {

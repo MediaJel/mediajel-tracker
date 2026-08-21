@@ -350,6 +350,17 @@ type CartEvent = { sku: string; name: string; category: string; unitPrice: numbe
 type SignupParams = { uuid: string; firstName?: string; lastName?: string; gender?: string; emailAddress?: string; hashedEmailAddress?: string; address?: string; city?: string; state?: string; phoneNumber?: string; advertiser?: string };
 ```
 
+## Integrations Assistant (in-page widget)
+
+`window.enableTrackerWidget()` on any page running the tag opens the **Integrations
+Assistant** — a floating work order that records the page while you simulate a transaction
+or sign-up, has a model write the frictionless custom tag in house conventions, verifies it
+on the page with `trackTrans` intercepted (nothing reaches the collector), and deploys it to
+`master` of `mediajel-frictionless-custom-tag` (domain or app-id folder). It ships as a lazy
+chunk (`widget.<hash>.js`); the always-loaded tag only carries a ~1 KB stub. Keys (model
+provider, GitHub PAT) are entered in the widget and stay in the operator's tab by default.
+See `packages/tracker-widget/README.md` for the full contract.
+
 ## Privacy & compliance
 
 The tag is **opt-out-first**: it reads the visitor's browser privacy signals and, if they have opted
