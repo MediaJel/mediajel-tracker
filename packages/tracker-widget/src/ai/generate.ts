@@ -34,20 +34,49 @@ export interface GenerateResult {
 /** A run that hangs is a failure the operator must see; 120s is generous for a tag. */
 export const GENERATION_TIMEOUT_MS = 120_000;
 
-export const describeFailure = (err: unknown): string => {
+export const describeFailure = (err: unknown, cspBlocked = false): string => {
   const message = err instanceof Error ? err.message : String(err);
   if (/timed out/i.test(message))
     return "The provider did not answer within two minutes. Try again, or a smaller model.";
   if (/abort/i.test(message)) return "Cancelled.";
-  if (/401|invalid[_ ]?api[_ ]?key|authentication/i.test(message))
-    return "The provider rejected the API key (401). Check it in Settings.";
+  if (/401|invalid[_ ]?api[_ ]?key|authentication|incorrect api key/i.test(message)) {
+    return "The provider rejected the API key (401). Check it in Settings — and that the key belongs to the selected provider.";
+  }
   if (/403/.test(message)) return "The provider refused the request (403) — the key may lack access to this model.";
+  if (/\b404\b|model_not_found|does not exist/i.test(message)) {
+    return "The provider does not know this model. Pick another in Settings.";
+  }
   if (/\b429\b|rate.?limit/i.test(message)) return "Rate limited by the provider (429). Wait a moment and try again.";
   if (/failed to fetch|networkerror|load failed/i.test(message)) {
-    return "Could not reach the provider — this site's Content-Security-Policy may block it. Try the integrations sandbox, or paste code by hand.";
+    if (cspBlocked) {
+      return "This site's Content-Security-Policy blocks calls to the provider. Use the integrations sandbox, or paste the code by hand.";
+    }
+    // A provider that answers 401/403 without CORS headers looks, from a browser, exactly like
+    // no answer at all. Nine times in ten this is the key.
+    return "The provider refused the request before the browser could read the answer — almost always a rejected key (401), a key from a different provider, or a revoked one. Check it with Test connection in Settings.";
   }
   return `The provider call failed: ${message}`;
 };
+
+/** Flags a CSP connect-src block seen while `work` ran — the one network failure not about the key. */
+const withCspWatch = async <T>(work: () => Promise<T>): Promise<T> => {
+  let blocked = false;
+  const onViolation = (event: Event): void => {
+    const violation = event as SecurityPolicyViolationEvent;
+    if (/connect-src|default-src/.test(violation.violatedDirective ?? "")) blocked = true;
+  };
+  document.addEventListener("securitypolicyviolation", onViolation);
+  try {
+    return await work();
+  } catch (err) {
+    throw Object.assign(err instanceof Error ? err : new Error(String(err)), { cspBlocked: blocked });
+  } finally {
+    document.removeEventListener("securitypolicyviolation", onViolation);
+  }
+};
+
+const cspFlag = (err: unknown): boolean =>
+  !!(err && typeof err === "object" && (err as { cspBlocked?: boolean }).cspBlocked);
 
 const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
   new Promise<T>((resolve, reject) => {
@@ -71,14 +100,16 @@ const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
 export const testConnection = async (settings: WidgetSettings, runtime: WidgetRuntime): Promise<string> => {
   const model = createModel(settings, runtime);
   try {
-    await withTimeout(
-      generateText({ model, prompt: "Reply with the single word OK.", maxOutputTokens: 5, maxRetries: 0 }),
-      20_000,
+    await withCspWatch(() =>
+      withTimeout(
+        generateText({ model, prompt: "Reply with the single word OK.", maxOutputTokens: 5, maxRetries: 0 }),
+        20_000,
+      ),
     );
     return settings.model.trim() || settings.provider;
   } catch (err) {
-    logger.warn("Connection test failed:", err);
-    throw new Error(describeFailure(err));
+    logger.warn("Connection test failed:", err instanceof Error ? err.message : err);
+    throw new Error(describeFailure(err, cspFlag(err)));
   }
 };
 
@@ -109,10 +140,10 @@ export const generateTag = async ({
 
   let output: GenerationOutput;
   try {
-    output = await withTimeout(run(), GENERATION_TIMEOUT_MS);
+    output = await withCspWatch(() => withTimeout(run(), GENERATION_TIMEOUT_MS));
   } catch (err) {
-    logger.warn("Generation failed:", err);
-    throw new Error(describeFailure(err));
+    logger.warn("Generation failed:", err instanceof Error ? err.message : err);
+    throw new Error(describeFailure(err, cspFlag(err)));
   }
 
   let violations = validateGenerated({

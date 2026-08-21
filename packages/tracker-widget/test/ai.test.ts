@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
-import { generateTag, testConnection } from "@mediajel/tracker-widget/ai/generate";
+import { describeFailure, generateTag, testConnection } from "@mediajel/tracker-widget/ai/generate";
+import { keyLooksLike } from "@mediajel/tracker-widget/ai/providers";
 import {
   CONVENTIONS,
   FRICTIONLESS_TYPES,
@@ -220,8 +221,36 @@ describe("failures reach the operator", () => {
       testConnection({ ...DEFAULT_SETTINGS, model: "anthropic/claude-sonnet-5", apiKey: "k" }, captureRuntime()),
     ).resolves.toBe("anthropic/claude-sonnet-5");
     window.__MJ_WIDGET_MOCK_MODEL__ = { error: "TypeError: Failed to fetch" };
+    // No CSP violation fired, so a CORS-hidden refusal is reported as what it almost always is.
     await expect(testConnection({ ...DEFAULT_SETTINGS, apiKey: "k" }, captureRuntime())).rejects.toThrow(
-      "Content-Security-Policy",
+      "rejected key",
     );
+  });
+});
+
+describe("describeFailure", () => {
+  test("a CORS-hidden refusal is blamed on the key, not on CSP — unless CSP actually fired", () => {
+    const hidden = new TypeError("Failed to fetch");
+    expect(describeFailure(hidden)).toContain("rejected key");
+    expect(describeFailure(hidden)).not.toContain("Content-Security-Policy");
+    expect(describeFailure(hidden, true)).toContain("Content-Security-Policy");
+  });
+
+  test("maps the statuses an operator can act on", () => {
+    expect(describeFailure(new Error("Unauthorized 401"))).toContain("rejected the API key");
+    expect(describeFailure(new Error("The model `gpt-9` does not exist"))).toContain("does not know this model");
+    expect(describeFailure(new Error("429 Too Many Requests"))).toContain("Rate limited");
+    expect(describeFailure(new Error("timed out"))).toContain("two minutes");
+  });
+});
+
+describe("keyLooksLike", () => {
+  test("recognises each provider's key shape", () => {
+    expect(keyLooksLike("sk-proj-abc")).toBe("openai");
+    expect(keyLooksLike("sk-ant-api03-abc")).toBe("anthropic");
+    expect(keyLooksLike("AIzaSyABC")).toBe("google");
+    expect(keyLooksLike("vck_123")).toBe("gateway");
+    expect(keyLooksLike("  ")).toBeNull();
+    expect(keyLooksLike("something-else")).toBeNull();
   });
 });

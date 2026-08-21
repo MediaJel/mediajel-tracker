@@ -86,7 +86,8 @@ export const createModel = (settings: WidgetSettings, runtime: WidgetRuntime): L
 
   switch (settings.provider) {
     case "openai":
-      return createOpenAI(common)(settings.model.trim() || "gpt-5.5");
+      // Chat Completions rather than the Responses API: every OpenAI key type can reach it.
+      return createOpenAI(common).chat(settings.model.trim() || "gpt-5.5");
     case "anthropic":
       return createAnthropic({
         ...common,
@@ -101,3 +102,18 @@ export const createModel = (settings: WidgetSettings, runtime: WidgetRuntime): L
       return createGateway(common)(settings.model.trim() || "anthropic/claude-sonnet-5");
   }
 };
+
+/**
+ * What a pasted key looks like it belongs to — the cheapest way to catch "OpenAI key, Gateway
+ * selected", which the provider reports only as a 401 the browser cannot even read.
+ */
+export const keyLooksLike = (key: string): TrackerWidgetProviderGuess | null => {
+  const trimmed = key.trim();
+  if (!trimmed) return null;
+  if (/^sk-ant-/.test(trimmed)) return "anthropic";
+  if (/^sk-/.test(trimmed)) return "openai";
+  if (/^AIza/.test(trimmed)) return "google";
+  if (/^vck_/.test(trimmed)) return "gateway";
+  return null;
+};
+export type TrackerWidgetProviderGuess = "openai" | "anthropic" | "google" | "gateway";

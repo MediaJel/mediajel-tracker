@@ -1,3 +1,4 @@
+import { keyLooksLike } from "@mediajel/tracker-widget/ai/providers";
 import { TrackerWidgetProvider } from "@mediajel/tracker-widget/api";
 import { WidgetSettings, WidgetSettingsPatch, maskSecret } from "@mediajel/tracker-widget/session/settings";
 import { VNode, useState } from "@mediajel/tracker-widget/vendor";
@@ -125,6 +126,20 @@ export const SettingsOverlay = ({
         placeholder="never leaves this tab unless you generate"
         onInput={(apiKey) => onPatch({ apiKey })}
       />
+
+      {(() => {
+        const guess = keyLooksLike(settings.apiKey);
+        const label = PROVIDERS.find((p) => p.value === guess)?.label;
+        const current = PROVIDERS.find((p) => p.value === settings.provider)?.label;
+        return guess && guess !== settings.provider ? (
+          <div class="mj-notice mj-notice--warn" role="note">
+            <p>
+              This key looks like {label ? `a ${label}` : "another provider's"} key, but {current} is selected. The
+              provider will reject it — pick {label ?? "the matching provider"} above.
+            </p>
+          </div>
+        ) : null;
+      })()}
 
       <div class="mj-connection">
         <button
