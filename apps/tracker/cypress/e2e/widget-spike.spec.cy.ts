@@ -117,6 +117,30 @@ describe("Integrations Assistant widget", () => {
     });
   });
 
+  it("names the cause and still rejects when the chunk never arrives", () => {
+    cy.visit(HARNESS);
+    // A half-finished CDN deploy, a CSP that blocks the script, an offline laptop.
+    cy.intercept("GET", "**/widget.*.js", { statusCode: 404, body: "" });
+
+    cy.window().then((win) => {
+      const logged = cy.stub(win.console, "log").as("consoleLog");
+
+      return win.enableTrackerWidget().then(
+        () => {
+          throw new Error("enableTrackerWidget resolved even though the chunk 404'd");
+        },
+        () => {
+          // The caller still sees the failure, and the console names it as ours rather than
+          // leaving the browser's opaque "Failed to fetch dynamically imported module".
+          expect(
+            logged.getCalls().some((call) => String(call.args[0]).includes("Integrations Assistant failed")),
+            "logged cause",
+          ).to.equal(true);
+        },
+      );
+    });
+  });
+
   it("unmounts, clears the tab flag and throws the recording away on disable", () => {
     cy.visit(HARNESS);
 
