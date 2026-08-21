@@ -298,3 +298,116 @@ describe("Integrations Assistant — evidence & settings", () => {
     });
   });
 });
+
+describe("Integrations Assistant — sign-up flow", () => {
+  const HARNESS = "http://localhost:1234/";
+
+  const shadow = () =>
+    cy.get("#mj-widget-host").then(($host) => {
+      const root = $host[0].shadowRoot;
+      expect(root, "shadow root").to.not.equal(null);
+      return root as ShadowRoot;
+    });
+
+  const click = (selector: string, textFilter?: string) =>
+    shadow().then((root) => {
+      const all = Array.from(root.querySelectorAll(selector)) as HTMLElement[];
+      const el = textFilter ? all.find((e) => e.textContent?.includes(textFilter)) : all[0];
+      expect(el, `${selector}${textFilter ? ` "${textFilter}"` : ""}`).to.not.equal(undefined);
+      (el as HTMLElement).click();
+    });
+
+  it("records a sign-up, captures the form and reaches a trackSignUp result", () => {
+    cy.intercept("POST", "**/analytics/track", { statusCode: 200, body: {} });
+    cy.on("uncaught:exception", () => false);
+    cy.visit(HARNESS, {
+      onBeforeLoad: (win) => {
+        // Settings are per-tab; hand this test a configured widget so Generate can run.
+        win.sessionStorage.setItem(
+          "mj-widget:settings",
+          JSON.stringify({
+            provider: "gateway",
+            model: "anthropic/claude-sonnet-5",
+            apiKey: "test-key",
+            githubToken: "",
+            actor: { name: "Jane Doe", email: "jane@mediajel.com" },
+            remember: false,
+            acknowledgedDataSharing: true,
+          }),
+        );
+        (win as unknown as Record<string, unknown>).__MJ_WIDGET_MOCK_MODEL__ = {
+          json: {
+            summary: "Tracks the newsletter sign-up form.",
+            trigger: { kind: "form", description: "newsletter form submit" },
+            code:
+              'import { isTrackTransLoaded } from "../libs/utils/is-trackTrans-loaded";\n' +
+              'import { sha256 } from "../libs/utils/sha256-encode";\n\n' +
+              "const greenleafSignup = () => {\n  isTrackTransLoaded(() => {\n" +
+              '    const form = document.querySelector("#signup");\n    if (!form) return;\n' +
+              '    form.addEventListener("submit", async () => {\n' +
+              "      const emailInput = form.querySelector('input[name=\"email\"]');\n" +
+              '      const email = emailInput && emailInput.value ? emailInput.value.trim().toLowerCase() : "";\n' +
+              "      if (!email) return;\n" +
+              '      const dedupKey = "mj-greenleaf-signup-" + email;\n' +
+              '      if (localStorage.getItem(dedupKey)) return;\n      localStorage.setItem(dedupKey, "1");\n' +
+              "      const hashedEmailAddress = await sha256(email);\n" +
+              "      window.trackSignUp({ uuid: email, emailAddress: email, hashedEmailAddress: hashedEmailAddress });\n" +
+              "    });\n  });\n};\n\ngreenleafSignup();",
+            fieldCoverage: [
+              { field: "uuid", status: "derived", source: "email field", value: null, confidence: "high", note: null },
+              {
+                field: "emailAddress",
+                status: "mapped",
+                source: 'input[name="email"]',
+                value: null,
+                confidence: "high",
+                note: null,
+              },
+            ],
+            items: { trackable: true, reason: null },
+            warnings: [],
+            suggestedTarget: { kind: "domain", reason: "form markup is site-specific" },
+            dedupKey: "mj-greenleaf-signup-<email>",
+          },
+        };
+      },
+    });
+    cy.window().then((win) => (win as unknown as { enableTrackerWidget(): Promise<void> }).enableTrackerWidget());
+
+    click(".mj-goals .mj-btn", "Track sign-ups");
+    cy.get("#signup input[name='email']").clear().type("jane@example.com");
+    cy.get("#signup button[type='submit']").click();
+    click(".mj-btn", "Stop recording");
+
+    // The form event was captured with the email MASKED at capture.
+    shadow().then((root) => {
+      const rows = Array.from(root.querySelectorAll(".mj-ev-list .mj-ev")) as HTMLElement[];
+      const form = rows.find((row) => row.textContent?.includes("submit"));
+      expect(form, "a form row").to.not.equal(undefined);
+      (form!.querySelector(".mj-ev-main") as HTMLElement).click();
+    });
+    cy.get("#mj-widget-host").should(($host) => {
+      const root = $host[0].shadowRoot as ShadowRoot;
+      const detail = root.querySelector(".mj-ev-detail")?.textContent ?? "";
+      expect(detail).to.include("j***@e***.com");
+      expect(detail).not.to.include("jane@example.com");
+    });
+    shadow().then((root) => {
+      const rows = Array.from(root.querySelectorAll(".mj-ev-list .mj-ev")) as HTMLElement[];
+      const form = rows.find((row) => row.textContent?.includes("submit"));
+      (form!.querySelector(".mj-ev-pin") as HTMLElement).click();
+    });
+    click(".mj-btn", "Generate code");
+    cy.get("#mj-widget-host").should(($host) => {
+      const root = $host[0].shadowRoot as ShadowRoot;
+      const code = (root.querySelector(".mj-code") as HTMLTextAreaElement)?.value ?? "";
+      expect(code).to.include("window.trackSignUp");
+      expect(code).to.include("sha256");
+    });
+    cy.window().then((win) => {
+      const session = JSON.parse(win.sessionStorage.getItem("mj-widget:session") as string);
+      expect(session.goal).to.equal("signup");
+      expect(session.step).to.equal("result");
+    });
+  });
+});

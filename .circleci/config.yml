@@ -36,6 +36,9 @@ commands:
           name: Type checking (tracker + shared packages)
           command: bun x turbo run check --filter=mediajel-tracker
       - run:
+          name: Unit tests (tracker-widget — headless bun test, no Cypress deps)
+          command: bun x turbo run test --filter=@mediajel/tracker-widget
+      - run:
           name: Build tag
           command: bun x turbo run build --filter=mediajel-tracker
 
