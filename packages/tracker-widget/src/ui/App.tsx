@@ -9,11 +9,14 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
 import { QueryStringContext } from "@mediajel/tracker-core/types";
 import { TrackerStatus } from "@mediajel/tracker-widget/recorder/context";
+import { WidgetSettings, WidgetSettingsPatch } from "@mediajel/tracker-widget/session/settings";
 import { STEP_ORDER } from "@mediajel/tracker-widget/state/machine";
 import { WidgetGoal, WidgetSession, WidgetStep } from "@mediajel/tracker-widget/types";
 import Stamp from "@mediajel/tracker-widget/ui/components/Stamp";
 import { ChevronDown, Gear, Mark, Zigzag } from "@mediajel/tracker-widget/ui/icons";
+import EvidenceSection from "@mediajel/tracker-widget/ui/screens/EvidenceSection";
 import RecordSection from "@mediajel/tracker-widget/ui/screens/RecordSection";
+import SettingsOverlay from "@mediajel/tracker-widget/ui/screens/SettingsOverlay";
 import { ComponentChildren, VNode } from "@mediajel/tracker-widget/vendor";
 
 /**
@@ -41,19 +44,31 @@ export interface AppHandlers {
   onStartRecording(goal: WidgetGoal): void;
   onStopRecording(): void;
   onDiscard(): void;
+  onToggleMark(id: string): void;
+  onNotes(notes: string): void;
+  onBackToRecording(): void;
+  onGenerate(): void;
+  onCancelGenerate(): void;
+  onSettingsPatch(patch: WidgetSettingsPatch): void;
+  onForget(): void;
+  onClearDedup(): void;
 }
 
 export interface AppProps {
   /** The tag's parsed query string — what the operator is looking at, in its own words. */
   context: QueryStringContext;
   session: WidgetSession;
+  settings: WidgetSettings;
   status: TrackerStatus;
   handlers: AppHandlers;
+  /** Why Generate is unavailable ("" when it may run). Drives the Evidence footer. */
+  generateBlocked: string;
   /** False shows the launcher chip, true the card. */
   open: boolean;
   onToggleOpen(): void;
-  /** Absent until the settings overlay exists; the gear renders disabled until then. */
-  onOpenSettings?: () => void;
+  settingsOpen: boolean;
+  onOpenSettings(): void;
+  onCloseSettings(): void;
 }
 
 /** A definition row from the letterhead: Site, App, Job. */
@@ -116,7 +131,19 @@ const Section = ({
   </li>
 );
 
-export const App = ({ context, session, status, handlers, open, onToggleOpen, onOpenSettings }: AppProps): VNode => {
+export const App = ({
+  context,
+  session,
+  settings,
+  status,
+  handlers,
+  generateBlocked,
+  open,
+  onToggleOpen,
+  settingsOpen,
+  onOpenSettings,
+  onCloseSettings,
+}: AppProps): VNode => {
   const job = JOB_TITLES[session.goal];
 
   if (!open) {
@@ -146,6 +173,33 @@ export const App = ({ context, session, status, handlers, open, onToggleOpen, on
         onDiscard={handlers.onDiscard}
       />
     ),
+    "02": (
+      <EvidenceSection
+        session={session}
+        onToggleMark={handlers.onToggleMark}
+        onNotes={handlers.onNotes}
+        onBackToRecording={handlers.onBackToRecording}
+        onGenerate={handlers.onGenerate}
+        generateBlocked={generateBlocked}
+      />
+    ),
+    "03":
+      session.step === "generating" ? (
+        <div class="mj-section-body">
+          <div class="mj-working">
+            <span class="mj-rec-dot" aria-hidden="true" />
+            <span>
+              Writing the tag with {settings.provider}
+              {settings.model ? ` · ${settings.model}` : ""}…
+            </span>
+          </div>
+          <div class="mj-section-footer">
+            <button type="button" class="mj-btn mj-btn--ghost" onClick={handlers.onCancelGenerate}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : undefined,
   };
 
   return (
@@ -181,19 +235,30 @@ export const App = ({ context, session, status, handlers, open, onToggleOpen, on
 
       <Zigzag live={session.step === "recording"} />
 
-      <ol class="mj-sections">
-        {SECTIONS.map((section) => (
-          <Section
-            key={section.number}
-            section={section}
-            session={session}
-            isOpen={section.steps.includes(session.step)}
-            reached={currentIndex >= STEP_ORDER.indexOf(section.steps[0])}
-          >
-            {bodies[section.number]}
-          </Section>
-        ))}
-      </ol>
+      {settingsOpen ? (
+        <SettingsOverlay
+          settings={settings}
+          appId={String(context.appId ?? "")}
+          onPatch={handlers.onSettingsPatch}
+          onForget={handlers.onForget}
+          onClearDedup={handlers.onClearDedup}
+          onClose={onCloseSettings}
+        />
+      ) : (
+        <ol class="mj-sections">
+          {SECTIONS.map((section) => (
+            <Section
+              key={section.number}
+              section={section}
+              session={session}
+              isOpen={section.steps.includes(session.step)}
+              reached={currentIndex >= STEP_ORDER.indexOf(section.steps[0])}
+            >
+              {bodies[section.number]}
+            </Section>
+          ))}
+        </ol>
+      )}
     </section>
   );
 };

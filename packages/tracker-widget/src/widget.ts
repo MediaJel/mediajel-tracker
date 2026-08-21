@@ -6,6 +6,7 @@ import logger from "@mediajel/tracker-widget/log";
 import { snapshotTracker } from "@mediajel/tracker-widget/recorder/context";
 import { Recorder, createRecorder } from "@mediajel/tracker-widget/recorder/recorder";
 import { captureRuntime } from "@mediajel/tracker-widget/runtime";
+import { canGenerate } from "@mediajel/tracker-widget/state/machine";
 import { WIDGET_ACTIVE_KEY, WIDGET_SESSION_KEY } from "@mediajel/tracker-widget/session/keys";
 import { WidgetSettingsPatch, createSettingsStore } from "@mediajel/tracker-widget/session/settings";
 import { createSessionStore } from "@mediajel/tracker-widget/session/store";
@@ -65,8 +66,10 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
   let ctx: WidgetContext | null = null;
   let recorder: Recorder | null = null;
   let unsubscribe: (() => void) | null = null;
+  let unsubscribeSettings: (() => void) | null = null;
   let ticker: ReturnType<typeof setInterval> | null = null;
   let open = false;
+  let settingsOpen = false;
 
   /**
    * House rule: anything the browser calls back into is wrapped, so a throw inside the widget
@@ -99,7 +102,91 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
       recorder.stop();
       ctx.session.reset();
     }, "widget-discard"),
+
+    onToggleMark: guard((id: string): void => {
+      ctx?.session.update((draft) => {
+        const index = draft.markedIds.indexOf(id);
+        if (index === -1) draft.markedIds.push(id);
+        else draft.markedIds.splice(index, 1);
+      });
+    }, "widget-toggle-mark"),
+
+    onNotes: guard((notes: string): void => {
+      ctx?.session.update((draft) => {
+        draft.notes = notes;
+      });
+    }, "widget-notes"),
+
+    onBackToRecording: guard((): void => {
+      if (!ctx || !recorder) return;
+      if (ctx.session.transition("recording") === "recording") recorder.start();
+    }, "widget-back-to-recording"),
+
+    /**
+     * Generate is gated twice: evidence must be pinned (Evidence's job) and the settings must
+     * be complete (Settings' job). An incomplete configuration OPENS settings rather than
+     * failing — the button always moves the operator toward done.
+     */
+    onGenerate: guard((): void => {
+      if (!ctx) return;
+      if (ctx.session.get().markedIds.length === 0) return; // the blocked note says why
+      if (!canGenerate(ctx.settings.get())) {
+        settingsOpen = true;
+        draw();
+        return;
+      }
+      ctx.session.transition("generating");
+      // The generation engine itself arrives with the next build; the step and its body are real.
+    }, "widget-generate"),
+
+    onCancelGenerate: guard((): void => {
+      ctx?.session.transition("review");
+    }, "widget-cancel-generate"),
+
+    onSettingsPatch: guard((patch: Parameters<WidgetContext["settings"]["update"]>[0]): void => {
+      ctx?.settings.update(patch);
+    }, "widget-settings-patch"),
+
+    onForget: guard((): void => {
+      ctx?.settings.forget();
+    }, "widget-forget"),
+
+    /** The tag's dedup silently swallows repeated test fires; clearing it is a test-run reset. */
+    onClearDedup: guard((): void => {
+      const appId = ctx?.tag.appId;
+      if (!appId) return;
+      try {
+        const doomed: string[] = [];
+        for (let i = 0; i < localStorage.length; i += 1) {
+          const key = localStorage.key(i);
+          if (key?.startsWith(`${appId}_`)) doomed.push(key);
+        }
+        for (const key of doomed) localStorage.removeItem(key);
+        logger.debug(`Cleared ${doomed.length} tracker dedup entr${doomed.length === 1 ? "y" : "ies"}.`);
+      } catch (err) {
+        logger.warn("Could not clear the tracker dedup state:", err);
+      }
+    }, "widget-clear-dedup"),
   };
+
+  const generateBlocked = (): string => {
+    if (!ctx) return "";
+    if (ctx.session.get().markedIds.length === 0) return "Pin at least one event as evidence first.";
+    const settings = ctx.settings.get();
+    if (!settings.apiKey.trim()) return "Add a provider API key — Generate opens Settings for you.";
+    if (!settings.acknowledgedDataSharing) return "Tick the data-sharing acknowledgement in Settings.";
+    return "";
+  };
+
+  const onOpenSettings = guard((): void => {
+    settingsOpen = true;
+    draw();
+  }, "widget-open-settings");
+
+  const onCloseSettings = guard((): void => {
+    settingsOpen = false;
+    draw();
+  }, "widget-close-settings");
 
   const draw = (): void => {
     if (!ctx) return;
@@ -107,10 +194,15 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
       h(App, {
         context: ctx.tag,
         session: ctx.session.get(),
+        settings: ctx.settings.get(),
         status: snapshotTracker(ctx),
         handlers,
+        generateBlocked: generateBlocked(),
         open,
         onToggleOpen,
+        settingsOpen,
+        onOpenSettings,
+        onCloseSettings,
       }),
       ctx.host.mount,
     );
@@ -128,6 +220,7 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
     // One re-render per change, from one place. The screens will move to hooks; the shell has
     // no local state worth the machinery.
     unsubscribe = session.subscribe(draw);
+    unsubscribeSettings = settings.subscribe(draw);
     // The elapsed clock in the Record body. Redraws only while recording; cleared on disable.
     ticker = setInterval(
       guard(() => {
@@ -193,6 +286,9 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
     }
     unsubscribe?.();
     unsubscribe = null;
+    unsubscribeSettings?.();
+    unsubscribeSettings = null;
+    settingsOpen = false;
     ctx?.session.dispose();
     if (ctx) render(null, ctx.host.mount);
     ctx?.host.destroy();
