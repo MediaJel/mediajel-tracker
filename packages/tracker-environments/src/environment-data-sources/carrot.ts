@@ -20,8 +20,9 @@ const carrotDataSource = (snowplow: SnowplowTracker) => {
         responseBody?.orders?.forEach((order) => {
           if (order?.details?.status === "open") {
             const data = order;
-            try {
-              isTrackerLoaded(() => {
+            isTrackerLoaded(() => {
+              // guard(tracker-loaded) swallows throws, so the catch must live here.
+              try {
                 observable.notify({
                   transactionEvent: {
                     id: data.details.id || "N/A",
@@ -46,11 +47,11 @@ const carrotDataSource = (snowplow: SnowplowTracker) => {
                       }) || [],
                   },
                 });
-              });
-            } catch (error) {
-              logger.error("Carrot: Error parsing response body", error);
-              notifyError(error, "carrot");
-            }
+              } catch (error) {
+                logger.error("Carrot: Error parsing response body", error);
+                notifyError(error, "carrot");
+              }
+            });
           }
         });
       },

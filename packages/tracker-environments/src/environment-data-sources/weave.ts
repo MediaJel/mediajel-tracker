@@ -6,8 +6,9 @@ import { EnvironmentEvents, TransactionCartItem } from "@mediajel/tracker-core/t
 import { guard } from "@mediajel/tracker-core/utils/guard";
 
 const weaveDataSource = () => {
-  try {
-    document.addEventListener("weave-analytics-event", guard((event: any) => {
+  document.addEventListener("weave-analytics-event", guard((event: any) => {
+    // The listener fires after this function returns, so the catch must live here.
+    try {
       const data = event.detail.event;
       if (event.detail.event_name === "order_submit") {
         const products = data.items;
@@ -37,10 +38,10 @@ const weaveDataSource = () => {
           },
         });
       }
-    }, "weave"));
-  } catch (error) {
-    notifyError(error, "weave");
-  }
+    } catch (error) {
+      notifyError(error, "weave");
+    }
+  }, "weave"));
 };
 
 export default weaveDataSource;
