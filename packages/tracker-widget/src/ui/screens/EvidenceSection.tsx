@@ -132,6 +132,12 @@ export const EvidenceSection = ({
         push, a network response, a confirmation. Pinned events go to the model in full; the rest travel compressed.
       </p>
 
+      {session.generationError && (
+        <div class="mj-notice mj-notice--warn" role="alert">
+          <p>{session.generationError}</p>
+        </div>
+      )}
+
       {marked.length > 0 && (
         <ol class="mj-exhibits">
           {marked.map((event) => (

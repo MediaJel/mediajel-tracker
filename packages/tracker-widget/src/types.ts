@@ -174,14 +174,41 @@ export type TimelineEvent =
 
 export type TimelineEventKind = TimelineEvent["kind"];
 
-/** What one generation run produced. Task 5 adds the model's structured output alongside. */
+export interface GenerationTrigger {
+  kind: "dataLayer" | "fetch" | "xhr" | "form" | "dom" | "postMessage" | "storage";
+  description: string;
+}
+
+/** One row of the honest field checklist the model must produce. */
+export interface FieldCoverageEntry {
+  field: string;
+  /** mapped = read from evidence · derived = computed from it · default = convention value · missing = neither. */
+  status: "mapped" | "derived" | "default" | "missing";
+  source: string | null;
+  value: string | null;
+  confidence: "high" | "medium" | "low";
+  note: string | null;
+}
+
+/** What one generation run produced — the model's structured output plus provenance. */
 export interface WidgetGeneration {
   /** Epoch ms the run finished. */
   at: number;
   /** Provider + model the code came from, e.g. "anthropic/claude-sonnet-5". */
   model: string;
-  /** The generated tag source, exactly as it will be verified and deployed. */
+  /** The tag source as it stands — verified and deployed EXACTLY as stored here. */
   code: string;
+  summary: string;
+  trigger: GenerationTrigger;
+  fieldCoverage: FieldCoverageEntry[];
+  items: { trackable: boolean; reason: string | null };
+  warnings: string[];
+  suggestedTarget: { kind: "domain" | "app-id"; reason: string };
+  dedupKey: string;
+  /** Violations that survived the repair round — shown, never hidden. */
+  violations: string[];
+  /** True once the operator hand-edited the code after generation. */
+  edited?: boolean;
 }
 
 /** One tracker call the verify interceptor caught. It is recorded and never forwarded. */
@@ -224,6 +251,8 @@ export interface WidgetSession {
   markedIds: string[];
   notes?: string;
   generation?: WidgetGeneration;
+  /** The last generation failure, shown on Evidence until the next attempt. */
+  generationError?: string;
   verify?: WidgetVerify;
   deploy?: WidgetDeploy;
   /** Set once anything was dropped to stay inside the storage budget. */

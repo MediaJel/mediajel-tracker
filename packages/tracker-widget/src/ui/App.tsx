@@ -14,6 +14,7 @@ import { STEP_ORDER } from "@mediajel/tracker-widget/state/machine";
 import { WidgetGoal, WidgetSession, WidgetStep } from "@mediajel/tracker-widget/types";
 import Stamp from "@mediajel/tracker-widget/ui/components/Stamp";
 import { ChevronDown, Gear, Mark, Zigzag } from "@mediajel/tracker-widget/ui/icons";
+import CodeSection from "@mediajel/tracker-widget/ui/screens/CodeSection";
 import EvidenceSection from "@mediajel/tracker-widget/ui/screens/EvidenceSection";
 import RecordSection from "@mediajel/tracker-widget/ui/screens/RecordSection";
 import SettingsOverlay from "@mediajel/tracker-widget/ui/screens/SettingsOverlay";
@@ -49,6 +50,9 @@ export interface AppHandlers {
   onBackToRecording(): void;
   onGenerate(): void;
   onCancelGenerate(): void;
+  onRegenerate(): void;
+  onCodeEdit(code: string): void;
+  onVerify(): void;
   onSettingsPatch(patch: WidgetSettingsPatch): void;
   onForget(): void;
   onClearDedup(): void;
@@ -95,6 +99,10 @@ const sectionState = (section: (typeof SECTIONS)[number], session: WidgetSession
     if (currentIndex > lastOwned) return <Stamp label="Recorded" />;
     return null;
   }
+  if (section.number === "02" && currentIndex > lastOwned) {
+    return <Stamp label={`${session.markedIds.length} pinned`} />;
+  }
+  if (section.number === "03" && currentIndex > lastOwned) return <Stamp label="Generated" />;
   if (currentIndex > lastOwned) return <Stamp label="Done" />;
   return null;
 };
@@ -183,23 +191,16 @@ export const App = ({
         generateBlocked={generateBlocked}
       />
     ),
-    "03":
-      session.step === "generating" ? (
-        <div class="mj-section-body">
-          <div class="mj-working">
-            <span class="mj-rec-dot" aria-hidden="true" />
-            <span>
-              Writing the tag with {settings.provider}
-              {settings.model ? ` · ${settings.model}` : ""}…
-            </span>
-          </div>
-          <div class="mj-section-footer">
-            <button type="button" class="mj-btn mj-btn--ghost" onClick={handlers.onCancelGenerate}>
-              Cancel
-            </button>
-          </div>
-        </div>
-      ) : undefined,
+    "03": (
+      <CodeSection
+        session={session}
+        providerLabel={`${settings.provider}${settings.model ? ` · ${settings.model}` : ""}`}
+        onCancel={handlers.onCancelGenerate}
+        onRegenerate={handlers.onRegenerate}
+        onCodeEdit={handlers.onCodeEdit}
+        onVerify={handlers.onVerify}
+      />
+    ),
   };
 
   return (

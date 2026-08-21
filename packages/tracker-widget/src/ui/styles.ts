@@ -842,6 +842,97 @@ export const styles = `
   0% { content: "·"; }
 }
 
+
+/* --- code & coverage ---------------------------------------------------------------------- */
+
+.mj-code {
+  min-height: 180px;
+  font-size: 11px;
+  line-height: 1.5;
+  background: var(--mj-paper);
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.mj-copy {
+  float: right;
+  padding: 0 6px;
+  border: 1px solid var(--mj-rule);
+  border-radius: 3px;
+  background: var(--mj-card);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--mj-ink-soft);
+  cursor: pointer;
+}
+
+.mj-cov-line {
+  margin: 0 0 6px;
+  font-family: var(--mj-mono);
+  font-size: 11px;
+  color: var(--mj-ink-soft);
+}
+
+.mj-coverage {
+  margin: 0 0 12px;
+  border: 1px solid var(--mj-rule);
+  border-radius: 3px;
+}
+
+.mj-cov {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 3px 8px;
+  font-size: 11px;
+}
+
+.mj-cov + .mj-cov {
+  border-top: 1px solid var(--mj-rule);
+}
+
+.mj-cov dt {
+  flex: none;
+  width: 96px;
+  font-family: var(--mj-mono);
+}
+
+.mj-cov dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.mj-cov-status {
+  font-family: var(--mj-display);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mj-cov--mapped .mj-cov-status,
+.mj-cov--derived .mj-cov-status {
+  color: var(--mj-platform);
+}
+
+.mj-cov--default .mj-cov-status {
+  color: var(--mj-ink-soft);
+}
+
+.mj-cov--missing .mj-cov-status {
+  color: var(--mj-partner);
+}
+
+.mj-cov-src {
+  color: var(--mj-ink-soft);
+}
+
+.mj-cov em {
+  font-family: var(--mj-mono);
+  font-style: normal;
+  color: var(--mj-ink-soft);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mj-root *,
   .mj-root *::before,

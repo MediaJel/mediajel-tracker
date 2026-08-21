@@ -153,15 +153,73 @@ describe("Integrations Assistant — evidence & settings", () => {
     });
     click(".mj-btn", "Done");
 
-    // Generate now moves the work order to 03 Code.
+    // Generate now runs the (mocked) model through the real AI SDK path and lands on 03 Code.
+    cy.window().then((win) => {
+      (win as unknown as Record<string, unknown>).__MJ_WIDGET_MOCK_MODEL__ = {
+        json: {
+          summary: "Tracks the GA4 purchase push on this store.",
+          trigger: { kind: "dataLayer", description: "dataLayer purchase event" },
+          code:
+            'import { datalayerSource } from "../libs/sources/google-datalayer-source";\n' +
+            'import { isTrackTransLoaded } from "../libs/utils/is-trackTrans-loaded";\n\n' +
+            "const greenleaf = () => {\n  isTrackTransLoaded(() => {\n    datalayerSource((data) => {\n" +
+            '      if (data.event !== "purchase") return;\n      const purchase = data.ecommerce;\n' +
+            '      const dedupKey = "mj-greenleaf-" + purchase.transaction_id;\n' +
+            '      if (localStorage.getItem(dedupKey)) return;\n      localStorage.setItem(dedupKey, "1");\n' +
+            "      window.trackTrans({\n        id: purchase.transaction_id.toString(),\n" +
+            "        total: parseFloat(purchase.value) || 0,\n        tax: parseFloat(purchase.tax) || 0,\n" +
+            '        shipping: parseFloat(purchase.shipping) || 0,\n        city: "N/A",\n        state: "N/A",\n' +
+            '        country: "N/A",\n        currency: "USD",\n        items: (purchase.items || []).map((item) => ({\n' +
+            '          orderId: purchase.transaction_id.toString(),\n          sku: item.item_id || "N/A",\n' +
+            '          name: item.item_name,\n          category: item.item_category || "N/A",\n' +
+            "          unitPrice: item.price || 0,\n          quantity: item.quantity || 1,\n" +
+            '          currency: "USD",\n        })),\n      });\n    });\n  });\n};\n\ngreenleaf();',
+          fieldCoverage: [
+            {
+              field: "id",
+              status: "mapped",
+              source: "ecommerce.transaction_id",
+              value: null,
+              confidence: "high",
+              note: null,
+            },
+            {
+              field: "total",
+              status: "mapped",
+              source: "ecommerce.value",
+              value: null,
+              confidence: "high",
+              note: null,
+            },
+            { field: "city", status: "default", source: null, value: '"N/A"', confidence: "high", note: null },
+          ],
+          items: { trackable: true, reason: null },
+          warnings: [],
+          suggestedTarget: { kind: "domain", reason: "the dataLayer shape is specific to this storefront" },
+          dedupKey: "mj-greenleaf-<transaction_id>",
+        },
+      };
+    });
     click(".mj-btn", "Generate code");
-    shadow().then((root) => {
-      expect(root.querySelector(".mj-working")?.textContent).to.include("Writing the tag");
+
+    // The result renders: summary, editable code, the honest checklist. `.should` retries
+    // until the async generation resolves.
+    cy.get("#mj-widget-host").should(($host) => {
+      const root = $host[0].shadowRoot as ShadowRoot;
+      const body = root.querySelector(".mj-section-body")?.textContent ?? "";
+      expect(body).to.include("Tracks the GA4 purchase push");
+      const code = (root.querySelector(".mj-code") as HTMLTextAreaElement).value;
+      expect(code).to.include("window.trackTrans");
+      expect(code).to.include("mj-greenleaf-");
+      const coverage = root.querySelector(".mj-coverage")?.textContent ?? "";
+      expect(coverage).to.include("ecommerce.transaction_id");
+      expect(root.querySelector(".mj-cov-line")?.textContent).to.include("1 default");
     });
     cy.window().then((win) => {
       const session = JSON.parse(win.sessionStorage.getItem("mj-widget:session") as string);
-      expect(session.step).to.equal("generating");
-      expect(session.markedIds).to.have.length(1);
+      expect(session.step).to.equal("result");
+      expect(session.generation.model).to.be.a("string");
+      expect(session.generation.violations).to.have.length(0);
     });
   });
 });

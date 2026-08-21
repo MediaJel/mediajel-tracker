@@ -6,6 +6,7 @@ import logger from "@mediajel/tracker-widget/log";
 import { snapshotTracker } from "@mediajel/tracker-widget/recorder/context";
 import { Recorder, createRecorder } from "@mediajel/tracker-widget/recorder/recorder";
 import { captureRuntime } from "@mediajel/tracker-widget/runtime";
+import { generateTag } from "@mediajel/tracker-widget/ai/generate";
 import { canGenerate } from "@mediajel/tracker-widget/state/machine";
 import { WIDGET_ACTIVE_KEY, WIDGET_SESSION_KEY } from "@mediajel/tracker-widget/session/keys";
 import { WidgetSettingsPatch, createSettingsStore } from "@mediajel/tracker-widget/session/settings";
@@ -70,6 +71,7 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
   let ticker: ReturnType<typeof setInterval> | null = null;
   let open = false;
   let settingsOpen = false;
+  let generationAbort: AbortController | null = null;
 
   /**
    * House rule: anything the browser calls back into is wrapped, so a throw inside the widget
@@ -136,12 +138,30 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
         return;
       }
       ctx.session.transition("generating");
-      // The generation engine itself arrives with the next build; the step and its body are real.
+      void runGeneration();
     }, "widget-generate"),
 
     onCancelGenerate: guard((): void => {
+      generationAbort?.abort();
       ctx?.session.transition("review");
     }, "widget-cancel-generate"),
+
+    onRegenerate: guard((): void => {
+      if (!ctx) return;
+      if (ctx.session.transition("generating") === "generating") void runGeneration();
+    }, "widget-regenerate"),
+
+    onCodeEdit: guard((code: string): void => {
+      ctx?.session.update((draft) => {
+        if (!draft.generation) return;
+        draft.generation = { ...draft.generation, code, edited: true };
+      });
+    }, "widget-code-edit"),
+
+    onVerify: guard((): void => {
+      ctx?.session.transition("verify");
+      // The on-page runner arrives with the next build; the step and its body are real.
+    }, "widget-verify"),
 
     onSettingsPatch: guard((patch: Parameters<WidgetContext["settings"]["update"]>[0]): void => {
       ctx?.settings.update(patch);
@@ -167,6 +187,56 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
         logger.warn("Could not clear the tracker dedup state:", err);
       }
     }, "widget-clear-dedup"),
+  };
+
+  /**
+   * The one async workflow the widget owns. The step is already `generating` when this runs;
+   * success installs the structured result and moves to `result`; failure returns the work
+   * order to Evidence with a message the operator can act on. A cancel aborts the request
+   * and the stale response — checked by run id — can never overwrite a newer state.
+   */
+  let generationRun = 0;
+  const runGeneration = async (): Promise<void> => {
+    if (!ctx) return;
+    const run = (generationRun += 1);
+    generationAbort?.abort();
+    generationAbort = new AbortController();
+
+    try {
+      const { output, model, violations } = await generateTag({
+        session: ctx.session.get(),
+        status: snapshotTracker(ctx),
+        settings: ctx.settings.get(),
+        runtime: ctx.runtime,
+        signal: generationAbort.signal,
+      });
+      if (!ctx || run !== generationRun) return; // cancelled or superseded
+      ctx.session.update((draft) => {
+        draft.generationError = undefined;
+        draft.generation = {
+          at: Date.now(),
+          model,
+          code: output.code,
+          summary: output.summary,
+          trigger: output.trigger,
+          fieldCoverage: output.fieldCoverage,
+          items: output.items,
+          warnings: output.warnings,
+          suggestedTarget: output.suggestedTarget,
+          dedupKey: output.dedupKey,
+          violations,
+        };
+      });
+      ctx.session.transition("result");
+    } catch (err) {
+      if (!ctx || run !== generationRun) return;
+      const message = err instanceof Error ? err.message : String(err);
+      if (message === "Cancelled.") return; // the cancel handler already moved the step
+      ctx.session.update((draft) => {
+        draft.generationError = message;
+      });
+      ctx.session.transition("review");
+    }
   };
 
   const generateBlocked = (): string => {
