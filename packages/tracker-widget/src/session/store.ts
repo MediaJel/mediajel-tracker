@@ -8,7 +8,8 @@ import {
 } from "@mediajel/tracker-widget/session/bounds";
 import { newId } from "@mediajel/tracker-widget/session/ids";
 import { WIDGET_SESSION_KEY } from "@mediajel/tracker-widget/session/keys";
-import { WIDGET_SESSION_VERSION, WidgetGoal, WidgetSession } from "@mediajel/tracker-widget/types";
+import { TransitionOptions, transition as machineTransition } from "@mediajel/tracker-widget/state/machine";
+import { WIDGET_SESSION_VERSION, WidgetGoal, WidgetSession, WidgetStep } from "@mediajel/tracker-widget/types";
 
 /**
  * The recorded session: one object, one storage key, one place that decides when it is written.
@@ -27,11 +28,20 @@ export interface SessionStore {
   /** The current session. Always a complete object — never null, never a partial. */
   get(): WidgetSession;
   /**
-   * Applies `mutate` to a copy and installs the result. The copy is shallow, so pushing onto
-   * `draft.timeline` works, and the returned object is always a NEW reference so preact sees
-   * the change without a deep comparison.
+   * Applies `mutate` to a copy and installs the result. The copy always carries a FRESH
+   * `timeline` array, so pushing onto `draft.timeline` never mutates an array a previous
+   * session object still points at — both the session and its timeline change identity when
+   * their content changes, which is what lets the screens memoize on either.
+   *
+   * `update` is for data. A `step` written here is ignored and restored — `transition()` is
+   * the only door the step goes through.
    */
   update(mutate: (draft: WidgetSession) => void): WidgetSession;
+  /**
+   * The one legal way to change `session.step`: runs the machine, persists only a move the
+   * machine allows, and returns the step actually in force afterwards.
+   */
+  transition(to: WidgetStep, options?: TransitionOptions): WidgetStep;
   subscribe(listener: (session: WidgetSession) => void): () => void;
   /**
    * Write now, synchronously, and cancel any pending debounce. This is the `flushNow` the
@@ -133,7 +143,13 @@ const enforce = (draft: WidgetSession): WidgetSession => {
   return { ...draft, timeline, truncated };
 };
 
-export const createSessionStore = (storage: Storage = sessionStorage): SessionStore => {
+/** `caps.serializedCap` exists for the tests: the 1.5 MB default is deliberately unreachable
+ *  with bounded events, and the pre-emptive shrink branch still deserves a direct test. */
+export const createSessionStore = (
+  storage: Storage = sessionStorage,
+  caps: { serializedCap?: number } = {},
+): SessionStore => {
+  const serializedCap = caps.serializedCap ?? SESSION_SERIALIZED_CAP;
   let session = read(storage) ?? createSession();
   let listeners: ((session: WidgetSession) => void)[] = [];
   let timer: ReturnType<typeof setTimeout> | null = null;
@@ -169,7 +185,7 @@ export const createSessionStore = (storage: Storage = sessionStorage): SessionSt
 
       // Our own budget, checked before the browser's. Over the cap we shrink pre-emptively;
       // if nothing may be dropped we still attempt the write and let the browser decide.
-      if (payload.length > SESSION_SERIALIZED_CAP) {
+      if (payload.length > serializedCap) {
         const smaller = shrink(candidate);
         if (smaller) {
           candidate = smaller;
@@ -224,12 +240,28 @@ export const createSessionStore = (storage: Storage = sessionStorage): SessionSt
     get: () => session,
 
     update: (mutate) => {
-      const draft = { ...session };
+      const stepBefore = session.step;
+      const draft = { ...session, timeline: session.timeline.slice() };
       mutate(draft);
+      if (draft.step !== stepBefore) {
+        // Data mutations do not get to move the work order. transition() is the door.
+        logger.warn(`update() ignored a step change to "${draft.step}" — use transition().`);
+        draft.step = stepBefore;
+      }
       session = enforce(draft);
       schedule();
       notify();
       return session;
+    },
+
+    transition: (to, options) => {
+      const next = machineTransition(session.step, to, options);
+      if (next !== session.step) {
+        session = { ...session, step: next };
+        schedule();
+        notify();
+      }
+      return session.step;
     },
 
     subscribe: (listener) => {

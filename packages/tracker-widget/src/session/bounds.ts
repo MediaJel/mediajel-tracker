@@ -32,7 +32,7 @@ export const EVENT_CAP = 400;
  * `page`, `nav`, `form`, `datalayer`, `platform` — are never dropped: they are the spine of
  * the recording, and marked events of ANY kind are never dropped either.
  */
-export const EVICTION_ORDER: TimelineEventKind[] = ["dom", "click", "storage", "message", "network"];
+export const EVICTION_ORDER: readonly TimelineEventKind[] = ["dom", "click", "storage", "message", "network"];
 
 /** Truncation marker. One character, so a clamped string still lands exactly on its cap. */
 const ELLIPSIS = "…";

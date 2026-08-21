@@ -154,3 +154,21 @@ describe("isOwn", () => {
     expect(seen).toEqual([true, false]);
   });
 });
+
+describe("two live instances", () => {
+  test("a stale host's watchdog never resurrects it once a newer host owns the id", async () => {
+    const first = createHost();
+    const second = createHost(); // removes first's element and takes the id
+
+    // Give the first watchdog's mutation callback a chance to fire on the removal.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const hosts = document.querySelectorAll(`#${WIDGET_HOST_ID}`);
+    expect(hosts).toHaveLength(1);
+    expect(hosts[0]).toBe(second.element);
+    expect(first.element.isConnected).toBe(false);
+
+    first.destroy();
+    second.destroy();
+  });
+});

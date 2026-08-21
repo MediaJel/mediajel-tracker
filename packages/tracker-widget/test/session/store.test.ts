@@ -72,16 +72,29 @@ describe("loading", () => {
 });
 
 describe("update", () => {
-  test("hands back a new top-level object so preact sees the change", () => {
+  test("hands back a new top-level object AND a new timeline array so preact sees the change", () => {
     const s = open();
     const before = s.get();
     const after = s.update((draft) => {
-      draft.step = "recording";
+      draft.timeline.push(makeEvent({ kind: "dom" }));
     });
 
     expect(after).not.toBe(before);
-    expect(after.step).toBe("recording");
+    expect(after.timeline).not.toBe(before.timeline);
+    // The previous session object must not have been mutated behind its own back.
+    expect(before.timeline).toHaveLength(0);
     expect(s.get()).toBe(after);
+  });
+
+  test("ignores a step written through update() — transition() is the only door", () => {
+    const s = open();
+    const result = s.update((draft) => {
+      draft.step = "deploy" as typeof draft.step;
+      draft.timeline.push(makeEvent({ kind: "dom" }));
+    });
+
+    expect(result.step).toBe("home");
+    expect(result.timeline).toHaveLength(1); // the data half of the mutation still lands
   });
 
   test("notifies subscribers and stops after unsubscribe", () => {
@@ -89,13 +102,9 @@ describe("update", () => {
     const seen: string[] = [];
     const off = s.subscribe((session) => seen.push(session.step));
 
-    s.update((draft) => {
-      draft.step = "recording";
-    });
+    s.transition("recording");
     off();
-    s.update((draft) => {
-      draft.step = "review";
-    });
+    s.transition("review");
 
     expect(seen).toEqual(["recording"]);
   });
@@ -139,12 +148,8 @@ describe("update", () => {
 describe("persistence", () => {
   test("does not write on every update — it debounces", () => {
     const s = open();
-    s.update((draft) => {
-      draft.step = "recording";
-    });
-    s.update((draft) => {
-      draft.step = "review";
-    });
+    s.transition("recording");
+    s.transition("review");
 
     expect(storage.getItem(WIDGET_SESSION_KEY)).toBeNull();
     expect(storage.writes).toBe(0);
@@ -152,9 +157,7 @@ describe("persistence", () => {
 
   test("writes once the debounce elapses", async () => {
     const s = open();
-    s.update((draft) => {
-      draft.step = "recording";
-    });
+    s.transition("recording");
 
     await sleep(PERSIST_DEBOUNCE_MS + 60);
 
@@ -164,9 +167,7 @@ describe("persistence", () => {
 
   test("flush() writes synchronously and cancels the pending debounce", async () => {
     const s = open();
-    s.update((draft) => {
-      draft.step = "recording";
-    });
+    s.transition("recording");
     s.flush();
 
     expect(persisted().step).toBe("recording");
@@ -177,9 +178,7 @@ describe("persistence", () => {
 
   test.each(["pagehide", "beforeunload"])("flushes on %s", (name) => {
     const s = open();
-    s.update((draft) => {
-      draft.step = "recording";
-    });
+    s.transition("recording");
 
     window.dispatchEvent(new Event(name));
 
@@ -188,9 +187,7 @@ describe("persistence", () => {
 
   test("flushes when the tab is hidden, not when it is shown again", () => {
     const s = open();
-    s.update((draft) => {
-      draft.step = "recording";
-    });
+    s.transition("recording");
 
     setVisibility("visible");
     document.dispatchEvent(new Event("visibilitychange"));
@@ -203,9 +200,7 @@ describe("persistence", () => {
 
   test("dispose() detaches the lifecycle listeners and drops the pending write", async () => {
     const s = open();
-    s.update((draft) => {
-      draft.step = "recording";
-    });
+    s.transition("recording");
     s.dispose();
     store = null;
 
@@ -253,8 +248,9 @@ describe("quota", () => {
 describe("reset", () => {
   test("starts a new session, persists it immediately and notifies", () => {
     const s = open();
+    s.transition("recording");
+    s.transition("review");
     s.update((draft) => {
-      draft.step = "review";
       draft.timeline.push(makeEvent({ kind: "dom" }));
     });
     const first = s.get().id;
@@ -278,3 +274,56 @@ describe("reset", () => {
 const setVisibility = (state: "visible" | "hidden"): void => {
   Object.defineProperty(document, "visibilityState", { value: state, configurable: true });
 };
+
+describe("transition", () => {
+  test("moves along legal edges and persists on the debounce", async () => {
+    const s = open();
+    expect(s.transition("recording")).toBe("recording");
+    expect(s.transition("review")).toBe("review");
+
+    await sleep(PERSIST_DEBOUNCE_MS + 60);
+    expect(persisted().step).toBe("review");
+  });
+
+  test("refuses an illegal jump and stays put", () => {
+    const s = open();
+    const seen: string[] = [];
+    s.subscribe((session) => seen.push(session.step));
+
+    expect(s.transition("deploy")).toBe("home");
+    expect(s.get().step).toBe("home");
+    expect(seen).toEqual([]); // a refused move is not a change and must not notify
+  });
+
+  test("requires the confirmed flag for the reset edge to home", () => {
+    const s = open();
+    s.transition("recording");
+
+    expect(s.transition("home")).toBe("recording");
+    expect(s.transition("home", { confirmed: true })).toBe("home");
+  });
+});
+
+describe("the pre-emptive serialized cap", () => {
+  test("shrinks before the browser refuses, keeping marked events", async () => {
+    storage = new FakeStorage();
+    store = createSessionStore(storage, { serializedCap: 300 });
+    const s = store;
+
+    s.update((draft) => {
+      draft.timeline.push(
+        makeEvent({ kind: "dom", id: "keep" }),
+        makeEvent({ kind: "dom" }),
+        makeEvent({ kind: "click" }),
+      );
+      draft.markedIds.push("keep");
+    });
+    s.flush();
+
+    const written = persisted();
+    expect(written.truncated).toBe(true);
+    expect(written.timeline.some((event) => event.id === "keep")).toBe(true);
+    // Storage never refused a write — the cap acted first.
+    expect(storage.writes).toBeGreaterThan(0);
+  });
+});

@@ -50,18 +50,6 @@ export const DEFAULT_SETTINGS: WidgetSettings = {
   acknowledgedDataSharing: false,
 };
 
-/** Every key we own. Anything else in a stored record — or in a patch — is dropped. */
-const OWN_KEYS: (keyof WidgetSettings)[] = [
-  "provider",
-  "model",
-  "apiKey",
-  "baseURL",
-  "githubToken",
-  "actor",
-  "remember",
-  "acknowledgedDataSharing",
-];
-
 export interface SettingsStore {
   get(): WidgetSettings;
   update(patch: WidgetSettingsPatch): WidgetSettings;
@@ -83,24 +71,40 @@ const readFrom = (storage: Storage): Partial<WidgetSettings> | null => {
   }
 };
 
-/** Drops unknown keys and anything of the wrong shape, then fills the gaps from the defaults. */
+const PROVIDERS: readonly TrackerWidgetProvider[] = ["gateway", "openai", "anthropic", "google"];
+
+/**
+ * Drops unknown keys and anything of the wrong shape, then fills the gaps from the defaults.
+ * Shape-checked per key: this record routes secrets between storage areas, so a corrupted
+ * `remember: "yes"` must not read as truthy and send an API key to localStorage.
+ */
 const normalize = (value: Partial<WidgetSettings>): WidgetSettings => {
   const settings: WidgetSettings = { ...DEFAULT_SETTINGS, actor: { ...DEFAULT_SETTINGS.actor } };
+  const raw = value as Record<string, unknown>;
 
-  for (const key of OWN_KEYS) {
-    if (!(key in value)) continue;
-    if (key === "actor") {
-      const actor = value.actor;
-      if (actor && typeof actor === "object") {
-        settings.actor = {
-          name: typeof actor.name === "string" ? actor.name : "",
-          email: typeof actor.email === "string" ? actor.email : "",
-        };
-      }
-      continue;
-    }
-    const incoming = value[key];
-    if (incoming !== undefined) (settings as unknown as Record<string, unknown>)[key] = incoming;
+  const takeString = (key: "model" | "apiKey" | "baseURL" | "githubToken"): void => {
+    if (typeof raw[key] === "string") settings[key] = raw[key] as string;
+  };
+
+  if (PROVIDERS.includes(raw.provider as TrackerWidgetProvider)) {
+    settings.provider = raw.provider as TrackerWidgetProvider;
+  }
+  takeString("model");
+  takeString("apiKey");
+  takeString("baseURL");
+  takeString("githubToken");
+  if (typeof raw.remember === "boolean") settings.remember = raw.remember;
+  if (typeof raw.acknowledgedDataSharing === "boolean") {
+    settings.acknowledgedDataSharing = raw.acknowledgedDataSharing;
+  }
+
+  const actor = raw.actor;
+  if (actor && typeof actor === "object") {
+    const candidate = actor as Partial<WidgetActor>;
+    settings.actor = {
+      name: typeof candidate.name === "string" ? candidate.name : "",
+      email: typeof candidate.email === "string" ? candidate.email : "",
+    };
   }
 
   return settings;

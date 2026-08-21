@@ -18,16 +18,16 @@ const STROKE = {
 } as const;
 
 /** Eight spokes around a hub — a gear that stays legible at 16px. */
-export const Gear = (): VNode => (
-  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" {...STROKE}>
+export const Gear = ({ class: className }: { class?: string } = {}): VNode => (
+  <svg class={className} viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" {...STROKE}>
     <circle cx="8" cy="8" r="2.6" />
     <path d="M8 1.5v1.7M8 12.8v1.7M1.5 8h1.7M12.8 8h1.7M3.4 3.4l1.2 1.2M11.4 11.4l1.2 1.2M12.6 3.4l-1.2 1.2M4.6 11.4l-1.2 1.2" />
   </svg>
 );
 
-/** Points down at rest; the CSS rotates it when its section opens. */
-export const ChevronDown = (): VNode => (
-  <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" {...STROKE}>
+/** Points down at rest; `.mj-chevron` rotates it when its section row is expanded. */
+export const ChevronDown = ({ class: className }: { class?: string } = {}): VNode => (
+  <svg class={className} viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" {...STROKE}>
     <path d="M4 6.25 8 10.25 12 6.25" />
   </svg>
 );

@@ -52,7 +52,7 @@ export interface WidgetHost {
   destroy(): void;
 }
 
-const applyStyles = (root: ShadowRoot): void => {
+const applyStyles = (root: ShadowRoot, doc: Document): void => {
   try {
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(styles);
@@ -63,7 +63,9 @@ const applyStyles = (root: ShadowRoot): void => {
     // shadow root is scoped identically; it just cannot be shared between roots.
   }
 
-  const style = document.createElement("style");
+  // `doc`, not the global: inside the integrations sandbox iframe the two differ, and a <style>
+  // created by the wrong document is exactly the kind of thing that works until it doesn't.
+  const style = doc.createElement("style");
   style.textContent = styles;
   root.appendChild(style);
 };
@@ -77,7 +79,7 @@ export const createHost = (doc: Document = document): WidgetHost => {
   element.setAttribute("style", HOST_STYLE);
 
   const root = element.attachShadow({ mode: "open" });
-  applyStyles(root);
+  applyStyles(root, doc);
 
   const mount = doc.createElement("div");
   mount.className = "mj-root";
@@ -109,11 +111,17 @@ export const createHost = (doc: Document = document): WidgetHost => {
     const path = (target as Event).composedPath;
     if (typeof path === "function") return path.call(target).includes(element);
 
+    // O(depth): walk parents until the top of the current tree, then hop the shadow boundary
+    // once via getRootNode — never per node, which would re-walk to the root on every step.
     let node: Node | null = target as Node;
     while (node) {
       if (node === element) return true;
+      if (node.parentNode) {
+        node = node.parentNode;
+        continue;
+      }
       const root_ = (node as Node & { getRootNode?: () => Node }).getRootNode?.();
-      node = root_ instanceof ShadowRoot ? root_.host : node.parentNode;
+      node = root_ instanceof ShadowRoot ? root_.host : null;
     }
     return false;
   };

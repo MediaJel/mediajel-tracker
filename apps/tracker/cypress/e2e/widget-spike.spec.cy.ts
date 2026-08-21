@@ -153,3 +153,37 @@ describe("Integrations Assistant widget", () => {
       });
   });
 });
+
+/* global describe, it, cy, expect */
+describe("Integrations Assistant widget — UA style resets", () => {
+  const HARNESS = "http://localhost:1234/";
+
+  const shadow = () =>
+    cy.get("#mj-widget-host").then(($host) => {
+      const root = $host[0].shadowRoot;
+      expect(root, "shadow root").to.not.equal(null);
+      return root as ShadowRoot;
+    });
+
+  it("neutralises the UA's list and definition styles inside the card", () => {
+    cy.intercept("POST", "**/analytics/track", { statusCode: 200, body: {} });
+    cy.on("uncaught:exception", () => false);
+    cy.visit(HARNESS);
+    cy.window().then((win) => (win as unknown as { enableTrackerWidget(): Promise<void> }).enableTrackerWidget());
+
+    shadow().then((root) => {
+      const sections = root.querySelector("ol.mj-sections") as HTMLElement;
+      expect(sections, "sections list").to.not.equal(null);
+      const sectionsStyle = getComputedStyle(sections);
+      expect(sectionsStyle.listStyleType, "ol list-style-type").to.equal("none");
+      expect(sectionsStyle.paddingInlineStart, "ol padding-inline-start").to.equal("0px");
+      expect(sectionsStyle.marginBlockStart, "ol margin-block-start").to.equal("0px");
+
+      const value = root.querySelector("dd.mj-def-value") as HTMLElement;
+      expect(getComputedStyle(value).marginInlineStart, "dd margin-inline-start").to.equal("0px");
+
+      const chevron = root.querySelector(".mj-section-row .mj-chevron");
+      expect(chevron, "section chevron carries its class").to.not.equal(null);
+    });
+  });
+});

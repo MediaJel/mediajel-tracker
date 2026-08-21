@@ -131,3 +131,9 @@ describe("caps", () => {
     expect(serializedSize(session)).toBe(JSON.stringify(session).length);
   });
 });
+
+import { SESSION_SERIALIZED_CAP } from "@mediajel/tracker-widget/session/bounds";
+
+test("the serialized cap is the contract's 1.5 MB figure", () => {
+  expect(SESSION_SERIALIZED_CAP).toBe(1_500_000);
+});

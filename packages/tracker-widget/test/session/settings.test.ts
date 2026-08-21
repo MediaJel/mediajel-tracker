@@ -170,3 +170,24 @@ describe("maskSecret", () => {
     expect(maskSecret("")).toBe("");
   });
 });
+
+describe("corrupted records", () => {
+  test('a stored remember: "yes" does not route secrets to localStorage', () => {
+    const sessionArea = new FakeStorage();
+    const localArea = new FakeStorage();
+    sessionArea.setItem(
+      WIDGET_SETTINGS_KEY,
+      JSON.stringify({ apiKey: "sk-live-1234567890", remember: "yes", provider: "carrier-pigeon", model: 42 }),
+    );
+
+    const s = createSettingsStore(sessionArea, localArea);
+    expect(s.get().remember).toBe(false);
+    expect(s.get().provider).toBe("gateway"); // unknown provider falls back
+    expect(s.get().model).toBe(""); // non-string dropped
+    expect(s.get().apiKey).toBe("sk-live-1234567890"); // real strings survive
+
+    s.update({ model: "anthropic/claude-sonnet-5" });
+    expect(localArea.getItem(WIDGET_SETTINGS_KEY)).toBeNull(); // still per-tab
+    expect(sessionArea.getItem(WIDGET_SETTINGS_KEY)).toContain("claude-sonnet-5");
+  });
+});

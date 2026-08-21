@@ -73,19 +73,20 @@ const Section = ({
   onSelect?: (step: WidgetStep) => void;
 }): VNode => (
   <li class="mj-section">
+    {/* aria-disabled without `disabled`: the row stays in the tab order (keyboard reachable
+        everywhere), announces its state, and simply does nothing until its screen exists. */}
     <button
       type="button"
       class="mj-section-row"
       data-reached={String(reached)}
       aria-expanded="false"
       aria-disabled={!onSelect || !reached}
-      disabled={!onSelect || !reached}
-      onClick={onSelect ? () => onSelect(section.step) : undefined}
+      onClick={onSelect && reached ? () => onSelect(section.step) : undefined}
     >
       <span class="mj-section-number">{section.number}</span>
       <span class="mj-section-label">{section.label}</span>
       <span class="mj-section-state" />
-      <ChevronDown />
+      <ChevronDown class="mj-chevron" />
     </button>
   </li>
 );
@@ -122,7 +123,7 @@ export const App = ({ context, session, open, onToggleOpen, onOpenSettings, onSe
               type="button"
               class="mj-icon-button"
               aria-label="Settings"
-              disabled={!onOpenSettings}
+              aria-disabled={!onOpenSettings}
               onClick={onOpenSettings}
             >
               <Gear />

@@ -29,7 +29,11 @@ export interface TrackerWidgetPrefill {
 
 /** Options for `window.disableTrackerWidget()`. */
 export interface TrackerWidgetDisableOptions {
-  /** Also drop persisted settings and the recorded session. */
+  /**
+   * Also drop the persisted settings (provider, keys, actor). The recorded session is always
+   * cleared by `disable()` itself — exiting the assistant ends the work order; settings are the
+   * one thing an operator may choose to keep.
+   */
   forget?: boolean;
 }
 

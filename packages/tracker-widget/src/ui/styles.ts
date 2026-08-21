@@ -164,14 +164,16 @@ export const styles = `
   color: var(--mj-ink);
 }
 
-/* Definition rows. More space above the block than inside it. */
+/* Definition rows. More space above the block than inside it. The explicit margins also clear
+   the UA's dl/dd defaults (margin-block 1em, dd margin-inline-start 40px), which apply inside
+   shadow roots — the host's all:initial cannot reach descendants. */
 .mj-defs {
   display: grid;
   grid-template-columns: 44px 1fr;
   column-gap: 12px;
   row-gap: 8px;
   align-items: baseline;
-  margin-top: 16px;
+  margin: 16px 0 0;
 }
 
 .mj-def-label {
@@ -183,6 +185,7 @@ export const styles = `
 }
 
 .mj-def-value {
+  margin: 0;
   font-family: var(--mj-mono);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
@@ -215,9 +218,18 @@ export const styles = `
 
 /* --- section rows ---------------------------------------------------------------------- */
 
+/* An <ol> for semantics; the UA's decimal markers, 40px indent and block margins would sit
+   beside the authored 01–05, so all three are reset here. */
 .mj-sections {
   flex: 1 1 auto;
   overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mj-section {
+  list-style: none;
 }
 
 .mj-section + .mj-section {
