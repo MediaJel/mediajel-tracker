@@ -1,0 +1,16 @@
+{
+  "extends": "@mediajel/tsconfig/base.json",
+  "//jsx": "Preact's automatic runtime — the UI screens are .tsx and there is no React in this package.",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
+    "paths": {
+      "@mediajel/tracker-core/*": ["../tracker-core/src/*"],
+      "@mediajel/tracker-widget/vendor": ["./vendor/entry.ts"],
+      "@mediajel/tracker-widget/*": ["./src/*"]
+    }
+  },
+  "//include": "interface.ts carries tracker-core's shared `declare global { Window }` augmentation; ambient globals only apply to compilations that include the file, so each consumer pulls it in.",
+  "include": ["src/**/*", "vendor/**/*", "../tracker-core/src/interface.ts"],
+  "exclude": ["node_modules", "dist"]
+}

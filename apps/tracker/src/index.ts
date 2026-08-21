@@ -7,6 +7,8 @@ import { getCustomTags } from '@mediajel/tracker-core/utils/get-custom-tags';
 import isUsPrivacyOptOut from '@mediajel/tracker-core/utils/privacy-opt-out';
 import { createRetailId } from '@mediajel/tracker-core/utils/retail-id-parser';
 
+import { installWidgetStub } from "src/widget-stub";
+
 (async (): Promise<void> => {
   try {
     // Temporarily disable all logs. Set this first — before getCustomTags/getAppIdTags —
@@ -15,6 +17,12 @@ import { createRetailId } from '@mediajel/tracker-core/utils/retail-id-parser';
     setLoggingEnabled(false);
 
     const context: QueryStringContext = getContext();
+
+    // Integrations Assistant: define window.enableTrackerWidget/disableTrackerWidget. Deliberately
+    // before the privacy gate — declaring two functions tracks nothing, and an engineer debugging
+    // an opted-out site still needs the assistant to load and explain the missing tracker. The
+    // widget itself only downloads when someone calls enableTrackerWidget().
+    installWidgetStub(context);
 
     // US privacy opt-out gate — honor GPC / DNT before any tracking or network activity.
     // (getContext() above only parses the script URL — no network/cookies — so it's safe first.)

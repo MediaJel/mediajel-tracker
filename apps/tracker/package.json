@@ -6,11 +6,13 @@
   "browserslist": [
     "since 2017-06"
   ],
-  "//alias": "Canonicalize @mediajel/* to the real package src (not the node_modules symlink) so a dynamically-imported module and its dynamic import() resolve to the SAME Parcel module id — otherwise intra-package dynamic imports resolve to undefined.",
+  "//alias": "Canonicalize @mediajel/* to the real package src (not the node_modules symlink) so a dynamically-imported module and its dynamic import() resolve to the SAME Parcel module id — otherwise intra-package dynamic imports resolve to undefined. The tracker-widget/vendor entry is the ONE exception that resolves to built output instead of src (see the //vendor note in packages/tracker-widget/package.json); it is repeated here because when Parcel treats apps/tracker as its project root this map is consulted first, and its `@mediajel/tracker-widget` prefix would otherwise swallow the subpath.",
   "alias": {
     "src": "./src",
+    "@mediajel/tracker-widget/vendor": "../../packages/tracker-widget/dist/vendor.js",
     "@mediajel/tracker-core": "../../packages/tracker-core/src",
-    "@mediajel/tracker-environments": "../../packages/tracker-environments/src"
+    "@mediajel/tracker-environments": "../../packages/tracker-environments/src",
+    "@mediajel/tracker-widget": "../../packages/tracker-widget/src"
   },
   "//scripts": "Parcel runs under Node via scripts/run-parcel.mjs (Parcel's plugin loader uses a Node internal Bun lacks). Bun remains the package manager/workspace tool; node_modules is hoisted (see bunfig.toml). --no-scope-hoist is REQUIRED: with scope hoisting Parcel mis-assigns the dynamically-imported tracker-core modules (v1/v2 tracker, ecommerce, impressions) and import() resolves to undefined; disabling it keeps the tag's lazy code-splitting working.",
   "scripts": {
@@ -29,7 +31,8 @@
   },
   "dependencies": {
     "@mediajel/tracker-core": "*",
-    "@mediajel/tracker-environments": "*"
+    "@mediajel/tracker-environments": "*",
+    "@mediajel/tracker-widget": "*"
   },
   "devDependencies": {
     "@mediajel/eslint-config": "*",
