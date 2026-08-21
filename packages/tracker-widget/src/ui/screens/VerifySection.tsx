@@ -16,6 +16,7 @@ export interface VerifySectionProps {
   onRunAgain(): void;
   onBackToCode(): void;
   onApprove(): void;
+  readOnly?: boolean;
 }
 
 const Capture = ({
@@ -60,6 +61,7 @@ export const VerifySection = ({
   onRunAgain,
   onBackToCode,
   onApprove,
+  readOnly = false,
 }: VerifySectionProps): VNode => {
   const captured = session.verify?.captured ?? [];
   const errors = [...(session.verify?.errors ?? []), ...runErrors];
@@ -108,23 +110,25 @@ export const VerifySection = ({
 
       <p class="mj-fine">Live tracking stays intercepted on this page until you reload it.</p>
 
-      <div class="mj-section-footer">
-        <button type="button" class="mj-btn mj-btn--ghost" onClick={onBackToCode}>
-          Back to the code
-        </button>
-        <button type="button" class="mj-btn mj-btn--ghost" onClick={onRunAgain}>
-          Run again
-        </button>
-        <button
-          type="button"
-          class="mj-btn mj-btn--primary"
-          aria-disabled={approvable ? "false" : "true"}
-          title={approvable ? undefined : "Needs at least one capture whose payload checks out"}
-          onClick={approvable ? onApprove : undefined}
-        >
-          Approve → Deploy
-        </button>
-      </div>
+      {!readOnly && (
+        <div class="mj-section-footer">
+          <button type="button" class="mj-btn mj-btn--ghost" onClick={onBackToCode}>
+            Back to the code
+          </button>
+          <button type="button" class="mj-btn mj-btn--ghost" onClick={onRunAgain}>
+            Run again
+          </button>
+          <button
+            type="button"
+            class="mj-btn mj-btn--primary"
+            aria-disabled={approvable ? "false" : "true"}
+            title={approvable ? undefined : "Needs at least one capture whose payload checks out"}
+            onClick={approvable ? onApprove : undefined}
+          >
+            Approve → Deploy
+          </button>
+        </div>
+      )}
     </div>
   );
 };

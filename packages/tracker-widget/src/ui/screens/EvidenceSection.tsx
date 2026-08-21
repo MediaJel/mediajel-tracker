@@ -15,6 +15,8 @@ export interface EvidenceSectionProps {
   onGenerate(): void;
   /** Why Generate is not available yet ("" when it is). */
   generateBlocked: string;
+  /** Peeking at a finished section: pins still work (Regenerate honors them), no footer. */
+  readOnly?: boolean;
 }
 
 const BADGES: Record<TimelineEventKind, string> = {
@@ -107,6 +109,7 @@ export const EvidenceSection = ({
   onBackToRecording,
   onGenerate,
   generateBlocked,
+  readOnly = false,
 }: EvidenceSectionProps): VNode => {
   const [filter, setFilter] = useState(0);
   const [bySignal, setBySignal] = useState(true);
@@ -208,21 +211,23 @@ export const EvidenceSection = ({
         </p>
       </div>
 
-      <div class="mj-section-footer">
-        <button type="button" class="mj-btn mj-btn--ghost" onClick={onBackToRecording}>
-          Keep recording
-        </button>
-        <button
-          type="button"
-          class="mj-btn mj-btn--primary"
-          aria-disabled={generateBlocked ? "true" : "false"}
-          title={generateBlocked || undefined}
-          onClick={onGenerate}
-        >
-          Generate code
-        </button>
-      </div>
-      {generateBlocked && <p class="mj-blocked-note">{generateBlocked}</p>}
+      {!readOnly && (
+        <div class="mj-section-footer">
+          <button type="button" class="mj-btn mj-btn--ghost" onClick={onBackToRecording}>
+            Keep recording
+          </button>
+          <button
+            type="button"
+            class="mj-btn mj-btn--primary"
+            aria-disabled={generateBlocked ? "true" : "false"}
+            title={generateBlocked || undefined}
+            onClick={onGenerate}
+          >
+            Generate code
+          </button>
+        </div>
+      )}
+      {!readOnly && generateBlocked && <p class="mj-blocked-note">{generateBlocked}</p>}
     </div>
   );
 };

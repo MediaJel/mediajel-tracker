@@ -14,6 +14,8 @@ export interface CodeSectionProps {
   onRegenerate(): void;
   onCodeEdit(code: string): void;
   onVerify(): void;
+  /** Peeking from a later step: the text is what is running/deployed, so it is frozen. */
+  readOnly?: boolean;
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -46,6 +48,7 @@ export const CodeSection = ({
   onRegenerate,
   onCodeEdit,
   onVerify,
+  readOnly = false,
 }: CodeSectionProps): VNode => {
   const [copied, setCopied] = useState(false);
   const generation = session.generation;
@@ -119,6 +122,7 @@ export const CodeSection = ({
           class="mj-textarea mj-code"
           rows={12}
           spellcheck={false}
+          readOnly={readOnly}
           value={generation.code}
           onChange={(event) => onCodeEdit((event.target as HTMLTextAreaElement).value)}
         />
@@ -130,14 +134,16 @@ export const CodeSection = ({
       </p>
       <Coverage generation={generation} />
 
-      <div class="mj-section-footer">
-        <button type="button" class="mj-btn mj-btn--ghost" onClick={onRegenerate}>
-          Regenerate
-        </button>
-        <button type="button" class="mj-btn mj-btn--primary" onClick={onVerify}>
-          Run on this page
-        </button>
-      </div>
+      {!readOnly && (
+        <div class="mj-section-footer">
+          <button type="button" class="mj-btn mj-btn--ghost" onClick={onRegenerate}>
+            Regenerate
+          </button>
+          <button type="button" class="mj-btn mj-btn--primary" onClick={onVerify}>
+            Run on this page
+          </button>
+        </div>
+      )}
     </div>
   );
 };

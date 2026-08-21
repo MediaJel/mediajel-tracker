@@ -93,6 +93,9 @@ export interface AppProps {
   /** False shows the launcher chip, true the card. */
   open: boolean;
   onToggleOpen(): void;
+  /** Operator override of which section is open (strict accordion); null = the active one. */
+  toggled: { number: string; open: boolean } | null;
+  onToggleSection(number: string): void;
   settingsOpen: boolean;
   onOpenSettings(): void;
   onCloseSettings(): void;
@@ -132,28 +135,54 @@ const sectionState = (section: (typeof SECTIONS)[number], session: WidgetSession
   return null;
 };
 
+/** What 01 shows once the recording is over: the record, not the controls. */
+const RecordSummary = ({ session }: { session: WidgetSession }): VNode => {
+  const last = session.timeline[session.timeline.length - 1];
+  const seconds = last ? Math.round(last.t / 1000) : 0;
+  return (
+    <div class="mj-section-body">
+      <dl class="mj-counts">
+        <dt>job</dt>
+        <dd>{JOB_TITLES[session.goal]}</dd>
+        <dt>events</dt>
+        <dd>{session.timeline.length}</dd>
+        <dt>pages</dt>
+        <dd>{session.pages.length}</dd>
+        <dt>duration</dt>
+        <dd>{seconds}s</dd>
+      </dl>
+      {session.truncated ? (
+        <p class="mj-fine">Some cheap events were dropped to stay inside the storage budget.</p>
+      ) : null}
+    </div>
+  );
+};
+
 const Section = ({
   section,
   session,
   isOpen,
   reached,
+  onToggle,
   children,
 }: {
   section: (typeof SECTIONS)[number];
   session: WidgetSession;
   isOpen: boolean;
   reached: boolean;
+  onToggle(): void;
   children?: ComponentChildren;
 }): VNode => (
   <li class="mj-section">
-    {/* aria-disabled without `disabled`: the row stays in the tab order (keyboard reachable
-        everywhere), announces its state, and simply does nothing until its screen exists. */}
+    {/* aria-disabled without `disabled`: a row ahead of the work stays in the tab order,
+        announces its state, and does nothing; a reached row opens/closes its section. */}
     <button
       type="button"
       class="mj-section-row"
       data-reached={String(reached)}
       aria-expanded={String(isOpen) as "true" | "false"}
       aria-disabled={!reached}
+      onClick={reached ? onToggle : undefined}
     >
       <span class="mj-section-number">{section.number}</span>
       <span class="mj-section-label">{section.label}</span>
@@ -174,6 +203,8 @@ export const App = ({
   generateBlocked,
   open,
   onToggleOpen,
+  toggled,
+  onToggleSection,
   settingsOpen,
   onOpenSettings,
   onCloseSettings,
@@ -197,63 +228,85 @@ export const App = ({
 
   const currentIndex = STEP_ORDER.indexOf(session.step);
 
-  const bodies: Partial<Record<string, ComponentChildren>> = {
-    "01": (
-      <RecordSection
-        session={session}
-        status={status}
-        onStart={handlers.onStartRecording}
-        onStop={handlers.onStopRecording}
-        onDiscard={handlers.onDiscard}
-      />
-    ),
-    "02": (
-      <EvidenceSection
-        session={session}
-        onToggleMark={handlers.onToggleMark}
-        onNotes={handlers.onNotes}
-        onBackToRecording={handlers.onBackToRecording}
-        onGenerate={handlers.onGenerate}
-        generateBlocked={generateBlocked}
-      />
-    ),
-    "03": (
-      <CodeSection
-        session={session}
-        providerLabel={`${settings.provider}${settings.model ? ` · ${settings.model}` : ""}`}
-        onCancel={handlers.onCancelGenerate}
-        onRegenerate={handlers.onRegenerate}
-        onCodeEdit={handlers.onCodeEdit}
-        onVerify={handlers.onVerify}
-      />
-    ),
-    "04": (
-      <VerifySection
-        session={session}
-        runErrors={flow.verifyRunErrors}
-        onRunAgain={handlers.onVerifyRunAgain}
-        onBackToCode={handlers.onBackToCode}
-        onApprove={handlers.onApproveVerify}
-      />
-    ),
-    "05": (
-      <DeploySection
-        session={session}
-        settings={settings}
-        targets={flow.deploy.targets}
-        selected={flow.deploy.selected}
-        deploying={flow.deploy.deploying}
-        deployError={flow.deploy.deployError}
-        deployBlocked={flow.deploy.deployBlocked}
-        cdnState={flow.deploy.cdnState}
-        onSelectTarget={handlers.onSelectTarget}
-        onDeploy={handlers.onDeploy}
-        onOpenSettings={onOpenSettings}
-        onStartAnother={handlers.onStartAnother}
-        onExit={handlers.onExit}
-      />
-    ),
+  const activeNumber = SECTIONS.find((section) => section.steps.includes(session.step))?.number ?? "01";
+
+  /** A finished section peeked at later shows its record, frozen; the active one works. */
+  const bodyFor = (section: (typeof SECTIONS)[number]): ComponentChildren => {
+    const active = section.number === activeNumber;
+    switch (section.number) {
+      case "01":
+        return active ? (
+          <RecordSection
+            session={session}
+            status={status}
+            onStart={handlers.onStartRecording}
+            onStop={handlers.onStopRecording}
+            onDiscard={handlers.onDiscard}
+          />
+        ) : (
+          <RecordSummary session={session} />
+        );
+      case "02":
+        return (
+          <EvidenceSection
+            session={session}
+            onToggleMark={handlers.onToggleMark}
+            onNotes={handlers.onNotes}
+            onBackToRecording={handlers.onBackToRecording}
+            onGenerate={handlers.onGenerate}
+            generateBlocked={generateBlocked}
+            readOnly={!active}
+          />
+        );
+      case "03":
+        return session.generation || active ? (
+          <CodeSection
+            session={session}
+            providerLabel={`${settings.provider}${settings.model ? ` · ${settings.model}` : ""}`}
+            onCancel={handlers.onCancelGenerate}
+            onRegenerate={handlers.onRegenerate}
+            onCodeEdit={handlers.onCodeEdit}
+            onVerify={handlers.onVerify}
+            readOnly={!active}
+          />
+        ) : null;
+      case "04":
+        return (
+          <VerifySection
+            session={session}
+            runErrors={flow.verifyRunErrors}
+            onRunAgain={handlers.onVerifyRunAgain}
+            onBackToCode={handlers.onBackToCode}
+            onApprove={handlers.onApproveVerify}
+            readOnly={!active}
+          />
+        );
+      case "05":
+        return active ? (
+          <DeploySection
+            session={session}
+            settings={settings}
+            targets={flow.deploy.targets}
+            selected={flow.deploy.selected}
+            deploying={flow.deploy.deploying}
+            deployError={flow.deploy.deployError}
+            deployBlocked={flow.deploy.deployBlocked}
+            cdnState={flow.deploy.cdnState}
+            onSelectTarget={handlers.onSelectTarget}
+            onDeploy={handlers.onDeploy}
+            onOpenSettings={onOpenSettings}
+            onStartAnother={handlers.onStartAnother}
+            onExit={handlers.onExit}
+          />
+        ) : null;
+      default:
+        return null;
+    }
   };
+
+  /** Strict accordion: the operator's toggle wins; otherwise the active section is open. */
+  const isOpen = (section: (typeof SECTIONS)[number]): boolean =>
+    toggled ? toggled.number === section.number && toggled.open : section.number === activeNumber;
 
   return (
     <section class="mj-card" aria-label="MediaJel Integration Work Order">
@@ -304,10 +357,11 @@ export const App = ({
               key={section.number}
               section={section}
               session={session}
-              isOpen={section.steps.includes(session.step)}
+              isOpen={isOpen(section)}
               reached={currentIndex >= STEP_ORDER.indexOf(section.steps[0])}
+              onToggle={() => onToggleSection(section.number)}
             >
-              {bodies[section.number]}
+              {isOpen(section) ? bodyFor(section) : null}
             </Section>
           ))}
         </ol>

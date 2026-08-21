@@ -69,6 +69,15 @@ const setActive = (active: boolean): void => {
  *            comes from `document.currentScript`, which is only readable while the tag's own
  *            script element is executing — long before this chunk loads.
  */
+/** Which section owns a step — mirrors SECTIONS in ui/App.tsx. */
+const activeSectionFor = (step: string): string => {
+  if (step === "home" || step === "recording") return "01";
+  if (step === "review") return "02";
+  if (step === "generating" || step === "result") return "03";
+  if (step === "verify") return "04";
+  return "05";
+};
+
 export const createWidget = (tag: QueryStringContext): TrackerWidget => {
   let ctx: WidgetContext | null = null;
   let recorder: Recorder | null = null;
@@ -78,6 +87,9 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
   let open = false;
   let settingsOpen = false;
   let generationAbort: AbortController | null = null;
+  // Strict-accordion override; cleared whenever the step moves so the new section opens.
+  let toggled: { number: string; open: boolean } | null = null;
+  let lastStep: string | null = null;
 
   // Verify/deploy view state — per page, not persisted (the session carries the durable half).
   let verifyRunErrors: string[] = [];
@@ -449,6 +461,15 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
     return "";
   };
 
+  const onToggleSection = guard((number: string): void => {
+    if (!ctx) return;
+    const step = ctx.session.get().step;
+    const active = number === activeSectionFor(step);
+    const currentlyOpen = toggled ? toggled.number === number && toggled.open : active;
+    toggled = { number, open: !currentlyOpen };
+    draw();
+  }, "widget-toggle-section");
+
   const onOpenSettings = guard((): void => {
     settingsOpen = true;
     draw();
@@ -461,6 +482,11 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
 
   const draw = (): void => {
     if (!ctx) return;
+    const step = ctx.session.get().step;
+    if (step !== lastStep) {
+      lastStep = step;
+      toggled = null;
+    }
     render(
       h(App, {
         context: ctx.tag,
@@ -472,6 +498,8 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
         generateBlocked: generateBlocked(),
         open,
         onToggleOpen,
+        toggled,
+        onToggleSection,
         settingsOpen,
         onOpenSettings,
         onCloseSettings,

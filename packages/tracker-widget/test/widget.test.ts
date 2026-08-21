@@ -206,3 +206,44 @@ describe("disable", () => {
     expect(shadow().querySelector(".mj-card")).not.toBeNull();
   });
 });
+
+describe("section accordion", () => {
+  test("a reached row toggles its section; rows ahead of the work do nothing", async () => {
+    await widget.enable();
+    const rows = () => Array.from(shadow().querySelectorAll(".mj-section-row")) as HTMLButtonElement[];
+
+    // 01 owns `home` and is open; clicking it collapses it (strict accordion: nothing open).
+    expect(rows()[0].getAttribute("aria-expanded")).toBe("true");
+    rows()[0].click();
+    expect(rows()[0].getAttribute("aria-expanded")).toBe("false");
+    expect(shadow().querySelector(".mj-goals")).toBeNull();
+
+    // Click again: back open, controls back.
+    rows()[0].click();
+    expect(rows()[0].getAttribute("aria-expanded")).toBe("true");
+    expect(shadow().querySelectorAll(".mj-goals .mj-btn")).toHaveLength(2);
+
+    // 02 is ahead of the work: clicking changes nothing.
+    rows()[1].click();
+    expect(rows()[1].getAttribute("aria-expanded")).toBe("false");
+    expect(rows()[0].getAttribute("aria-expanded")).toBe("true");
+  });
+
+  test("peeking a finished section shows its record, and a step change re-opens the active one", async () => {
+    await widget.enable();
+    const rows = () => Array.from(shadow().querySelectorAll(".mj-section-row")) as HTMLButtonElement[];
+    const goalButtons = shadow().querySelectorAll(".mj-goals .mj-btn");
+    (goalButtons[0] as HTMLButtonElement).click(); // start recording → step recording
+    const stop = Array.from(shadow().querySelectorAll(".mj-btn")).find((b) =>
+      b.textContent?.includes("Stop"),
+    ) as HTMLButtonElement;
+    stop.click(); // → review: 02 opens, 01 stamped
+
+    expect(rows()[1].getAttribute("aria-expanded")).toBe("true");
+    rows()[0].click(); // peek at 01
+    expect(rows()[0].getAttribute("aria-expanded")).toBe("true");
+    expect(rows()[1].getAttribute("aria-expanded")).toBe("false");
+    expect(shadow().querySelector(".mj-goals")).toBeNull(); // the record, not the controls
+    expect(shadow().querySelector(".mj-counts")?.textContent).toContain("events");
+  });
+});

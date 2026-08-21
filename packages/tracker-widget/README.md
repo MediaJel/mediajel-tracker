@@ -77,6 +77,20 @@ code attached real listeners); reload the page to restore live tracking.
 - Works when GPC/DNT stopped the tracker (and says so): recording, generation and verify do
   not need the tracker; the deployed tag will honor the privacy gate like everything else.
 
+## Local dev build
+
+`COLLECTOR_URL` (and `FRICTIONLESS_CUSTOMTAG_URL`) are build-time env vars Parcel inlines into
+the tag; CI supplies them from CircleCI contexts, and Parcel's `.env` loading is unreliable in
+this monorepo (its project root moves — see `apps/tracker/package.json`). For a local build
+that talks to a real collector, export them:
+
+```sh
+COLLECTOR_URL=//collector.dmp.cnna.io bun x turbo run build --filter=mediajel-tracker --force
+```
+
+Without `COLLECTOR_URL` the tag posts to `http://analytics/track` and the console fills with
+`ERR_NAME_NOT_RESOLVED` — harmless for the widget (it never needs the collector) but noisy.
+
 ## Tests
 
 ```sh
