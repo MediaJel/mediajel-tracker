@@ -1015,6 +1015,27 @@ export const styles = `
   color: var(--mj-identity);
 }
 
+
+/* --- start-over confirmation -------------------------------------------------------------- */
+
+.mj-confirm {
+  flex: none;
+  padding: 10px var(--mj-pad);
+  border-bottom: 1px solid var(--mj-partner);
+  background: var(--mj-paper);
+  font-size: 12px;
+}
+
+.mj-confirm p {
+  margin: 0 0 8px;
+}
+
+.mj-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mj-root *,
   .mj-root *::before,

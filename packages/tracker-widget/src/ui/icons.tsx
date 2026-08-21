@@ -27,6 +27,14 @@ export const Gear = ({ class: className }: { class?: string } = {}): VNode => (
   </svg>
 );
 
+/** A circular arrow — start the work order over. */
+export const Restart = ({ class: className }: { class?: string } = {}): VNode => (
+  <svg class={className} viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" {...STROKE}>
+    <path d="M3.2 8a4.8 4.8 0 1 0 1.4-3.4" />
+    <path d="M3 2.5v3h3" />
+  </svg>
+);
+
 /** Points down at rest; `.mj-chevron` rotates it when its section row is expanded. */
 export const ChevronDown = ({ class: className }: { class?: string } = {}): VNode => (
   <svg class={className} viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" {...STROKE}>

@@ -90,6 +90,7 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
   // Strict-accordion override; cleared whenever the step moves so the new section opens.
   let toggled: { number: string; open: boolean } | null = null;
   let lastStep: string | null = null;
+  let confirmingReset = false;
 
   // Verify/deploy view state — per page, not persisted (the session carries the durable half).
   let verifyRunErrors: string[] = [];
@@ -232,6 +233,36 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
       cdnPoller = null;
       void disable();
     }, "widget-exit"),
+
+    onRequestReset: guard((): void => {
+      confirmingReset = true;
+      draw();
+    }, "widget-request-reset"),
+
+    onCancelReset: guard((): void => {
+      confirmingReset = false;
+      draw();
+    }, "widget-cancel-reset"),
+
+    /** The confirmed reset: everything about this job goes; settings and the page stay. */
+    onConfirmReset: guard((): void => {
+      if (!ctx) return;
+      confirmingReset = false;
+      generationAbort?.abort();
+      recorder?.stop();
+      cdnPoller?.stop();
+      cdnPoller = null;
+      cdnState = "idle";
+      targetStates = null;
+      deployError = "";
+      deploying = false;
+      verifyRunErrors = [];
+      toggled = null;
+      const goal = ctx.session.get().goal;
+      ctx.session.reset({ goal });
+      open = true;
+      draw();
+    }, "widget-confirm-reset"),
 
     onSettingsPatch: guard((patch: Parameters<WidgetContext["settings"]["update"]>[0]): void => {
       ctx?.settings.update(patch);
@@ -500,6 +531,7 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
         onToggleOpen,
         toggled,
         onToggleSection,
+        confirmingReset,
         settingsOpen,
         onOpenSettings,
         onCloseSettings,

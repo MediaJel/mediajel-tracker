@@ -13,7 +13,7 @@ import { WidgetSettings, WidgetSettingsPatch } from "@mediajel/tracker-widget/se
 import { STEP_ORDER } from "@mediajel/tracker-widget/state/machine";
 import { WidgetGoal, WidgetSession, WidgetStep } from "@mediajel/tracker-widget/types";
 import Stamp from "@mediajel/tracker-widget/ui/components/Stamp";
-import { ChevronDown, Gear, Mark, Zigzag } from "@mediajel/tracker-widget/ui/icons";
+import { ChevronDown, Gear, Mark, Restart, Zigzag } from "@mediajel/tracker-widget/ui/icons";
 import CodeSection from "@mediajel/tracker-widget/ui/screens/CodeSection";
 import DeploySection, { TargetState } from "@mediajel/tracker-widget/ui/screens/DeploySection";
 import EvidenceSection from "@mediajel/tracker-widget/ui/screens/EvidenceSection";
@@ -62,6 +62,10 @@ export interface AppHandlers {
   onDeploy(): void;
   onStartAnother(): void;
   onExit(): void;
+  /** Start over — asks first (it throws the recording away), then resets to 01. */
+  onRequestReset(): void;
+  onConfirmReset(): void;
+  onCancelReset(): void;
   onSettingsPatch(patch: WidgetSettingsPatch): void;
   onForget(): void;
   onClearDedup(): void;
@@ -96,6 +100,8 @@ export interface AppProps {
   /** Operator override of which section is open (strict accordion); null = the active one. */
   toggled: { number: string; open: boolean } | null;
   onToggleSection(number: string): void;
+  /** The "start over?" confirmation bar is showing. */
+  confirmingReset: boolean;
   settingsOpen: boolean;
   onOpenSettings(): void;
   onCloseSettings(): void;
@@ -205,6 +211,7 @@ export const App = ({
   onToggleOpen,
   toggled,
   onToggleSection,
+  confirmingReset,
   settingsOpen,
   onOpenSettings,
   onCloseSettings,
@@ -317,6 +324,17 @@ export const App = ({
           <span class="mj-letterhead-rule" />
           <span class="mj-doc-title">Integration Work Order</span>
           <div class="mj-header-actions">
+            {session.step !== "home" && (
+              <button
+                type="button"
+                class="mj-icon-button"
+                aria-label="Start over"
+                title="Start over"
+                onClick={handlers.onRequestReset}
+              >
+                <Restart />
+              </button>
+            )}
             <button
               type="button"
               class="mj-icon-button"
@@ -340,6 +358,23 @@ export const App = ({
       </header>
 
       <Zigzag live={session.step === "recording"} />
+
+      {confirmingReset && (
+        <div class="mj-confirm" role="alertdialog" aria-label="Start over?">
+          <p>
+            Throw away this recording{session.generation ? ", the generated code" : ""} and start over? Settings are
+            kept.
+          </p>
+          <div class="mj-confirm-actions">
+            <button type="button" class="mj-btn mj-btn--ghost" onClick={handlers.onCancelReset}>
+              Keep working
+            </button>
+            <button type="button" class="mj-btn mj-btn--danger" onClick={handlers.onConfirmReset}>
+              Start over
+            </button>
+          </div>
+        </div>
+      )}
 
       {settingsOpen ? (
         <SettingsOverlay

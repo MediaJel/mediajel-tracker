@@ -247,3 +247,40 @@ describe("section accordion", () => {
     expect(shadow().querySelector(".mj-counts")?.textContent).toContain("events");
   });
 });
+
+describe("start over", () => {
+  test("asks first, keeps working on cancel, and resets the job on confirm — settings survive", async () => {
+    await widget.enable({ apiKey: "sk-keep" });
+    const q = (selector: string) => shadow().querySelector(selector) as HTMLElement | null;
+
+    expect(q('[aria-label="Start over"]')).toBeNull(); // nothing to throw away at home
+    (shadow().querySelectorAll(".mj-goals .mj-btn")[0] as HTMLButtonElement).click();
+    (
+      Array.from(shadow().querySelectorAll(".mj-btn")).find((b) => b.textContent?.includes("Stop")) as HTMLButtonElement
+    ).click();
+    expect(JSON.parse(sessionStorage.getItem(WIDGET_SESSION_KEY) as string).step).toBe("review");
+
+    q('[aria-label="Start over"]')!.click();
+    expect(q(".mj-confirm")).not.toBeNull();
+    (
+      Array.from(shadow().querySelectorAll(".mj-confirm .mj-btn")).find((b) =>
+        b.textContent?.includes("Keep"),
+      ) as HTMLButtonElement
+    ).click();
+    expect(q(".mj-confirm")).toBeNull();
+    expect(JSON.parse(sessionStorage.getItem(WIDGET_SESSION_KEY) as string).step).toBe("review");
+
+    q('[aria-label="Start over"]')!.click();
+    (
+      Array.from(shadow().querySelectorAll(".mj-confirm .mj-btn")).find((b) =>
+        b.textContent?.includes("Start over"),
+      ) as HTMLButtonElement
+    ).click();
+
+    const session = JSON.parse(sessionStorage.getItem(WIDGET_SESSION_KEY) as string);
+    expect(session.step).toBe("home");
+    expect(session.timeline).toEqual([]);
+    expect(shadow().querySelectorAll(".mj-goals .mj-btn")).toHaveLength(2);
+    expect(JSON.parse(sessionStorage.getItem(WIDGET_SETTINGS_KEY) as string).apiKey).toBe("sk-keep");
+  });
+});
