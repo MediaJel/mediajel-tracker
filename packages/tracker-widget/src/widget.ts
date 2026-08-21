@@ -1,144 +1,161 @@
-import logger from "@mediajel/tracker-core/logger";
 import { QueryStringContext } from "@mediajel/tracker-core/types";
-import {
-  TrackerWidget,
-  TrackerWidgetDisableOptions,
-  TrackerWidgetPrefill,
-  TrackerWidgetProvider,
-} from "@mediajel/tracker-widget/api";
-import { WIDGET_ACTIVE_KEY } from "@mediajel/tracker-widget/session/keys";
-import styles from "@mediajel/tracker-widget/styles";
+import { guard } from "@mediajel/tracker-core/utils/guard";
+import { TrackerWidget, TrackerWidgetDisableOptions, TrackerWidgetPrefill } from "@mediajel/tracker-widget/api";
+import { WidgetContext } from "@mediajel/tracker-widget/context";
+import logger from "@mediajel/tracker-widget/log";
+import { captureRuntime } from "@mediajel/tracker-widget/runtime";
+import { WIDGET_ACTIVE_KEY, WIDGET_SESSION_KEY } from "@mediajel/tracker-widget/session/keys";
+import { WidgetSettingsPatch, createSettingsStore } from "@mediajel/tracker-widget/session/settings";
+import { createSessionStore } from "@mediajel/tracker-widget/session/store";
+import App from "@mediajel/tracker-widget/ui/App";
+import { createHost } from "@mediajel/tracker-widget/ui/host";
 // Every third-party import goes through the pre-bundled vendor module — see the "//vendor"
 // note in package.json for why Parcel cannot consume these packages from node_modules.
-import {
-  createAnthropic,
-  createGateway,
-  createGoogle,
-  createOpenAI,
-  generateText,
-  h,
-  LanguageModel,
-  Output,
-  render,
-  z,
-} from "@mediajel/tracker-widget/vendor";
+import { h, render } from "@mediajel/tracker-widget/vendor";
 
 /**
- * Lazy entry point. Everything third-party the widget needs is reachable only from this
- * module, so Parcel emits it as a single `widget.<hash>.js` chunk that the tag downloads
- * on demand and a visitor who never enables the widget never pays for.
+ * The lazy entry point. Everything third-party the widget needs is reachable only from this
+ * module, so Parcel emits it as a single `widget.<hash>.js` chunk that the tag downloads on
+ * demand and a visitor who never enables the widget never pays for.
  *
- * Import-time side effects are forbidden here: the chunk may be fetched before the
- * operator has agreed to anything, so all work happens inside `enable()`.
+ * The one thing that happens at import time is the runtime capture below. Everything else —
+ * the host, the stores, the render — waits for `enable()` or `resume()`, because the chunk can
+ * be fetched before the operator has agreed to anything.
  */
-
-/** Id of the host element the widget mounts its shadow root on. */
-export const WIDGET_HOST_ID = "mj-widget-host";
 
 /**
- * The four provider factories, kept in one map so the spike proves every SDK entry point
- * survives bundling (an unreferenced import would be free to disappear).
+ * The browser's own `fetch` and XHR, taken at chunk load: as early as code that loads on demand
+ * can possibly run, and — critically — before the recorder wraps either of them. Reading two
+ * properties is not a side effect; it is the whole point of doing it here.
  */
-const providerFactories: Record<TrackerWidgetProvider, (...args: any[]) => unknown> = {
-  gateway: createGateway,
-  openai: createOpenAI,
-  anthropic: createAnthropic,
-  google: createGoogle,
+const runtime = captureRuntime();
+
+/** Re-exported so the E2E harness and apps/tracker can find the host without a string literal. */
+export { WIDGET_HOST_ID } from "@mediajel/tracker-widget/ui/host";
+
+const clearSession = (): void => {
+  try {
+    sessionStorage.removeItem(WIDGET_SESSION_KEY);
+  } catch (err) {
+    logger.warn("Could not clear the recorded session:", err);
+  }
 };
 
-/** Stand-in for the real generation schema; only its zod machinery matters to the spike. */
-const spikeSchema = z.object({ ok: z.boolean() });
+const setActive = (active: boolean): void => {
+  try {
+    if (active) sessionStorage.setItem(WIDGET_ACTIVE_KEY, "1");
+    else sessionStorage.removeItem(WIDGET_ACTIVE_KEY);
+  } catch (err) {
+    // Sandboxed iframes and blocked storage. The widget still works for this page view; it
+    // just will not come back by itself after a navigation.
+    logger.warn("Could not record that the assistant is running in this tab:", err);
+  }
+};
 
 /**
- * A model that answers without a network call, so the spike needs no API key.
+ * Builds the widget for this page.
  *
- * Hand-written rather than `MockLanguageModelV4` from `ai/test`: that subpath is reachable only
- * through the `exports` field, and `ai/dist/test/index.js` in turn imports
- * `@ai-sdk/provider-utils/test` — an import originating inside node_modules, where a workspace
- * `alias` cannot reach. Enabling Parcel's `packageExports` is the documented alternative, but it
- * has to live in the package.json at Parcel's project root, which this repo does not pin (see the
- * note on `alias` in package.json). Supplying the model object directly is also the shape the
- * real widget uses for its E2E hook, so nothing is lost.
+ * @param tag the tag's parsed query string. It is handed over rather than read here because it
+ *            comes from `document.currentScript`, which is only readable while the tag's own
+ *            script element is executing — long before this chunk loads.
  */
-const spikeModel: LanguageModel = {
-  specificationVersion: "v4",
-  provider: "mock",
-  modelId: "spike",
-  supportedUrls: {},
-  doGenerate: async () => ({
-    content: [{ type: "text", text: '{"ok":true}' }],
-    finishReason: { unified: "stop", raw: undefined },
-    usage: {
-      inputTokens: { total: 0, noCache: 0, cacheRead: 0, cacheWrite: 0 },
-      outputTokens: { total: 0, text: 0, reasoning: 0 },
-    },
-    warnings: [],
-  }),
-  doStream: () => {
-    throw new Error("The spike model only supports generateText.");
-  },
-};
+export const createWidget = (tag: QueryStringContext): TrackerWidget => {
+  let ctx: WidgetContext | null = null;
+  let unsubscribe: (() => void) | null = null;
+  let open = false;
 
-const mountHost = (): HTMLElement => {
-  const host = document.createElement("div");
-  host.id = WIDGET_HOST_ID;
+  /**
+   * House rule: anything the browser calls back into is wrapped, so a throw inside the widget
+   * can never surface as an error on the client's page. Built once rather than per render —
+   * a fresh identity every draw would make preact rebind the listener each time.
+   */
+  const onToggleOpen = guard((): void => {
+    open = !open;
+    draw();
+  }, "widget-toggle");
 
-  const shadow = host.attachShadow({ mode: "open" });
-  const style = document.createElement("style");
-  style.textContent = styles;
-  shadow.appendChild(style);
+  /**
+   * `onOpenSettings` and `onSelectSection` are deliberately absent: the settings overlay and
+   * the section bodies are the screens, and until they exist their controls render in their
+   * disabled state rather than pretending to work.
+   */
+  const draw = (): void => {
+    if (!ctx) return;
+    render(h(App, { context: ctx.tag, session: ctx.session.get(), open, onToggleOpen }), ctx.host.mount);
+  };
 
-  const mount = document.createElement("div");
-  shadow.appendChild(mount);
-  document.body.appendChild(host);
+  const mount = (): WidgetContext => {
+    if (ctx) return ctx;
 
-  render(h("div", { class: "mj-widget-spike" }, "spike"), mount);
-  return host;
-};
+    const host = createHost();
+    const session = createSessionStore();
+    const settings = createSettingsStore();
 
-/**
- * Builds the widget for this page. `context` is the tag's parsed query string, handed over
- * by the stub because it is derived from `document.currentScript` and can only be read
- * while the tag's own script element is executing.
- */
-export const createWidget = (context: QueryStringContext): TrackerWidget => {
-  let host: HTMLElement | null = null;
+    ctx = { tag, runtime, host, session, settings, isOwn: host.isOwn };
+    // One re-render per change, from one place. The screens will move to hooks; the shell has
+    // no local state worth the machinery.
+    unsubscribe = session.subscribe(draw);
+    return ctx;
+  };
+
+  /** `open` is not a setting, and an absent key must never overwrite a stored value. */
+  const applyPrefill = (prefill: TrackerWidgetPrefill, context: WidgetContext): void => {
+    const patch: WidgetSettingsPatch = {};
+    if (prefill.provider !== undefined) patch.provider = prefill.provider;
+    if (prefill.model !== undefined) patch.model = prefill.model;
+    if (prefill.apiKey !== undefined) patch.apiKey = prefill.apiKey;
+    if (prefill.githubToken !== undefined) patch.githubToken = prefill.githubToken;
+    if (prefill.actor !== undefined) patch.actor = prefill.actor;
+    if (prefill.remember !== undefined) patch.remember = prefill.remember;
+
+    if (Object.keys(patch).length > 0) context.settings.update(patch);
+  };
 
   const enable = async (prefill?: TrackerWidgetPrefill): Promise<void> => {
-    if (!host) host = mountHost();
+    const context = mount();
+    if (prefill) applyPrefill(prefill, context);
 
     // Marks this tab as running the widget so the stub re-imports the chunk after a
     // navigation. Set on enable, cleared on disable — never on mere chunk load.
-    sessionStorage.setItem(WIDGET_ACTIVE_KEY, "1");
+    setActive(true);
 
-    // Mirrored onto the host element so the E2E spec can assert them. A mis-wired lazy chunk
-    // fails exactly here — the imports resolve to `undefined` rather than throwing at load —
-    // so the spike checks the SDK entry points are live functions and that a real generateText
-    // round trip (zod schema included) produced a parsed object.
-    const provider = prefill?.provider ?? "gateway";
-    host.dataset.providers = Object.keys(providerFactories)
-      .filter((name) => typeof providerFactories[name as TrackerWidgetProvider] === "function")
-      .join(",");
+    // An explicit enable is a request to work, so the card opens; `open: false` mounts it as
+    // the chip instead.
+    open = prefill?.open ?? true;
+    draw();
 
-    const result = await generateText({
-      model: spikeModel,
-      prompt: "spike",
-      output: Output.object({ schema: spikeSchema }),
-    });
-    host.dataset.output = JSON.stringify(result.output);
-
-    logger.debug("Integrations Assistant spike", { appId: context.appId, provider, output: result.output });
+    logger.debug("Assistant enabled", { appId: context.tag.appId, step: context.session.get().step });
   };
 
-  return {
-    enable,
-    resume: (): Promise<void> => enable(),
-    disable: async (_opts?: TrackerWidgetDisableOptions): Promise<void> => {
-      host?.remove();
-      host = null;
-      sessionStorage.removeItem(WIDGET_ACTIVE_KEY);
-    },
+  const resume = async (): Promise<void> => {
+    const context = mount();
+
+    // Collapsed on purpose: a resume happens mid-recording, on a page the operator is trying
+    // to drive. The chip states the step it came back to; opening it is one click.
+    open = false;
+    draw();
+
+    logger.debug("Assistant resumed", { step: context.session.get().step });
   };
+
+  const disable = async (opts?: TrackerWidgetDisableOptions): Promise<void> => {
+    // Ordering matters: the store is disposed before the key is removed, or its pending
+    // debounced write (or the next `pagehide`) would put the session straight back.
+    unsubscribe?.();
+    unsubscribe = null;
+    ctx?.session.dispose();
+    if (ctx) render(null, ctx.host.mount);
+    ctx?.host.destroy();
+
+    if (opts?.forget) (ctx?.settings ?? createSettingsStore()).forget();
+    ctx = null;
+    open = false;
+
+    setActive(false);
+    clearSession();
+  };
+
+  return { enable, resume, disable };
 };
 
 export default createWidget;

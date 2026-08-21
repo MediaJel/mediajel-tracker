@@ -19,7 +19,11 @@ export interface TrackerWidgetPrefill {
   actor?: TrackerWidgetActor;
   /** Persist settings to localStorage instead of sessionStorage ("Remember on this device"). */
   remember?: boolean;
-  /** Open the panel immediately instead of mounting collapsed. */
+  /**
+   * Whether the work order starts open. `enable()` opens it — an explicit enable is a request
+   * to work — and `resume()` always comes back collapsed, so a recording that spans pages
+   * never covers the checkout the operator is trying to drive.
+   */
   open?: boolean;
 }
 
