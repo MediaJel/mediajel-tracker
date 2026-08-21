@@ -2,32 +2,7 @@
 // through the error funnel — not vanish as an unhandled rejection while the
 // site silently loses its commerce tracking.
 
-// Decode Snowplow application_error payloads out of a POST body (ue_pr plain or
-// ue_px base64url) — same helper as error-boundary.spec.cy.ts.
-function fromB64Url(s: string): string {
-  let b64 = s.replace(/-/g, "+").replace(/_/g, "/");
-  while (b64.length % 4) b64 += "=";
-  return atob(b64);
-}
-
-function appErrorsFrom(body: any): any[] {
-  const events = (body && body.data) || [];
-  const out: any[] = [];
-  for (const ev of events) {
-    if (ev.e !== "ue") continue;
-    const raw = ev.ue_pr ?? (ev.ue_px ? fromB64Url(ev.ue_px) : null);
-    if (!raw) continue;
-    let unstruct: any;
-    try {
-      unstruct = JSON.parse(raw);
-    } catch {
-      continue;
-    }
-    const inner = unstruct.data; // { schema, data }
-    if (inner?.schema?.includes("application_error")) out.push(inner.data);
-  }
-  return out;
-}
+import { appErrorsFrom } from "../support/app-errors";
 
 describe("environment chunk-load failure", () => {
   const HARNESS = "http://localhost:1234/";

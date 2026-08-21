@@ -1,30 +1,4 @@
-// Decode any Snowplow self-describing application_error payloads out of a POST body.
-// Handles both base64 (ue_px, the default) and plain (ue_pr) encodings. (Same helper
-// as error.spec.cy.ts, plus base64url normalization — ue_px can carry -/_ chars.)
-function fromB64Url(s: string): string {
-  let b64 = s.replace(/-/g, "+").replace(/_/g, "/");
-  while (b64.length % 4) b64 += "=";
-  return atob(b64);
-}
-
-function appErrorsFrom(body: any): any[] {
-  const events = (body && body.data) || [];
-  const out: any[] = [];
-  for (const ev of events) {
-    if (ev.e !== "ue") continue;
-    const raw = ev.ue_pr ?? (ev.ue_px ? fromB64Url(ev.ue_px) : null);
-    if (!raw) continue;
-    let unstruct: any;
-    try {
-      unstruct = JSON.parse(raw);
-    } catch {
-      continue;
-    }
-    const inner = unstruct.data; // { schema, data }
-    if (inner?.schema?.includes("application_error")) out.push(inner.data);
-  }
-  return out;
-}
+import { appErrorsFrom } from "../support/app-errors";
 
 describe("Error boundary — a throwing tag callback can't crash the client page", () => {
   // Served by `npm run bootstrap-test-server` (public/index.test.html loads the tag with environment=jane).

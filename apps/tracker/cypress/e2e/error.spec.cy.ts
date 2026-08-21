@@ -1,23 +1,4 @@
-// Decode any Snowplow self-describing application_error payloads out of a POST body.
-// Handles both base64 (ue_px, the default) and plain (ue_pr) encodings.
-function appErrorsFrom(body: any): any[] {
-  const events = (body && body.data) || [];
-  const out: any[] = [];
-  for (const ev of events) {
-    if (ev.e !== "ue") continue;
-    const raw = ev.ue_pr ?? (ev.ue_px ? atob(ev.ue_px) : null);
-    if (!raw) continue;
-    let unstruct: any;
-    try {
-      unstruct = JSON.parse(raw);
-    } catch {
-      continue;
-    }
-    const inner = unstruct.data; // { schema, data }
-    if (inner?.schema?.includes("application_error")) out.push(inner.data);
-  }
-  return out;
-}
+import { appErrorsFrom } from "../support/app-errors";
 
 describe("error tracking via window.trackError", () => {
   it("sends one application_error with attribution and dedupes repeats", () => {
