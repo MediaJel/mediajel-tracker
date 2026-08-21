@@ -74,3 +74,34 @@ export const Zigzag = ({ live = false }: { live?: boolean }): VNode => (
 export const Mark = ({ class: className }: { class: string }): VNode => (
   <img class={className} src={markUrl} alt="" width="20" height="20" />
 );
+
+/**
+ * One drawn glyph per timeline kind, all on the same 16px grid and 1.5px stroke as the rest
+ * of the sheet — the timeline reads by shape before it reads by text.
+ */
+const KIND_PATHS: Record<string, string> = {
+  network: "M2 5.5h12M11 2.5l3 3-3 3M14 10.5H2M5 7.5l-3 3 3 3",
+  datalayer: "M8 2.5 14 5.5 8 8.5 2 5.5ZM2 8.5l6 3 6-3M2 11.5l6 3 6-3",
+  form: "M3 2.5h10v11H3zM5.5 6h5M5.5 8.5h5M5.5 11h3",
+  click: "M4 2.5 12.5 8 8.5 9 6.5 13z",
+  nav: "M3 3h7l2 2.5-2 2.5H3zM6 8v5M4 13h4",
+  dom: "M2.5 4h11M2.5 7h8M2.5 10h11M2.5 13h6",
+  storage:
+    "M8 2.5c3.3 0 5.5.9 5.5 2s-2.2 2-5.5 2-5.5-.9-5.5-2 2.2-2 5.5-2ZM2.5 4.5v7c0 1.1 2.2 2 5.5 2s5.5-.9 5.5-2v-7",
+  message: "M2.5 4h11v8h-11zM2.5 4l5.5 4.5L13.5 4",
+  page: "M4 2.5h5.5L13 6v7.5H4zM9.5 2.5V6H13",
+  platform: "M2.5 3.5h11v7h-11zM6 13.5h4M8 10.5v3",
+};
+
+export const KindIcon = ({ kind, class: className }: { kind: string; class?: string }): VNode => (
+  <svg class={className} viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" {...STROKE}>
+    <path d={KIND_PATHS[kind] ?? "M3 8h10"} />
+  </svg>
+);
+
+/** A check, for the approved moment. */
+export const Check = ({ class: className }: { class?: string } = {}): VNode => (
+  <svg class={className} viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" {...STROKE}>
+    <path d="M3 8.5l3.2 3L13 4.5" />
+  </svg>
+);

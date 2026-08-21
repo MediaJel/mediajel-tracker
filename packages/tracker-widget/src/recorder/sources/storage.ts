@@ -22,6 +22,7 @@ export const storageSource: Source = ({ widget, emit }) => {
     key === WIDGET_SETTINGS_KEY ||
     key.startsWith("_sp_") ||
     key.startsWith("sp_") ||
+    key.startsWith("snowplow") ||
     (widget.tag.appId ? key.startsWith(`${widget.tag.appId}_`) : false);
 
   const patchArea = (area: "local" | "session"): (() => void) => {

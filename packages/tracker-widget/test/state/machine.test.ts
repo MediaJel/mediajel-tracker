@@ -43,7 +43,7 @@ describe("canTransition", () => {
   });
 
   test.each([
-    ["generating", "review"],
+    ["verify", "review"],
     ["deploy", "verify"],
     ["done", "deploy"],
     ["review", "home"],

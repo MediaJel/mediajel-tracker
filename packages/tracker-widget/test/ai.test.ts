@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { generateTag } from "@mediajel/tracker-widget/ai/generate";
+import { generateTag, testConnection } from "@mediajel/tracker-widget/ai/generate";
 import {
   CONVENTIONS,
   FRICTIONLESS_TYPES,
@@ -194,5 +194,34 @@ describe("knowledge parity with the frictionless checkout", () => {
     expect(CONVENTIONS).toContain("window.trackTrans");
     expect(CONVENTIONS).toContain("window.trackSignUp");
     expect(CONVENTIONS).toContain("localStorage");
+  });
+});
+
+describe("failures reach the operator", () => {
+  test("a provider error becomes an actionable message, not a hang", async () => {
+    window.__MJ_WIDGET_MOCK_MODEL__ = { error: "Unauthorized (401): invalid api key" };
+    await expect(
+      generateTag({
+        session: makeSession({
+          step: "generating",
+          timeline: [makeEvent({ id: "e1", kind: "datalayer" })],
+          markedIds: ["e1"],
+        }),
+        status,
+        settings: { ...DEFAULT_SETTINGS, apiKey: "bad", acknowledgedDataSharing: true },
+        runtime: captureRuntime(),
+      }),
+    ).rejects.toThrow("rejected the API key");
+  });
+
+  test("Test connection reports the model that answered, or the mapped failure", async () => {
+    window.__MJ_WIDGET_MOCK_MODEL__ = { json: "OK" };
+    await expect(
+      testConnection({ ...DEFAULT_SETTINGS, model: "anthropic/claude-sonnet-5", apiKey: "k" }, captureRuntime()),
+    ).resolves.toBe("anthropic/claude-sonnet-5");
+    window.__MJ_WIDGET_MOCK_MODEL__ = { error: "TypeError: Failed to fetch" };
+    await expect(testConnection({ ...DEFAULT_SETTINGS, apiKey: "k" }, captureRuntime())).rejects.toThrow(
+      "Content-Security-Policy",
+    );
   });
 });

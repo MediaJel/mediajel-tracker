@@ -11,6 +11,8 @@ import { VNode, useState } from "@mediajel/tracker-widget/vendor";
 export interface SettingsOverlayProps {
   settings: WidgetSettings;
   appId: string;
+  connection: { status: "idle" | "testing" | "ok" | "error"; message: string };
+  onTestConnection(): void;
   onPatch(patch: WidgetSettingsPatch): void;
   onForget(): void;
   onClearDedup(): void;
@@ -73,6 +75,8 @@ const Secret = ({
 export const SettingsOverlay = ({
   settings,
   appId,
+  connection,
+  onTestConnection,
   onPatch,
   onForget,
   onClearDedup,
@@ -121,6 +125,27 @@ export const SettingsOverlay = ({
         placeholder="never leaves this tab unless you generate"
         onInput={(apiKey) => onPatch({ apiKey })}
       />
+
+      <div class="mj-connection">
+        <button
+          type="button"
+          class="mj-btn mj-btn--ghost"
+          aria-disabled={!settings.apiKey.trim() || connection.status === "testing" ? "true" : "false"}
+          onClick={settings.apiKey.trim() && connection.status !== "testing" ? onTestConnection : undefined}
+        >
+          {connection.status === "testing" ? "Testing…" : "Test connection"}
+        </button>
+        {connection.status === "ok" && (
+          <span class="mj-connection-ok" role="status">
+            {connection.message}
+          </span>
+        )}
+        {connection.status === "error" && (
+          <span class="mj-connection-bad" role="alert">
+            {connection.message}
+          </span>
+        )}
+      </div>
 
       <label class="mj-check">
         <input

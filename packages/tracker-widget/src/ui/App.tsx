@@ -54,6 +54,8 @@ export interface AppHandlers {
   onCancelGenerate(): void;
   onRegenerate(): void;
   onCodeEdit(code: string): void;
+  onRechoose(): void;
+  onEvidenceMode(mode: "suggest" | "pinpoint"): void;
   onVerify(): void;
   onVerifyRunAgain(): void;
   onBackToCode(): void;
@@ -66,6 +68,7 @@ export interface AppHandlers {
   onRequestReset(): void;
   onConfirmReset(): void;
   onCancelReset(): void;
+  onTestConnection(): void;
   onSettingsPatch(patch: WidgetSettingsPatch): void;
   onForget(): void;
   onClearDedup(): void;
@@ -102,6 +105,8 @@ export interface AppProps {
   onToggleSection(number: string): void;
   /** The "start over?" confirmation bar is showing. */
   confirmingReset: boolean;
+  /** Settings' connection test. */
+  connection: { status: "idle" | "testing" | "ok" | "error"; message: string };
   settingsOpen: boolean;
   onOpenSettings(): void;
   onCloseSettings(): void;
@@ -212,6 +217,7 @@ export const App = ({
   toggled,
   onToggleSection,
   confirmingReset,
+  connection,
   settingsOpen,
   onOpenSettings,
   onCloseSettings,
@@ -261,6 +267,7 @@ export const App = ({
             onNotes={handlers.onNotes}
             onBackToRecording={handlers.onBackToRecording}
             onGenerate={handlers.onGenerate}
+            onMode={handlers.onEvidenceMode}
             generateBlocked={generateBlocked}
             readOnly={!active}
           />
@@ -274,6 +281,7 @@ export const App = ({
             onRegenerate={handlers.onRegenerate}
             onCodeEdit={handlers.onCodeEdit}
             onVerify={handlers.onVerify}
+            onRechoose={handlers.onRechoose}
             readOnly={!active}
           />
         ) : null;
@@ -380,6 +388,8 @@ export const App = ({
         <SettingsOverlay
           settings={settings}
           appId={String(context.appId ?? "")}
+          connection={connection}
+          onTestConnection={handlers.onTestConnection}
           onPatch={handlers.onSettingsPatch}
           onForget={handlers.onForget}
           onClearDedup={handlers.onClearDedup}

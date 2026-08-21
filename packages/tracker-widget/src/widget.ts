@@ -6,7 +6,7 @@ import logger from "@mediajel/tracker-widget/log";
 import { snapshotTracker } from "@mediajel/tracker-widget/recorder/context";
 import { Recorder, createRecorder } from "@mediajel/tracker-widget/recorder/recorder";
 import { captureRuntime } from "@mediajel/tracker-widget/runtime";
-import { generateTag } from "@mediajel/tracker-widget/ai/generate";
+import { generateTag, testConnection } from "@mediajel/tracker-widget/ai/generate";
 import { cdnUrl, pollCdn, CdnPoller } from "@mediajel/tracker-widget/deploy/cdn";
 import { deployTag, deployTargets } from "@mediajel/tracker-widget/deploy/deploy";
 import { GitHubClient, createGitHubClient } from "@mediajel/tracker-widget/deploy/github";
@@ -91,6 +91,7 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
   let toggled: { number: string; open: boolean } | null = null;
   let lastStep: string | null = null;
   let confirmingReset = false;
+  let connection: { status: "idle" | "testing" | "ok" | "error"; message: string } = { status: "idle", message: "" };
 
   // Verify/deploy view state — per page, not persisted (the session carries the durable half).
   let verifyRunErrors: string[] = [];
@@ -160,7 +161,6 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
      */
     onGenerate: guard((): void => {
       if (!ctx) return;
-      if (ctx.session.get().markedIds.length === 0) return; // the blocked note says why
       if (!canGenerate(ctx.settings.get())) {
         settingsOpen = true;
         draw();
@@ -199,6 +199,22 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
     onBackToCode: guard((): void => {
       ctx?.session.transition("result");
     }, "widget-back-to-code"),
+
+    /** "Not the right event" — back to Evidence in pinpoint mode, pins cleared. */
+    onRechoose: guard((): void => {
+      if (!ctx) return;
+      if (ctx.session.transition("review") !== "review") return;
+      ctx.session.update((draft) => {
+        draft.markedIds = [];
+        draft.evidenceMode = "pinpoint";
+      });
+    }, "widget-rechoose"),
+
+    onEvidenceMode: guard((mode: "suggest" | "pinpoint"): void => {
+      ctx?.session.update((draft) => {
+        draft.evidenceMode = mode;
+      });
+    }, "widget-evidence-mode"),
 
     onApproveVerify: guard((): void => {
       if (!ctx) return;
@@ -266,7 +282,27 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
 
     onSettingsPatch: guard((patch: Parameters<WidgetContext["settings"]["update"]>[0]): void => {
       ctx?.settings.update(patch);
+      if (connection.status !== "idle") {
+        connection = { status: "idle", message: "" };
+        draw();
+      }
     }, "widget-settings-patch"),
+
+    onTestConnection: guard((): void => {
+      if (!ctx || connection.status === "testing") return;
+      connection = { status: "testing", message: "" };
+      draw();
+      void testConnection(ctx.settings.get(), ctx.runtime).then(
+        (model) => {
+          connection = { status: "ok", message: `Connected — ${model} answered.` };
+          draw();
+        },
+        (err: unknown) => {
+          connection = { status: "error", message: err instanceof Error ? err.message : String(err) };
+          draw();
+        },
+      );
+    }, "widget-test-connection"),
 
     onForget: guard((): void => {
       ctx?.settings.forget();
@@ -485,7 +521,6 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
 
   const generateBlocked = (): string => {
     if (!ctx) return "";
-    if (ctx.session.get().markedIds.length === 0) return "Pin at least one event as evidence first.";
     const settings = ctx.settings.get();
     if (!settings.apiKey.trim()) return "Add a provider API key — Generate opens Settings for you.";
     if (!settings.acknowledgedDataSharing) return "Tick the data-sharing acknowledgement in Settings.";
@@ -532,6 +567,7 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
         toggled,
         onToggleSection,
         confirmingReset,
+        connection,
         settingsOpen,
         onOpenSettings,
         onCloseSettings,

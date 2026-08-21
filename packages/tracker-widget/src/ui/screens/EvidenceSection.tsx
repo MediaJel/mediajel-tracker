@@ -1,10 +1,15 @@
-import { TimelineEvent, TimelineEventKind, WidgetSession } from "@mediajel/tracker-widget/types";
+import { Candidate, suggestCandidates } from "@mediajel/tracker-widget/ai/suggest";
+import { describeEvent, factsLine } from "@mediajel/tracker-widget/recorder/describe";
+import { TimelineEvent, WidgetSession } from "@mediajel/tracker-widget/types";
+import { Check, KindIcon } from "@mediajel/tracker-widget/ui/icons";
 import { VNode, useMemo, useState } from "@mediajel/tracker-widget/vendor";
 
 /**
- * Section 02 — Evidence. The recorded timeline, dense and scannable; the operator pins the
- * event(s) that ARE the purchase or sign-up. Pinned events are the exhibits the model builds
- * from — everything else travels compressed. Nothing here guesses: the score only sorts.
+ * Section 02 — Evidence. Pointing at the moment is OPTIONAL. The sheet leads with its best
+ * guess ("This looks like the purchase") for a yes/no; a yes pins it, a no hands the operator
+ * the timeline to point themselves — and they can always skip and let the model work it out
+ * from the whole recording. The timeline speaks plain language: what happened, when, with
+ * the order id and total pulled out of whatever carried them.
  */
 
 export interface EvidenceSectionProps {
@@ -13,94 +18,98 @@ export interface EvidenceSectionProps {
   onNotes(notes: string): void;
   onBackToRecording(): void;
   onGenerate(): void;
+  onMode(mode: "suggest" | "pinpoint"): void;
   /** Why Generate is not available yet ("" when it is). */
   generateBlocked: string;
   /** Peeking at a finished section: pins still work (Regenerate honors them), no footer. */
   readOnly?: boolean;
 }
 
-const BADGES: Record<TimelineEventKind, string> = {
-  page: "PG",
-  network: "NET",
-  datalayer: "DL",
-  form: "FM",
-  click: "CL",
-  nav: "NV",
-  dom: "DM",
-  storage: "ST",
-  message: "PM",
-  platform: "PF",
+const seconds = (t: number): string => `${(t / 1000).toFixed(1)}s`;
+
+const Suggestion = ({
+  candidate,
+  index,
+  onYes,
+  onNo,
+}: {
+  candidate: Candidate;
+  index: number;
+  onYes(): void;
+  onNo(): void;
+}): VNode => {
+  const reading = describeEvent(candidate.event);
+  return (
+    <div class="mj-guess" role="group" aria-label={`Suggestion ${index + 1}`}>
+      <div class="mj-guess-head">
+        <KindIcon kind={candidate.event.kind} class="mj-guess-icon" />
+        <div class="mj-guess-text">
+          <strong>{reading.title}</strong>
+          {candidate.facts ? <span class="mj-guess-facts">{candidate.facts}</span> : null}
+          <span class="mj-guess-why">{candidate.reason}</span>
+        </div>
+        <span class="mj-tl-time">+{seconds(candidate.event.t)}</span>
+      </div>
+      <div class="mj-guess-actions">
+        <button type="button" class="mj-btn mj-btn--ghost" onClick={onNo}>
+          No, not this
+        </button>
+        <button type="button" class="mj-btn mj-btn--primary" onClick={onYes}>
+          <Check class="mj-btn-icon" /> Yes, that’s it
+        </button>
+      </div>
+    </div>
+  );
 };
 
-const FILTERS: { label: string; kinds: TimelineEventKind[] }[] = [
-  { label: "All", kinds: [] },
-  { label: "Data", kinds: ["datalayer", "message", "storage"] },
-  { label: "Network", kinds: ["network"] },
-  { label: "Actions", kinds: ["form", "click"] },
-  { label: "Pages", kinds: ["nav", "page", "dom"] },
-];
-
-const detailOf = (event: TimelineEvent): unknown => {
-  switch (event.kind) {
-    case "network": {
-      const { method, url, status, reqType, reqBody, resType, resBody, ms, category } = event;
-      return { method, url, status, reqType, reqBody, resType, resBody, ms, category };
-    }
-    case "datalayer":
-      return { layer: event.layer, replayed: event.replayed ?? false, data: event.data };
-    case "form":
-      return { selector: event.selector, action: event.action, method: event.method, fields: event.fields };
-    case "click":
-      return { selector: event.selector, tag: event.tag, text: event.text, href: event.href };
-    case "nav":
-      return { via: event.sub, from: event.from, to: event.to };
-    case "dom":
-      return { items: event.items };
-    case "storage":
-      return { area: event.area, op: event.op, key: event.key, value: event.value };
-    case "message":
-      return { origin: event.origin, data: event.data };
-    case "platform":
-      return { detected: event.detected, globals: event.globals, spa: event.spa };
-    default:
-      return { summary: event.summary };
-  }
-};
-
-const Row = ({
+const Entry = ({
   event,
-  marked,
+  pinned,
   expanded,
   onExpand,
-  onToggleMark,
+  onPin,
 }: {
   event: TimelineEvent;
-  marked: boolean;
+  pinned: boolean;
   expanded: boolean;
   onExpand(): void;
-  onToggleMark(): void;
-}): VNode => (
-  <li class={`mj-ev${marked ? " mj-ev--marked" : ""}`}>
-    <div class="mj-ev-row">
-      <button type="button" class="mj-ev-main" aria-expanded={String(expanded) as "true" | "false"} onClick={onExpand}>
-        <span class="mj-ev-badge">{BADGES[event.kind]}</span>
-        <span class="mj-ev-time">+{(event.t / 1000).toFixed(1)}s</span>
-        <span class="mj-ev-summary">{event.summary}</span>
-        {event.score >= 5 && <span class="mj-ev-signal" title={`signal ${event.score}/10`} aria-hidden="true" />}
-      </button>
-      <button
-        type="button"
-        class="mj-ev-pin"
-        aria-pressed={String(marked) as "true" | "false"}
-        aria-label={marked ? "Unpin this event" : "Pin as evidence"}
-        onClick={onToggleMark}
-      >
-        {marked ? "Pinned" : "Pin"}
-      </button>
-    </div>
-    {expanded && <pre class="mj-ev-detail">{JSON.stringify(detailOf(event), null, 2)}</pre>}
-  </li>
-);
+  onPin(): void;
+}): VNode => {
+  const reading = describeEvent(event);
+  const facts = factsLine(reading.facts);
+  return (
+    <li class={`mj-tl${pinned ? " mj-tl--pinned" : ""}${reading.background ? " mj-tl--quiet" : ""}`}>
+      <span class="mj-tl-rail" aria-hidden="true">
+        <span class="mj-tl-dot">{pinned ? <Check /> : <KindIcon kind={event.kind} />}</span>
+      </span>
+      <div class="mj-tl-body">
+        <button
+          type="button"
+          class="mj-tl-main"
+          aria-expanded={String(expanded) as "true" | "false"}
+          onClick={onExpand}
+        >
+          <span class="mj-tl-time">+{seconds(event.t)}</span>
+          <span class="mj-tl-title">{reading.title}</span>
+          {facts ? <span class="mj-tl-facts">{facts}</span> : null}
+        </button>
+        {expanded && (
+          <div class="mj-tl-detail">
+            <pre class="mj-ev-detail">{JSON.stringify(event, null, 2)}</pre>
+          </div>
+        )}
+        <button
+          type="button"
+          class={`mj-tl-pin${pinned ? " mj-tl-pin--on" : ""}`}
+          aria-pressed={String(pinned) as "true" | "false"}
+          onClick={onPin}
+        >
+          {pinned ? "This is it" : "This is the one"}
+        </button>
+      </div>
+    </li>
+  );
+};
 
 export const EvidenceSection = ({
   session,
@@ -108,32 +117,99 @@ export const EvidenceSection = ({
   onNotes,
   onBackToRecording,
   onGenerate,
+  onMode,
   generateBlocked,
   readOnly = false,
 }: EvidenceSectionProps): VNode => {
-  const [filter, setFilter] = useState(0);
-  const [bySignal, setBySignal] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const [dismissed, setDismissed] = useState<string[]>([]);
 
-  const marked = useMemo(
+  const goalWord = session.goal === "transaction" ? "purchase" : "sign-up";
+  const candidates = useMemo(
+    () => suggestCandidates(session).filter((candidate) => !dismissed.includes(candidate.event.id)),
+    [session, dismissed],
+  );
+  const pinned = useMemo(
     () => session.timeline.filter((event) => session.markedIds.includes(event.id)),
     [session.timeline, session.markedIds],
   );
 
-  const rows = useMemo(() => {
-    const kinds = FILTERS[filter].kinds;
-    const filtered = session.timeline.filter(
-      (event) => !session.markedIds.includes(event.id) && (kinds.length === 0 || kinds.includes(event.kind)),
-    );
-    return bySignal ? filtered.slice().sort((a, b) => b.score - a.score || a.t - b.t) : filtered;
-  }, [session.timeline, session.markedIds, filter, bySignal]);
+  const mode: "suggest" | "pinpoint" =
+    session.evidenceMode ?? (pinned.length === 0 && candidates.length > 0 ? "suggest" : "pinpoint");
+
+  const entries = useMemo(() => {
+    const ordered = session.timeline.slice().sort((a, b) => a.t - b.t);
+    return showAll
+      ? ordered
+      : ordered.filter((event) => !describeEvent(event).background || session.markedIds.includes(event.id));
+  }, [session.timeline, session.markedIds, showAll]);
+  const hiddenCount = session.timeline.length - entries.length;
 
   return (
     <div class="mj-section-body">
-      <p class="mj-lede">
-        Pin the moment that <em>is</em> the {session.goal === "transaction" ? "purchase" : "sign-up"} — a dataLayer
-        push, a network response, a confirmation. Pinned events go to the model in full; the rest travel compressed.
-      </p>
+      {mode === "suggest" && pinned.length === 0 ? (
+        <>
+          <p class="mj-lede">
+            We watched the page while you placed the {goalWord}. This looks like the moment it happened — is that right?
+          </p>
+          {candidates.slice(0, 1).map((candidate, index) => (
+            <Suggestion
+              key={candidate.event.id}
+              candidate={candidate}
+              index={index}
+              onYes={() => onToggleMark(candidate.event.id)}
+              onNo={() => {
+                const next = [...dismissed, candidate.event.id];
+                setDismissed(next);
+                if (candidates.length <= 1) onMode("pinpoint");
+              }}
+            />
+          ))}
+          <p class="mj-fine">
+            Not sure?{" "}
+            <button type="button" class="mj-link" onClick={() => onMode("pinpoint")}>
+              Show me everything that happened
+            </button>{" "}
+            — or just generate and the model will work it out from the whole recording.
+          </p>
+        </>
+      ) : (
+        <>
+          {pinned.length > 0 ? (
+            <p class="mj-lede">
+              Got it — the {goalWord} is the moment below marked with a check. Add another if it happened in more than
+              one place, or generate.
+            </p>
+          ) : (
+            <p class="mj-lede">
+              Here is everything that happened, in order. Point at the moment that <em>is</em> the {goalWord} — or skip
+              it and let the model decide.
+            </p>
+          )}
+
+          <ol class="mj-timeline" aria-label="What happened on the page">
+            {entries.map((event) => (
+              <Entry
+                key={event.id}
+                event={event}
+                pinned={session.markedIds.includes(event.id)}
+                expanded={expandedId === event.id}
+                onExpand={() => setExpandedId(expandedId === event.id ? null : event.id)}
+                onPin={() => onToggleMark(event.id)}
+              />
+            ))}
+            {entries.length === 0 && <li class="mj-ev-empty">Nothing was recorded yet.</li>}
+          </ol>
+          {hiddenCount > 0 || showAll ? (
+            <button type="button" class="mj-link mj-tl-more" onClick={() => setShowAll(!showAll)}>
+              {showAll
+                ? "Hide the background activity"
+                : `Show ${hiddenCount} background item${hiddenCount === 1 ? "" : "s"} (tracker traffic, storage, page loads)`}
+            </button>
+          ) : null}
+        </>
+      )}
 
       {session.generationError && (
         <div class="mj-notice mj-notice--warn" role="alert">
@@ -141,75 +217,18 @@ export const EvidenceSection = ({
         </div>
       )}
 
-      {marked.length > 0 && (
-        <ol class="mj-exhibits">
-          {marked.map((event) => (
-            <Row
-              key={event.id}
-              event={event}
-              marked
-              expanded={expandedId === event.id}
-              onExpand={() => setExpandedId(expandedId === event.id ? null : event.id)}
-              onToggleMark={() => onToggleMark(event.id)}
-            />
-          ))}
-        </ol>
-      )}
-
-      <div class="mj-ev-tools" role="toolbar" aria-label="Timeline filters">
-        {FILTERS.map((entry, index) => (
-          <button
-            type="button"
-            key={entry.label}
-            class={`mj-chip-filter${filter === index ? " mj-chip-filter--on" : ""}`}
-            aria-pressed={String(filter === index) as "true" | "false"}
-            onClick={() => setFilter(index)}
-          >
-            {entry.label}
-          </button>
-        ))}
-        <button
-          type="button"
-          class="mj-chip-filter mj-ev-order"
-          onClick={() => setBySignal(!bySignal)}
-          aria-label={`Order: ${bySignal ? "strongest signal first" : "chronological"}`}
-        >
-          {bySignal ? "By signal" : "By time"}
-        </button>
-      </div>
-
-      <ol class="mj-ev-list">
-        {rows.map((event) => (
-          <Row
-            key={event.id}
-            event={event}
-            marked={false}
-            expanded={expandedId === event.id}
-            onExpand={() => setExpandedId(expandedId === event.id ? null : event.id)}
-            onToggleMark={() => onToggleMark(event.id)}
+      {!readOnly && (
+        <label class="mj-field">
+          <span class="mj-field-label">Anything the model should know? (optional)</span>
+          <textarea
+            class="mj-textarea"
+            rows={2}
+            placeholder="e.g. the total includes tax, the order number is in the URL"
+            value={session.notes ?? ""}
+            onChange={(event) => onNotes((event.target as HTMLTextAreaElement).value)}
           />
-        ))}
-        {rows.length === 0 && <li class="mj-ev-empty">Nothing here under this filter.</li>}
-      </ol>
-
-      <label class="mj-field">
-        <span class="mj-field-label">Notes for the model</span>
-        <textarea
-          class="mj-textarea"
-          rows={2}
-          placeholder="Anything it should know — e.g. the total includes tax, the order id is in the URL."
-          value={session.notes ?? ""}
-          onChange={(event) => onNotes((event.target as HTMLTextAreaElement).value)}
-        />
-      </label>
-
-      <div class="mj-notice mj-notice--privacy" role="note">
-        <p>
-          Generate sends: {session.markedIds.length} pinned event{session.markedIds.length === 1 ? "" : "s"} in full ·{" "}
-          {Math.max(0, session.timeline.length - session.markedIds.length)} compressed rows · site + tag context. PII
-          was masked at capture; nothing has left this browser yet.
-        </p>
-      </div>
+        </label>
+      )}
 
       {!readOnly && (
         <div class="mj-section-footer">
@@ -223,7 +242,7 @@ export const EvidenceSection = ({
             title={generateBlocked || undefined}
             onClick={onGenerate}
           >
-            Generate code
+            {pinned.length > 0 ? "Generate the code" : "Generate — let the model decide"}
           </button>
         </div>
       )}

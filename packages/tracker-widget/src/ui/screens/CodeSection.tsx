@@ -14,6 +14,8 @@ export interface CodeSectionProps {
   onRegenerate(): void;
   onCodeEdit(code: string): void;
   onVerify(): void;
+  /** "Not the right event" — back to Evidence to point at the moment by hand. */
+  onRechoose(): void;
   /** Peeking from a later step: the text is what is running/deployed, so it is frozen. */
   readOnly?: boolean;
 }
@@ -48,6 +50,7 @@ export const CodeSection = ({
   onRegenerate,
   onCodeEdit,
   onVerify,
+  onRechoose,
   readOnly = false,
 }: CodeSectionProps): VNode => {
   const [copied, setCopied] = useState(false);
@@ -85,8 +88,17 @@ export const CodeSection = ({
   return (
     <div class="mj-section-body">
       <p class="mj-lede">{generation.summary}</p>
+      <div class="mj-built-from">
+        <span class="mj-field-label">Built from</span>
+        <span class="mj-built-from-what">{generation.trigger.description}</span>
+        {!readOnly && (
+          <button type="button" class="mj-link" onClick={onRechoose}>
+            Not the right moment? Point at it
+          </button>
+        )}
+      </div>
       <p class="mj-fine">
-        Hooks: {generation.trigger.description} · by {generation.model}
+        Written by {generation.model}
         {generation.edited ? " · edited by you" : ""}
       </p>
 

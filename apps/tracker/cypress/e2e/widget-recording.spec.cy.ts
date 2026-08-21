@@ -119,22 +119,22 @@ describe("Integrations Assistant — evidence & settings", () => {
     cy.get("#buy").click();
     click(".mj-btn", "Stop recording");
 
-    // Evidence: the dataLayer purchase should be near the top under "By signal".
+    // Evidence leads with its best guess: the purchase push, in plain words, with the facts.
     shadow().then((root) => {
-      const rows = Array.from(root.querySelectorAll(".mj-ev-list .mj-ev")) as HTMLElement[];
-      const purchase = rows.find((row) => row.textContent?.includes("purchase"));
-      expect(purchase, "a purchase row").to.not.equal(undefined);
-      (purchase!.querySelector(".mj-ev-pin") as HTMLElement).click();
+      const guess = root.querySelector(".mj-guess");
+      expect(guess, "a suggestion card").to.not.equal(null);
+      expect(guess?.textContent).to.include("“purchase” event on the data layer");
+      expect(guess?.querySelector(".mj-guess-facts")?.textContent).to.include("$84.00");
     });
-    shadow().then((root) => {
-      expect(root.querySelectorAll(".mj-exhibits .mj-ev--marked")).to.have.length(1);
-      const notice = root.querySelector(".mj-notice--privacy")?.textContent ?? "";
-      expect(notice).to.include("1 pinned event");
-      expect(notice).to.include("nothing has left this browser");
+    click(".mj-guess .mj-btn", "Yes");
+    cy.get("#mj-widget-host").should(($host) => {
+      const root = $host[0].shadowRoot as ShadowRoot;
+      expect(root.querySelectorAll(".mj-tl--pinned")).to.have.length(1);
+      expect(root.querySelector(".mj-tl--pinned .mj-tl-title")?.textContent).to.include("purchase");
     });
 
     // Generate with no key: opens Settings instead of failing.
-    click(".mj-btn", "Generate code");
+    click(".mj-btn", "Generate");
     shadow().then((root) => expect(root.querySelector(".mj-settings")).to.not.equal(null));
 
     // Configure, acknowledge, close.
@@ -210,7 +210,7 @@ describe("Integrations Assistant — evidence & settings", () => {
         },
       };
     });
-    click(".mj-btn", "Generate code");
+    click(".mj-btn", "Generate");
 
     // The result renders: summary, editable code, the honest checklist. `.should` retries
     // until the async generation resolves.
@@ -379,12 +379,27 @@ describe("Integrations Assistant — sign-up flow", () => {
     cy.get("#signup button[type='submit']").click();
     click(".mj-btn", "Stop recording");
 
-    // The form event was captured with the email MASKED at capture.
+    // The guess is the submitted form. Reject it; the sheet offers its next guess (the POST),
+    // and "Show me everything" is the explicit road to the timeline to point by hand.
+    shadow().then((root) => expect(root.querySelector(".mj-guess")?.textContent).to.include("Submitted a form"));
+    click(".mj-guess .mj-btn", "No, not this");
     shadow().then((root) => {
-      const rows = Array.from(root.querySelectorAll(".mj-ev-list .mj-ev")) as HTMLElement[];
-      const form = rows.find((row) => row.textContent?.includes("submit"));
-      expect(form, "a form row").to.not.equal(undefined);
-      (form!.querySelector(".mj-ev-main") as HTMLElement).click();
+      const link = Array.from(root.querySelectorAll(".mj-link")).find((el) =>
+        el.textContent?.includes("Show me everything"),
+      );
+      if (link) (link as HTMLElement).click();
+    });
+    cy.get("#mj-widget-host").should(($host) => {
+      const root = $host[0].shadowRoot as ShadowRoot;
+      expect(root.querySelector(".mj-timeline"), "the timeline").to.not.equal(null);
+    });
+    // The form entry reads in plain language with the email MASKED at capture.
+    shadow().then((root) => {
+      const entries = Array.from(root.querySelectorAll(".mj-tl")) as HTMLElement[];
+      const form = entries.find((entry) => entry.textContent?.includes("Submitted a form"));
+      expect(form, "a form entry").to.not.equal(undefined);
+      expect(form?.querySelector(".mj-tl-facts")?.textContent).to.include("j***@e***.com");
+      (form!.querySelector(".mj-tl-main") as HTMLElement).click();
     });
     cy.get("#mj-widget-host").should(($host) => {
       const root = $host[0].shadowRoot as ShadowRoot;
@@ -393,11 +408,11 @@ describe("Integrations Assistant — sign-up flow", () => {
       expect(detail).not.to.include("jane@example.com");
     });
     shadow().then((root) => {
-      const rows = Array.from(root.querySelectorAll(".mj-ev-list .mj-ev")) as HTMLElement[];
-      const form = rows.find((row) => row.textContent?.includes("submit"));
-      (form!.querySelector(".mj-ev-pin") as HTMLElement).click();
+      const entries = Array.from(root.querySelectorAll(".mj-tl")) as HTMLElement[];
+      const form = entries.find((entry) => entry.textContent?.includes("Submitted a form"));
+      (form!.querySelector(".mj-tl-pin") as HTMLElement).click();
     });
-    click(".mj-btn", "Generate code");
+    click(".mj-btn", "Generate");
     cy.get("#mj-widget-host").should(($host) => {
       const root = $host[0].shadowRoot as ShadowRoot;
       const code = (root.querySelector(".mj-code") as HTMLTextAreaElement)?.value ?? "";

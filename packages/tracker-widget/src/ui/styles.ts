@@ -1036,6 +1036,273 @@ export const styles = `
   gap: 8px;
 }
 
+
+/* --- the suggestion card --------------------------------------------------------------------- */
+
+.mj-guess {
+  margin: 0 0 10px;
+  padding: 12px;
+  border: 1px solid var(--mj-identity);
+  border-radius: 4px;
+  background: var(--mj-card);
+  box-shadow: 0 6px 18px rgba(31, 79, 224, 0.1);
+}
+
+.mj-guess-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.mj-guess-icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  color: var(--mj-identity);
+}
+
+.mj-guess-text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.mj-guess-text strong {
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.mj-guess-facts {
+  font-family: var(--mj-mono);
+  font-size: 12px;
+  color: var(--mj-identity);
+}
+
+.mj-guess-why {
+  font-size: 12px;
+  color: var(--mj-ink-soft);
+}
+
+.mj-guess-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.mj-btn-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+}
+
+.mj-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--mj-identity);
+  font: inherit;
+  font-size: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* --- the timeline ------------------------------------------------------------------------------ */
+
+.mj-timeline {
+  margin: 4px 0 6px;
+  padding: 0;
+  list-style: none;
+}
+
+.mj-tl {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  min-height: 40px;
+}
+
+.mj-tl-rail {
+  position: relative;
+  flex: none;
+  width: 22px;
+}
+
+/* The rail: a hairline running through every dot, broken only at the ends of the list. */
+.mj-tl-rail::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 10.5px;
+  width: 1px;
+  background: var(--mj-rule);
+}
+
+.mj-tl:first-child .mj-tl-rail::before {
+  top: 11px;
+}
+
+.mj-tl:last-child .mj-tl-rail::before {
+  bottom: auto;
+  height: 11px;
+}
+
+.mj-tl-dot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--mj-rule);
+  border-radius: 50%;
+  background: var(--mj-card);
+  color: var(--mj-ink-soft);
+}
+
+.mj-tl-dot svg {
+  width: 12px;
+  height: 12px;
+}
+
+.mj-tl--pinned .mj-tl-dot {
+  border-color: var(--mj-identity);
+  background: var(--mj-identity);
+  color: #fff;
+}
+
+.mj-tl--quiet .mj-tl-dot {
+  color: var(--mj-ink-faint);
+}
+
+.mj-tl-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 2px 8px;
+  min-width: 0;
+  padding: 2px 0 12px;
+}
+
+.mj-tl-main {
+  display: flex;
+  flex: 1 1 160px;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mj-tl-time {
+  font-family: var(--mj-mono);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--mj-ink-soft);
+}
+
+.mj-tl-title {
+  font-size: 13px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.mj-tl--quiet .mj-tl-title {
+  color: var(--mj-ink-soft);
+}
+
+.mj-tl--pinned .mj-tl-title {
+  font-weight: 600;
+}
+
+.mj-tl-facts {
+  font-family: var(--mj-mono);
+  font-size: 11px;
+  color: var(--mj-identity);
+}
+
+.mj-tl-pin {
+  flex: none;
+  align-self: center;
+  padding: 3px 8px;
+  border: 1px solid var(--mj-rule);
+  border-radius: 999px;
+  background: var(--mj-card);
+  font-size: 11px;
+  color: var(--mj-ink-soft);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+
+.mj-tl:hover .mj-tl-pin,
+.mj-tl:focus-within .mj-tl-pin,
+.mj-tl-pin--on {
+  opacity: 1;
+}
+
+.mj-tl-pin--on {
+  border-color: var(--mj-identity);
+  color: var(--mj-identity);
+  font-weight: 600;
+}
+
+.mj-tl-detail {
+  flex: 1 1 100%;
+  margin-top: 4px;
+}
+
+.mj-tl-more {
+  display: block;
+  margin: 0 0 12px 32px;
+  font-size: 12px;
+}
+
+.mj-built-from {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: 0 0 4px;
+  font-size: 12px;
+}
+
+.mj-built-from .mj-field-label {
+  margin: 0;
+}
+
+.mj-built-from-what {
+  font-weight: 600;
+}
+
+
+.mj-connection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: -2px 0 12px;
+  font-size: 12px;
+}
+
+.mj-connection-ok {
+  color: var(--mj-platform);
+}
+
+.mj-connection-bad {
+  color: var(--mj-partner);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mj-root *,
   .mj-root *::before,

@@ -25,13 +25,16 @@ export const STEP_ORDER: readonly WidgetStep[] = [
 /**
  * The only moves backwards.
  *
- * `result -> generating` is Regenerate, `verify -> result` is "read the code again", and
- * `review -> recording` is "keep recording, I missed something". There is deliberately no
- * `generating -> review` (a run in flight is cancelled, not rewound) and no `deploy -> verify`
+ * `result -> generating` is Regenerate, `result -> review` is "not the right event — let me
+ * point at it", `verify -> result` is "read the code again", and `review -> recording` is
+ * "keep recording, I missed something". `generating -> review` is a cancelled
+ * or failed run landing back on the evidence. There is deliberately no `deploy -> verify`
  * (a verified run is the thing being deployed). Anything else goes through home.
  */
 export const BACK_EDGES: readonly (readonly [WidgetStep, WidgetStep])[] = [
+  ["generating", "review"],
   ["result", "generating"],
+  ["result", "review"],
   ["verify", "result"],
   ["review", "recording"],
 ];

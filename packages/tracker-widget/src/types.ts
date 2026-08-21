@@ -257,6 +257,8 @@ export interface WidgetSession {
   /** Ids of the events the engineer pinned as evidence. These are never evicted. */
   markedIds: string[];
   notes?: string;
+  /** Evidence screen mode: the widget's suggestions, or the operator pinpointing by hand. */
+  evidenceMode?: "suggest" | "pinpoint";
   generation?: WidgetGeneration;
   /** The last generation failure, shown on Evidence until the next attempt. */
   generationError?: string;

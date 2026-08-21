@@ -31,8 +31,13 @@ export interface GenerateResult {
   violations: string[];
 }
 
-const describeFailure = (err: unknown): string => {
+/** A run that hangs is a failure the operator must see; 120s is generous for a tag. */
+export const GENERATION_TIMEOUT_MS = 120_000;
+
+export const describeFailure = (err: unknown): string => {
   const message = err instanceof Error ? err.message : String(err);
+  if (/timed out/i.test(message))
+    return "The provider did not answer within two minutes. Try again, or a smaller model.";
   if (/abort/i.test(message)) return "Cancelled.";
   if (/401|invalid[_ ]?api[_ ]?key|authentication/i.test(message))
     return "The provider rejected the API key (401). Check it in Settings.";
@@ -42,6 +47,39 @@ const describeFailure = (err: unknown): string => {
     return "Could not reach the provider — this site's Content-Security-Policy may block it. Try the integrations sandbox, or paste code by hand.";
   }
   return `The provider call failed: ${message}`;
+};
+
+const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+  new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("timed out")), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+
+/**
+ * Settings' "Test connection": the smallest real call the configured provider/model will
+ * answer. Resolves with the model id that replied, rejects with an operator-readable message.
+ */
+export const testConnection = async (settings: WidgetSettings, runtime: WidgetRuntime): Promise<string> => {
+  const model = createModel(settings, runtime);
+  try {
+    await withTimeout(
+      generateText({ model, prompt: "Reply with the single word OK.", maxOutputTokens: 5, maxRetries: 0 }),
+      20_000,
+    );
+    return settings.model.trim() || settings.provider;
+  } catch (err) {
+    logger.warn("Connection test failed:", err);
+    throw new Error(describeFailure(err));
+  }
 };
 
 export const generateTag = async ({
@@ -71,7 +109,7 @@ export const generateTag = async ({
 
   let output: GenerationOutput;
   try {
-    output = await run();
+    output = await withTimeout(run(), GENERATION_TIMEOUT_MS);
   } catch (err) {
     logger.warn("Generation failed:", err);
     throw new Error(describeFailure(err));
