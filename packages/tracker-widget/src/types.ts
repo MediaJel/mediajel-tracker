@@ -1,5 +1,3 @@
-import { TrackerWidgetProvider } from "@mediajel/tracker-widget/api";
-
 /**
  * The recorded session and everything the timeline can hold.
  *
@@ -269,4 +267,3 @@ export interface WidgetSession {
 }
 
 /** Settings shape lives with the store that owns it — re-exported here for convenience. */
-export type { TrackerWidgetProvider };

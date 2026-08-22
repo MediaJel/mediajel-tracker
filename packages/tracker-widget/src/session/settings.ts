@@ -1,10 +1,10 @@
 import { guard } from "@mediajel/tracker-core/utils/guard";
-import { TrackerWidgetProvider } from "@mediajel/tracker-widget/api";
 import logger from "@mediajel/tracker-widget/log";
 import { WIDGET_SETTINGS_KEY } from "@mediajel/tracker-widget/session/keys";
 
 /**
- * Provider credentials, the GitHub token and who a deploy is attributed to.
+ * The GitHub token and who a deploy is attributed to. The token is also what MediaJel's
+ * assistant service accepts as access, so there is no model provider or API key to enter.
  *
  * Kept apart from the session on purpose: the session is evidence and is always per-tab, while
  * these are the operator's own configuration and are the one thing they may choose to keep.
@@ -16,22 +16,16 @@ export interface WidgetActor {
 }
 
 export interface WidgetSettings {
-  provider: TrackerWidgetProvider;
-  /** Provider-qualified where the provider expects it, e.g. "anthropic/claude-sonnet-5". */
-  model: string;
-  apiKey: string;
-  /** Only for a self-hosted gateway or a proxy; empty means the provider's own endpoint. */
-  baseURL?: string;
   githubToken: string;
   /** Name and email written into the deploy commit's author/committer trailer. */
   actor: WidgetActor;
   /**
    * "Remember on this device" — moves this record from sessionStorage to localStorage, i.e.
-   * writes an API key and a GitHub token to disk. It is off by default and only ever turned on
+   * writes the GitHub token to disk. It is off by default and only ever turned on
    * by an explicit click; `forget()` erases both copies.
    */
   remember: boolean;
-  /** The one-time "I understand what is sent to the model" acknowledgement. Gates Generate. */
+  /** The one-time "I understand what is sent to the assistant service" acknowledgement. Gates Generate. */
   acknowledgedDataSharing: boolean;
 }
 
@@ -41,9 +35,6 @@ export type WidgetSettingsPatch = Partial<Omit<WidgetSettings, "actor">> & {
 };
 
 export const DEFAULT_SETTINGS: WidgetSettings = {
-  provider: "gateway",
-  model: "",
-  apiKey: "",
   githubToken: "",
   actor: { name: "", email: "" },
   remember: false,
@@ -71,28 +62,17 @@ const readFrom = (storage: Storage): Partial<WidgetSettings> | null => {
   }
 };
 
-const PROVIDERS: readonly TrackerWidgetProvider[] = ["gateway", "openai", "anthropic", "google"];
-
 /**
  * Drops unknown keys and anything of the wrong shape, then fills the gaps from the defaults.
  * Shape-checked per key: this record routes secrets between storage areas, so a corrupted
- * `remember: "yes"` must not read as truthy and send an API key to localStorage.
+ * `remember: "yes"` must not read as truthy and send the token to localStorage.
  */
 const normalize = (value: Partial<WidgetSettings>): WidgetSettings => {
   const settings: WidgetSettings = { ...DEFAULT_SETTINGS, actor: { ...DEFAULT_SETTINGS.actor } };
   const raw = value as Record<string, unknown>;
 
-  const takeString = (key: "model" | "apiKey" | "baseURL" | "githubToken"): void => {
-    if (typeof raw[key] === "string") settings[key] = raw[key] as string;
-  };
-
-  if (PROVIDERS.includes(raw.provider as TrackerWidgetProvider)) {
-    settings.provider = raw.provider as TrackerWidgetProvider;
-  }
-  takeString("model");
-  takeString("apiKey");
-  takeString("baseURL");
-  takeString("githubToken");
+  // Records written by earlier builds carried provider/model/apiKey; they fall away here.
+  if (typeof raw.githubToken === "string") settings.githubToken = raw.githubToken;
   if (typeof raw.remember === "boolean") settings.remember = raw.remember;
   if (typeof raw.acknowledgedDataSharing === "boolean") {
     settings.acknowledgedDataSharing = raw.acknowledgedDataSharing;

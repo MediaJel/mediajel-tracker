@@ -6,7 +6,7 @@ import logger from "@mediajel/tracker-widget/log";
 import { snapshotTracker } from "@mediajel/tracker-widget/recorder/context";
 import { Recorder, createRecorder } from "@mediajel/tracker-widget/recorder/recorder";
 import { captureRuntime } from "@mediajel/tracker-widget/runtime";
-import { generateTag, testConnection } from "@mediajel/tracker-widget/ai/generate";
+import { apiUrl, generateTag, testConnection } from "@mediajel/tracker-widget/ai/generate";
 import { cdnUrl, pollCdn, CdnPoller } from "@mediajel/tracker-widget/deploy/cdn";
 import { deployTag, deployTargets } from "@mediajel/tracker-widget/deploy/deploy";
 import { GitHubClient, createGitHubClient } from "@mediajel/tracker-widget/deploy/github";
@@ -294,7 +294,7 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
       draw();
       void testConnection(ctx.settings.get(), ctx.runtime).then(
         (model) => {
-          connection = { status: "ok", message: `Connected — ${model} answered.` };
+          connection = { status: "ok", message: `Access confirmed — ${model}.` };
           draw();
         },
         (err: unknown) => {
@@ -522,7 +522,10 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
   const generateBlocked = (): string => {
     if (!ctx) return "";
     const settings = ctx.settings.get();
-    if (!settings.apiKey.trim()) return "Add a provider API key — Generate opens Settings for you.";
+    if (!apiUrl()) return "This build has no assistant service URL (WIDGET_API_URL), so it cannot generate.";
+    if (!settings.githubToken.trim()) {
+      return "Add your GitHub token — it is also your access to the assistant service. Generate opens Settings for you.";
+    }
     if (!settings.acknowledgedDataSharing) return "Tick the data-sharing acknowledgement in Settings.";
     return "";
   };
@@ -602,9 +605,6 @@ export const createWidget = (tag: QueryStringContext): TrackerWidget => {
   /** `open` is not a setting, and an absent key must never overwrite a stored value. */
   const applyPrefill = (prefill: TrackerWidgetPrefill, context: WidgetContext): void => {
     const patch: WidgetSettingsPatch = {};
-    if (prefill.provider !== undefined) patch.provider = prefill.provider;
-    if (prefill.model !== undefined) patch.model = prefill.model;
-    if (prefill.apiKey !== undefined) patch.apiKey = prefill.apiKey;
     if (prefill.githubToken !== undefined) patch.githubToken = prefill.githubToken;
     if (prefill.actor !== undefined) patch.actor = prefill.actor;
     if (prefill.remember !== undefined) patch.remember = prefill.remember;

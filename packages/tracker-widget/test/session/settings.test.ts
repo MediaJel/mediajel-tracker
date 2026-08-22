@@ -29,7 +29,6 @@ describe("defaults", () => {
     const settings = open().get();
 
     expect(settings).toEqual(DEFAULT_SETTINGS);
-    expect(settings.apiKey).toBe("");
     expect(settings.githubToken).toBe("");
     expect(settings.remember).toBe(false);
     expect(settings.acknowledgedDataSharing).toBe(false);
@@ -45,51 +44,54 @@ describe("defaults", () => {
 
 describe("storage area", () => {
   test("keeps settings in sessionStorage by default", () => {
-    open().update({ apiKey: "sk-live-1" });
+    open().update({ githubToken: "ghp_live_1" });
 
-    expect(stored(session).apiKey).toBe("sk-live-1");
+    expect(stored(session).githubToken).toBe("ghp_live_1");
     expect(stored(local)).toBeNull();
   });
 
   test("remember: true moves the record to localStorage and clears the tab copy", () => {
     const store = open();
-    store.update({ apiKey: "sk-live-1" });
+    store.update({ githubToken: "ghp_live_1" });
     store.update({ remember: true });
 
-    expect(stored(local).apiKey).toBe("sk-live-1");
+    expect(stored(local).githubToken).toBe("ghp_live_1");
     expect(stored(local).remember).toBe(true);
     expect(stored(session)).toBeNull();
   });
 
   test("remember: false moves it back and leaves nothing on disk", () => {
     const store = open();
-    store.update({ apiKey: "sk-live-1", remember: true });
+    store.update({ githubToken: "ghp_live_1", remember: true });
     store.update({ remember: false });
 
-    expect(stored(session).apiKey).toBe("sk-live-1");
+    expect(stored(session).githubToken).toBe("ghp_live_1");
     expect(stored(local)).toBeNull();
   });
 
   test("a remembered record is found again in a brand new tab", () => {
-    open().update({ apiKey: "sk-live-1", model: "anthropic/claude-sonnet-5", remember: true });
+    open().update({ githubToken: "ghp_live_1", actor: { name: "Dana" }, remember: true });
 
     const reopened = createSettingsStore(new FakeStorage(), local).get();
 
-    expect(reopened.apiKey).toBe("sk-live-1");
-    expect(reopened.model).toBe("anthropic/claude-sonnet-5");
+    expect(reopened.githubToken).toBe("ghp_live_1");
+    expect(reopened.actor.name).toBe("Dana");
     expect(reopened.remember).toBe(true);
   });
 
   test("the remembered record wins over a stale tab record", () => {
-    session.setItem(WIDGET_SETTINGS_KEY, JSON.stringify({ ...DEFAULT_SETTINGS, apiKey: "stale" }));
-    local.setItem(WIDGET_SETTINGS_KEY, JSON.stringify({ ...DEFAULT_SETTINGS, apiKey: "remembered", remember: true }));
+    session.setItem(WIDGET_SETTINGS_KEY, JSON.stringify({ ...DEFAULT_SETTINGS, githubToken: "stale" }));
+    local.setItem(
+      WIDGET_SETTINGS_KEY,
+      JSON.stringify({ ...DEFAULT_SETTINGS, githubToken: "remembered", remember: true }),
+    );
 
-    expect(open().get().apiKey).toBe("remembered");
+    expect(open().get().githubToken).toBe("remembered");
   });
 
   test("forget() erases both areas and returns to the defaults", () => {
     const store = open();
-    store.update({ apiKey: "sk-live-1", githubToken: "ghp_1", remember: true });
+    store.update({ githubToken: "ghp_1", actor: { name: "Dana" }, remember: true });
 
     store.forget();
 
@@ -120,7 +122,7 @@ describe("update", () => {
 
   test("ignores keys it does not own", () => {
     const store = open();
-    store.update({ apiKey: "sk-1", collector: "https://evil.example" } as never);
+    store.update({ githubToken: "ghp_1", collector: "https://evil.example" } as never);
 
     expect((store.get() as unknown as Record<string, unknown>).collector).toBeUndefined();
     expect(stored(session).collector).toBeUndefined();
@@ -129,22 +131,22 @@ describe("update", () => {
   test("notifies subscribers and stops after unsubscribe", () => {
     const store = open();
     const seen: string[] = [];
-    const off = store.subscribe((settings) => seen.push(settings.provider));
+    const off = store.subscribe((settings) => seen.push(settings.actor.name));
 
-    store.update({ provider: "anthropic" });
+    store.update({ actor: { name: "Dana" } });
     off();
-    store.update({ provider: "openai" });
+    store.update({ actor: { name: "Sam" } });
 
-    expect(seen).toEqual(["anthropic"]);
+    expect(seen).toEqual(["Dana"]);
   });
 
   test("returns the new settings and a new object reference", () => {
     const store = open();
     const before = store.get();
-    const after = store.update({ model: "gpt-5" });
+    const after = store.update({ githubToken: "ghp_5" });
 
     expect(after).not.toBe(before);
-    expect(after.model).toBe("gpt-5");
+    expect(after.githubToken).toBe("ghp_5");
     expect(store.get()).toBe(after);
   });
 });
@@ -177,17 +179,19 @@ describe("corrupted records", () => {
     const localArea = new FakeStorage();
     sessionArea.setItem(
       WIDGET_SETTINGS_KEY,
-      JSON.stringify({ apiKey: "sk-live-1234567890", remember: "yes", provider: "carrier-pigeon", model: 42 }),
+      JSON.stringify({ githubToken: 42, remember: "yes", provider: "gateway", apiKey: "sk-old-build-key" }),
     );
 
     const s = createSettingsStore(sessionArea, localArea);
     expect(s.get().remember).toBe(false);
-    expect(s.get().provider).toBe("gateway"); // unknown provider falls back
-    expect(s.get().model).toBe(""); // non-string dropped
-    expect(s.get().apiKey).toBe("sk-live-1234567890"); // real strings survive
+    expect(s.get().githubToken).toBe(""); // non-string dropped
+    const record = s.get() as unknown as Record<string, unknown>;
+    expect(record.provider).toBeUndefined(); // keys from earlier builds fall away
+    expect(record.apiKey).toBeUndefined();
 
-    s.update({ model: "anthropic/claude-sonnet-5" });
+    s.update({ githubToken: "ghp_fresh" });
     expect(localArea.getItem(WIDGET_SETTINGS_KEY)).toBeNull(); // still per-tab
-    expect(sessionArea.getItem(WIDGET_SETTINGS_KEY)).toContain("claude-sonnet-5");
+    expect(sessionArea.getItem(WIDGET_SETTINGS_KEY)).toContain("ghp_fresh");
+    expect(sessionArea.getItem(WIDGET_SETTINGS_KEY)).not.toContain("sk-old-build-key");
   });
 });

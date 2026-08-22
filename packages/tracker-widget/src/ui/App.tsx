@@ -276,7 +276,7 @@ export const App = ({
         return session.generation || active ? (
           <CodeSection
             session={session}
-            providerLabel={`${settings.provider}${settings.model ? ` · ${settings.model}` : ""}`}
+            providerLabel="MediaJel's assistant"
             onCancel={handlers.onCancelGenerate}
             onRegenerate={handlers.onRegenerate}
             onCodeEdit={handlers.onCodeEdit}

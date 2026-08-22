@@ -133,7 +133,7 @@ describe("Integrations Assistant — evidence & settings", () => {
       expect(root.querySelector(".mj-tl--pinned .mj-tl-title")?.textContent).to.include("purchase");
     });
 
-    // Generate with no key: opens Settings instead of failing.
+    // Generate with no token: opens Settings instead of failing.
     click(".mj-btn", "Generate");
     shadow().then((root) => expect(root.querySelector(".mj-settings")).to.not.equal(null));
 
@@ -147,10 +147,9 @@ describe("Integrations Assistant — evidence & settings", () => {
         el.dispatchEvent(new Event("input", { bubbles: true }));
       };
       const secrets = inputs.filter((el) => (el as HTMLInputElement).type === "password") as HTMLInputElement[];
-      setNative(secrets[0], "test-key-1234567890"); // provider API key
-      setNative(secrets[1], "ghp_test_token_1234567890"); // GitHub token
+      setNative(secrets[0], "ghp_test_token_1234567890"); // GitHub token — deploy AND service access
       const named = inputs.filter((el) => (el as HTMLInputElement).type === "text") as HTMLInputElement[];
-      // model input first, then actor name/email — identify by surrounding label text instead:
+      // actor name/email — identify by surrounding label text:
       const byLabel = (label: string): HTMLInputElement => {
         const field = Array.from(root.querySelectorAll(".mj-field")).find((f) => f.textContent?.includes(label));
         return field?.querySelector("input") as HTMLInputElement;
@@ -163,7 +162,7 @@ describe("Integrations Assistant — evidence & settings", () => {
     });
     click(".mj-btn", "Done");
 
-    // Generate now runs the (mocked) model through the real AI SDK path and lands on 03 Code.
+    // Generate now runs the (mocked) assistant service call and lands on 03 Code.
     cy.window().then((win) => {
       (win as unknown as Record<string, unknown>).__MJ_WIDGET_MOCK_MODEL__ = {
         json: {
@@ -326,10 +325,7 @@ describe("Integrations Assistant — sign-up flow", () => {
         win.sessionStorage.setItem(
           "mj-widget:settings",
           JSON.stringify({
-            provider: "gateway",
-            model: "anthropic/claude-sonnet-5",
-            apiKey: "test-key",
-            githubToken: "",
+            githubToken: "ghp_test_token",
             actor: { name: "Jane Doe", email: "jane@mediajel.com" },
             remember: false,
             acknowledgedDataSharing: true,

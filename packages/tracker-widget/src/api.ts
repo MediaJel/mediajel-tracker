@@ -1,6 +1,3 @@
-/** Provider the widget talks to. `gateway` is the Vercel AI Gateway. */
-export type TrackerWidgetProvider = "gateway" | "openai" | "anthropic" | "google";
-
 /** Who the deploy commit is attributed to. */
 export interface TrackerWidgetActor {
   name?: string;
@@ -12,9 +9,7 @@ export interface TrackerWidgetActor {
  * retype them in Settings. Everything here is also settable from the UI.
  */
 export interface TrackerWidgetPrefill {
-  provider?: TrackerWidgetProvider;
-  model?: string;
-  apiKey?: string;
+  /** Deploy credential AND the access credential for MediaJel's assistant service. */
   githubToken?: string;
   actor?: TrackerWidgetActor;
   /** Persist settings to localStorage instead of sessionStorage ("Remember on this device"). */
@@ -30,7 +25,7 @@ export interface TrackerWidgetPrefill {
 /** Options for `window.disableTrackerWidget()`. */
 export interface TrackerWidgetDisableOptions {
   /**
-   * Also drop the persisted settings (provider, keys, actor). The recorded session is always
+   * Also drop the persisted settings (GitHub token, actor). The recorded session is always
    * cleared by `disable()` itself — exiting the assistant ends the work order; settings are the
    * one thing an operator may choose to keep.
    */

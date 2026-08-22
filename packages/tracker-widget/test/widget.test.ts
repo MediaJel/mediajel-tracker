@@ -89,20 +89,19 @@ describe("enable", () => {
   });
 
   test("carries prefilled settings into the store without touching what was not passed", async () => {
-    await widget.enable({ provider: "anthropic", apiKey: "sk-1", model: "claude-sonnet-5" });
-    await widget.enable({ apiKey: "sk-2" });
+    await widget.enable({ githubToken: "ghp_1", actor: { name: "Dana", email: "dana@mediajel.com" } });
+    await widget.enable({ githubToken: "ghp_2" });
 
     const stored = JSON.parse(sessionStorage.getItem(WIDGET_SETTINGS_KEY) as string);
-    expect(stored.provider).toBe("anthropic");
-    expect(stored.model).toBe("claude-sonnet-5");
-    expect(stored.apiKey).toBe("sk-2");
+    expect(stored.actor).toEqual({ name: "Dana", email: "dana@mediajel.com" });
+    expect(stored.githubToken).toBe("ghp_2");
   });
 
   test("remember: true in the prefill puts the settings on the device, not in the tab", async () => {
-    await widget.enable({ apiKey: "sk-1", remember: true });
+    await widget.enable({ githubToken: "ghp_1", remember: true });
 
     expect(sessionStorage.getItem(WIDGET_SETTINGS_KEY)).toBeNull();
-    expect(JSON.parse(localStorage.getItem(WIDGET_SETTINGS_KEY) as string).apiKey).toBe("sk-1");
+    expect(JSON.parse(localStorage.getItem(WIDGET_SETTINGS_KEY) as string).githubToken).toBe("ghp_1");
   });
 
   test("writes no settings at all when there is no prefill", async () => {
@@ -166,14 +165,14 @@ describe("disable", () => {
   });
 
   test("keeps the settings unless it is asked to forget them", async () => {
-    await widget.enable({ apiKey: "sk-1" });
+    await widget.enable({ githubToken: "ghp_1" });
     await widget.disable();
 
-    expect(JSON.parse(sessionStorage.getItem(WIDGET_SETTINGS_KEY) as string).apiKey).toBe("sk-1");
+    expect(JSON.parse(sessionStorage.getItem(WIDGET_SETTINGS_KEY) as string).githubToken).toBe("ghp_1");
   });
 
   test("forget: true erases the settings from both storage areas", async () => {
-    await widget.enable({ apiKey: "sk-1", githubToken: "ghp_1", remember: true });
+    await widget.enable({ githubToken: "ghp_1", remember: true });
     await widget.disable({ forget: true });
 
     expect(sessionStorage.getItem(WIDGET_SETTINGS_KEY)).toBeNull();
@@ -250,7 +249,7 @@ describe("section accordion", () => {
 
 describe("start over", () => {
   test("asks first, keeps working on cancel, and resets the job on confirm — settings survive", async () => {
-    await widget.enable({ apiKey: "sk-keep" });
+    await widget.enable({ githubToken: "ghp_keep" });
     const q = (selector: string) => shadow().querySelector(selector) as HTMLElement | null;
 
     expect(q('[aria-label="Start over"]')).toBeNull(); // nothing to throw away at home
@@ -281,6 +280,6 @@ describe("start over", () => {
     expect(session.step).toBe("home");
     expect(session.timeline).toEqual([]);
     expect(shadow().querySelectorAll(".mj-goals .mj-btn")).toHaveLength(2);
-    expect(JSON.parse(sessionStorage.getItem(WIDGET_SETTINGS_KEY) as string).apiKey).toBe("sk-keep");
+    expect(JSON.parse(sessionStorage.getItem(WIDGET_SETTINGS_KEY) as string).githubToken).toBe("ghp_keep");
   });
 });

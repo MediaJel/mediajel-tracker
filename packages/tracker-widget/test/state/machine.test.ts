@@ -86,23 +86,22 @@ const settings = (patch: Partial<WidgetSettings>): WidgetSettings => ({
 });
 
 describe("canGenerate", () => {
-  const ready = settings({ provider: "anthropic", apiKey: "sk-1", acknowledgedDataSharing: true });
+  const ready = settings({ githubToken: "ghp_1", acknowledgedDataSharing: true });
 
-  test("needs a provider, a key and the data-sharing acknowledgement", () => {
+  test("needs the GitHub token (the service's access) and the data-sharing acknowledgement", () => {
     expect(canGenerate(ready)).toBe(true);
   });
 
   test.each([
-    ["no key", settings({ provider: "anthropic", acknowledgedDataSharing: true })],
-    ["a blank key", settings({ ...ready, apiKey: "   " })],
+    ["no token", settings({ acknowledgedDataSharing: true })],
+    ["a blank token", settings({ ...ready, githubToken: "   " })],
     ["no acknowledgement", settings({ ...ready, acknowledgedDataSharing: false })],
-    ["no provider", settings({ ...ready, provider: "" as WidgetSettings["provider"] })],
   ])("refuses with %s", (_label, value) => {
     expect(canGenerate(value)).toBe(false);
   });
 
-  test("does not care about the GitHub half of the settings", () => {
-    expect(canGenerate(settings({ ...ready, githubToken: "" }))).toBe(true);
+  test("does not need the actor yet — that is Deploy's concern", () => {
+    expect(canGenerate(settings({ ...ready, actor: { name: "", email: "" } }))).toBe(true);
   });
 });
 
@@ -122,7 +121,7 @@ describe("canDeploy", () => {
     expect(canDeploy(value)).toBe(false);
   });
 
-  test("does not care about the model half of the settings", () => {
-    expect(canDeploy(settings({ ...ready, apiKey: "", acknowledgedDataSharing: false }))).toBe(true);
+  test("does not care about the acknowledgement", () => {
+    expect(canDeploy(settings({ ...ready, acknowledgedDataSharing: false }))).toBe(true);
   });
 });

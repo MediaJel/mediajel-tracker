@@ -357,8 +357,11 @@ Assistant** — a floating work order that records the page while you simulate a
 or sign-up, has a model write the frictionless custom tag in house conventions, verifies it
 on the page with `trackTrans` intercepted (nothing reaches the collector), and deploys it to
 `master` of `mediajel-frictionless-custom-tag` (domain or app-id folder). It ships as a lazy
-chunk (`widget.<hash>.js`); the always-loaded tag only carries a ~1 KB stub. Keys (model
-provider, GitHub PAT) are entered in the widget and stay in the operator's tab by default.
+chunk (`widget.<hash>.js`); the always-loaded tag only carries a ~1 KB stub. The model call
+runs in MediaJel's assistant service (mediajel-serverless `services/widget-api`, URL inlined
+at build time as `WIDGET_API_URL`); the operator's one credential is a GitHub PAT, entered in
+the widget and kept in the tab by default — it is both the service's access check and the
+deploy token.
 See `packages/tracker-widget/README.md` for the full contract.
 
 ## Privacy & compliance

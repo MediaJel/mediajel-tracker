@@ -1,12 +1,11 @@
-import { keyLooksLike } from "@mediajel/tracker-widget/ai/providers";
-import { TrackerWidgetProvider } from "@mediajel/tracker-widget/api";
 import { WidgetSettings, WidgetSettingsPatch, maskSecret } from "@mediajel/tracker-widget/session/settings";
 import { VNode, useState } from "@mediajel/tracker-widget/vendor";
 
 /**
- * The settings overlay — reachable from anywhere, leaves the step untouched. Provider + model
- * + API key feed generation; the GitHub token + actor feed deploy; `remember` moves the record
- * to localStorage with its warning stated in plain words.
+ * The settings overlay — reachable from anywhere, leaves the step untouched. One credential:
+ * the GitHub token, which deploys the tag AND is what MediaJel's assistant service accepts as
+ * access (the model and its key live server-side). The actor feeds the deploy commit;
+ * `remember` moves the record to localStorage with its warning stated in plain words.
  */
 
 export interface SettingsOverlayProps {
@@ -19,20 +18,6 @@ export interface SettingsOverlayProps {
   onClearDedup(): void;
   onClose(): void;
 }
-
-const PROVIDERS: { value: TrackerWidgetProvider; label: string; hint: string }[] = [
-  { value: "gateway", label: "Vercel AI Gateway", hint: "one key, models as provider/model" },
-  { value: "anthropic", label: "Anthropic", hint: "direct, key stays in this tab" },
-  { value: "openai", label: "OpenAI", hint: "direct" },
-  { value: "google", label: "Google", hint: "direct" },
-];
-
-const MODEL_SUGGESTIONS: Record<TrackerWidgetProvider, string[]> = {
-  gateway: ["anthropic/claude-sonnet-5", "anthropic/claude-sonnet-4.6", "openai/gpt-5.5", "google/gemini-3.5-flash"],
-  anthropic: ["claude-sonnet-5", "claude-sonnet-4-6"],
-  openai: ["gpt-5.5", "gpt-5.4"],
-  google: ["gemini-3.5-flash", "gemini-3.1-pro-preview"],
-};
 
 const Secret = ({
   label,
@@ -82,159 +67,111 @@ export const SettingsOverlay = ({
   onForget,
   onClearDedup,
   onClose,
-}: SettingsOverlayProps): VNode => (
-  <div class="mj-section-body mj-settings" aria-label="Assistant settings">
-    <h3 class="mj-settings-title">Settings</h3>
+}: SettingsOverlayProps): VNode => {
+  const hasToken = settings.githubToken.trim().length > 0;
+  return (
+    <div class="mj-section-body mj-settings" aria-label="Assistant settings">
+      <h3 class="mj-settings-title">Settings</h3>
 
-    <fieldset class="mj-fieldset">
-      <legend class="mj-field-label">Model provider</legend>
-      <div class="mj-provider-grid" role="radiogroup" aria-label="Model provider">
-        {PROVIDERS.map((provider) => (
+      <fieldset class="mj-fieldset">
+        <legend class="mj-field-label">Access &amp; deploy</legend>
+        <Secret
+          label="GitHub token"
+          value={settings.githubToken}
+          placeholder="fine-grained PAT · Contents: read & write on mediajel-frictionless-custom-tag"
+          onInput={(githubToken) => onPatch({ githubToken })}
+        />
+        <p class="mj-fine">
+          One token does both jobs: it commits the tag, and it is what MediaJel’s assistant service accepts as your
+          access — no model provider or API key to enter.
+        </p>
+
+        <div class="mj-connection">
           <button
-            key={provider.value}
             type="button"
-            role="radio"
-            aria-checked={String(settings.provider === provider.value) as "true" | "false"}
-            class={`mj-provider${settings.provider === provider.value ? " mj-provider--on" : ""}`}
-            onClick={() => onPatch({ provider: provider.value })}
+            class="mj-btn mj-btn--ghost"
+            aria-disabled={!hasToken || connection.status === "testing" ? "true" : "false"}
+            onClick={hasToken && connection.status !== "testing" ? onTestConnection : undefined}
           >
-            <span>{provider.label}</span>
-            <small>{provider.hint}</small>
+            {connection.status === "testing" ? "Checking…" : "Check access"}
           </button>
-        ))}
-      </div>
+          {connection.status === "ok" && (
+            <span class="mj-connection-ok" role="status">
+              {connection.message}
+            </span>
+          )}
+          {connection.status === "error" && (
+            <span class="mj-connection-bad" role="alert">
+              {connection.message}
+            </span>
+          )}
+        </div>
 
-      <label class="mj-field">
-        <span class="mj-field-label">Model</span>
-        <input
-          class="mj-input mj-input--mono"
-          list="mj-models"
-          placeholder={MODEL_SUGGESTIONS[settings.provider][0]}
-          value={settings.model}
-          onInput={(event) => onPatch({ model: (event.target as HTMLInputElement).value })}
-        />
-        <datalist id="mj-models">
-          {MODEL_SUGGESTIONS[settings.provider].map((model) => (
-            <option key={model} value={model} />
-          ))}
-        </datalist>
-      </label>
+        <div class="mj-two">
+          <label class="mj-field">
+            <span class="mj-field-label">Your name</span>
+            <input
+              class="mj-input"
+              value={settings.actor.name}
+              onInput={(event) => onPatch({ actor: { name: (event.target as HTMLInputElement).value } })}
+            />
+          </label>
+          <label class="mj-field">
+            <span class="mj-field-label">Your email</span>
+            <input
+              class="mj-input"
+              value={settings.actor.email}
+              onInput={(event) => onPatch({ actor: { email: (event.target as HTMLInputElement).value } })}
+            />
+          </label>
+        </div>
+        <p class="mj-fine">
+          Deploys commit to master of the frictionless repo as “Created by: you” and go live after its CI.
+        </p>
 
-      <Secret
-        label="API key"
-        value={settings.apiKey}
-        placeholder="never leaves this tab unless you generate"
-        onInput={(apiKey) => onPatch({ apiKey })}
-      />
-
-      {(() => {
-        const guess = keyLooksLike(settings.apiKey);
-        const label = PROVIDERS.find((p) => p.value === guess)?.label;
-        const current = PROVIDERS.find((p) => p.value === settings.provider)?.label;
-        return guess && guess !== settings.provider ? (
-          <div class="mj-notice mj-notice--warn" role="note">
-            <p>
-              This key looks like {label ? `a ${label}` : "another provider's"} key, but {current} is selected. The
-              provider will reject it — pick {label ?? "the matching provider"} above.
-            </p>
-          </div>
-        ) : null;
-      })()}
-
-      <div class="mj-connection">
-        <button
-          type="button"
-          class="mj-btn mj-btn--ghost"
-          aria-disabled={!settings.apiKey.trim() || connection.status === "testing" ? "true" : "false"}
-          onClick={settings.apiKey.trim() && connection.status !== "testing" ? onTestConnection : undefined}
-        >
-          {connection.status === "testing" ? "Testing…" : "Test connection"}
-        </button>
-        {connection.status === "ok" && (
-          <span class="mj-connection-ok" role="status">
-            {connection.message}
-          </span>
-        )}
-        {connection.status === "error" && (
-          <span class="mj-connection-bad" role="alert">
-            {connection.message}
-          </span>
-        )}
-      </div>
-
-      <label class="mj-check">
-        <input
-          type="checkbox"
-          checked={settings.acknowledgedDataSharing}
-          onChange={(event) => onPatch({ acknowledgedDataSharing: (event.target as HTMLInputElement).checked })}
-        />
-        <span>
-          I understand Generate sends the pinned events, the compressed timeline and this page's context to the provider
-          above.
-        </span>
-      </label>
-    </fieldset>
-
-    <fieldset class="mj-fieldset">
-      <legend class="mj-field-label">Deploy</legend>
-      <Secret
-        label="GitHub token"
-        value={settings.githubToken}
-        placeholder="fine-grained PAT · Contents: read & write on mediajel-frictionless-custom-tag"
-        onInput={(githubToken) => onPatch({ githubToken })}
-      />
-      <div class="mj-two">
-        <label class="mj-field">
-          <span class="mj-field-label">Your name</span>
+        <label class="mj-check">
           <input
-            class="mj-input"
-            value={settings.actor.name}
-            onInput={(event) => onPatch({ actor: { name: (event.target as HTMLInputElement).value } })}
+            type="checkbox"
+            checked={settings.acknowledgedDataSharing}
+            onChange={(event) => onPatch({ acknowledgedDataSharing: (event.target as HTMLInputElement).checked })}
           />
+          <span>
+            I understand Generate sends the pinned events, the compressed timeline and this page’s context (masked) to
+            MediaJel’s assistant service, which hands them to the model.
+          </span>
         </label>
-        <label class="mj-field">
-          <span class="mj-field-label">Your email</span>
+      </fieldset>
+
+      <fieldset class="mj-fieldset">
+        <legend class="mj-field-label">This device</legend>
+        <label class="mj-check">
           <input
-            class="mj-input"
-            value={settings.actor.email}
-            onInput={(event) => onPatch({ actor: { email: (event.target as HTMLInputElement).value } })}
+            type="checkbox"
+            checked={settings.remember}
+            onChange={(event) => onPatch({ remember: (event.target as HTMLInputElement).checked })}
           />
+          <span>Remember on this device — the token moves to localStorage, readable by any script on this site.</span>
         </label>
-      </div>
-      <p class="mj-fine">
-        Deploys commit to master of the frictionless repo as “Created by: you” and go live after its CI.
-      </p>
-    </fieldset>
+        <div class="mj-settings-actions">
+          <button type="button" class="mj-btn mj-btn--ghost" onClick={onClearDedup}>
+            Clear tracker dedup state
+          </button>
+          <button type="button" class="mj-btn mj-btn--danger" onClick={onForget}>
+            Forget token on this site
+          </button>
+        </div>
+        {appId ? (
+          <p class="mj-fine">Dedup clear removes localStorage “{appId}_*”, so repeated test orders fire again.</p>
+        ) : null}
+      </fieldset>
 
-    <fieldset class="mj-fieldset">
-      <legend class="mj-field-label">This device</legend>
-      <label class="mj-check">
-        <input
-          type="checkbox"
-          checked={settings.remember}
-          onChange={(event) => onPatch({ remember: (event.target as HTMLInputElement).checked })}
-        />
-        <span>Remember on this device — keys move to localStorage, readable by any script on this site.</span>
-      </label>
-      <div class="mj-settings-actions">
-        <button type="button" class="mj-btn mj-btn--ghost" onClick={onClearDedup}>
-          Clear tracker dedup state
-        </button>
-        <button type="button" class="mj-btn mj-btn--danger" onClick={onForget}>
-          Forget keys on this site
+      <div class="mj-section-footer">
+        <button type="button" class="mj-btn mj-btn--primary" onClick={onClose}>
+          Done
         </button>
       </div>
-      {appId ? (
-        <p class="mj-fine">Dedup clear removes localStorage “{appId}_*”, so repeated test orders fire again.</p>
-      ) : null}
-    </fieldset>
-
-    <div class="mj-section-footer">
-      <button type="button" class="mj-btn mj-btn--primary" onClick={onClose}>
-        Done
-      </button>
     </div>
-  </div>
-);
+  );
+};
 
 export default SettingsOverlay;

@@ -80,12 +80,11 @@ export const transition = (from: WidgetStep, to: WidgetStep, options: Transition
 const filled = (value: string | undefined): boolean => (value ?? "").trim().length > 0;
 
 /**
- * Generate needs somewhere to send the prompt and a person who has seen what gets sent. The
- * model is not required: a provider's default is a workable answer, a missing acknowledgement
- * is not.
+ * Generate needs access to MediaJel's assistant service — the GitHub token doubles as that —
+ * and a person who has seen what gets sent. The actor can wait until Deploy.
  */
 export const canGenerate = (settings: WidgetSettings): boolean =>
-  filled(settings.provider) && filled(settings.apiKey) && settings.acknowledgedDataSharing;
+  filled(settings.githubToken) && settings.acknowledgedDataSharing;
 
 /**
  * Deploy needs a token and a real person to attribute the commit to — the frictionless repo's

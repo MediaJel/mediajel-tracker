@@ -3,21 +3,14 @@
  *
  * `bun build` pre-bundles this file into `dist/vendor.js`, which Parcel then sees as a single
  * local ES module (see the "//vendor" note in package.json for the two failures that forced
- * this). Nothing under `src/` may import `ai`, `preact`, `zod` or a provider package by its bare
- * name: Parcel would resolve that copy from node_modules and the chunk would end up with two of
+ * this). Nothing under `src/` may import `preact` or `zod` by its bare name (the AI SDK itself
+ * lives server-side, in mediajel-serverless): Parcel would resolve that copy from node_modules and the chunk would end up with two of
  * them — two preact runtimes means hooks registered against one module's `options` hooks never
  * fire during the other's diff.
  *
  * Adding a symbol here costs a rebuild of the package (`turbo` orders it before the tag build);
  * forgetting to add one is a compile error at `check`, never a silent runtime hole.
  */
-
-// AI SDK — the generation path (Tasks 5-6).
-export { createAnthropic } from "@ai-sdk/anthropic";
-export { createGoogle } from "@ai-sdk/google";
-export { createOpenAI } from "@ai-sdk/openai";
-export { createGateway, generateText, Output } from "ai";
-export type { LanguageModel } from "ai";
 
 // Preact — the UI.
 export { Fragment, h, render } from "preact";

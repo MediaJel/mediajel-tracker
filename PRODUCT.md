@@ -26,7 +26,7 @@ It writes code against the *actual* page — the recorded network, dataLayer, fo
 - A session spans full page loads; it persists in the tab and resumes itself.
 - The collector (Snowplow) must not receive test events during verification; the tracker's own dedup (`localStorage` `${appId}_*`) silently drops repeated test fires.
 - Deploy target is `master` of the frictionless repo, which goes live through its GitHub Action within minutes — and a syntax error there freezes every future tag deploy.
-- Keys (model provider, GitHub PAT) are the engineer's own, entered in the widget, kept per tab by default.
+- The model and its key live in MediaJel's assistant service (decided 2026-08-22); the engineer's one credential is their GitHub PAT, entered in the widget, kept per tab by default — it is both the service's access check and the deploy token.
 
 ## Capabilities and Constraints
 
@@ -35,7 +35,7 @@ It writes code against the *actual* page — the recorded network, dataLayer, fo
 - Runtime API the generated code targets: `window.trackTrans(TransactionEvent)`, `window.trackSignUp(SignupParams)`; conventions of the frictionless repo (allowlisted helper imports, `isTrackTransLoaded`, dedup before await, `"N/A"`/`"USD"` defaults, valid-JS syntax).
 - Technical constraints: lazy Parcel chunk compiled with the tag's `since 2017-06` browserslist and `--no-scope-hoist`; all UI inside a Shadow DOM host; styles via adopted stylesheets; no webfonts (client CSP); the always-loaded tag gains < 1 KB.
 - Privacy: the widget works when GPC/DNT has stopped the tracker and says so; PII is masked before anything reaches a model; every outbound payload is previewable first.
-- Undecided product facts: when clients get access, how deploys are gated (review/approval) and who holds provider keys — record, do not invent.
+- Undecided product facts: when clients get access and how deploys are gated (review/approval) — record, do not invent.
 
 ## Brand Commitments
 

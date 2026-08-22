@@ -767,37 +767,6 @@ export const styles = `
   padding: 0 4px;
 }
 
-.mj-provider-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  margin: 0 0 10px;
-}
-
-.mj-provider {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px;
-  border: 1px solid var(--mj-rule);
-  border-radius: 3px;
-  background: var(--mj-card);
-  font-size: 12px;
-  font-weight: 600;
-  text-align: left;
-  cursor: pointer;
-}
-
-.mj-provider small {
-  font-size: 10px;
-  font-weight: 400;
-  color: var(--mj-ink-soft);
-}
-
-.mj-provider--on {
-  border-color: var(--mj-identity);
-  box-shadow: inset 0 0 0 1px var(--mj-identity);
-}
 
 .mj-two {
   display: grid;

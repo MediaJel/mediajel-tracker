@@ -61,7 +61,7 @@ export const CodeSection = ({
       <div class="mj-section-body">
         <div class="mj-working">
           <span class="mj-rec-dot" aria-hidden="true" />
-          <span>Writing the tag with {providerLabel}… the evidence left this browser for the first time.</span>
+          <span>{providerLabel} is writing the tag… the evidence left this browser for the first time.</span>
         </div>
         <div class="mj-section-footer">
           <button type="button" class="mj-btn mj-btn--ghost" onClick={onCancel}>
