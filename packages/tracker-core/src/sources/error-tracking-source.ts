@@ -13,12 +13,3 @@ export const notifyError = (error: unknown, environment?: string): void => {
     errorEvent: { message, error: error as Error, environment },
   });
 };
-
-/** Wrap a synchronous block so any throw is captured. For new boundaries. */
-export const captureError = (environment: string, callback: () => void): void => {
-  try {
-    callback();
-  } catch (error) {
-    notifyError(error, environment);
-  }
-};
