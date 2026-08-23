@@ -1,26 +1,19 @@
 import { appErrorsFrom } from "../support/app-errors";
+import { HARNESS, stubV2Harness } from "../support/harness";
 
 describe("error tracking via window.trackError", () => {
   it("sends one application_error with attribution and dedupes repeats", () => {
     const captured: any[] = [];
 
-    // Error tracking is v2-only (v1's trackError is a no-op), so load the tracker
-    // with version=2. Stub the page document so we don't depend on the shared
-    // v1 fixture (public/index.test.html); the tracker bundle itself is still
-    // served by the express server at :3000.
-    cy.intercept("GET", "http://localhost:1234/", {
-      headers: { "content-type": "text/html" },
-      body:
-        "<!DOCTYPE html><html><head></head><body>" +
-        '<script src="http://localhost:3000/index.js?appId=universal-tag-staging-test&version=2"></script>' +
-        "</body></html>",
-    }).as("page");
+    // Error tracking is v2-only (v1's trackError is a no-op), so stub a v2 page
+    // instead of the shared v1 fixture (public/index.test.html).
+    stubV2Harness();
 
     cy.intercept("POST", "**/analytics/track", (req) => {
       appErrorsFrom(req.body).forEach((d) => captured.push(d));
     }).as("track");
 
-    cy.visit("http://localhost:1234/");
+    cy.visit(HARNESS);
 
     // The tracker loads async; wait until the public global exists...
     cy.window({ timeout: 20000 }).should((win: any) => expect(win.trackError).to.be.a("function"));

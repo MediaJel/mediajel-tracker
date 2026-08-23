@@ -1,8 +1,9 @@
 import { appErrorsFrom } from "../support/app-errors";
+import { HARNESS, stubV2Harness } from "../support/harness";
 
 describe("Error boundary — a throwing tag callback can't crash the client page", () => {
-  // Served by `npm run bootstrap-test-server` (public/index.test.html loads the tag with environment=jane).
-  const HARNESS = "http://localhost:1234/";
+  // HARNESS is served by `npm run bootstrap-test-server` (public/index.test.html
+  // loads the tag with environment=jane).
 
   it("suppresses a throwing data-source callback while the tag keeps working", () => {
     cy.intercept("POST", "**/analytics/track", { statusCode: 200, body: {} }).as("track");
@@ -67,15 +68,9 @@ describe("Error boundary — a throwing tag callback can't crash the client page
     }).as("track");
 
     // Error reporting is v2-only (the shared fixture at HARNESS loads v1, where
-    // trackError is a documented no-op), so stub a v2 page — same pattern as
-    // error.spec.cy.ts. jane's guarded postMessage listener works on a bare page.
-    cy.intercept("GET", HARNESS, {
-      headers: { "content-type": "text/html" },
-      body:
-        "<!DOCTYPE html><html><head></head><body>" +
-        '<script src="http://localhost:3000/index.js?appId=universal-tag-staging-test&environment=jane&version=2"></script>' +
-        "</body></html>",
-    }).as("page");
+    // trackError is a documented no-op), so stub a v2 page. jane's guarded
+    // postMessage listener works on a bare page.
+    stubV2Harness("jane");
 
     // The suppressed TypeError below must not fail the test at the Cypress level either.
     cy.on("uncaught:exception", () => false);

@@ -3,21 +3,14 @@
 // site silently loses its commerce tracking.
 
 import { appErrorsFrom } from "../support/app-errors";
+import { HARNESS, stubV2Harness } from "../support/harness";
 
 describe("environment chunk-load failure", () => {
-  const HARNESS = "http://localhost:1234/";
-
   it("reports the failed jane chunk through the funnel and the tag survives", () => {
     const captured: any[] = [];
 
     // Error reporting is v2-only, so stub a v2 page requesting environment=jane.
-    cy.intercept("GET", HARNESS, {
-      headers: { "content-type": "text/html" },
-      body:
-        "<!DOCTYPE html><html><head></head><body>" +
-        '<script src="http://localhost:3000/index.js?appId=universal-tag-staging-test&environment=jane&version=2"></script>' +
-        "</body></html>",
-    }).as("page");
+    stubV2Harness("jane");
 
     // Kill the jane data-source chunk: the loader script errors, import() rejects.
     cy.intercept("GET", "**/jane.*.js", { statusCode: 503, body: "" }).as("janeChunk");
