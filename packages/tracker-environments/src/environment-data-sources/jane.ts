@@ -14,7 +14,8 @@ const janeDataSource = (snowplow: SnowplowTracker) => {
 
   handler.add("PostMessageSource", () => {
     postMessageSource((event: MessageEvent<any>) => {
-      const { payload, messageType } = event.data;
+      // Host traffic can postMessage(null) — foreign messages must not throw.
+      const { payload, messageType } = event.data ?? {};
   
       if (!payload || messageType !== "analyticsEvent") {
         return;
