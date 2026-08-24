@@ -51,10 +51,6 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
         })),
   ]);
 
-  // Public API: external appId/domain overrides report caught errors through the
-  // same observable funnel (cap/dedupe/attribution shared with internal producers).
-  window.trackError = notifyError;
-
   window.trackTrans = tracker.ecommerce?.trackTransaction ?? (() => {});
   window.trackSignUp = tracker.trackSignup;
   window.addToCart = tracker.ecommerce?.trackAddToCart ?? (() => {});
