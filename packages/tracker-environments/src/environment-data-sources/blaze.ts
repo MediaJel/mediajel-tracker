@@ -1,23 +1,14 @@
 import observable from '@mediajel/tracker-core/utils/create-events-observable';
 import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import { xhrResponseSource } from "@mediajel/tracker-core/sources/xhr-response-source";
+import { xhrJsonObject } from "@mediajel/tracker-core/utils/xhr-json";
 import { TransactionCartItem } from '@mediajel/tracker-core/types';
 
 const blazeDataSource = () => {
     const runBlaze = () => {
         xhrResponseSource((xhr) => {
-            let getData;
-            try {
-                const parsedData = JSON.parse(xhr.responseText);
-                // Verify parsed data is actually an object
-                if (!parsedData || typeof parsedData !== "object") {
-                    return;
-                }
-                getData = parsedData;
-            } catch (e) {
-                // Silent fail if JSON parsing fails — a SyntaxError would carry the host response body
-                return;
-            }
+            const getData = xhrJsonObject(xhr);
+            if (!getData) return;
 
             try {
                 // Optional chaining: this source sees every XHR on the page, so JSON that

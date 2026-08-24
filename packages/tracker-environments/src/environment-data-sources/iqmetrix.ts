@@ -2,24 +2,13 @@ import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-sourc
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
 
 import { xhrResponseSource } from "@mediajel/tracker-core/sources/xhr-response-source";
+import { xhrJsonObject } from "@mediajel/tracker-core/utils/xhr-json";
 import { TransactionCartItem } from "@mediajel/tracker-core/types";
 
 const iqmetrixDataSource = () => {
     xhrResponseSource((xhr: XMLHttpRequest) => {
-        let transaction;
-        try {
-            // xhr.responseText is a throwing getter (InvalidStateError when the
-            // host set a non-text responseType), so it must stay inside the try.
-            const parsedData = JSON.parse(xhr.responseText);
-            // Verify parsed data is actually an object
-            if (!parsedData || typeof parsedData !== "object") {
-                return;
-            }
-            transaction = parsedData;
-        } catch (e) {
-            // Silent fail if JSON parsing fails — a SyntaxError would carry the host response body
-            return;
-        }
+        const transaction = xhrJsonObject(xhr);
+        if (!transaction) return;
 
         try {
             // Optional chaining: this source sees every XHR on the page, so JSON that

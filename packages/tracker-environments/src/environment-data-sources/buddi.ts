@@ -3,11 +3,12 @@ import observable from "@mediajel/tracker-core/utils/create-events-observable";
 
 import { xhrResponseSource } from "@mediajel/tracker-core/sources/xhr-response-source";
 import { TransactionCartItem } from "@mediajel/tracker-core/types";
-import { tryParseJSONObject } from "@mediajel/tracker-core/utils/try-parse-json";
+import { xhrJsonObject } from "@mediajel/tracker-core/utils/xhr-json";
 
 const buddiDataSource = (): void => {
   xhrResponseSource((xhr: XMLHttpRequest): void => {
-    const response = tryParseJSONObject(xhr.responseText);
+    const response = xhrJsonObject(xhr);
+    if (!response) return;
     const cartList: any[] = [];
 
     if (xhr.responseURL.includes("cart") && !xhr.response.includes("delete")) {
