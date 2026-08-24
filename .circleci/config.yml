@@ -36,13 +36,56 @@ commands:
           name: Type checking (tracker + shared packages)
           command: bun x turbo run check --filter=mediajel-tracker
       - run:
-          name: Unit tests (tracker-widget — headless bun test, no Cypress deps)
-          command: bun x turbo run test --filter=@mediajel/tracker-widget
+          name: Unit tests (assistant-core — headless bun test, no Cypress deps)
+          command: bun x turbo run test --filter=@mediajel/assistant-core
       - run:
           name: Build tag
           command: bun x turbo run build --filter=mediajel-tracker
 
 jobs:
+  # The extension is checked and packaged on every branch, which is the first gate this repo has
+  # had on a pull request. The .env.production is written from the context the same way the
+  # serverless repo writes its own: only PLASMO_PUBLIC_* names reach the extension's code, and an
+  # unset one would leave a literal "$NAME/*" in host_permissions that Chrome refuses to load.
+  build-extension:
+    executor: the-executor
+    steps:
+      - checkout
+      - install-bun
+      - run:
+          name: Install project dependencies
+          command: bun install --frozen-lockfile
+      - run:
+          name: Write the extension's build configuration
+          command: |
+            cd apps/extension
+            echo "PLASMO_PUBLIC_WIDGET_API_URL=${PLASMO_PUBLIC_WIDGET_API_URL}" >> .env.production
+            echo "PLASMO_PUBLIC_COGNITO_USER_POOL_ID=${PLASMO_PUBLIC_COGNITO_USER_POOL_ID}" >> .env.production
+            echo "PLASMO_PUBLIC_COGNITO_CLIENT_ID=${PLASMO_PUBLIC_COGNITO_CLIENT_ID}" >> .env.production
+            echo "PLASMO_PUBLIC_COGNITO_REGION=${PLASMO_PUBLIC_COGNITO_REGION}" >> .env.production
+            echo "PLASMO_PUBLIC_FRICTIONLESS_CUSTOMTAG_URL=${FRICTIONLESS_CUSTOMTAG_URL}" >> .env.production
+            echo "PLASMO_PUBLIC_TAG_URL=${PLASMO_PUBLIC_TAG_URL}" >> .env.production
+            echo "PLASMO_PUBLIC_TAG_ORIGIN=${PLASMO_PUBLIC_TAG_ORIGIN}" >> .env.production
+            echo "CRX_PUBLIC_KEY=${CRX_PUBLIC_KEY}" >> .env.production
+      - run:
+          name: Type check, lint and test the extension
+          command: bun x turbo run check lint test --filter=@mediajel/extension
+      - run:
+          name: Build and package the extension
+          command: bun x turbo run build --filter=@mediajel/extension
+      - run:
+          name: Confirm the manifest resolved its configuration
+          command: |
+            cd apps/extension
+            if grep -q '"\$PLASMO_PUBLIC' dist/chrome-mv3-prod/manifest.json; then
+              echo "An unset PLASMO_PUBLIC_* left a placeholder in the manifest; Chrome would refuse to load this."
+              grep '\$PLASMO_PUBLIC' dist/chrome-mv3-prod/manifest.json
+              exit 1
+            fi
+      - store_artifacts:
+          path: apps/extension/dist/chrome-mv3-prod.zip
+          destination: mediajel-integrations-assistant.zip
+
   build-staging:
     executor: the-executor
     steps:
@@ -121,6 +164,8 @@ workflows:
   version: 2
   build:
     jobs:
+      - build-extension:
+          context: STAGING
       - build-staging:
           context: STAGING
           filters:

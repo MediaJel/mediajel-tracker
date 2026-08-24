@@ -1,0 +1,1708 @@
+/**
+ * The panel's stylesheet.
+ *
+ * The material is paper, and the register is a letterpress job ticket: warm stock, ink pressed
+ * into it, rules that read as impressions rather than as borders. What it is deliberately NOT is
+ * a console — mono appears only where there is literally machine text (code, ids, paths), never
+ * as a costume for "technical", and the boxes-inside-boxes hairline grid is gone. Space and a
+ * change of stock separate things now.
+ *
+ * Tokens live on `:root` and nowhere else. The dark rendition redefines the same names, so every
+ * rule below is written once.
+ */
+
+/* The two faces the brand pins, actually delivered rather than hoped for. See fonts/README.md:
+   a stack fell through to Century Gothic or the platform sans and the product looked different
+   on every desk. Both are variable across the weight axis, hence one file each. */
+@font-face {
+  font-family: "Jost";
+  src: url("./fonts/jost-variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Mulish";
+  src: url("./fonts/mulish-variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Stock. Warm off-whites, not the cool greys of a screen: this is paper, and paper made from
+     pulp is never #ffffff. The four brand inks below are untouched — they are the part anyone
+     would recognise. */
+  --mj-stock: #efeae0;
+  --mj-sheet: #fbf8f2;
+  --mj-carbon: #e6e0d3;
+
+  --mj-ink: #1a1713;
+  --mj-ink-soft: #5b5348;
+  --mj-ink-faint: #948b7c;
+  --mj-rule: #d8d0c0;
+
+  --mj-identity: #1f4fe0;
+  --mj-identity-hover: #1a45c4;
+  --mj-platform: #0b8f6b;
+  --mj-partner: #db4a15;
+  --mj-privacy: #6c34e8;
+
+  /* What a carbon copy actually leaves: a blue-black impression, softer than the ink above it. */
+  --mj-carbon-ink: #33406b;
+
+  /* Type. Jost is the Futura the brand asked for; Mulish carries Avenir's proportions at text
+     sizes. Mono is a system stack on purpose — it only ever sets code, where the platform's own
+     is excellent and free. */
+  --mj-display: "Jost", "Futura", "Century Gothic", system-ui, sans-serif;
+  --mj-body: "Mulish", "Avenir Next", "Avenir", -apple-system, "Segoe UI", sans-serif;
+  --mj-mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  --mj-radius: 3px;
+  --mj-pad: 20px;
+  --mj-shadow: 0 -10px 28px rgba(26, 23, 19, 0.09);
+
+  /* The impression: a line pressed into stock reads as a dark edge with a light one under it. */
+  --mj-press: inset 0 1px 0 rgba(26, 23, 19, 0.07), inset 0 2px 0 rgba(255, 255, 255, 0.55);
+
+  color-scheme: light;
+}
+
+/* The dark rendition is warm too — an inked press room, not a blue terminal. `:root[data-theme]`
+   is stamped when the operator has chosen explicitly; with no choice the system setting decides,
+   which is why the media query is guarded against a standing choice of light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --mj-stock: #14120f;
+    --mj-sheet: #1d1a16;
+    --mj-carbon: #171512;
+
+    --mj-ink: #f2ede4;
+    --mj-ink-soft: #a89f92;
+    --mj-ink-faint: #6f675c;
+    --mj-rule: #38332c;
+
+    --mj-identity: #7fa0ff;
+    --mj-identity-hover: #9ab4ff;
+    --mj-platform: #4fd6ac;
+    --mj-partner: #ff9666;
+    --mj-privacy: #c0a6ff;
+    --mj-carbon-ink: #93a6dd;
+
+    --mj-shadow: 0 -10px 28px rgba(0, 0, 0, 0.55);
+    --mj-press: inset 0 1px 0 rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.05);
+
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --mj-stock: #14120f;
+  --mj-sheet: #1d1a16;
+  --mj-carbon: #171512;
+
+  --mj-ink: #f2ede4;
+  --mj-ink-soft: #a89f92;
+  --mj-ink-faint: #6f675c;
+  --mj-rule: #38332c;
+
+  --mj-identity: #7fa0ff;
+  --mj-identity-hover: #9ab4ff;
+  --mj-platform: #4fd6ac;
+  --mj-partner: #ff9666;
+  --mj-privacy: #c0a6ff;
+  --mj-carbon-ink: #93a6dd;
+
+  --mj-shadow: 0 -10px 28px rgba(0, 0, 0, 0.55);
+  --mj-press: inset 0 1px 0 rgba(0, 0, 0, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.05);
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#__plasmo {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font: 400 14px/1.55 var(--mj-body);
+  color: var(--mj-ink);
+  background: var(--mj-sheet);
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body button {
+  font: inherit;
+  color: inherit;
+  margin: 0;
+}
+
+body :focus-visible {
+  outline: 2px solid var(--mj-identity);
+  outline-offset: 3px;
+}
+
+/* --- the panel ---------------------------------------------------------------------------- */
+
+.mj-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--mj-sheet);
+}
+
+/* --- letterhead ----------------------------------------------------------------------------- */
+
+.mj-header {
+  flex: none;
+  padding: var(--mj-pad) var(--mj-pad) 16px;
+}
+
+.mj-letterhead {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.mj-mark {
+  display: block;
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+.mj-wordmark {
+  font-family: var(--mj-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mj-ink-soft);
+}
+
+.mj-letterhead-rule {
+  flex: none;
+  width: 1px;
+  height: 11px;
+  background: var(--mj-rule);
+}
+
+.mj-doc-title {
+  font-family: var(--mj-display);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mj-ink-faint);
+}
+
+.mj-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+
+/* The job's own name, set as a headline rather than as a field in a form. This is the one place
+   the panel raises its voice, and it is the answer to "what am I looking at". */
+.mj-title {
+  margin: 18px 0 0;
+  font-family: var(--mj-display);
+  font-size: 27px;
+  font-weight: 400;
+  line-height: 1.14;
+  letter-spacing: -0.015em;
+  color: var(--mj-ink);
+  overflow-wrap: anywhere;
+}
+
+.mj-subtitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  margin: 7px 0 0;
+  font-size: 13px;
+  color: var(--mj-ink-soft);
+}
+
+.mj-subtitle-dot {
+  color: var(--mj-ink-faint);
+}
+
+/* Who is signed in, and the way back to the job list — the question you ask right after it. */
+.mj-who {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px 5px 7px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--mj-stock);
+  font-family: var(--mj-display);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--mj-ink-soft);
+  cursor: pointer;
+  transition: color 160ms ease-out;
+}
+
+.mj-who:hover {
+  color: var(--mj-ink);
+}
+
+.mj-icon-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--mj-ink-faint);
+  cursor: pointer;
+  transition: color 160ms ease-out, background 160ms ease-out;
+}
+
+.mj-icon-button:hover {
+  background: var(--mj-stock);
+  color: var(--mj-ink);
+}
+
+/* --- zigzag rule --------------------------------------------------------------------------- */
+
+/* The MJ zigzag as the tear along the top of the stack — the edge where the job ticket begins. */
+.mj-zigzag {
+  display: block;
+  flex: none;
+  width: 100%;
+  height: 7px;
+  color: var(--mj-rule);
+}
+
+.mj-zigzag--live {
+  color: var(--mj-identity);
+}
+
+/* --- the carbon stack ------------------------------------------------------------------------ */
+
+.mj-stack {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0 0 10px;
+  list-style: none;
+  background: var(--mj-stock);
+}
+
+.mj-slip,
+.mj-sheet,
+.mj-ahead {
+  list-style: none;
+}
+
+/* A sealed step: a carbon copy of the sheet, on darker stock, its line pressed rather than
+   drawn. No border — a change of paper is what separates one from the next. */
+.mj-slip {
+  background: var(--mj-carbon);
+  box-shadow: var(--mj-press);
+}
+
+.mj-sheet {
+  background: var(--mj-sheet);
+  box-shadow: var(--mj-press);
+}
+
+.mj-slip-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 3px 12px;
+  width: 100%;
+  padding: 14px var(--mj-pad);
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mj-slip-row[aria-disabled="true"] {
+  cursor: default;
+}
+
+.mj-section-label {
+  flex: none;
+  font-family: var(--mj-display);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  color: var(--mj-ink);
+}
+
+/* The sentence a finished step leaves behind. Five of these read top to bottom are the whole job,
+   which is the entire argument for stacking them — so it is set to be read, not parsed. */
+.mj-receipt {
+  order: 1;
+  flex: 1 0 100%;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--mj-carbon-ink);
+}
+
+.mj-sheet .mj-receipt {
+  color: var(--mj-ink-soft);
+}
+
+.mj-section-state {
+  margin-left: auto;
+}
+
+/* Steps the job has not reached: named and present, because a work order shows its whole shape,
+   and deliberately given no slip — there is no record to put on one yet. */
+.mj-ahead {
+  padding: 11px var(--mj-pad);
+}
+
+.mj-ahead .mj-section-label {
+  font-weight: 400;
+  color: var(--mj-ink-faint);
+}
+
+.mj-chevron {
+  flex: none;
+  color: var(--mj-ink-faint);
+  transition: transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.mj-slip-row[aria-expanded="true"] .mj-chevron {
+  transform: rotate(180deg);
+}
+
+/* --- the action bar --------------------------------------------------------------------------- */
+
+/* The one next action, in the same place all day, saying what it will do. A primary button that
+   lives inside the open section moves every time that section changes size. */
+.mj-actionbar {
+  flex: none;
+  padding: 16px var(--mj-pad) var(--mj-pad);
+  background: var(--mj-sheet);
+  box-shadow: var(--mj-shadow);
+}
+
+.mj-btn--wide {
+  width: 100%;
+  justify-content: center;
+}
+
+.mj-consequence {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--mj-ink-soft);
+}
+
+.mj-consequence--blocked {
+  color: var(--mj-partner);
+}
+
+/* --- theme choice ------------------------------------------------------------------------------- */
+
+.mj-choices {
+  display: flex;
+  gap: 0;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--mj-stock);
+}
+
+.mj-choice {
+  flex: 1 1 0;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  font-family: var(--mj-display);
+  font-size: 12px;
+  color: var(--mj-ink-soft);
+  cursor: pointer;
+  transition: color 160ms ease-out;
+}
+
+.mj-choice[aria-checked="true"] {
+  background: var(--mj-sheet);
+  color: var(--mj-ink);
+  box-shadow: 0 1px 3px rgba(26, 23, 19, 0.12);
+}
+
+/* --- section bodies ---------------------------------------------------------------------- */
+
+.mj-section-body {
+  padding: 4px var(--mj-pad) var(--mj-pad);
+}
+
+.mj-lede {
+  margin: 0 0 12px;
+  color: var(--mj-ink-soft);
+}
+
+/* Notices are paper slips with a full hairline in the role colour — a work order carries
+   ruled boxes, not accent bars. */
+.mj-notice {
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--mj-identity);
+  border-radius: 3px;
+  background: var(--mj-stock);
+  font-size: 12px;
+}
+
+.mj-notice p {
+  margin: 0;
+}
+
+.mj-notice p + p {
+  margin-top: 6px;
+}
+
+.mj-notice--warn {
+  border-color: var(--mj-partner);
+}
+
+.mj-notice--privacy {
+  border-color: var(--mj-privacy);
+}
+
+.mj-goals {
+  display: grid;
+  gap: 8px;
+}
+
+.mj-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--mj-ink);
+  border-radius: 3px;
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.mj-btn--primary {
+  border-color: var(--mj-identity);
+  background: var(--mj-identity);
+  color: #fff;
+}
+
+.mj-btn--primary:hover {
+  background: #1a45c4;
+}
+
+.mj-btn--ghost {
+  border-color: var(--mj-rule);
+  color: var(--mj-ink-soft);
+}
+
+.mj-btn--ghost:hover {
+  border-color: var(--mj-ink-soft);
+  color: var(--mj-ink);
+}
+
+.mj-btn--danger {
+  border-color: var(--mj-partner);
+  color: var(--mj-partner);
+}
+
+.mj-section-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.mj-section-footer > .mj-btn:only-child {
+  margin-left: auto;
+}
+
+/* --- recording --------------------------------------------------------------------------- */
+
+.mj-rec-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.mj-rec-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mj-identity);
+  animation: mj-pulse 1.2s ease-out infinite;
+}
+
+@keyframes mj-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(31, 79, 224, 0.45); }
+  100% { box-shadow: 0 0 0 8px rgba(31, 79, 224, 0); }
+}
+
+.mj-rec-label {
+  font-family: var(--mj-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--mj-identity);
+}
+
+.mj-rec-meta {
+  font-family: var(--mj-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--mj-ink-soft);
+}
+
+.mj-counts {
+  display: grid;
+  grid-template-columns: repeat(2, auto 1fr);
+  gap: 6px 12px;
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.mj-counts dt {
+  color: var(--mj-ink-soft);
+}
+
+.mj-counts dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* --- stamps ------------------------------------------------------------------------------- */
+
+.mj-stamp {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 2px solid var(--mj-identity);
+  border-radius: 3px;
+  color: var(--mj-identity);
+  font-family: var(--mj-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transform: rotate(-4deg);
+  /* Ink soaking into paper. It only reads that way ON paper — over the dark ground the same
+     blend subtracts the stamp into the background, so dark restores normal compositing. */
+  mix-blend-mode: multiply;
+  animation: mj-stamp-land 240ms ease-out;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .mj-stamp {
+    mix-blend-mode: normal;
+  }
+}
+
+:root[data-theme="dark"] .mj-stamp {
+  mix-blend-mode: normal;
+}
+
+.mj-stamp--platform {
+  border-color: var(--mj-platform);
+  color: var(--mj-platform);
+}
+
+.mj-stamp--partner {
+  border-color: var(--mj-partner);
+  color: var(--mj-partner);
+}
+
+.mj-stamp--filled {
+  background: var(--mj-platform);
+  border-color: var(--mj-platform);
+  color: #fff;
+  mix-blend-mode: normal;
+}
+
+@keyframes mj-stamp-land {
+  0% { transform: rotate(-8deg) scale(1.12); opacity: 0.4; }
+  100% { transform: rotate(-4deg) scale(1); opacity: 1; }
+}
+
+
+/* --- evidence ---------------------------------------------------------------------------- */
+
+.mj-exhibits,
+.mj-ev-list {
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.mj-exhibits {
+  border: 1px solid var(--mj-identity);
+  border-radius: 3px;
+}
+
+.mj-ev {
+  border-top: 1px solid var(--mj-rule);
+}
+
+.mj-ev:first-child {
+  border-top: 0;
+}
+
+/* A pinned exhibit reads as attached: tinted ground inside the exhibits box (which carries
+   the identity border), plus the pin's own state — no accent bar. */
+.mj-ev--marked {
+  background: rgba(31, 79, 224, 0.05);
+}
+
+.mj-ev-row {
+  display: flex;
+  align-items: stretch;
+}
+
+.mj-ev-main {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 28px;
+  padding: 2px 6px;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mj-ev-badge {
+  flex: none;
+  min-width: 30px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--mj-stock);
+  font-family: var(--mj-display);
+  font-size: 9px;
+  line-height: 14px;
+  text-align: center;
+  color: var(--mj-ink-soft);
+}
+
+.mj-ev-time {
+  flex: none;
+  font-family: var(--mj-mono);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--mj-ink-soft);
+}
+
+.mj-ev-summary {
+  overflow: hidden;
+  flex: 1 1 auto;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mj-ev-signal {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mj-identity);
+}
+
+.mj-ev-pin {
+  flex: none;
+  padding: 0 8px;
+  border: 0;
+  border-left: 1px solid var(--mj-rule);
+  background: none;
+  font-family: var(--mj-display);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mj-ink-soft);
+  cursor: pointer;
+}
+
+.mj-ev-pin[aria-pressed="true"] {
+  color: var(--mj-identity);
+}
+
+.mj-ev-detail {
+  margin: 0;
+  padding: 8px 10px;
+  border-top: 1px dashed var(--mj-rule);
+  background: var(--mj-stock);
+  max-height: 220px;
+  overflow: auto;
+  font-family: var(--mj-mono);
+  font-size: 10px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.mj-ev-empty {
+  padding: 10px;
+  font-size: 12px;
+  color: var(--mj-ink-soft);
+}
+
+.mj-ev-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0 0 8px;
+}
+
+.mj-chip-filter {
+  padding: 2px 8px;
+  border: 1px solid var(--mj-rule);
+  border-radius: 999px;
+  background: var(--mj-stock);
+  font-family: var(--mj-display);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mj-ink-soft);
+  cursor: pointer;
+}
+
+.mj-chip-filter--on {
+  border-color: var(--mj-identity);
+  color: var(--mj-identity);
+}
+
+.mj-ev-order {
+  margin-left: auto;
+}
+
+.mj-ev-list {
+  max-height: 190px;
+  overflow-y: auto;
+  border: 1px solid var(--mj-rule);
+  border-radius: 3px;
+}
+
+.mj-blocked-note {
+  margin: 6px 0 0;
+  font-size: 11px;
+  text-align: right;
+  color: var(--mj-partner);
+}
+
+/* --- forms / settings ---------------------------------------------------------------------- */
+
+.mj-field {
+  display: block;
+  margin: 0 0 10px;
+}
+
+.mj-field-label {
+  display: block;
+  margin: 0 0 4px;
+  font-family: var(--mj-display);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mj-ink-soft);
+}
+
+.mj-input,
+.mj-textarea {
+  width: 100%;
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 1px solid var(--mj-rule);
+  border-radius: 3px;
+  background: var(--mj-sheet);
+  color: var(--mj-ink);
+  font: inherit;
+  font-size: 12px;
+}
+
+.mj-input--mono,
+.mj-textarea {
+  font-family: var(--mj-mono);
+}
+
+.mj-textarea {
+  resize: vertical;
+}
+
+.mj-secret {
+  display: flex;
+  gap: 4px;
+}
+
+.mj-reveal {
+  flex: none;
+  padding: 0 8px;
+  border: 1px solid var(--mj-rule);
+  border-radius: 3px;
+  background: var(--mj-stock);
+  font-size: 10px;
+  color: var(--mj-ink-soft);
+  cursor: pointer;
+}
+
+.mj-check {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0 0 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.mj-check input {
+  margin: 2px 0 0;
+  accent-color: var(--mj-identity);
+}
+
+.mj-fieldset {
+  margin: 0 0 14px;
+  padding: 10px;
+  border: 1px solid var(--mj-rule);
+  border-radius: 3px;
+}
+
+.mj-fieldset > legend {
+  padding: 0 4px;
+}
+
+
+.mj-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.mj-fine {
+  margin: 0 0 4px;
+  font-size: 11px;
+  color: var(--mj-ink-soft);
+}
+
+.mj-settings-title {
+  margin: 0 0 10px;
+  font-family: var(--mj-display);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mj-settings-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 4px 0;
+}
+
+.mj-settings {
+  overflow-y: auto;
+}
+
+/* --- generating placeholder ----------------------------------------------------------------- */
+
+.mj-working {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-family: var(--mj-mono);
+  font-size: 12px;
+  color: var(--mj-ink-soft);
+}
+
+@keyframes mj-working-dots {
+  0% { content: "·"; }
+}
+
+
+/* --- code & coverage ---------------------------------------------------------------------- */
+
+.mj-code {
+  min-height: 180px;
+  font-size: 11px;
+  line-height: 1.5;
+  background: var(--mj-stock);
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.mj-copy {
+  float: right;
+  padding: 0 6px;
+  border: 1px solid var(--mj-rule);
+  border-radius: 3px;
+  background: var(--mj-sheet);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--mj-ink-soft);
+  cursor: pointer;
+}
+
+.mj-cov-line {
+  margin: 0 0 6px;
+  font-family: var(--mj-mono);
+  font-size: 11px;
+  color: var(--mj-ink-soft);
+}
+
+.mj-coverage {
+  margin: 0 0 12px;
+  border: 1px solid var(--mj-rule);
+  border-radius: 3px;
+}
+
+.mj-cov {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 3px 8px;
+  font-size: 11px;
+}
+
+.mj-cov + .mj-cov {
+  border-top: 1px solid var(--mj-rule);
+}
+
+.mj-cov dt {
+  flex: none;
+  width: 96px;
+  font-family: var(--mj-mono);
+}
+
+.mj-cov dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.mj-cov-status {
+  font-family: var(--mj-display);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mj-cov--mapped .mj-cov-status,
+.mj-cov--derived .mj-cov-status {
+  color: var(--mj-platform);
+}
+
+.mj-cov--default .mj-cov-status {
+  color: var(--mj-ink-soft);
+}
+
+.mj-cov--missing .mj-cov-status {
+  color: var(--mj-partner);
+}
+
+.mj-cov-src {
+  color: var(--mj-ink-soft);
+}
+
+.mj-cov em {
+  font-family: var(--mj-mono);
+  font-style: normal;
+  color: var(--mj-ink-soft);
+}
+
+
+/* --- verify & deploy ---------------------------------------------------------------------- */
+
+.mj-captures {
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--mj-rule);
+  border-radius: 3px;
+}
+
+.mj-capture {
+  padding: 6px 8px;
+}
+
+.mj-capture + .mj-capture {
+  border-top: 1px solid var(--mj-rule);
+}
+
+.mj-capture--bad {
+  box-shadow: inset 0 0 0 1px var(--mj-partner);
+}
+
+.mj-capture-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px;
+}
+
+.mj-capture-name {
+  font-family: var(--mj-mono);
+  font-size: 11px;
+}
+
+.mj-capture-verdict {
+  margin-left: auto;
+  font-family: var(--mj-display);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mj-partner);
+}
+
+.mj-capture-verdict--ok {
+  color: var(--mj-platform);
+}
+
+.mj-capture-problem {
+  margin: 0 0 2px;
+  font-size: 11px;
+  color: var(--mj-partner);
+}
+
+.mj-capture-hint {
+  margin: 0 0 2px;
+  font-size: 11px;
+  color: var(--mj-ink-soft);
+}
+
+.mj-target-path {
+  font-family: var(--mj-mono);
+}
+
+.mj-commit-preview {
+  max-height: 90px;
+}
+
+.mj-links {
+  margin: 0 0 10px;
+  padding: 0 0 0 18px;
+  font-size: 12px;
+}
+
+.mj-links a {
+  color: var(--mj-identity);
+}
+
+
+/* --- start-over confirmation -------------------------------------------------------------- */
+
+.mj-confirm {
+  flex: none;
+  padding: 10px var(--mj-pad);
+  border-bottom: 1px solid var(--mj-partner);
+  background: var(--mj-stock);
+  font-size: 12px;
+}
+
+.mj-confirm p {
+  margin: 0 0 8px;
+}
+
+.mj-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+
+/* --- the suggestion card --------------------------------------------------------------------- */
+
+.mj-guess {
+  margin: 0 0 10px;
+  padding: 12px;
+  border: 1px solid var(--mj-identity);
+  border-radius: 4px;
+  background: var(--mj-sheet);
+  box-shadow: 0 6px 18px rgba(31, 79, 224, 0.1);
+}
+
+.mj-guess-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.mj-guess-icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  color: var(--mj-identity);
+}
+
+.mj-guess-text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.mj-guess-text strong {
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.mj-guess-facts {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--mj-identity);
+}
+
+.mj-guess-why {
+  font-size: 12px;
+  color: var(--mj-ink-soft);
+}
+
+.mj-guess-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.mj-btn-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+}
+
+.mj-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--mj-identity);
+  font: inherit;
+  font-size: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* --- the timeline ------------------------------------------------------------------------------ */
+
+.mj-timeline {
+  margin: 4px 0 6px;
+  padding: 0;
+  list-style: none;
+}
+
+.mj-tl {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  min-height: 40px;
+}
+
+.mj-tl-rail {
+  position: relative;
+  flex: none;
+  width: 22px;
+}
+
+/* The rail: a hairline running through every dot, broken only at the ends of the list. */
+.mj-tl-rail::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 10.5px;
+  width: 1px;
+  background: var(--mj-rule);
+}
+
+.mj-tl:first-child .mj-tl-rail::before {
+  top: 11px;
+}
+
+.mj-tl:last-child .mj-tl-rail::before {
+  bottom: auto;
+  height: 11px;
+}
+
+.mj-tl-dot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--mj-rule);
+  border-radius: 50%;
+  background: var(--mj-sheet);
+  color: var(--mj-ink-soft);
+}
+
+.mj-tl-dot svg {
+  width: 12px;
+  height: 12px;
+}
+
+.mj-tl--pinned .mj-tl-dot {
+  border-color: var(--mj-identity);
+  background: var(--mj-identity);
+  color: #fff;
+}
+
+.mj-tl--quiet .mj-tl-dot {
+  color: var(--mj-ink-faint);
+}
+
+.mj-tl-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 2px 8px;
+  min-width: 0;
+  padding: 2px 0 12px;
+}
+
+.mj-tl-main {
+  display: flex;
+  flex: 1 1 160px;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mj-tl-time {
+  font-family: var(--mj-mono);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--mj-ink-soft);
+}
+
+.mj-tl-title {
+  font-size: 13px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.mj-tl--quiet .mj-tl-title {
+  color: var(--mj-ink-soft);
+}
+
+.mj-tl--pinned .mj-tl-title {
+  font-weight: 600;
+}
+
+.mj-tl-facts {
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--mj-identity);
+}
+
+.mj-tl-pin {
+  flex: none;
+  align-self: center;
+  padding: 3px 8px;
+  border: 1px solid var(--mj-rule);
+  border-radius: 999px;
+  background: var(--mj-sheet);
+  font-size: 11px;
+  color: var(--mj-ink-soft);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+}
+
+.mj-tl:hover .mj-tl-pin,
+.mj-tl:focus-within .mj-tl-pin,
+.mj-tl-pin--on {
+  opacity: 1;
+}
+
+.mj-tl-pin--on {
+  border-color: var(--mj-identity);
+  color: var(--mj-identity);
+  font-weight: 600;
+}
+
+.mj-tl-detail {
+  flex: 1 1 100%;
+  margin-top: 4px;
+}
+
+.mj-tl-more {
+  display: block;
+  margin: 0 0 12px 32px;
+  font-size: 12px;
+}
+
+.mj-built-from {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: 0 0 4px;
+  font-size: 12px;
+}
+
+.mj-built-from .mj-field-label {
+  margin: 0;
+}
+
+.mj-built-from-what {
+  font-weight: 600;
+}
+
+
+.mj-connection {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: -2px 0 12px;
+  font-size: 12px;
+}
+
+.mj-connection-ok {
+  color: var(--mj-platform);
+}
+
+.mj-connection-bad {
+  color: var(--mj-partner);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body *,
+  body *::before,
+  body *::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* --- the plain surfaces: popup, sign-in, the states that are not a work order ---------------- */
+
+/* A panel with no stack and no action bar — it pads its own content instead of relying on the
+   sections to do it. */
+.mj-panel--plain {
+  gap: 12px;
+  padding: var(--mj-pad);
+  overflow-y: auto;
+}
+
+.mj-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 320px;
+  padding: var(--mj-pad);
+  background: var(--mj-sheet);
+}
+
+.mj-signin {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: var(--mj-pad);
+}
+
+.mj-signin .mj-field {
+  margin: 0;
+}
+
+/* --- the job list ------------------------------------------------------------------------------ */
+
+.mj-jobs {
+  padding-top: 0;
+}
+
+.mj-job {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: var(--mj-pad);
+  border-top: 1px solid var(--mj-rule);
+  list-style: none;
+}
+
+/* The site you are standing on, marked the way a work order marks its live section. */
+.mj-job--current {
+  background: var(--mj-sheet);
+  box-shadow: var(--mj-press);
+}
+
+.mj-job-row {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px var(--mj-pad);
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mj-job-site {
+  overflow: hidden;
+  font-family: var(--mj-display);
+  font-size: 16px;
+  color: var(--mj-ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mj-job-meta {
+  font-size: 11px;
+  color: var(--mj-ink-soft);
+}
+
+.mj-job-side {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+}
+
+.mj-job-delete {
+  width: 26px;
+  height: 26px;
+  color: var(--mj-ink-faint);
+}
+
+.mj-job-delete svg {
+  width: 13px;
+  height: 13px;
+}
+
+.mj-job-delete:hover {
+  color: var(--mj-partner);
+}
+
+/* --- the deploy target choice ------------------------------------------------------------------ */
+
+/* Two files, two meanings: this hostname, or this advertiser wherever their tag runs. Stacked
+   rather than side by side — the difference is in the sentence under each name, and a panel is
+   too narrow to put two sentences beside each other. */
+.mj-target-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0 14px;
+}
+
+/* Two answers to one question, printed on different stock. The chosen one is on the sheet with
+   the ink of the panel behind it; the other waits on the ground. No border does that work. */
+.mj-target {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 13px 14px;
+  border: 0;
+  border-radius: var(--mj-radius);
+  background: var(--mj-stock);
+  text-align: left;
+  cursor: pointer;
+  transition: background 160ms ease-out;
+}
+
+.mj-target:hover {
+  background: var(--mj-carbon);
+}
+
+.mj-target--on,
+.mj-target--on:hover {
+  background: var(--mj-sheet);
+  box-shadow: var(--mj-press), 0 1px 3px rgba(26, 23, 19, 0.1);
+}
+
+.mj-target-head {
+  font-family: var(--mj-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--mj-ink-soft);
+}
+
+.mj-target--on .mj-target-head {
+  color: var(--mj-ink);
+}
+
+.mj-target-where {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--mj-ink-soft);
+  overflow-wrap: anywhere;
+}
+
+.mj-target-note {
+  font-size: 12px;
+  color: var(--mj-ink-faint);
+}
+
+.mj-target-note--warn {
+  color: var(--mj-partner);
+}
+
+/* The MJ mark is one raster, drawn as dark ink for paper. On the ink ground it disappears into
+   it, so it is inverted rather than shipped twice — it is a single-colour glyph, and inverting
+   a single-colour glyph is exactly what it looks like drawn in the other colour. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .mj-mark {
+    filter: invert(1);
+  }
+}
+
+:root[data-theme="dark"] .mj-mark {
+  filter: invert(1);
+}
+
+/* --- info disclosures ---------------------------------------------------------------------------- */
+
+/* The answer to "what does this mean?", parked one click away so the surface can stay a work
+   order rather than becoming its own manual. */
+.mj-infotip {
+  display: contents;
+}
+
+.mj-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--mj-ink-faint);
+  cursor: pointer;
+  transition: color 160ms ease-out;
+}
+
+.mj-info svg {
+  width: 14px;
+  height: 14px;
+}
+
+.mj-info:hover,
+.mj-info[aria-expanded="true"] {
+  color: var(--mj-identity);
+}
+
+.mj-info-body {
+  display: block;
+  flex: 1 0 100%;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: var(--mj-radius);
+  background: var(--mj-stock);
+  box-shadow: var(--mj-press);
+  font-family: var(--mj-body);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--mj-ink-soft);
+}
+
+.mj-target-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* "Suggested" is the assistant's opinion, marked as one — it is not part of the file's name. */
+.mj-target-suggested {
+  margin-left: 8px;
+  color: var(--mj-identity);
+  font-family: var(--mj-body);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* A field label that carries a disclosure needs to breathe around it; the label rules elsewhere
+   assume a bare word. */
+.mj-field-label:has(.mj-info) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* The commit, said as a sentence. The exact message is inside the disclosure beside it — it is
+   the machine's words, and nobody needs to read them to decide. */
+.mj-commit-line {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin: 16px 0 0;
+}
+
+.mj-commit-exact {
+  display: block;
+  margin-bottom: 8px;
+  font-family: var(--mj-mono);
+  font-size: 11.5px;
+  line-height: 1.5;
+  white-space: pre-line;
+  color: var(--mj-ink);
+}
+
+/* A little more air between one carbon copy and the next. */
+.mj-slip-row {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+/* The bottom of the ticket. The zigzag tears the stack open at the top; without a matching edge
+   the last sheet just stops, and the ground below it reads as something missing rather than as
+   the desk the ticket is lying on. */
+.mj-stack > li:last-child {
+  padding-bottom: 10px;
+  -webkit-mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - 6px) no-repeat,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 11px 6px repeat-x;
+  mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - 6px) no-repeat,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 11px 6px repeat-x;
+}

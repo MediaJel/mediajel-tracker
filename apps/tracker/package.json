@@ -6,15 +6,11 @@
   "browserslist": [
     "since 2017-06"
   ],
-  "//alias": "Canonicalize @mediajel/* to the real package src (not the node_modules symlink) so a dynamically-imported module and its dynamic import() resolve to the SAME Parcel module id — otherwise intra-package dynamic imports resolve to undefined. The tracker-widget/vendor entry is the ONE exception that resolves to built output instead of src (see the //vendor note in packages/tracker-widget/package.json); it is repeated here because when Parcel treats apps/tracker as its project root this map is consulted first, and its `@mediajel/tracker-widget` prefix would otherwise swallow the subpath.",
+  "//alias": "Canonicalize @mediajel/* to the real package src (not the node_modules symlink) so a dynamically-imported module and its dynamic import() resolve to the SAME Parcel module id — otherwise intra-package dynamic imports resolve to undefined.",
   "alias": {
     "src": "./src",
-    "@mediajel/tracker-widget/vendor": "../../packages/tracker-widget/dist/vendor.js",
-    "preact/jsx-runtime": "../../packages/tracker-widget/dist/vendor.js",
-    "preact/jsx-dev-runtime": "../../packages/tracker-widget/dist/vendor.js",
     "@mediajel/tracker-core": "../../packages/tracker-core/src",
-    "@mediajel/tracker-environments": "../../packages/tracker-environments/src",
-    "@mediajel/tracker-widget": "../../packages/tracker-widget/src"
+    "@mediajel/tracker-environments": "../../packages/tracker-environments/src"
   },
   "//cache-dir": "Parcel derives its cache directory from its PROJECT ROOT, which it finds by walking up for a yarn/npm/pnpm lockfile or a `.git` FILE. bun.lock is unknown to it and .git here is a directory, so the root lands on the build cwd on CI but on any ancestor that happens to hold a package-lock.json otherwise — on a dev machine with one in $HOME the cache silently becomes ~/.parcel-cache, shared with unrelated projects, and `rm -rf apps/tracker/.parcel-cache` (the documented fix for a stale tag chunk) becomes a no-op. Pinning --cache-dir makes the cache location the same everywhere; CI is unaffected because its cwd is already apps/tracker.",
   "//scripts": "Parcel runs under Node via scripts/run-parcel.mjs (Parcel's plugin loader uses a Node internal Bun lacks). Bun remains the package manager/workspace tool; node_modules is hoisted (see bunfig.toml). --no-scope-hoist is REQUIRED: with scope hoisting Parcel mis-assigns the dynamically-imported tracker-core modules (v1/v2 tracker, ecommerce, impressions) and import() resolves to undefined; disabling it keeps the tag's lazy code-splitting working.",
@@ -34,14 +30,11 @@
   },
   "dependencies": {
     "@mediajel/tracker-core": "*",
-    "@mediajel/tracker-environments": "*",
-    "@mediajel/tracker-widget": "*"
+    "@mediajel/tracker-environments": "*"
   },
-  "//devDependencies": "@parcel/optimizer-data-url is pinned EXACTLY, not caret-ranged like the two reporters: Parcel refuses a plugin whose version does not match its own (`Could not find module \"@parcel/optimizer-data-url\" satisfying 2.12.0`), and a caret resolves to the current 2.16.x. It must also be declared rather than left to Parcel — Parcel auto-installs a missing plugin mid-build and writes it into this file, which CI's `bun install --frozen-lockfile` cannot do. It inlines the widget's MJ mark as a data URI (packages/tracker-widget/src/ui/icons.tsx) so the assistant never requests its own artwork from a client's page.",
   "devDependencies": {
     "@mediajel/eslint-config": "*",
     "@mediajel/tsconfig": "*",
-    "@parcel/optimizer-data-url": "2.12.0",
     "@parcel/reporter-bundle-analyzer": "^2.12.0",
     "@parcel/reporter-bundle-buddy": "^2.12.0",
     "@testing-library/cypress": "^10.0.3",

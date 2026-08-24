@@ -93,8 +93,10 @@ mediajel-tracker/
 | Workspace | Package name | What it is |
 |---|---|---|
 | `apps/tracker` | `mediajel-tracker` | The deployable universal tag (Parcel-bundled). |
+| `apps/extension` | `@mediajel/extension` | The Integrations Assistant, as a Chrome extension (Plasmo). |
 | `apps/integrations` | `@mediajel/integrations` | Interactive training site that grades against Snowplow Micro. |
 | `packages/tracker-core` | `@mediajel/tracker-core` | Snowplow tracker, segment builder, context parsing, logger, utils. |
+| `packages/assistant-core` | `@mediajel/assistant-core` | The assistant's framework-free half: page recorder, in-page verification, prompt and knowledge base, step machine. |
 | `packages/tracker-environments` | `@mediajel/tracker-environments` | Per-platform e-commerce data sources (40+ integrations). |
 | `packages/iglu-schemas` | `@mediajel/iglu-schemas` | Vendored Iglu JSON schemas; offline fallback for Micro. |
 | `packages/eslint-config` | `@mediajel/eslint-config` | Shared ESLint rules. |
@@ -352,17 +354,18 @@ type SignupParams = { uuid: string; firstName?: string; lastName?: string; gende
 
 ## Integrations Assistant (in-page widget)
 
-`window.enableTrackerWidget()` on any page running the tag opens the **Integrations
-Assistant** — a floating work order that records the page while you simulate a transaction
-or sign-up, has a model write the frictionless custom tag in house conventions, verifies it
-on the page with `trackTrans` intercepted (nothing reaches the collector), and deploys it to
-`master` of `mediajel-frictionless-custom-tag` (domain or app-id folder). It ships as a lazy
-chunk (`widget.<hash>.js`); the always-loaded tag only carries a ~1 KB stub. The model call
-runs in MediaJel's assistant service (mediajel-serverless `services/widget-api`, URL inlined
-at build time as `WIDGET_API_URL`); the operator's one credential is a GitHub PAT, entered in
-the widget and kept in the tab by default — it is both the service's access check and the
-deploy token.
-See `packages/tracker-widget/README.md` for the full contract.
+The **Integrations Assistant** is a Chrome extension (`apps/extension`). It records a client's page
+while an engineer simulates a transaction or sign-up, has a model write the frictionless custom tag
+in house conventions, verifies it on that page with `trackTrans` intercepted (nothing reaches the
+collector), and deploys it to `master` of `mediajel-frictionless-custom-tag`.
+
+It used to be a lazy chunk inside the tag, opened with `window.enableTrackerWidget()`. It is not
+any more, and the tag carries nothing for it — no stub, no bytes. Engineers sign in with the
+MediaJel account they already have (the dashboard's Cognito pool); the model and the deploy
+credential both live in MediaJel's assistant service (mediajel-serverless `services/widget-api`),
+so nobody holds a token.
+
+See [`apps/extension/README.md`](apps/extension/README.md) for the full contract.
 
 ## Privacy & compliance
 

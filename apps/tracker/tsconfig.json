@@ -1,24 +1,13 @@
 {
   "extends": "@mediajel/tsconfig/base.json",
-  "//jsx": "The widget package renders with preact; tsc follows the lazy import into its .tsx files, and base.json sets no jsx. The emitted `preact/jsx-runtime` specifier is aliased to the widget's vendor bundle in package.json — without that Parcel resolves node_modules/preact/jsx-runtime and the chunk carries a SECOND preact, whose `options` hooks the first copy's diff never calls. Must stay identical to packages/tracker-widget/tsconfig.json.",
   "compilerOptions": {
-    "jsx": "react-jsx",
-    "jsxImportSource": "preact",
     "paths": {
       "src/*": ["./src/*"],
       "@mediajel/tracker-core/*": ["../../packages/tracker-core/src/*"],
-      "@mediajel/tracker-environments/*": ["../../packages/tracker-environments/src/*"],
-      "@mediajel/tracker-widget/vendor": ["../../packages/tracker-widget/vendor/entry.ts"],
-      "@mediajel/tracker-widget/*": ["../../packages/tracker-widget/src/*"]
+      "@mediajel/tracker-environments/*": ["../../packages/tracker-environments/src/*"]
     }
   },
-  "//include": "interface.ts carries the shared `declare global { Window }` augmentation from tracker-core, global.ts the widget's enable/disableTrackerWidget augmentation, assets.d.ts the `data-url:*` module Parcel inlines the MJ mark through; ambient declarations only apply to compilations that include the declaring file, and tsc follows the lazy import() into the widget's .tsx.",
-  "include": [
-    "src/**/*",
-    "server/**/*",
-    "../../packages/tracker-core/src/interface.ts",
-    "../../packages/tracker-widget/src/global.ts",
-    "../../packages/tracker-widget/src/types/assets.d.ts"
-  ],
+  "//include": "interface.ts carries the shared `declare global { Window }` augmentation from tracker-core; ambient declarations only apply to compilations that include the declaring file.",
+  "include": ["src/**/*", "server/**/*", "../../packages/tracker-core/src/interface.ts"],
   "exclude": ["node_modules", "dist", "src/scripts/**/*"]
 }
