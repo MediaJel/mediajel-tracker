@@ -1,13 +1,19 @@
 import observable from '@mediajel/tracker-core/utils/create-events-observable';
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import { xhrResponseSource } from "@mediajel/tracker-core/sources/xhr-response-source";
+import { xhrJsonObject } from "@mediajel/tracker-core/utils/xhr-json";
 import { TransactionCartItem } from '@mediajel/tracker-core/types';
 
 const blazeDataSource = () => {
     const runBlaze = () => {
         xhrResponseSource((xhr) => {
+            const getData = xhrJsonObject(xhr);
+            if (!getData) return;
+
             try {
-                const getData = JSON.parse(xhr.responseText);
-                if (getData.data.type === "orders") {
+                // Optional chaining: this source sees every XHR on the page, so JSON that
+                // isn't a Blaze order must skip silently, not report a TypeError.
+                if (getData.data?.type === "orders") {
 
                     const transaction = getData.data.attributes;
 
@@ -44,7 +50,9 @@ const blazeDataSource = () => {
                     });
                 }
             }
-            catch (error) { }
+            catch (error) {
+                notifyError(error, "blaze");
+            }
         });
     }
 

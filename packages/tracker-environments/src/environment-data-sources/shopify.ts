@@ -1,3 +1,4 @@
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
 
 import { TransactionCartItem } from "@mediajel/tracker-core/types";
@@ -37,7 +38,7 @@ const shopifyDataSource = () => {
         },
       });
     } catch (error) {
-      // window.tracker("trackError", JSON.stringify(error), "SHOPIFY");
+      notifyError(error, "shopify");
     }
   }
 
@@ -82,7 +83,7 @@ const shopifyDataSource = () => {
         },
       });
     } catch (error) {
-      // window.tracker("trackError", JSON.stringify(error), "SHOPIFY");
+      notifyError(error, "shopify");
     }
   }
 };

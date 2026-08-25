@@ -1,14 +1,22 @@
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
 
 import { xhrResponseSource } from "@mediajel/tracker-core/sources/xhr-response-source";
+import { xhrJsonObject } from "@mediajel/tracker-core/utils/xhr-json";
 import { EnvironmentEvents, TransactionCartItem } from "@mediajel/tracker-core/types";
 
 const wefunderTracker = () => {
   xhrResponseSource((xhr) => {
-    if (xhr.responseURL.includes("investments") && typeof xhr.responseText === "string") {
+    if (xhr.responseURL.includes("investments")) {
+      const transaction = xhrJsonObject(xhr);
+      if (!transaction) return;
+
       try {
-        const response = JSON.parse(xhr.responseText);
-        const transaction = response;
+        // Unrelated "investments" JSON without an order
+        // shape must skip silently, not report a TypeError.
+        if (!Array.isArray(transaction.products) || transaction.id == null) {
+          return;
+        }
         const products = transaction.products;
 
         observable.notify({
@@ -37,7 +45,7 @@ const wefunderTracker = () => {
           },
         });
       } catch (error) {
-        // window.tracker('trackError', error, 'Wefunder');
+        notifyError(error, "wefunder");
       }
     }
   });

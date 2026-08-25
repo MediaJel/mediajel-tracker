@@ -1,3 +1,4 @@
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
 
 import { xhrRequestSource } from "@mediajel/tracker-core/sources/xhr-request-source";
@@ -5,7 +6,15 @@ import { TransactionCartItem } from "@mediajel/tracker-core/types";
 
 const webjointDataSource = () => {
   xhrRequestSource((data: any): void => {
-    const parsedData = JSON.parse(data);
+    let parsedData;
+    try {
+      parsedData = JSON.parse(data);
+    } catch (e) {
+      // Silent fail if JSON parsing fails — this source sees every XHR request body
+      // the page sends, and a SyntaxError would carry that body (guard() would
+      // otherwise report it through the error funnel).
+      return;
+    }
 
     if (parsedData && Object.keys(parsedData).includes("orders")) {
       try {
@@ -34,7 +43,7 @@ const webjointDataSource = () => {
           },
         });
       } catch (error) {
-        // window.tracker("trackError", JSON.stringify(error), "WEBJOINT");
+        notifyError(error, "webjoint");
       }
     }
   });

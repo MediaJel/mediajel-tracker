@@ -1,4 +1,5 @@
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import { isTrackerLoaded } from "@mediajel/tracker-core/sources/utils/is-tracker-loaded";
 import { xhrResponseSource } from "@mediajel/tracker-core/sources/xhr-response-source";
 import { datalayerSource } from "@mediajel/tracker-core/sources/google-datalayer-source";
@@ -63,7 +64,7 @@ const bigcommerceDataSource = (snowplow: SnowplowTracker) => {
         });
         localStorage.setItem("latestOrder", transaction.orderId.toString());
       } catch (e) {
-        // Silent fail for notification errors
+        notifyError(e, "bigcommerce");
       }
     });
   });
@@ -105,7 +106,7 @@ const bigcommerceDataSource = (snowplow: SnowplowTracker) => {
             });
           });
         } catch (error) {
-          // Silent fail for tracker errors
+          notifyError(error, "bigcommerce");
         }
       }
     });

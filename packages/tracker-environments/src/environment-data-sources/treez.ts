@@ -1,11 +1,15 @@
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import { xhrResponseSource } from "@mediajel/tracker-core/sources/xhr-response-source";
+import { xhrJsonObject } from "@mediajel/tracker-core/utils/xhr-json";
 import { TransactionCartItem } from "@mediajel/tracker-core/types";
 
 const treezDataSource = () => {
   xhrResponseSource((xhr) => {
+    const getData = xhrJsonObject(xhr);
+    if (!getData) return;
+
     try {
-      const getData = JSON.parse(xhr.responseText);
       if (getData.orderNumber && getData.total) {
         const items = getData?.items;
 
@@ -33,7 +37,9 @@ const treezDataSource = () => {
           },
         });
       }
-    } catch (error) {}
+    } catch (error) {
+      notifyError(error, "treez");
+    }
   });
 };
 

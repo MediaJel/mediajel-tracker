@@ -6,9 +6,17 @@ import getContext from '@mediajel/tracker-core/utils/get-context';
 import { getCustomTags } from '@mediajel/tracker-core/utils/get-custom-tags';
 import isUsPrivacyOptOut from '@mediajel/tracker-core/utils/privacy-opt-out';
 import { createRetailId } from '@mediajel/tracker-core/utils/retail-id-parser';
+import { notifyError } from '@mediajel/tracker-core/sources/error-tracking-source';
 
 (async (): Promise<void> => {
   try {
+    // Public API, assigned first so it exists on every path — opt-out, disabled,
+    // missing appId, or mid-boot — and a client's onerror handler can never hit
+    // "window.trackError is not a function". Until the error adapter subscribes
+    // (or when it never loads, e.g. GPC/DNT), calls fan out to zero listeners:
+    // a silent no-op, which preserves the hard no-track promise below.
+    window.trackError = notifyError;
+
     // Temporarily disable all logs. Set this first — before getCustomTags/getAppIdTags —
     // so their logger.info/warn calls are silenced too. Previously this ran after the
     // overrides merge, which let logs leak from the calls above it.

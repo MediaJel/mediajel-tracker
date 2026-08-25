@@ -1,5 +1,6 @@
 import logger from "@mediajel/tracker-core/logger";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 
 import { pollForElement } from "@mediajel/tracker-core/sources/utils/poll-for-element";
 import { queryText } from "@mediajel/tracker-core/utils/safe-dom";
@@ -42,6 +43,7 @@ const leaflyDataSource = () => {
     });
   } catch (error) {
     logger.info("trackError", JSON.stringify(error), "LEAFLY");
+    notifyError(error, "leafly");
   }
 };
 
