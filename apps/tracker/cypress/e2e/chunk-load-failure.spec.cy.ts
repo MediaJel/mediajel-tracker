@@ -2,23 +2,18 @@
 // through the error funnel — not vanish as an unhandled rejection while the
 // site silently loses its commerce tracking.
 
-import { appErrorsFrom } from "../support/app-errors";
+import { captureAppErrors } from "../support/app-errors";
 import { HARNESS, stubV2Harness } from "../support/harness";
 
 describe("environment chunk-load failure", () => {
   it("reports the failed jane chunk through the funnel and the tag survives", () => {
-    const captured: any[] = [];
-
     // Error reporting is v2-only, so stub a v2 page requesting environment=jane.
     stubV2Harness("jane");
 
     // Kill the jane data-source chunk: the loader script errors, import() rejects.
     cy.intercept("GET", "**/jane.*.js", { statusCode: 503, body: "" }).as("janeChunk");
 
-    cy.intercept("POST", "**/analytics/track", (req) => {
-      appErrorsFrom(req.body).forEach((d) => captured.push(d));
-      req.reply({ statusCode: 200, body: {} });
-    }).as("track");
+    const captured = captureAppErrors();
 
     // Without handling, the failed import is an uncaught rejection; don't let
     // Cypress fail on it — the assertion below is the real check.

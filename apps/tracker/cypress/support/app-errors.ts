@@ -9,6 +9,17 @@ function fromB64Url(s: string): string {
   return atob(b64);
 }
 
+/** Register the collector intercept (aliased "track", always replying 200) and
+ *  return the array that application_error payloads are collected into. */
+export function captureAppErrors(): any[] {
+  const captured: any[] = [];
+  cy.intercept("POST", "**/analytics/track", (req) => {
+    appErrorsFrom(req.body).forEach((d) => captured.push(d));
+    req.reply({ statusCode: 200, body: {} });
+  }).as("track");
+  return captured;
+}
+
 export function appErrorsFrom(body: any): any[] {
   const events = (body && body.data) || [];
   const out: any[] = [];

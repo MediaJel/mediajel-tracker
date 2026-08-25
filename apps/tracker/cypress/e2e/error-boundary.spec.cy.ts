@@ -1,4 +1,4 @@
-import { appErrorsFrom } from "../support/app-errors";
+import { captureAppErrors } from "../support/app-errors";
 import { HARNESS, stubV2Harness } from "../support/harness";
 
 describe("Error boundary — a throwing tag callback can't crash the client page", () => {
@@ -61,11 +61,7 @@ describe("Error boundary — a throwing tag callback can't crash the client page
   });
 
   it("reports the suppressed throw through the funnel as guard:post-message", () => {
-    const captured: any[] = [];
-    cy.intercept("POST", "**/analytics/track", (req) => {
-      appErrorsFrom(req.body).forEach((d) => captured.push(d));
-      req.reply({ statusCode: 200, body: {} });
-    }).as("track");
+    const captured = captureAppErrors();
 
     // Error reporting is v2-only (the shared fixture at HARNESS loads v1, where
     // trackError is a documented no-op), so stub a v2 page. jane's guarded

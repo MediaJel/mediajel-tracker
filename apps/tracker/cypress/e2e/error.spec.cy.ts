@@ -1,17 +1,13 @@
-import { appErrorsFrom } from "../support/app-errors";
+import { captureAppErrors } from "../support/app-errors";
 import { HARNESS, stubV2Harness } from "../support/harness";
 
 describe("error tracking via window.trackError", () => {
   it("sends one application_error with attribution and dedupes repeats", () => {
-    const captured: any[] = [];
-
     // Error tracking is v2-only (v1's trackError is a no-op), so stub a v2 page
     // instead of the shared v1 fixture (public/index.test.html).
     stubV2Harness();
 
-    cy.intercept("POST", "**/analytics/track", (req) => {
-      appErrorsFrom(req.body).forEach((d) => captured.push(d));
-    }).as("track");
+    const captured = captureAppErrors();
 
     cy.visit(HARNESS);
 
