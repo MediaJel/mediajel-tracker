@@ -7,8 +7,7 @@ import { EnvironmentEvents, TransactionCartItem } from "@mediajel/tracker-core/t
 
 const meadowTracker = () => {
   postMessageSource((event: MessageEvent<any>): void => {
-    // Host traffic can postMessage(null) — foreign messages must not throw.
-    const rawData = event.data ?? {};
+    const rawData = event.data;
 
     if (rawData.type === "ANALYTICS_CART_ADD") {
       const cartData = rawData.payload;
