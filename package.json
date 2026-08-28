@@ -6,6 +6,7 @@
     "start": "rimraf dist && rimraf .parcel-cache && concurrently --kill-others \"parcel watch --port 1235 src/index.ts\" \"ts-node ./server/index.ts\" \"tsc --noEmit --watch\" \"parcel --no-cache ./public/index.html\" ",
     "predeploy": "node -r dotenv/config deploy/predeploy.js",
     "check": "tsc --noEmit",
+    "test:unit": "bun test tests",
     "deploy": "parcel build src/index.ts",
     "postdeploy": "node -r dotenv/config deploy/postdeploy.js",
     "build": "parcel build src/index.ts",
