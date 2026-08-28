@@ -45,7 +45,7 @@ describe("woocommerceDataSource", () => {
       items: [
         {
           orderId: "185250",
-          sku: "td-black-cherry-lite-5mg-single",
+          sku: "128903",
           name: "Black Cherry Lite 5mg THC Seltzer (12oz)",
           category: "N/A",
           unitPrice: 3.99,
@@ -76,7 +76,7 @@ describe("woocommerceDataSource", () => {
       items: [
         {
           orderId: "727",
-          sku: "SKU-93",
+          sku: "93",
           name: "Woo Single #1",
           category: "N/A",
           unitPrice: 10.995,
@@ -108,10 +108,70 @@ describe("woocommerceDataSource", () => {
     expect(notifications[0].transactionEvent.shipping).toBe(0);
   });
 
-  test("emits empty items when transactionItems is missing", () => {
-    const notifications = runDataSource(flattenedTransactionOrder, undefined);
+  test("divides unitPrice by the float quantity for fractional-quantity lines", () => {
+    const notifications = runDataSource(flattenedTransactionOrder, [
+      { ...flattenedTransactionItems[0], quantity: "3.5", total: "35.00" },
+    ]);
 
     expect(notifications).toHaveLength(1);
-    expect(notifications[0].transactionEvent.items).toEqual([]);
+    expect(notifications[0].transactionEvent.items[0].unitPrice).toBe(10);
+    expect(notifications[0].transactionEvent.items[0].quantity).toBe(3);
+  });
+
+  test("keeps a zero quantity as zero instead of counting a phantom unit", () => {
+    const notifications = runDataSource(flattenedTransactionOrder, [
+      { ...flattenedTransactionItems[0], quantity: "0", total: "0.00" },
+    ]);
+
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0].transactionEvent.items[0].quantity).toBe(0);
+    expect(notifications[0].transactionEvent.items[0].unitPrice).toBe(0);
+  });
+
+  test("falls back to the order number when id and transaction_id are missing", () => {
+    const { id, ...orderKeyedByNumberOnly } = flattenedTransactionOrder;
+
+    const notifications = runDataSource(
+      orderKeyedByNumberOnly,
+      flattenedTransactionItems
+    );
+
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0].transactionEvent.id).toBe("185250");
+    expect(notifications[0].transactionEvent.items[0].orderId).toBe("185250");
+  });
+
+  test("does not emit when the payload has no order id at all", () => {
+    const { id, number, ...orderWithoutAnyId } = flattenedTransactionOrder;
+
+    const notifications = runDataSource(
+      orderWithoutAnyId,
+      flattenedTransactionItems
+    );
+
+    expect(notifications).toHaveLength(0);
+  });
+
+  test("does not emit a $0 event when the total is unparseable", () => {
+    const notifications = runDataSource(
+      { ...flattenedTransactionOrder, total: "$1,299.00" },
+      flattenedTransactionItems
+    );
+
+    expect(notifications).toHaveLength(0);
+  });
+
+  test("does not emit when transactionItems is missing", () => {
+    const notifications = runDataSource(flattenedTransactionOrder, undefined);
+
+    expect(notifications).toHaveLength(0);
+  });
+
+  test("does not emit when transactionItems is object-shaped (PHP json_encode of id-keyed array)", () => {
+    const notifications = runDataSource(flattenedTransactionOrder, {
+      "315": flattenedTransactionItems[0],
+    });
+
+    expect(notifications).toHaveLength(0);
   });
 });
