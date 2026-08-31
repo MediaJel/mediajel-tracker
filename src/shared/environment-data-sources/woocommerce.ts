@@ -1,4 +1,3 @@
-import logger from "src/shared/logger";
 import observable from "src/shared/utils/create-events-observable";
 
 import { TransactionCartItem } from "../types";
@@ -22,15 +21,15 @@ const woocommerceDataSource = () => {
     
     const total = parseFloat(transaction.total);
     if (Number.isNaN(total)) {
-      logger.error("WooCommerce: unparseable transaction total", transaction.total);
+      // logger.error("WooCommerce: unparseable transaction total", transaction.total);
       return;
     }
     // Order key varies: id, transaction_id, or customer-facing number. Without
-    // one the event can't be deduped or joined — skip and log, don't throw.
+    // one the event can't be deduped or joined — skip instead of throwing.
     const transactionId =
       transaction.id ?? transaction.transaction_id ?? transaction.number;
     if (transactionId === undefined || transactionId === null) {
-      logger.error("WooCommerce: transaction payload has no order id", transaction);
+      // logger.error("WooCommerce: transaction payload has no order id", transaction);
       return;
     }
     const email = transaction.billing?.email || "N/A";
@@ -67,7 +66,7 @@ const woocommerceDataSource = () => {
       },
     });
   } catch (error) {
-    logger.error("WooCommerce: failed to emit transaction", error);
+    // logger.error("WooCommerce: failed to emit transaction", error);
   }
 };
 
