@@ -59,12 +59,14 @@ export const SignIn = ({ challenge, busy, error, onSignIn, onAnswer }: SignInPro
         </>
       ) : (
         <>
-          <p className="mj-lede">Sign in with your MediaJel account — the one you use for the dashboard.</p>
+          <p className="mj-lede">
+            Sign in with your MediaJel account — the username you use for the dashboard, not your email address.
+          </p>
           <label className="mj-field">
-            <span className="mj-field-label">Email</span>
+            <span className="mj-field-label">Username</span>
             <input
               className="mj-input"
-              type="email"
+              type="text"
               autoComplete="username"
               value={username}
               autoFocus
