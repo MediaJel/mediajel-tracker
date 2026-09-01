@@ -94,6 +94,7 @@ mediajel-tracker/
 |---|---|---|
 | `apps/tracker` | `mediajel-tracker` | The deployable universal tag (Parcel-bundled). |
 | `apps/extension` | `@mediajel/extension` | The Integrations Assistant, as a Chrome extension (Plasmo). |
+| `apps/assistant-api` | `@mediajel/assistant-api` | The Integrations Assistant's server side (NestJS), shaped to move into amplication-nestjs-microservices. |
 | `apps/integrations` | `@mediajel/integrations` | Interactive training site that grades against Snowplow Micro. |
 | `packages/tracker-core` | `@mediajel/tracker-core` | Snowplow tracker, segment builder, context parsing, logger, utils. |
 | `packages/assistant-core` | `@mediajel/assistant-core` | The assistant's framework-free half: page recorder, in-page verification, prompt and knowledge base, step machine. |
