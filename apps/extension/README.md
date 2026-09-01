@@ -72,10 +72,18 @@ which Chrome refuses to load. CI fails the build on that rather than shipping it
 ## Local development
 
 ```sh
+nvm use                                 # Node 22 — see below; the repo root carries an .nvmrc
 bun install
 cp .env.example .env.development        # point WIDGET_API_URL at http://localhost:3011
 bun run dev                             # then load dist/chrome-mv3-dev at chrome://extensions
 ```
+
+**Node 22, not newer.** Plasmo's watcher rides `@parcel/watcher`'s FSEvents backend, which on Node
+23+ throws an uncaught `Events were dropped by the FSEvents client` and takes `plasmo dev` down
+with it — the build succeeds, then the process exits and the panel silently stops rebuilding. 22
+is also what CircleCI builds against. The pin lives in `.nvmrc` and **not** in an `engines` field:
+Parcel derives its build targets from `engines`, so `engines.node` here makes it treat the
+extension as a Node package and module resolution collapses.
 
 Run the assistant service beside it with `yarn dev:widget-api` in `../../../mediajel-serverless`.
 It needs `OPENAI_API_KEY` and, to deploy, `GITHUB_TOKEN` in that repo's `.env.staging`.
