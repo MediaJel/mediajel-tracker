@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "//": "Type-checks the tests without dragging them into the build output. `bun test` runs them; this only proves they compile.",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "."
+  },
+  "include": ["src/**/*", "test/**/*"]
+}

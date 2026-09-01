@@ -93,8 +93,11 @@ mediajel-tracker/
 | Workspace | Package name | What it is |
 |---|---|---|
 | `apps/tracker` | `mediajel-tracker` | The deployable universal tag (Parcel-bundled). |
+| `apps/extension` | `@mediajel/extension` | The Integrations Assistant, as a Chrome extension (Plasmo). |
+| `apps/assistant-api` | `@mediajel/assistant-api` | The Integrations Assistant's server side (NestJS), shaped to move into amplication-nestjs-microservices. |
 | `apps/integrations` | `@mediajel/integrations` | Interactive training site that grades against Snowplow Micro. |
 | `packages/tracker-core` | `@mediajel/tracker-core` | Snowplow tracker, segment builder, context parsing, logger, utils. |
+| `packages/assistant-core` | `@mediajel/assistant-core` | The assistant's framework-free half: page recorder, in-page verification, prompt and knowledge base, step machine. |
 | `packages/tracker-environments` | `@mediajel/tracker-environments` | Per-platform e-commerce data sources (40+ integrations). |
 | `packages/iglu-schemas` | `@mediajel/iglu-schemas` | Vendored Iglu JSON schemas; offline fallback for Micro. |
 | `packages/eslint-config` | `@mediajel/eslint-config` | Shared ESLint rules. |
@@ -349,6 +352,21 @@ type CartEvent = { sku: string; name: string; category: string; unitPrice: numbe
 // window.trackSignUp
 type SignupParams = { uuid: string; firstName?: string; lastName?: string; gender?: string; emailAddress?: string; hashedEmailAddress?: string; address?: string; city?: string; state?: string; phoneNumber?: string; advertiser?: string };
 ```
+
+## Integrations Assistant (in-page widget)
+
+The **Integrations Assistant** is a Chrome extension (`apps/extension`). It records a client's page
+while an engineer simulates a transaction or sign-up, has a model write the frictionless custom tag
+in house conventions, verifies it on that page with `trackTrans` intercepted (nothing reaches the
+collector), and deploys it to `master` of `mediajel-frictionless-custom-tag`.
+
+It used to be a lazy chunk inside the tag, opened with `window.enableTrackerWidget()`. It is not
+any more, and the tag carries nothing for it — no stub, no bytes. Engineers sign in with the
+MediaJel account they already have (the dashboard's Cognito pool); the model and the deploy
+credential both live in MediaJel's assistant service (mediajel-serverless `services/widget-api`),
+so nobody holds a token.
+
+See [`apps/extension/README.md`](apps/extension/README.md) for the full contract.
 
 ## Privacy & compliance
 

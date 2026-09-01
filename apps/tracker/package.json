@@ -12,18 +12,19 @@
     "@mediajel/tracker-core": "../../packages/tracker-core/src",
     "@mediajel/tracker-environments": "../../packages/tracker-environments/src"
   },
+  "//cache-dir": "Parcel derives its cache directory from its PROJECT ROOT, which it finds by walking up for a yarn/npm/pnpm lockfile or a `.git` FILE. bun.lock is unknown to it and .git here is a directory, so the root lands on the build cwd on CI but on any ancestor that happens to hold a package-lock.json otherwise — on a dev machine with one in $HOME the cache silently becomes ~/.parcel-cache, shared with unrelated projects, and `rm -rf apps/tracker/.parcel-cache` (the documented fix for a stale tag chunk) becomes a no-op. Pinning --cache-dir makes the cache location the same everywhere; CI is unaffected because its cwd is already apps/tracker.",
   "//scripts": "Parcel runs under Node via scripts/run-parcel.mjs (Parcel's plugin loader uses a Node internal Bun lacks). Bun remains the package manager/workspace tool; node_modules is hoisted (see bunfig.toml). --no-scope-hoist is REQUIRED: with scope hoisting Parcel mis-assigns the dynamically-imported tracker-core modules (v1/v2 tracker, ecommerce, impressions) and import() resolves to undefined; disabling it keeps the tag's lazy code-splitting working.",
   "scripts": {
-    "dev": "concurrently -k -n tag,server,page \"node scripts/run-parcel.mjs watch src/index.ts --no-scope-hoist --port 1235\" \"bun run server/index.ts\" \"node scripts/run-parcel.mjs public/index.test.html --no-cache --port 1234\"",
-    "build": "node scripts/run-parcel.mjs build src/index.ts --no-scope-hoist",
-    "deploy": "node scripts/run-parcel.mjs build src/index.ts --no-scope-hoist",
+    "dev": "concurrently -k -n tag,server,page \"node scripts/run-parcel.mjs watch src/index.ts --no-scope-hoist --cache-dir .parcel-cache --port 1235\" \"bun run server/index.ts\" \"node scripts/run-parcel.mjs public/index.test.html --no-cache --port 1234\"",
+    "build": "node scripts/run-parcel.mjs build src/index.ts --no-scope-hoist --cache-dir .parcel-cache",
+    "deploy": "node scripts/run-parcel.mjs build src/index.ts --no-scope-hoist --cache-dir .parcel-cache",
     "predeploy": "node -r dotenv/config deploy/predeploy.js dotenv_config_path=../../.env",
     "postdeploy": "node -r dotenv/config deploy/postdeploy.js dotenv_config_path=../../.env",
     "check": "tsc --noEmit",
     "lint": "eslint .",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
-    "test": "start-server-and-test 'node scripts/run-parcel.mjs public/index.test.html --no-cache --port 1234' http://localhost:1234 cy:run",
+    "test": "start-server-and-test 'node scripts/run-parcel.mjs public/index.test.html --no-cache --cache-dir .parcel-cache --port 1234' http://localhost:1234 cy:run",
     "docs": "jsdoc -c jsdoc.json",
     "generate-environments": "bun run src/scripts/generateEnvironments.ts"
   },

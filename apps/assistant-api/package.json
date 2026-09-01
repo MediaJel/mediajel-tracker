@@ -1,0 +1,39 @@
+{
+  "name": "@mediajel/assistant-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The Integrations Assistant's server side, as a NestJS app. Everything of substance lives in src/features/integrations-assistant \u2014 a self-contained feature module shaped to be lifted into amplication-nestjs-microservices' external-service, where main.ts and app.module.ts here are thrown away.",
+  "license": "ISC",
+  "//node": "Nest's DI needs emitDecoratorMetadata, so this builds with tsc (not bun's runtime). The repo pins Node 22 in .nvmrc \u2014 see apps/extension/README.md for why newer breaks the extension's watcher.",
+  "scripts": {
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "start": "node dist/main.js",
+    "check": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
+    "lint": "eslint .",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^4.0.45",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^4.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/swagger": "^11.0.0",
+    "ai": "^7.0.73",
+    "aws-jwt-verify": "^5.0.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@mediajel/eslint-config": "*",
+    "@mediajel/tsconfig": "*",
+    "@nestjs/cli": "^11.0.0",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.9.0",
+    "bun-types": "^1.4.0",
+    "globals": "^15.12.0",
+    "typescript": "^5.6.3"
+  }
+}

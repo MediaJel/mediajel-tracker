@@ -1,0 +1,33 @@
+{
+  "extends": "@mediajel/tsconfig/react.json",
+  "//types": "chrome for the extension APIs, bun-types for `bun:test` in test/**. Both are named explicitly so @types/node's globals do not shadow the DOM lib the panel and the content scripts actually run against.",
+  "compilerOptions": {
+    "types": [
+      "chrome",
+      "bun-types"
+    ],
+    "paths": {
+      "~/*": [
+        "./src/*"
+      ],
+      "@mediajel/assistant-core/*": [
+        "../../packages/assistant-core/src/*"
+      ],
+      "@mediajel/tracker-core/*": [
+        "../../packages/tracker-core/src/*"
+      ]
+    }
+  },
+  "//include": "interface.ts carries tracker-core's shared `declare global { Window }` augmentation — the main-world bridge reads window.trackTrans through it.",
+  "include": [
+    ".plasmo/index.d.ts",
+    "src/**/*",
+    "test/**/*",
+    "../../packages/tracker-core/src/interface.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".plasmo"
+  ]
+}

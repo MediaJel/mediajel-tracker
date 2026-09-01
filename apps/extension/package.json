@@ -1,0 +1,59 @@
+{
+  "name": "@mediajel/extension",
+  "displayName": "MediaJel Integrations Assistant",
+  "version": "1.0.0",
+  "description": "Record a client's purchase or sign-up signal, have MediaJel's assistant write the frictionless custom tag, verify it on the page, and deploy it — from a side panel, signed in with your MediaJel account.",
+  "author": "MediaJel",
+  "private": true,
+  "license": "ISC",
+  "//build-path": "Plasmo writes to build/<target> by default; --build-path=./dist puts it where turbo's `build` task already looks (outputs: [\"dist/**\"]), so no per-package task override is needed. --zip also drops dist/chrome-mv3-prod.zip, which is what CI stores as the artifact.",
+  "scripts": {
+    "dev": "plasmo dev --build-path=./dist --serve-host=127.0.0.1 --hmr-host=127.0.0.1",
+    "build": "plasmo build --zip --build-path=./dist",
+    "package": "plasmo package --build-path=./dist",
+    "check": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "bun test --preload ./test/setup.ts"
+  },
+  "//zod": "zod stays a direct dependency even though nothing here imports it by name: the `alias` below resolves a PATH into node_modules/zod, and this entry is what guarantees it is installed and hoisted where that path can find it. @mediajel/assistant-core imports zod for real.",
+  "dependencies": {
+    "@mediajel/assistant-core": "*",
+    "@mediajel/tracker-core": "*",
+    "@plasmohq/storage": "1.15.0",
+    "amazon-cognito-identity-js": "6.3.20",
+    "plasmo": "0.90.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@happy-dom/global-registrator": "^20.11.6",
+    "@mediajel/eslint-config": "*",
+    "@mediajel/tsconfig": "*",
+    "@types/chrome": "^0.2.7",
+    "@types/node": "^22.9.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "bun-types": "^1.4.0",
+    "typescript": "^5.6.3"
+  },
+  "manifest": {
+    "permissions": [
+      "sidePanel",
+      "storage",
+      "tabs"
+    ],
+    "host_permissions": [
+      "$PLASMO_PUBLIC_WIDGET_API_URL/*",
+      "$PLASMO_PUBLIC_TAG_ORIGIN/*",
+      "http://*/*",
+      "https://*/*"
+    ],
+    "key": "$CRX_PUBLIC_KEY"
+  },
+  "//manifest": "Only what Plasmo cannot infer. `scripting` is added by Plasmo itself, because the main-world recorder is registered rather than declared. `key` pins the extension id across reinstalls so a rebuild does not orphan saved jobs; it resolves from CRX_PUBLIC_KEY and is dropped when that is unset. host_permissions interpolate PLASMO_PUBLIC_* at build time — an unset one leaves a literal `$NAME/*` in the manifest, which Chrome rejects, so the build must be given its env file.",
+  "alias": {
+    "zod": "../../node_modules/zod/index.cjs"
+  },
+  "//alias": "Plasmo bundles with Parcel, and zod's ESM entry is `import * as z` over a chain of `export *` re-exports in a package marked `sideEffects: false`. Parcel drops that graph and `z` arrives as an object with no `.string` — a runtime failure, not a build error, which is why it has to be caught by opening the page. The CommonJS build is one file with every member already attached, so there is no graph to lose. This is the same class of problem the old in-page widget solved by pre-bundling its dependencies by hand."
+}

@@ -1,0 +1,10 @@
+# Plasmo's build output and caches. The zip CI stores as an artifact lands in dist/ too.
+dist/
+.plasmo/
+build/
+keys.json
+
+# Local build configuration. .env.example is the documented shape; these carry real values.
+.env
+.env.development
+.env.production

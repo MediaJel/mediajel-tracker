@@ -1,9 +1,28 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "stream",
-  // Parcel inlines these into the tag bundle. Declare them so turbo's strict mode (default)
-  // doesn't drop them in CI. globalEnv (not passThroughEnv) also busts the cache when they change.
-  "globalEnv": ["COLLECTOR_URL", "FRICTIONLESS_CUSTOMTAG_URL"],
+  // Inlined at build time: the first two by Parcel into the tag, the PLASMO_PUBLIC_* ones by
+  // Plasmo into the extension (only that prefix reaches extension code). Declared here so
+  // turbo's strict mode doesn't drop them in CI; globalEnv also busts the cache when they change.
+  "globalEnv": [
+    "COLLECTOR_URL",
+    "FRICTIONLESS_CUSTOMTAG_URL",
+    "CRX_PUBLIC_KEY",
+    "OPENAI_API_KEY",
+    "GITHUB_TOKEN",
+    "WIDGET_AI_MODEL",
+    "WIDGET_AUTH_REPO",
+    "COGNITO_USER_POOL_ID",
+    "COGNITO_CLIENT_ID",
+    "PORT",
+    "PLASMO_PUBLIC_WIDGET_API_URL",
+    "PLASMO_PUBLIC_COGNITO_USER_POOL_ID",
+    "PLASMO_PUBLIC_COGNITO_CLIENT_ID",
+    "PLASMO_PUBLIC_COGNITO_REGION",
+    "PLASMO_PUBLIC_FRICTIONLESS_CUSTOMTAG_URL",
+    "PLASMO_PUBLIC_TAG_URL",
+    "PLASMO_PUBLIC_TAG_ORIGIN"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
