@@ -17,6 +17,26 @@ import "~/ui/styles.css";
  * before we know which of those it is.
  */
 
+/**
+ * The panel while it is finding out what it is looking at.
+ *
+ * A skeleton of the real layout rather than a line of text, because the alternative is the
+ * panel appearing to be empty and then jumping — and because opening the side panel on a slow
+ * tab is the operator's first impression of the product. The shapes are the ones that will be
+ * there: a job title, the goal line, and the first two carbon slips.
+ *
+ * `aria-busy` and one polite label; the bars themselves are decorative and hidden, because a
+ * screen reader announcing six empty boxes is worse than silence.
+ */
+const Skeleton = (): ReactNode => (
+  <div className="mj-skeleton" aria-busy="true" aria-live="polite" aria-label="Opening this job">
+    <span className="mj-skeleton-bar mj-skeleton-bar--title" aria-hidden="true" />
+    <span className="mj-skeleton-bar mj-skeleton-bar--lede" aria-hidden="true" />
+    <span className="mj-skeleton-slip" aria-hidden="true" />
+    <span className="mj-skeleton-slip" aria-hidden="true" />
+  </div>
+);
+
 const Frame = ({ children }: { children: ReactNode }): ReactNode => (
   <div className="mj-panel mj-panel--plain">
     <div className="mj-letterhead">
@@ -36,7 +56,7 @@ export const SidePanel = (): ReactNode => {
   if (panel.screen === "loading") {
     return (
       <Frame>
-        <p className="mj-lede">Opening…</p>
+        <Skeleton />
       </Frame>
     );
   }
@@ -87,7 +107,7 @@ export const SidePanel = (): ReactNode => {
   if (!panel.session) {
     return (
       <Frame>
-        <p className="mj-lede">Opening…</p>
+        <Skeleton />
       </Frame>
     );
   }
@@ -106,6 +126,8 @@ export const SidePanel = (): ReactNode => {
       onToggleSlip={panel.onToggleSlip}
       confirmingReset={panel.confirmingReset}
       access={panel.access}
+      pending={panel.pending}
+      flowError={panel.flowError}
       settingsOpen={panel.settingsOpen}
       onOpenSettings={panel.onOpenSettings}
       onCloseSettings={panel.onCloseSettings}

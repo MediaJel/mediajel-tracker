@@ -1403,6 +1403,118 @@ body :focus-visible {
   color: var(--mj-partner);
 }
 
+
+/* ── In flight ───────────────────────────────────────────────────────────────────────────────
+   The panel spends real time waiting on a page, a model and a repo, and it used to say nothing
+   while it did. These are the affordances for that, in the stack's own material: paper does not
+   spin, so nothing here spins — a sheet being worked on is a sheet with ink still wet.
+   ───────────────────────────────────────────────────────────────────────────────────────── */
+
+/* The pinned action, working. It keeps its ink so the bar does not go grey and dead under the
+   operator's eyes; the press is inverted, which is what a key held down looks like. */
+.mj-btn--working {
+  /* Both are for the wash below: it positions against this box and must not escape the 3px
+     corners. Scoped to the working state so no other button's stacking changes. */
+  position: relative;
+  overflow: hidden;
+  cursor: progress;
+  box-shadow: var(--mj-press);
+  opacity: 0.92;
+}
+
+/* A slow wash across the label, left to right — the only motion, and it reads as "still going"
+   rather than as decoration. */
+.mj-btn--working::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 22%) 50%, transparent 100%);
+  transform: translateX(-100%);
+  animation: mj-wash 1400ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes mj-wash {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* A failure from the flow, at the action that raised it. Partner ink is the warning voice; it
+   sits above the button because the operator's eye is already on the button. */
+.mj-actionbar-error {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--mj-partner) 9%, transparent);
+  /* Partner at full strength is the brand's warning ink and stays the signal — but as TEXT on
+     its own 9% wash it measures 3.5:1 in light mode, under the 4.5 floor. Tinting 25% toward
+     the page's ink keeps the hue (the craft rule is to tint from the hue, never to fall back to
+     grey) and lands at 5.2:1 light / 7.6:1 dark, because `--mj-ink` inverts with the theme. */
+  color: color-mix(in srgb, var(--mj-partner) 75%, var(--mj-ink));
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+/* An empty state that teaches rather than shrugs. Indented against the sheet's own rule so it
+   reads as a note in the margin, which is what it is. */
+.mj-empty {
+  margin: 12px 0 0;
+  padding-left: 12px;
+  border-left: 1px solid var(--mj-rule);
+  color: var(--mj-ink-soft);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+/* ── The panel, opening ──────────────────────────────────────────────────────────────────────
+   The shapes that are about to be there, so nothing jumps when they arrive. */
+
+.mj-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 0 0;
+}
+
+.mj-skeleton-bar,
+.mj-skeleton-slip {
+  display: block;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--mj-carbon) 0%,
+    color-mix(in srgb, var(--mj-carbon) 55%, var(--mj-sheet)) 50%,
+    var(--mj-carbon) 100%
+  );
+  background-size: 220% 100%;
+  animation: mj-settling 1600ms ease-in-out infinite;
+}
+
+.mj-skeleton-bar--title {
+  width: 62%;
+  height: 26px;
+}
+
+.mj-skeleton-bar--lede {
+  width: 84%;
+  height: 13px;
+}
+
+.mj-skeleton-slip {
+  height: 52px;
+  box-shadow: var(--mj-press);
+}
+
+@keyframes mj-settling {
+  from {
+    background-position: 140% 0;
+  }
+  to {
+    background-position: -40% 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   body *,
   body *::before,
@@ -1410,6 +1522,18 @@ body :focus-visible {
     transition-duration: 0s !important;
     animation-duration: 0s !important;
     animation-iteration-count: 1 !important;
+  }
+
+  /* Zeroing an infinite sweep leaves it parked over the label. Remove it instead: the button
+     still says what it is doing, and the skeleton still holds the layout. */
+  .mj-btn--working::after {
+    display: none;
+  }
+
+  .mj-skeleton-bar,
+  .mj-skeleton-slip {
+    animation: none;
+    background: var(--mj-carbon);
   }
 }
 

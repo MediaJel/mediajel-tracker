@@ -86,7 +86,7 @@ export const RecordSection = ({ session, status, onStart, onDiscard }: RecordSec
           {session.pages.length === 1 ? "page" : "pages"}
         </span>
       </div>
-      {counts.length > 0 && (
+      {counts.length > 0 ? (
         <dl className="mj-counts">
           {counts.map(([label, count]) => (
             <Fragment key={label}>
@@ -95,6 +95,17 @@ export const RecordSection = ({ session, status, onStart, onDiscard }: RecordSec
             </Fragment>
           ))}
         </dl>
+      ) : (
+        /*
+         * Nothing captured yet. "0 events" beside a running clock is the one moment an operator
+         * cannot tell a working recorder from a broken one, so this says which it is and what
+         * would end it — the recorder is genuinely idle until the page does something, and a
+         * page at rest between clicks is the expected case, not a fault.
+         */
+        <p className="mj-empty" role="status">
+          Nothing yet. The recorder is watching this page and stays quiet until it does something — the first click,
+          request or route change will appear here.
+        </p>
       )}
       <div className="mj-section-footer">
         <button type="button" className="mj-btn mj-btn--ghost" onClick={onDiscard}>

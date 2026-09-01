@@ -15,6 +15,7 @@ import { InterceptedCall } from "@mediajel/assistant-core/verify/interceptor";
 import { checkPayload } from "@mediajel/assistant-core/verify/payload-check";
 
 import type { Identity } from "~/auth/cognito";
+import type { Pending } from "~/sidepanel/usePanel";
 import { Settings } from "~/store/settings";
 import Stamp from "~/ui/components/Stamp";
 import { ChevronDown, Gear, Mark, Person, Restart, Zigzag } from "~/ui/icons";
@@ -120,6 +121,10 @@ export interface AppProps {
   onCloseSettings(): void;
   /** The tag URL "load the tag on this page" would use. */
   tagUrl: string;
+  /** The action in flight, or null. */
+  pending: Pending | null;
+  /** A failure from the flow itself — shown at the action that caused it. */
+  flowError: string;
 }
 
 const seconds = (session: WidgetSession): number => {
@@ -217,6 +222,27 @@ const RecordSummary = ({ session }: { session: WidgetSession }): ReactNode => (
     ) : null}
   </div>
 );
+
+/**
+ * What the pinned action says while it is working.
+ *
+ * Named per action rather than a generic "Working…", because this button is the only thing an
+ * operator is watching and the things it can be doing take between 200ms and two minutes.
+ *
+ * A total `Record`, not a `Partial`: adding a `Pending` member without a label here should fail
+ * the build, not ship a button that goes silent while it works.
+ */
+const WORKING_LABEL: Record<Pending, string> = {
+  starting: "Starting…",
+  stopping: "Stopping…",
+  generating: "Writing the tag…",
+  cancelling: "Cancelling…",
+  verifying: "Verifying on the page…",
+  "checking-targets": "Reading the repo…",
+  deploying: "Deploying…",
+  resetting: "Starting over…",
+  "loading-job": "Working…",
+};
 
 /** The one next action, and what it will do. Derived from the step so it can never disagree. */
 interface Action {
@@ -399,6 +425,9 @@ export const App = (props: AppProps): ReactNode => {
   };
 
   const action = actionFor(props);
+  // Only the pinned action reflects flight. A background read (Settings' access check) has its
+  // own affordance and must not make the primary button look busy.
+  const working = props.pending ? WORKING_LABEL[props.pending] : undefined;
 
   return (
     <div className="mj-panel">
@@ -534,16 +563,27 @@ export const App = (props: AppProps): ReactNode => {
 
           {action && (
             <footer className="mj-actionbar">
+              {props.flowError && (
+                <p className="mj-actionbar-error" role="alert">
+                  {props.flowError}
+                </p>
+              )}
               <button
                 type="button"
-                className={`mj-btn ${action.tone === "danger" ? "mj-btn--danger" : "mj-btn--primary"} mj-btn--wide`}
-                aria-disabled={!action.onClick}
-                onClick={action.onClick}
+                className={`mj-btn ${action.tone === "danger" ? "mj-btn--danger" : "mj-btn--primary"} mj-btn--wide${
+                  working ? " mj-btn--working" : ""
+                }`}
+                aria-disabled={!action.onClick || !!working}
+                aria-busy={!!working}
+                onClick={working ? undefined : action.onClick}
               >
-                {action.label}
+                {working ?? action.label}
               </button>
-              <p className={action.blocked ? "mj-consequence mj-consequence--blocked" : "mj-consequence"}>
-                {action.blocked || action.consequence}
+              <p
+                className={action.blocked && !working ? "mj-consequence mj-consequence--blocked" : "mj-consequence"}
+                aria-live="polite"
+              >
+                {working ? "Leave this panel open — it is still working." : action.blocked || action.consequence}
               </p>
             </footer>
           )}

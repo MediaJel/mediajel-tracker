@@ -29,8 +29,30 @@ import { TargetState } from "~/ui/screens/DeploySection";
 
 export type Screen = "loading" | "sign-in" | "no-site" | "jobs" | "job";
 
+/**
+ * What the panel is doing right now, named.
+ *
+ * A boolean would be cheaper and useless: these actions take between 200ms and two minutes,
+ * they are started from different places, and an operator watching a frozen button needs to
+ * know which of them they are waiting for. `null` is the resting state.
+ */
+export type Pending =
+  | "starting"
+  | "stopping"
+  | "generating"
+  | "cancelling"
+  | "verifying"
+  | "checking-targets"
+  | "deploying"
+  | "resetting"
+  | "loading-job";
+
 export interface PanelState {
   screen: Screen;
+  /** The action in flight, or null. Drives every in-progress affordance in the panel. */
+  pending: Pending | null;
+  /** A failure from the flow itself (stop, advance, verify, generate) — never a deploy. */
+  flowError: string;
   identity: Identity | null;
   challenge: AuthChallenge | null;
   authBusy: boolean;
@@ -95,6 +117,8 @@ export const usePanel = (): PanelState => {
   const [selectedTarget, setSelectedTarget] = useState<"domain" | "app-id">("domain");
   const [deploying, setDeploying] = useState(false);
   const [deployError, setDeployError] = useState("");
+  const [pending, setPending] = useState<Pending | null>(null);
+  const [flowError, setFlowError] = useState("");
 
   const tabIdRef = useRef<number | null>(null);
 
@@ -179,11 +203,23 @@ export const usePanel = (): PanelState => {
     return () => clearInterval(timer);
   }, [session?.step]);
 
-  const run = useCallback(async (work: () => Promise<unknown>): Promise<void> => {
+  /**
+   * Every action the panel starts goes through here, so that starting one is visible and
+   * failing one lands somewhere an operator will look.
+   *
+   * It used to do neither: no busy state at all, and every failure — a snapshot, a step change,
+   * a verify — was written into `deployError`, which meant a failed Stop surfaced as a deploy
+   * error three steps before there was anything to deploy.
+   */
+  const run = useCallback(async (name: Pending, work: () => Promise<unknown>): Promise<void> => {
+    setPending(name);
+    setFlowError("");
     try {
       await work();
     } catch (err) {
-      setDeployError(message(err));
+      setFlowError(message(err));
+    } finally {
+      setPending((current) => (current === name ? null : current));
     }
   }, []);
 
@@ -220,36 +256,36 @@ export const usePanel = (): PanelState => {
   const handlers: AppHandlers = useMemo(
     () => ({
       onStartRecording: (goal: WidgetGoal) =>
-        void run(() => ask({ type: "page/start-recording", tabId: tabId(), goal })),
-      onStopRecording: () => void run(() => ask({ type: "page/stop-recording", tabId: tabId() })),
-      onDiscard: () => void run(() => ask({ type: "job/reset", tabId: tabId() })),
+        void run("starting", () => ask({ type: "page/start-recording", tabId: tabId(), goal })),
+      onStopRecording: () => void run("stopping", () => ask({ type: "page/stop-recording", tabId: tabId() })),
+      onDiscard: () => void run("resetting", () => ask({ type: "job/reset", tabId: tabId() })),
       onToggleMark: (id) => patch({ op: "toggle-mark", id }),
       onNotes: (notes) => patch({ op: "notes", notes }),
       onBackToRecording: () =>
-        void run(async () => {
+        void run("starting", async () => {
           await ask({ type: "job/advance", tabId: tabId(), to: "recording" });
           await ask({ type: "page/start-recording", tabId: tabId(), goal: session?.goal ?? "transaction" });
         }),
-      onGenerate: () => void run(() => ask({ type: "service/generate", tabId: tabId() })),
-      onCancelGenerate: () => void run(() => ask({ type: "service/cancel-generate", tabId: tabId() })),
-      onRegenerate: () => void run(() => ask({ type: "service/generate", tabId: tabId() })),
+      onGenerate: () => void run("generating", () => ask({ type: "service/generate", tabId: tabId() })),
+      onCancelGenerate: () => void run("cancelling", () => ask({ type: "service/cancel-generate", tabId: tabId() })),
+      onRegenerate: () => void run("generating", () => ask({ type: "service/generate", tabId: tabId() })),
       onCodeEdit: (code) => patch({ op: "code", code }),
       onRechoose: () =>
-        void run(async () => {
+        void run("resetting", async () => {
           await ask({ type: "job/advance", tabId: tabId(), to: "review" });
           patch({ op: "clear-marks" });
         }),
       onEvidenceMode: (mode) => patch({ op: "evidence-mode", mode }),
       onVerify: () =>
-        void run(async () => {
+        void run("verifying", async () => {
           await ask({ type: "job/advance", tabId: tabId(), to: "verify" });
           setVerifyRunErrors([]);
           await ask({ type: "page/verify", tabId: tabId() });
         }),
-      onVerifyRunAgain: () => void run(() => ask({ type: "page/verify", tabId: tabId() })),
-      onBackToCode: () => void run(() => ask({ type: "job/advance", tabId: tabId(), to: "result" })),
+      onVerifyRunAgain: () => void run("verifying", () => ask({ type: "page/verify", tabId: tabId() })),
+      onBackToCode: () => void run("loading-job", () => ask({ type: "job/advance", tabId: tabId(), to: "result" })),
       onApproveVerify: () =>
-        void run(async () => {
+        void run("checking-targets", async () => {
           await ask({ type: "job/advance", tabId: tabId(), to: "deploy" });
           const suggested = session?.generation?.suggestedTarget.kind;
           setSelectedTarget(suggested === "app-id" && status.appId ? "app-id" : "domain");
@@ -262,6 +298,7 @@ export const usePanel = (): PanelState => {
             selectedTarget === "app-id" && targetStates?.appId ? targetStates.appId : targetStates?.domain;
           if (!current) return;
           setDeploying(true);
+          setPending("deploying");
           setDeployError("");
           try {
             await ask({
@@ -275,10 +312,11 @@ export const usePanel = (): PanelState => {
             setDeployError(message(err));
           } finally {
             setDeploying(false);
+            setPending((current) => (current === "deploying" ? null : current));
           }
         })(),
       onStartAnother: () =>
-        void run(async () => {
+        void run("resetting", async () => {
           setTargetStates(null);
           setDeployError("");
           setVerifyRunErrors([]);
@@ -288,7 +326,7 @@ export const usePanel = (): PanelState => {
       onRequestReset: () => setConfirmingReset(true),
       onCancelReset: () => setConfirmingReset(false),
       onConfirmReset: () =>
-        void run(async () => {
+        void run("resetting", async () => {
           setConfirmingReset(false);
           setTargetStates(null);
           setDeployError("");
@@ -318,8 +356,8 @@ export const usePanel = (): PanelState => {
           setSession(null);
           setScreen("sign-in");
         })(),
-      onClearDedup: () => void run(() => ask({ type: "page/clear-dedup", tabId: tabId() })),
-      onInjectTag: (url) => void run(() => ask({ type: "page/inject-tag", tabId: tabId(), url })),
+      onClearDedup: () => void run("loading-job", () => ask({ type: "page/clear-dedup", tabId: tabId() })),
+      onInjectTag: (url) => void run("loading-job", () => ask({ type: "page/inject-tag", tabId: tabId(), url })),
       onClearAllJobs: () =>
         void (async () => {
           await ask({ type: "job/clear-all" });
@@ -365,6 +403,8 @@ export const usePanel = (): PanelState => {
 
   return {
     screen,
+    pending,
+    flowError,
     identity,
     challenge,
     authBusy,
