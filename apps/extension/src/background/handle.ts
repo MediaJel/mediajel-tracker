@@ -209,6 +209,8 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
 
     case "job/advance": {
       const site = await siteOfTab(request.tabId);
+      // Same reason as stop: without this, a recycled worker turns every step change into "home".
+      await openJob(site);
       return advance(site, request.to, { confirmed: request.confirmed }) ?? "home";
     }
 
@@ -229,6 +231,10 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
 
     case "page/stop-recording": {
       const site = await siteOfTab(request.tabId);
+      // Rehydrate first. A recording is minutes of the panel saying nothing to this worker, so
+      // Chrome has very likely recycled it and `live` is empty — and `advance` on an empty map
+      // returns null, which used to leave the operator pressing Stop against a dead step.
+      await openJob(site);
       send(request.tabId, { type: "stop-recording" });
       return advance(site, "review") ?? "recording";
     }

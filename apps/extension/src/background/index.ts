@@ -58,9 +58,21 @@ const handleUp = async (tabId: number, site: string, message: BridgeUp): Promise
       }
       return;
 
-    case "event":
+    case "event": {
+      // A recording that has been stopped must not keep growing. The page-bridge can miss its
+      // `stop-recording`: the relay's port dies with a recycled worker, so the command goes
+      // nowhere, and the relay only reconnects on the next message going UP — this one. Re-send
+      // the stop now that there is a live port again, and drop the event rather than appending
+      // it to a record the operator has already closed.
+      const session = peekJob(site);
+      if (!session) return;
+      if (session.step !== "recording") {
+        sendToTab(tabId, { type: "stop-recording" });
+        return;
+      }
       updateJob(site, (draft) => draft.timeline.push(message.event), { flush: message.flush });
       return;
+    }
 
     case "page":
       updateJob(site, (draft) => draft.pages.push(message.page));
