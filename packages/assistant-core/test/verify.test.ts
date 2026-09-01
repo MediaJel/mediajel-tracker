@@ -1,11 +1,10 @@
 import { describe, expect, test } from "bun:test";
 
-import { TEMPLATE_DATALAYER } from "@mediajel/assistant-core/ai/knowledge";
 import { InterceptedCall, installVerifyInterceptor } from "@mediajel/assistant-core/verify/interceptor";
 import { checkPayload } from "@mediajel/assistant-core/verify/payload-check";
 import { runGenerated } from "@mediajel/assistant-core/verify/runner";
 
-import { makeEvent } from "./helpers";
+import { REAL_DATALAYER_TAG, makeEvent } from "./helpers";
 
 describe("interceptor", () => {
   test("captures without forwarding, absorbs late assignments, and flags replays", () => {
@@ -48,7 +47,7 @@ describe("runGenerated", () => {
     const captures: InterceptedCall[] = [];
 
     const result = runGenerated(
-      TEMPLATE_DATALAYER,
+      REAL_DATALAYER_TAG,
       (call) => captures.push(call),
       (js) => new Function(js)(),
     );

@@ -175,39 +175,56 @@ describe("deployTag", () => {
 });
 
 describe("generateTag", () => {
-  test("sends instructions and prompt, and returns the validated output", async () => {
-    const { calls } = server(() => ({ status: 200, json: { output: OUTPUT, model: "gpt-5.5" } }));
+  test("sends the evidence and the goal — and no instructions, which are the service's now", async () => {
+    const { calls } = server(() => ({ status: 200, json: { output: OUTPUT, model: "gpt-5.5", violations: [] } }));
     const result = await generateTag(token, { session: SESSION, status: STATUS, hostname: "shop.example.com" });
 
     expect(calls).toHaveLength(1);
-    expect(Object.keys(calls[0].body as object).sort()).toEqual(["instructions", "prompt"]);
-    expect(String((calls[0].body as { prompt: string }).prompt)).toContain("shop.example.com");
+    expect(Object.keys(calls[0].body as object).sort()).toEqual(["evidence", "goal", "hostname"]);
+    expect(String((calls[0].body as { evidence: string }).evidence)).toContain("shop.example.com");
     expect(result.model).toBe("gpt-5.5");
     expect(result.violations).toEqual([]);
   });
 
-  test("runs one repair round when the first answer fails validation, and keeps the better result", async () => {
-    let call = 0;
+  test("sends the masked, trimmed recording — what leaves the browser is what buildPrompt produced", async () => {
+    const { calls } = server(() => ({ status: 200, json: { output: OUTPUT, model: "gpt-5.5", violations: [] } }));
+    await generateTag(token, { session: SESSION, status: STATUS, hostname: "shop.example.com" });
+
+    const body = calls[0].body as { evidence: string; goal: string };
+    expect(body.goal).toBe(SESSION.goal);
+    // The knowledge base used to travel in every request. It must not any more.
+    expect(body.evidence).not.toContain("TransactionEvent");
+    expect(body.evidence).not.toContain("REAL SHIPPED TAGS");
+  });
+
+  test("makes ONE call — the repair round belongs to the service now", async () => {
     const broken = { ...OUTPUT, code: "window.trackTrans({});" };
     const { calls } = server(() => ({
       status: 200,
-      json: { output: ++call === 1 ? broken : OUTPUT, model: "gpt-5.5" },
+      json: { output: broken, model: "gpt-5.5", violations: ["no dedup guard found"] },
     }));
 
     const result = await generateTag(token, { session: SESSION, status: STATUS, hostname: "shop.example.com" });
-    expect(calls).toHaveLength(2);
-    expect(String((calls[1].body as { prompt: string }).prompt)).toContain("FAILED MECHANICAL VALIDATION");
-    expect(result.violations).toEqual([]);
-    expect(result.output.code).toBe(OUTPUT.code);
+    expect(calls).toHaveLength(1);
+    expect(result.violations).toEqual(["no dedup guard found"]);
+    expect(result.output.code).toBe(broken.code);
   });
 
-  test("keeps the first result, with its violations shown, when the repair round is no better", async () => {
-    const broken = { ...OUTPUT, code: "window.trackTrans({});" };
-    server(() => ({ status: 200, json: { output: broken, model: "gpt-5.5" } }));
+  test("shows the violations the service reports rather than re-deciding them", async () => {
+    server(() => ({
+      status: 200,
+      json: { output: OUTPUT, model: "gpt-5.5", violations: ["something the service saw"] },
+    }));
 
     const result = await generateTag(token, { session: SESSION, status: STATUS, hostname: "shop.example.com" });
-    expect(result.violations.length).toBeGreaterThan(0);
-    expect(result.output.code).toBe(broken.code);
+    expect(result.violations).toEqual(["something the service saw"]);
+  });
+
+  test("treats a service that names no violations as a clean answer", async () => {
+    server(() => ({ status: 200, json: { output: OUTPUT, model: "gpt-5.5" } }));
+
+    const result = await generateTag(token, { session: SESSION, status: STATUS, hostname: "shop.example.com" });
+    expect(result.violations).toEqual([]);
   });
 
   test("refuses an answer that does not match the tag contract", async () => {

@@ -1,7 +1,5 @@
 import { GenerationOutput, GenerationSchema } from "@mediajel/assistant-core/ai/schema";
 import { buildPrompt } from "@mediajel/assistant-core/ai/prompt";
-import { buildInstructions } from "@mediajel/assistant-core/ai/system";
-import { validateGenerated } from "@mediajel/assistant-core/ai/validate";
 import { DeployTargetKind } from "@mediajel/assistant-core/deploy/targets";
 import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
 import { WidgetSession } from "@mediajel/assistant-core/types";
@@ -9,9 +7,14 @@ import { WidgetSession } from "@mediajel/assistant-core/types";
 /**
  * MediaJel's assistant service, as the extension sees it.
  *
- * The service owns the model and its key, and now the deploy credential too. This side builds
- * the prompt, validates the answer and runs at most ONE repair round with the violations fed
- * back — the judgement about what a good tag looks like stays where the recording is.
+ * The service owns the model, its key, the deploy credential — and, since the NestJS service
+ * replaced the Lambda, the integrations knowledge itself. It composes the instructions, checks
+ * its own answer and runs the repair round.
+ *
+ * What this side still owns is the EVIDENCE: `buildPrompt` masks and trims the recording, and
+ * that stays here deliberately, because "show what leaves" means the operator has to be able to
+ * see the exact bytes before pressing Generate. Instructions are not the operator's data and no
+ * longer travel from the browser at all.
  *
  * Every call carries the signed-in user's Cognito ID token. Nothing else authenticates, and
  * nobody types a credential: the service verifies the token against the pool and attributes
@@ -36,7 +39,7 @@ export interface GenerateResult {
   violations: string[];
 }
 
-export interface Health {
+interface Health {
   ok: boolean;
   model: string;
   user: { username: string; email: string };
@@ -66,7 +69,7 @@ export interface DeployOutcome {
 }
 
 /** A run that hangs is a failure the operator must see; two minutes is generous for a tag. */
-export const GENERATION_TIMEOUT_MS = 120_000;
+const GENERATION_TIMEOUT_MS = 120_000;
 const HEALTH_TIMEOUT_MS = 20_000;
 const DEPLOY_TIMEOUT_MS = 60_000;
 
@@ -186,62 +189,41 @@ export const deployTag = async (token: TokenSource, input: DeployInput): Promise
 interface GenerateResponse {
   output: unknown;
   model: string;
+  violations?: string[];
 }
 
 export const generateTag = async (
   token: TokenSource,
   { session, status, hostname, signal }: GenerateInput,
 ): Promise<GenerateResult> => {
-  const instructions = buildInstructions(session.goal);
-  const prompt = buildPrompt(session, status, hostname);
-  let modelName = "MediaJel assistant";
+  // Evidence only. The service builds the instructions from its own knowledge base — the
+  // extension no longer ships one, and no longer posts one back.
+  const evidence = buildPrompt(session, status, hostname);
 
-  const run = async (extra?: string): Promise<GenerationOutput> => {
-    const answer = await call<GenerateResponse>("/generate", token, {
-      method: "POST",
-      body: { instructions, prompt: extra ? `${prompt}\n\n${extra}` : prompt },
-      signal,
-    });
-    const parsed = GenerationSchema.safeParse(answer.output);
-    if (!parsed.success) {
-      throw new Error("The assistant service returned an object that does not match the tag contract. Try again.");
-    }
-    if (answer.model) modelName = answer.model;
-    return parsed.data;
-  };
-
-  let output: GenerationOutput;
+  let answer: GenerateResponse;
   try {
-    output = await withTimeout(run(), GENERATION_TIMEOUT_MS);
+    answer = await withTimeout(
+      call<GenerateResponse>("/generate", token, {
+        method: "POST",
+        body: { goal: session.goal, hostname, evidence },
+        signal,
+      }),
+      GENERATION_TIMEOUT_MS,
+    );
   } catch (err) {
     throw new Error(describeFailure(err));
   }
 
-  let violations = validateGenerated({
-    code: output.code,
-    goal: session.goal,
-    appIdTarget: output.suggestedTarget.kind === "app-id",
-  });
-  if (violations.length > 0) {
-    try {
-      const repaired = await run(
-        `YOUR PREVIOUS FILE FAILED MECHANICAL VALIDATION. Violations:\n- ${violations.join("\n- ")}\n\nPrevious file:\n${output.code}\n\nReturn the corrected structured object; fix every violation without changing the approach.`,
-      );
-      const repairedViolations = validateGenerated({
-        code: repaired.code,
-        goal: session.goal,
-        appIdTarget: repaired.suggestedTarget.kind === "app-id",
-      });
-      // Only take the repair if it actually repaired something. A second answer that is worse
-      // is still an answer, and the operator would have no way to tell which they were looking at.
-      if (repairedViolations.length < violations.length) {
-        output = repaired;
-        violations = repairedViolations;
-      }
-    } catch {
-      /* the repair round failed; the first result and its violations are still worth showing */
-    }
+  const parsed = GenerationSchema.safeParse(answer.output);
+  if (!parsed.success) {
+    throw new Error("The assistant service returned an object that does not match the tag contract. Try again.");
   }
 
-  return { output, model: modelName, violations };
+  return {
+    output: parsed.data,
+    model: answer.model || "MediaJel assistant",
+    // Named by the service, which validated the exact file it is handing over. An empty list
+    // means it passed; a non-empty one is shown to the operator rather than hidden.
+    violations: answer.violations ?? [],
+  };
 };

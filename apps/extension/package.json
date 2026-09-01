@@ -51,6 +51,7 @@
     "key": "$CRX_PUBLIC_KEY"
   },
   "//manifest": "Only what Plasmo cannot infer. `scripting` is added by Plasmo itself, because the main-world recorder is registered rather than declared. `key` pins the extension id across reinstalls so a rebuild does not orphan saved jobs; it resolves from CRX_PUBLIC_KEY and is dropped when that is unset. host_permissions interpolate PLASMO_PUBLIC_* at build time — an unset one leaves a literal `$NAME/*` in the manifest, which Chrome rejects, so the build must be given its env file.",
+  "//alias": "zod is a direct dependency even though nothing here imports it by name: the alias below resolves a PATH into node_modules/zod, so the entry is what guarantees it is installed and hoisted where that path can find it. @mediajel/assistant-core imports zod for real. See the ESM note in README.md — the wrong build fails at runtime, not at build time.",
   "alias": {
     "zod": "../../node_modules/zod/index.cjs"
   },

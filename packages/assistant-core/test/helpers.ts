@@ -63,37 +63,47 @@ export const makeSession = (overrides: Partial<WidgetSession> = {}): WidgetSessi
 });
 
 /**
- * A `Storage` that behaves like the real one (string coercion, `length`, `key(i)`) and can be
- * told to start refusing writes the way Safari does when the tab's quota is gone.
+ * A real shipped frictionless tag, kept here as a fixture.
+ *
+ * It used to be imported from the knowledge base, which now lives in the assistant service
+ * (apps/assistant-api) rather than in the client — but the verify runner still has to prove it
+ * can rewrite and run the genuine article, not a toy. Copied rather than referenced across the
+ * repo boundary on purpose: this is a test fixture and should stay stable even when the
+ * service's prompt corpus changes.
  */
-export class FakeStorage implements Storage {
-  private data = new Map<string, string>();
-  /** When set, `setItem` throws once the serialized payload exceeds this many characters. */
-  quota = Infinity;
-  writes = 0;
+export const REAL_DATALAYER_TAG = `// Real shipped tag — GA4 purchase push on the dataLayer (the most common shape).
+import { datalayerSource } from "../libs/sources/google-datalayer-source";
+import { isTrackTransLoaded } from "../libs/utils/is-trackTrans-loaded";
 
-  get length(): number {
-    return this.data.size;
-  }
-  key(index: number): string | null {
-    return Array.from(this.data.keys())[index] ?? null;
-  }
-  getItem(key: string): string | null {
-    return this.data.has(key) ? (this.data.get(key) as string) : null;
-  }
-  setItem(key: string, value: string): void {
-    this.writes += 1;
-    if (String(value).length > this.quota) {
-      const err = new Error("The quota has been exceeded.");
-      err.name = "QuotaExceededError";
-      throw err;
-    }
-    this.data.set(String(key), String(value));
-  }
-  removeItem(key: string): void {
-    this.data.delete(String(key));
-  }
-  clear(): void {
-    this.data.clear();
-  }
-}
+const seaweedrbny = () => {
+  isTrackTransLoaded(() => {
+    datalayerSource((data) => {
+      if (data.event === "purchase") {
+        const purchase = data.ecommerce;
+        const items = purchase.items;
+
+        window.trackTrans({
+          id: purchase.transaction_id.toString(),
+          total: parseFloat(purchase.value),
+          tax: parseFloat(purchase.tax) || 0,
+          shipping: parseFloat(purchase.shipping) || 0,
+          city: "N/A",
+          country: "N/A",
+          currency: "USD",
+          state: "N/A",
+          items: items.map((item) => ({
+            orderId: purchase.transaction_id.toString(),
+            sku: item.item_id || "N/A",
+            name: item.item_name,
+            category: item.item_category || "N/A",
+            unitPrice: item.price || 0,
+            quantity: item.quantity || 1,
+            currency: "USD",
+          })),
+        });
+      }
+    });
+  });
+};
+
+seaweedrbny();`;
