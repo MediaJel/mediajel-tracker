@@ -99,5 +99,9 @@ import { notifyError } from '@mediajel/tracker-core/sources/error-tracking-sourc
   } catch (err) {
     const clientError = `An error has occured, please contact your pixel provider: `;
     console.error(clientError + (err instanceof Error ? err.message : String(err)));
+    // Delivered only once the error adapter has subscribed, i.e. for failures
+    // after the Snowplow tracker exists (extension setup, the tail of adapter
+    // load). Earlier failures have no tracker to send with and stay console-only.
+    notifyError(err, "boot");
   }
 })();
