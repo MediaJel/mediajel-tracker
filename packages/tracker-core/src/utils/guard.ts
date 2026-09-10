@@ -1,6 +1,16 @@
 import logger from "@mediajel/tracker-core/logger";
 import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 
+// The environment list the tag was configured with ("dutchie", "dutchie,shopify"),
+// set once at boot by the adapter layer. A guard report names the channel that
+// caught the throw; this stamp adds the cart(s) whose callback threw, so a
+// single-environment embed still groups by cart downstream. Read at report
+// time, so registration order never matters.
+let attribution: string | undefined;
+export const setGuardAttribution = (environment?: string): void => {
+  attribution = environment || undefined;
+};
+
 /**
  * Wraps a callback so any exception it throws is logged (via our logger),
  * reported through the error funnel, and swallowed — it never propagates onto
@@ -12,7 +22,8 @@ import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-sourc
  * Reports use the `guard:<label>` environment, distinguishing safety-net catches
  * (coarse channel attribution) from a source's own notifyError catches (precise
  * environment attribution) — a `guard:*` report is a signal that instrumentation
- * is missing closer to the throw.
+ * is missing closer to the throw. When the tag has a configured environment the
+ * label is suffixed with it: `guard:<label>@<environment>`.
  *
  * Bundle note: guard is on the entry path (index.ts → retail-id-parser → guard),
  * so anything imported here — currently logger and notifyError (which pulls in
@@ -32,7 +43,7 @@ export const guard = <A extends any[], R>(
     } catch (err) {
       logger.error(`Tracker callback "${label}" threw and was suppressed:`, err);
       try {
-        notifyError(err, `guard:${label}`);
+        notifyError(err, attribution ? `guard:${label}@${attribution}` : `guard:${label}`);
       } catch {
         /* the boundary itself must never throw onto the client's page */
       }

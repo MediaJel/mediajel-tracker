@@ -11,6 +11,7 @@ import withEnsureBasketItemsOrderId from "@mediajel/tracker-core/snowplow/extens
 import withRegisterThirdPartyTagsExtension from "@mediajel/tracker-core/snowplow/extensions/register-third-party-tags";
 import { QueryStringContext } from "@mediajel/tracker-core/types";
 import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
+import { setGuardAttribution } from "@mediajel/tracker-core/utils/guard";
 import loadErrorAdapter from "./error";
 
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
@@ -24,6 +25,9 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   // fired before this subscription is dropped (the observable has no replay).
   // The raw tracker is enough here: no extension wraps trackError.
   loadErrorAdapter(snowplow);
+  // Name the configured cart(s) on guard:* reports. getContext() substitutes
+  // "production" when the embed sets no environment; that is not a cart.
+  setGuardAttribution(context.environment === "production" ? undefined : context.environment);
 
   // Apply extensions to the tracker
   const tracker = applyExtensions(snowplow, [
