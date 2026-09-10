@@ -16,22 +16,25 @@ const webjointDataSource = () => {
       return;
     }
 
-    if (parsedData && Object.keys(parsedData).includes("orders")) {
+    // Only an order submission carries a non-empty orders array with line
+    // details; other bodies with an "orders" key (lists, filters) skip silently.
+    const order = Array.isArray(parsedData?.orders) ? parsedData.orders[0] : undefined;
+    if (order && typeof order === "object" && Array.isArray(order.details)) {
       try {
         observable.notify({
           transactionEvent: {
-            id: parsedData.orders[0].id || "N/A",
-            total: parseFloat(parsedData.orders[0].total) || 0,
-            tax: parseFloat(parsedData.orders[0].taxes) || 0,
+            id: order.id || "N/A",
+            total: parseFloat(order.total) || 0,
+            tax: parseFloat(order.taxes) || 0,
             city: "N/A",
             country: "USA",
             currency: "USD",
             shipping: 0,
             state: "N/A",
-            items: parsedData.orders[0].details.map((item: any) => {
+            items: order.details.map((item: any) => {
               const { name, quantity } = item;
               return {
-                orderId: parsedData.orders[0]["_id"].toString() || parsedData.orders[0].id.toString() || "N/A",
+                orderId: (order["_id"] ?? order.id ?? "N/A").toString(),
                 category: "N/A".toString(),
                 currency: "USD",
                 name: (name || "N/A").toString(),

@@ -10,8 +10,10 @@ const treezDataSource = () => {
     if (!getData) return;
 
     try {
-      if (getData.orderNumber && getData.total) {
-        const items = getData?.items;
+      // Status polls carry orderNumber/total without line items; only a full
+      // order is a transaction. Skip the rest silently.
+      if (getData.orderNumber && getData.total && Array.isArray(getData.items)) {
+        const items = getData.items;
 
         observable.notify({
           transactionEvent: {

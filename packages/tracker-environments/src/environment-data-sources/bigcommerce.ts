@@ -6,28 +6,17 @@ import { datalayerSource } from "@mediajel/tracker-core/sources/google-datalayer
 import { TransactionCartItem } from "@mediajel/tracker-core/types";
 import { multiAdapterHandler } from "@mediajel/tracker-core/utils/adapter-handler";
 import { SnowplowTracker } from "@mediajel/tracker-core/snowplow/types";
+import { xhrJsonObject } from "@mediajel/tracker-core/utils/xhr-json";
 
 const bigcommerceDataSource = (snowplow: SnowplowTracker) => {
   const handler = multiAdapterHandler(snowplow);
 
   handler.add("XHR Response Source #1", () => {
     xhrResponseSource((xhr) => {
-      if (!xhr?.responseText) {
-        return;
-      }
-
-      let transaction;
-      try {
-        const parsedData = JSON.parse(xhr.responseText);
-        // Verify parsed data is actually an object
-        if (!parsedData || typeof parsedData !== "object") {
-          return;
-        }
-        transaction = parsedData;
-      } catch (e) {
-        // Silent fail if JSON parsing fails
-        return;
-      }
+      // Silent reader: the responseText getter throws for non-text responseTypes
+      // and this source sees every XHR on the page, so nothing here may report.
+      const transaction = xhrJsonObject(xhr);
+      if (!transaction) return;
 
       const products = transaction?.lineItems?.physicalItems;
       const getLatestOrder = localStorage.getItem("latestOrder");
@@ -71,13 +60,8 @@ const bigcommerceDataSource = (snowplow: SnowplowTracker) => {
 
   handler.add("XHR Response Source #2", () => {
     xhrResponseSource((xhr) => {
-      let transaction;
-      try {
-        transaction = JSON.parse(xhr.responseText);
-      } catch (e) {
-        // Silent fail if JSON parsing fails
-        return;
-      }
+      const transaction = xhrJsonObject(xhr);
+      if (!transaction) return;
 
       if (transaction?.status && transaction?.orderAmount > 0) {
         try {
