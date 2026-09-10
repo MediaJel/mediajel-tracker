@@ -1,3 +1,4 @@
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
 
 import { datalayerSource } from "@mediajel/tracker-core/sources/google-datalayer-source";
@@ -65,7 +66,7 @@ const yotpoDataSource = () => {
           },
         });
       } catch (error) {
-        // window.tracker('trackError', JSON.stringify(error), 'YOTPO');
+        notifyError(error, "yotpo");
       }
     }
   });

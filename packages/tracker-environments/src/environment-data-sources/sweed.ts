@@ -1,5 +1,6 @@
 import logger from "@mediajel/tracker-core/logger";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 
 import { datalayerSource } from "@mediajel/tracker-core/sources/google-datalayer-source";
 import { EnvironmentEvents, TransactionCartItem } from "@mediajel/tracker-core/types";
@@ -40,6 +41,7 @@ const sweedDataSource = () => {
         });
       } catch (error) {
         logger.debug("Log Warn Purchase Event: ", error);
+        notifyError(error, "sweed");
       }
     }
 
@@ -60,6 +62,7 @@ const sweedDataSource = () => {
         });
       } catch (error) {
         logger.debug("Log Warn Add to Cart Event: ", error);
+        notifyError(error, "sweed");
       }
     }
 
@@ -79,6 +82,7 @@ const sweedDataSource = () => {
         });
       } catch (error) {
         logger.debug("Log Warn Remove from Cart Event: ", error);
+        notifyError(error, "sweed");
       }
     }
   });

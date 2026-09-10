@@ -54,6 +54,8 @@ const createSnowplowV1Tracker = async (input: CreateSnowplowTrackerInput): Promi
         data: input,
       });
     },
+    // v1 is legacy; error tracking is v2-only (see spec §Scope). No-op to satisfy the interface.
+    trackError: () => {},
   };
 };
 

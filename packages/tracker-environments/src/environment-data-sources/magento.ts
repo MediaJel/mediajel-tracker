@@ -1,3 +1,4 @@
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import logger from "@mediajel/tracker-core/logger";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
 
@@ -146,14 +147,16 @@ const magentoDataSource = () => {
     } catch (e) {}
   });
 
-  if (
-    window.location.pathname.includes("/checkout/onepage/success/") ||
-    window.location.pathname.includes("/success/")
-  ) {
+  // Only a checkout success page (Magento's own or a one-step-checkout
+  // variant); "/success/" alone also matches newsletter and contact pages.
+  if (window.location.pathname.includes("checkout") && window.location.pathname.includes("success")) {
     setTimeout(() => {
+      const storedData = sessionStorage.getItem("pixelData");
+      // Nothing captured on this page load, or already consumed by a previous
+      // run (a reload): there is no payload to report on.
+      if (!storedData || storedData === "0") return;
       try {
-        const storedData = sessionStorage.getItem("pixelData");
-        const retrievedObject = JSON.parse(storedData ?? "null");
+        const retrievedObject = JSON.parse(storedData);
         const productsList = retrievedObject && retrievedObject.items;
 
         const checkoutSuccessElement = queryEl(".checkout-success");
@@ -187,7 +190,7 @@ const magentoDataSource = () => {
           },
         });
       } catch (error) {
-        // window.tracker("trackError", JSON.stringify(error), "MAGENTO");
+        notifyError(error, "magento");
       }
       sessionStorage.setItem("pixelData", "0");
     }, 1000);

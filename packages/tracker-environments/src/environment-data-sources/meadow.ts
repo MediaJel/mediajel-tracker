@@ -1,3 +1,4 @@
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import logger from "@mediajel/tracker-core/logger";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
 
@@ -71,7 +72,7 @@ const meadowTracker = () => {
           },
         });
       } catch (error) {
-        // window.tracker('trackError', JSON.stringify(error), 'MEADOW');
+        notifyError(error, "meadow");
       }
     }
   });

@@ -3,7 +3,9 @@ import { guard } from "@mediajel/tracker-core/utils/guard";
 export const xhrRequestSource = (callback: (xhrRequest: Document | XMLHttpRequestBodyInit) => void): void => {
   const send = XMLHttpRequest.prototype.send;
   XMLHttpRequest.prototype.send = function (data?: Document | XMLHttpRequestBodyInit | null) {
-    this.addEventListener("readystatechange", guard(function () {
+    // "load" fires once per completed request; "readystatechange" fired the
+    // callback on every state transition, up to four times per request.
+    this.addEventListener("load", guard(function () {
       if (data != null) callback(data); // Request Payload data
     }, "xhr-request"));
     send.call(this, data);

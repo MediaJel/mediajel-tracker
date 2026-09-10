@@ -1,21 +1,17 @@
 import logger from "@mediajel/tracker-core/logger";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 
 import { pollForElement } from "@mediajel/tracker-core/sources/utils/poll-for-element";
+import { isTrackerLoaded } from "@mediajel/tracker-core/sources/utils/is-tracker-loaded";
 import { queryText } from "@mediajel/tracker-core/utils/safe-dom";
 
 const leaflyDataSource = () => {
   //TODO: Research on identifying per advertiser on leafly
   try {
-    const isTrackerLoaded = (callback) => {
-      const intervalId = setInterval(() => {
-        if (typeof window.tracker === "function") {
-          callback();
-          clearInterval(intervalId);
-        }
-      }, 100);
-    };
-
+    // The shared poller guards its callback. A private unguarded interval here
+    // never reached clearInterval when notify threw, so it rethrew onto the
+    // client page every 100ms forever and nothing was reported.
     const elements = ["div.jsx-1636262898.content.open p.font-bold.mt-md", ".price .font-bold.text-md"];
 
     pollForElement(elements, () => {
@@ -42,6 +38,7 @@ const leaflyDataSource = () => {
     });
   } catch (error) {
     logger.info("trackError", JSON.stringify(error), "LEAFLY");
+    notifyError(error, "leafly");
   }
 };
 

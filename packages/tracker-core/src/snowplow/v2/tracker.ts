@@ -57,6 +57,13 @@ const createSnowplowV2Tracker = async (input: CreateSnowplowTrackerInput): Promi
         },
       });
     },
+    trackError({ message, error, environment }) {
+      const base = message ?? error?.message ?? "Unknown error";
+      window.tracker("trackError", {
+        message: environment ? `[${environment}] ${base}` : base,
+        error, // SDK reads error.stack → stackTrace
+      });
+    },
   };
 };
 

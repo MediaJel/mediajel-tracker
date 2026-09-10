@@ -1,3 +1,4 @@
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import logger from "@mediajel/tracker-core/logger";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
 
@@ -50,7 +51,7 @@ const dispenseDataSource = (snowplow: SnowplowTracker) => {
             },
           });
         } catch (error) {
-          // window.tracker('trackError', JSON.stringify(error), 'DISPENSE')
+          notifyError(error, "dispense");
         }
       }
     }, window.gtmDataLayer); // special case for dispense; window.dataLayer is renamed to window.gtmDataLayer

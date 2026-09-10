@@ -1,3 +1,4 @@
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
 
 import { postMessageSource } from "@mediajel/tracker-core/sources/post-message-source";
@@ -7,9 +8,11 @@ import { tryParseJSONObject } from "@mediajel/tracker-core/utils/try-parse-json"
 const dutchieIframeDataSource = () => {
   postMessageSource((event: MessageEvent<any>) => {
     const rawData = tryParseJSONObject(event.data);
-    const payload = rawData?.payload?.payload || null;
+    // Host frames post strings, numbers and "null" too; only objects can be Dutchie messages.
+    if (!rawData || typeof rawData !== "object") return;
+    const payload = rawData.payload?.payload || null;
 
-    if (rawData.event === "analytics:dataLayer" && payload.event === "add_to_cart") {
+    if (rawData.event === "analytics:dataLayer" && payload?.event === "add_to_cart") {
       const products = payload.ecommerce.items;
       const { item_id, item_name, item_category, price, quantity } = products[0];
 
@@ -25,7 +28,7 @@ const dutchieIframeDataSource = () => {
       });
     }
 
-    if (rawData.event === "analytics:dataLayer" && payload.event === "remove_from_cart") {
+    if (rawData.event === "analytics:dataLayer" && payload?.event === "remove_from_cart") {
       const products = payload.ecommerce.items;
       const { item_id, item_name, item_category, price, quantity } = products[0];
 
@@ -41,9 +44,9 @@ const dutchieIframeDataSource = () => {
       });
     }
 
-    if (rawData.event === "analytics:dataLayer" && rawData.payload.payload["1"] === "purchase") {
+    if (rawData.event === "analytics:dataLayer" && payload?.["1"] === "purchase") {
       try {
-        const transaction = rawData.payload.payload["2"];
+        const transaction = payload["2"];
         const products = transaction.items;
         const { transaction_id, value } = transaction;
 
@@ -73,11 +76,11 @@ const dutchieIframeDataSource = () => {
           },
         });
       } catch (error) {
-        // window.tracker("trackError", JSON.stringify(error), "DUTCHIEIFRAME");
+        notifyError(error, "dutchie-iframe");
       }
     }
 
-    if (rawData.event == "analytics:dataLayer" && payload.event == "purchase") {
+    if (rawData.event == "analytics:dataLayer" && payload?.event == "purchase") {
       try {
         const transaction = payload.ecommerce;
         const products = transaction.items;
@@ -109,7 +112,7 @@ const dutchieIframeDataSource = () => {
           },
         });
       } catch (error) {
-        // window.tracker("trackError", JSON.stringify(error), "DUTCHIEIFRAME");
+        notifyError(error, "dutchie-iframe");
       }
     }
   });

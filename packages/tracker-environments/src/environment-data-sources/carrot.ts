@@ -1,4 +1,5 @@
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import { isTrackerLoaded } from "@mediajel/tracker-core/sources/utils/is-tracker-loaded";
 import { TransactionCartItem } from "@mediajel/tracker-core/types";
 import { fetchSource } from "@mediajel/tracker-core/sources/fetch-source";
@@ -19,8 +20,9 @@ const carrotDataSource = (snowplow: SnowplowTracker) => {
         responseBody?.orders?.forEach((order) => {
           if (order?.details?.status === "open") {
             const data = order;
-            try {
-              isTrackerLoaded(() => {
+            isTrackerLoaded(() => {
+              // guard(tracker-loaded) swallows throws, so the catch must live here.
+              try {
                 observable.notify({
                   transactionEvent: {
                     id: data.details.id || "N/A",
@@ -45,10 +47,11 @@ const carrotDataSource = (snowplow: SnowplowTracker) => {
                       }) || [],
                   },
                 });
-              });
-            } catch (error) {
-              logger.error("Carrot: Error parsing response body", error);
-            }
+              } catch (error) {
+                logger.error("Carrot: Error parsing response body", error);
+                notifyError(error, "carrot");
+              }
+            });
           }
         });
       },

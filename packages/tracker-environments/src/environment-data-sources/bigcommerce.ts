@@ -1,32 +1,22 @@
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import { isTrackerLoaded } from "@mediajel/tracker-core/sources/utils/is-tracker-loaded";
 import { xhrResponseSource } from "@mediajel/tracker-core/sources/xhr-response-source";
 import { datalayerSource } from "@mediajel/tracker-core/sources/google-datalayer-source";
 import { TransactionCartItem } from "@mediajel/tracker-core/types";
 import { multiAdapterHandler } from "@mediajel/tracker-core/utils/adapter-handler";
 import { SnowplowTracker } from "@mediajel/tracker-core/snowplow/types";
+import { xhrJsonObject } from "@mediajel/tracker-core/utils/xhr-json";
 
 const bigcommerceDataSource = (snowplow: SnowplowTracker) => {
   const handler = multiAdapterHandler(snowplow);
 
   handler.add("XHR Response Source #1", () => {
     xhrResponseSource((xhr) => {
-      if (!xhr?.responseText) {
-        return;
-      }
-
-      let transaction;
-      try {
-        const parsedData = JSON.parse(xhr.responseText);
-        // Verify parsed data is actually an object
-        if (!parsedData || typeof parsedData !== "object") {
-          return;
-        }
-        transaction = parsedData;
-      } catch (e) {
-        // Silent fail if JSON parsing fails
-        return;
-      }
+      // Silent reader: the responseText getter throws for non-text responseTypes
+      // and this source sees every XHR on the page, so nothing here may report.
+      const transaction = xhrJsonObject(xhr);
+      if (!transaction) return;
 
       const products = transaction?.lineItems?.physicalItems;
       const getLatestOrder = localStorage.getItem("latestOrder");
@@ -63,20 +53,15 @@ const bigcommerceDataSource = (snowplow: SnowplowTracker) => {
         });
         localStorage.setItem("latestOrder", transaction.orderId.toString());
       } catch (e) {
-        // Silent fail for notification errors
+        notifyError(e, "bigcommerce");
       }
     });
   });
 
   handler.add("XHR Response Source #2", () => {
     xhrResponseSource((xhr) => {
-      let transaction;
-      try {
-        transaction = JSON.parse(xhr.responseText);
-      } catch (e) {
-        // Silent fail if JSON parsing fails
-        return;
-      }
+      const transaction = xhrJsonObject(xhr);
+      if (!transaction) return;
 
       if (transaction?.status && transaction?.orderAmount > 0) {
         try {
@@ -105,7 +90,7 @@ const bigcommerceDataSource = (snowplow: SnowplowTracker) => {
             });
           });
         } catch (error) {
-          // Silent fail for tracker errors
+          notifyError(error, "bigcommerce");
         }
       }
     });

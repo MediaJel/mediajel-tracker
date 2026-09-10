@@ -1,14 +1,19 @@
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
 
 import { xhrResponseSource } from "@mediajel/tracker-core/sources/xhr-response-source";
+import { xhrJsonObject } from "@mediajel/tracker-core/utils/xhr-json";
 import { TransactionCartItem } from "@mediajel/tracker-core/types";
 
 const iqmetrixDataSource = () => {
     xhrResponseSource((xhr: XMLHttpRequest) => {
-        const response = xhr.responseText;
+        const transaction = xhrJsonObject(xhr);
+        if (!transaction) return;
+
         try {
-            const transaction = JSON.parse(response);
-            if (transaction.data.orderStatus.includes("Ordered")) {
+            // Optional chaining: this source sees every XHR on the page, so JSON that
+            // isn't an iQmetrix order must skip silently, not report a TypeError.
+            if (transaction.data?.orderStatus?.includes("Ordered")) {
 
                 const product = transaction.data.productDetails;
 
@@ -37,7 +42,7 @@ const iqmetrixDataSource = () => {
                 });
             }
         } catch (error) {
-            // window.tracker('trackError', JSON.stringify(error), 'IQMETRIX');
+            notifyError(error, "iqmetrix");
         }
     });
 };

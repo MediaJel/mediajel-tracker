@@ -1,3 +1,4 @@
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 
 import observable from '@mediajel/tracker-core/utils/create-events-observable';
 
@@ -8,7 +9,10 @@ const ollaTracker = () => {
   datalayerSource((data: any): void => {
     const dataLayerEvent = data[1];
     if (data.event === "add_to_cart" || dataLayerEvent === "add_to_cart") {
-      const products = data.items || data[2].items; // data.items is at array index 2
+      const products = data.items || data[2]?.items; // data.items is at array index 2
+      // The host's own GA4 pushes share the event name but keep items under
+      // ecommerce; those are not Olla events, so skip them silently.
+      if (!Array.isArray(products) || products.length === 0) return;
       const { id, name, price, quantity, category } = products[0];
 
       observable.notify({
@@ -24,7 +28,8 @@ const ollaTracker = () => {
     }
 
     if (data.event === "remove_from_cart" || dataLayerEvent === "remove_from_cart") {
-      const products = data.items || data[2].items; // data.items is at array index 2
+      const products = data.items || data[2]?.items; // data.items is at array index 2
+      if (!Array.isArray(products) || products.length === 0) return;
       const { id, name, price, quantity, category } = products[0];
 
       observable.notify({
@@ -72,7 +77,7 @@ const ollaTracker = () => {
           },
         });
       } catch (error) {
-        // window.tracker('trackError', JSON.stringify(error), 'OLLA');
+        notifyError(error, "olla");
       }
     }
   });

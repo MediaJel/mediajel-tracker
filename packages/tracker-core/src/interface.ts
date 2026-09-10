@@ -29,6 +29,7 @@ declare global {
     // --- Callbacks we assign onto window (already typed; unchanged) ---
     trackTrans: (input: TransactionEvent) => void;
     trackSignUp: (input: SignupParams) => void;
+    trackError: (error: unknown, environment?: string) => void;
     addToCart: (input: CartEvent) => void;
     removeFromCart: (input: CartEvent) => void;
     registerThirdPartyTags: (input: RegisterThirdPartyTagsInput) => void;

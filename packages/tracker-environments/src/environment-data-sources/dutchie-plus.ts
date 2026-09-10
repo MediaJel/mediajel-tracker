@@ -1,3 +1,4 @@
+import { notifyError } from "@mediajel/tracker-core/sources/error-tracking-source";
 import { datalayerSource } from "@mediajel/tracker-core/sources/google-datalayer-source";
 import observable from "@mediajel/tracker-core/utils/create-events-observable";
 
@@ -153,7 +154,7 @@ const dutchiePlusDataSource = () => {
           },
         });
       } catch (error) {
-        // window.tracker('trackError', JSON.stringify(error), 'DUTCHIEPLUS');
+        notifyError(error, "dutchie-plus");
       }
     }
   }
