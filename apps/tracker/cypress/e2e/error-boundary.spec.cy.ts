@@ -60,7 +60,7 @@ describe("Error boundary — a throwing tag callback can't crash the client page
     });
   });
 
-  it("reports the suppressed throw through the funnel as guard:post-message", () => {
+  it("reports the suppressed throw through the funnel as guard:post-message@jane", () => {
     const captured = captureAppErrors();
 
     // Error reporting is v2-only (the shared fixture at HARNESS loads v1, where
@@ -102,9 +102,10 @@ describe("Error boundary — a throwing tag callback can't crash the client page
     cy.window().then((win: any) => win.tracker("flushBuffer"));
 
     // guard() must report what it suppressed: one application_error attributed to the
-    // guard boundary (channel label), with the real TypeError message.
+    // guard boundary (channel label, stamped with the configured environment), with
+    // the real TypeError message.
     cy.wrap(null, { timeout: 15000 }).should(() => {
-      const mine = captured.filter((d) => (d.message || "").startsWith("[guard:post-message]"));
+      const mine = captured.filter((d) => (d.message || "").startsWith("[guard:post-message@jane]"));
       expect(mine.length, "suppressed throw reported through the funnel").to.be.greaterThan(0);
       expect(mine[0].message).to.contain("toString");
     });
