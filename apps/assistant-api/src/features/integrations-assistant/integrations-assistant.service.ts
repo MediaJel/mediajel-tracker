@@ -5,6 +5,7 @@ import type { DeployOutcome, DeployRequest, ExistingTag } from "./dto/deploy.dto
 import type { GenerateRequest, GenerateResponse } from "./dto/generate.dto";
 import { ApiError } from "./errors";
 import type { Authorized, AuthorizedRequest, DeployTargetKind } from "./types/assistant.types";
+import { GithubService } from "./services/github.service";
 import { DeployService } from "./services/deploy.service";
 import { GenerateService } from "./services/generate.service";
 import { LLM_PROVIDER } from "./providers/llm.provider";
@@ -20,6 +21,7 @@ export class IntegrationsAssistantService {
   constructor(
     private readonly generator: GenerateService,
     private readonly deployer: DeployService,
+    private readonly github: GithubService,
     @Inject(LLM_PROVIDER) private readonly llm: LlmProvider,
   ) {}
 
@@ -36,6 +38,11 @@ export class IntegrationsAssistantService {
 
   modelId(): string {
     return this.llm.modelId();
+  }
+
+  /** Whether this service could commit a tag if asked. See GithubService.configured. */
+  deployConfigured(): boolean {
+    return this.github.configured;
   }
 
   generate(input: GenerateRequest): Promise<GenerateResponse> {

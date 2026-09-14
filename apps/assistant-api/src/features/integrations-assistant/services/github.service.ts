@@ -156,6 +156,15 @@ export class GithubService {
     return deployRepo(this.config.get<string>("WIDGET_AUTH_REPO"));
   }
 
+  /**
+   * Whether a deploy credential exists — asked by /health so the panel can say "this service
+   * cannot deploy" while the operator is still recording, instead of letting them record,
+   * generate, verify and approve a tag before a 500 tells them at the commit.
+   */
+  get configured(): boolean {
+    return !!this.config.get<string>("GITHUB_TOKEN")?.trim();
+  }
+
   client(): GitHubClient {
     return createGitHubClient(githubToken(this.config.get<string>("GITHUB_TOKEN")), this.repo);
   }

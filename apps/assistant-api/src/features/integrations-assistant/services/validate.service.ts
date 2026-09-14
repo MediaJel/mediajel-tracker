@@ -49,8 +49,19 @@ export class ValidateService {
     if (appIdTarget && /window\.overrides\s*=/.test(code)) {
       errors.push("an app-id tag must never assign window.overrides (it would wipe the domain tag's overrides)");
     }
-    if (!/localStorage\.(getItem|setItem)\(\s*["'`]?mj-/.test(code) && !/dedupKey/.test(code)) {
-      errors.push('no dedup guard found — use a localStorage key "mj-<slug>-…" set before any await');
+    // A guard is required; its spelling is not. The rule used to demand a localStorage key
+    // prefixed "mj-", which 104 of the 110 shipped tags fail — including the library's own
+    // deduplicator, which uses sessionStorage. Requiring one invented mechanism rejected
+    // correct files, so this asks only that the tag read a key and write it back. That the
+    // requirement itself survives is deliberate: the tag runs on every page view forever, and
+    // 77% of the repo having no guard at all is a latent double-count, not a precedent.
+    const readsKey = /(local|session)Storage\.getItem\(/.test(code);
+    const writesKey = /(local|session)Storage\.setItem\(/.test(code);
+    if (!(readsKey && writesKey) && !/dedupKey/.test(code)) {
+      errors.push(
+        "no dedup guard found — read and write a storage key derived from the order id or email " +
+          '(preferred: localStorage "mj-<slug>-<value>"), set before any await',
+      );
     }
 
     // The valid-JS rule, mechanically: the rewritten text must PARSE as JavaScript.

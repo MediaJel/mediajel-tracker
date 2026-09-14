@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { DeployService } from "~/features/integrations-assistant/services/deploy.service";
 import { ValidateService } from "~/features/integrations-assistant/services/validate.service";
+import { githubToken } from "~/features/integrations-assistant/services/github.service";
 import type { GitHubClient } from "~/features/integrations-assistant/services/github.service";
 import type { Authorized } from "~/features/integrations-assistant/types/assistant.types";
 
@@ -134,5 +135,25 @@ describe("reading the tag a deploy would replace", () => {
       sha: "abc",
       content: "existing",
     });
+  });
+});
+
+describe("a service with no deploy credential", () => {
+  /**
+   * The panel decides whether to block its Deploy step by matching this message. That makes the
+   * wording a contract, not prose: reword it freely, but "deploy credential" has to survive, or
+   * the operator silently gets the old behaviour — a Deploy button that looks fine and 500s.
+   */
+  test("says so in words the panel can recognise", () => {
+    expect(() => githubToken(undefined)).toThrow(/deploy credential/i);
+    expect(() => githubToken("   ")).toThrow(/deploy credential/i);
+  });
+
+  test("names the variable a MediaJel engineer has to set", () => {
+    expect(() => githubToken("")).toThrow(/GITHUB_TOKEN/);
+  });
+
+  test("a configured credential is let through untouched", () => {
+    expect(githubToken("  ghp_real  ")).toBe("ghp_real");
   });
 });

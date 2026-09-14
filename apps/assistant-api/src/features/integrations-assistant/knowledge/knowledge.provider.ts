@@ -6,6 +6,7 @@ import {
   HELPER_SIGNATURES,
   TEMPLATE_DATALAYER,
   TEMPLATE_SIGNUP,
+  TEMPLATE_SPA,
   TEMPLATE_XHR,
 } from "./knowledge.constants";
 
@@ -56,6 +57,6 @@ export class StaticIntegrationsKnowledge implements IntegrationsKnowledge {
    * half of either job — dropping them for sign-ups would make those tags worse.
    */
   async templates(): Promise<string[]> {
-    return [TEMPLATE_DATALAYER, TEMPLATE_XHR, TEMPLATE_SIGNUP];
+    return [TEMPLATE_DATALAYER, TEMPLATE_XHR, TEMPLATE_SPA, TEMPLATE_SIGNUP];
   }
 }

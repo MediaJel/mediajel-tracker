@@ -16,7 +16,7 @@ import { IntegrationsAssistantService } from "./integrations-assistant.service";
  * The Integrations Assistant's four endpoints. Same contract the extension already speaks, so
  * the move off the Lambda is a URL change for the client and nothing else.
  *
- *   GET  /health    → { ok, model, user }        the session is accepted and the service is configured
+ *   GET  /health    → { ok, model, user, deployConfigured }   the session is accepted; can this service commit?
  *   POST /generate  → { output, model, … }       evidence → a validated tag
  *   GET  /tag       → { exists, sha, content }   the file a deploy would replace
  *   POST /deploy    → { commitUrl, … }           validate, then commit with MediaJel's credential
@@ -62,9 +62,15 @@ export class IntegrationsAssistantController {
     ok: true;
     model: string;
     user: { username: string; email: string };
+    deployConfigured: boolean;
   } {
     const who = this.assistant.who(request);
-    return { ok: true, model: this.assistant.modelId(), user: { username: who.username, email: who.email } };
+    return {
+      ok: true,
+      model: this.assistant.modelId(),
+      user: { username: who.username, email: who.email },
+      deployConfigured: this.assistant.deployConfigured(),
+    };
   }
 
   @Post("generate")

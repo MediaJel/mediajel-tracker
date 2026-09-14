@@ -37,7 +37,9 @@ async function bootstrap(): Promise<void> {
   );
 
   await app.listen(PORT);
-  new Logger("bootstrap").log(`Integrations Assistant API on http://localhost:${PORT}/api`);
+  new Logger("bootstrap").log(
+    `Integrations Assistant API on http://localhost:${PORT}/api/assistant — docs at /api/docs`,
+  );
 }
 
 void bootstrap();
