@@ -106,6 +106,8 @@ export const usePanel = (): PanelState => {
   const [site, setSite] = useState("");
   const [session, setSession] = useState<WidgetSession | null>(null);
   const [status, setStatus] = useState<TrackerStatus>(EMPTY_STATUS);
+  /** Why this service could not deploy even if the operator is signed in. Empty when it can. */
+  const [deployUnavailable, setDeployUnavailable] = useState("");
   const [jobs, setJobs] = useState<JobSummary[]>([]);
   const [expanded, setExpanded] = useState<string[]>([]);
   const [confirmingReset, setConfirmingReset] = useState(false);
@@ -164,10 +166,20 @@ export const usePanel = (): PanelState => {
 
     void bind();
     const onActivated = (): void => void bind();
+    // Activation is not enough. Opening the client's site in a NEW tab activates it while it is
+    // still the new-tab page, so the bind above resolves to no site and nothing re-runs once the
+    // real URL arrives — the operator gets "this tab is not on a website yet" on a loaded page.
+    // Re-bind when the tab this panel follows finishes navigating.
+    const onUpdated = (tabId: number, change: chrome.tabs.OnUpdatedInfo, tab: chrome.tabs.Tab): void => {
+      if (!tab.active || !change.url) return;
+      void bind();
+    };
     chrome.tabs.onActivated.addListener(onActivated);
+    chrome.tabs.onUpdated.addListener(onUpdated);
     return () => {
       cancelled = true;
       chrome.tabs.onActivated.removeListener(onActivated);
+      chrome.tabs.onUpdated.removeListener(onUpdated);
     };
   }, [loadJob]);
 
@@ -177,8 +189,10 @@ export const usePanel = (): PanelState => {
     const id = tabIdRef.current;
     if (id === null || screen !== "job") return;
 
-    const port = chrome.runtime.connect({ name: `${PANEL_PORT}:${id}` });
-    port.onMessage.addListener((push: Push) => {
+    let port: chrome.runtime.Port | null = null;
+    let closed = false;
+
+    const receive = (push: Push): void => {
       switch (push.type) {
         case "session":
           return setSession(push.session);
@@ -191,9 +205,37 @@ export const usePanel = (): PanelState => {
         default:
           return undefined;
       }
-    });
-    return () => port.disconnect();
-  }, [screen, site]);
+    };
+
+    // Chrome recycles the service worker after about thirty seconds of quiet, and this port dies
+    // with it. Connecting once left the panel permanently deaf: the background would stop the
+    // recording and advance the job, and the operator would go on watching a Stop button that
+    // never changed, because the only channel carrying that news was gone. Reconnect, and re-read
+    // the job — whatever was pushed while there was no port is not resent.
+    const connect = (): void => {
+      if (closed) return;
+      try {
+        port = chrome.runtime.connect({ name: `${PANEL_PORT}:${id}` });
+      } catch {
+        // The extension was reloaded or disabled out from under this panel. Reconnecting would
+        // spin forever, so stop; the panel is re-created with the next tab bind.
+        return;
+      }
+      port.onMessage.addListener(receive);
+      port.onDisconnect.addListener(() => {
+        port = null;
+        if (closed) return;
+        connect();
+        void loadJob(id);
+      });
+    };
+
+    connect();
+    return () => {
+      closed = true;
+      port?.disconnect();
+    };
+  }, [screen, site, loadJob]);
 
   /** The elapsed clock in the Record body. Ticks only while recording. */
   const [, setTick] = useState(0);
@@ -233,6 +275,7 @@ export const usePanel = (): PanelState => {
       appId: targets.appId ? { info: targets.appId, existing: "checking" } : null,
     };
     setTargetStates(initial);
+    setDeployUnavailable("");
 
     const look = async (state: TargetState): Promise<TargetState> => {
       try {
@@ -241,9 +284,13 @@ export const usePanel = (): PanelState => {
           ...state,
           existing: file.exists ? { preview: (file.content ?? "").slice(0, 400), sha: file.sha ?? "" } : "new",
         };
-      } catch {
-        // Not knowing is different from knowing it is new, and the operator is shown the
-        // difference rather than being told a file is new when we could not look.
+      } catch (err) {
+        // One failure here is not like the others. "We could not read the repo" is a shrug;
+        // "this service holds no deploy credential" means the Deploy step cannot work at all,
+        // and swallowing it let an operator record, generate, verify and approve a tag before
+        // a 500 at the commit told them. Keep the honest null either way, but say the second.
+        const reason = message(err);
+        if (/deploy credential/i.test(reason)) setDeployUnavailable(reason);
         return { ...state, existing: null };
       }
     };
@@ -395,7 +442,7 @@ export const usePanel = (): PanelState => {
       deploying,
       deployError,
       deployBlocked: canDeploy({ signedIn: !!identity, acknowledgedDataSharing: settings.acknowledgedDataSharing })
-        ? ""
+        ? deployUnavailable
         : "Sign in with your MediaJel account",
       cdnState: session?.deploy?.cdnUrl ? "waiting" : "idle",
     },

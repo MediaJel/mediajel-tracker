@@ -43,6 +43,8 @@ interface Health {
   ok: boolean;
   model: string;
   user: { username: string; email: string };
+  /** Whether the service holds a GitHub credential. Absent on older deployments. */
+  deployConfigured?: boolean;
 }
 
 export interface ExistingTag {
@@ -164,7 +166,11 @@ const call = async <T>(
 export const checkAccess = async (token: TokenSource): Promise<string> => {
   try {
     const health = await withTimeout(call<Health>("/health", token), HEALTH_TIMEOUT_MS);
-    return `${health.model} · signed in as ${health.user.username}`;
+    const who = `${health.model} · signed in as ${health.user.username}`;
+    // Said here because this is where someone checks when a deploy has just failed, and
+    // "access is fine" on its own reads as "deploy will work". Older services omit the field
+    // entirely, and silence is not the same as a no.
+    return health.deployConfigured === false ? `${who} · deploys unavailable (service has no GitHub credential)` : who;
   } catch (err) {
     throw new Error(describeFailure(err));
   }

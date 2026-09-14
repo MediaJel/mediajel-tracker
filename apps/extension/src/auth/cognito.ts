@@ -80,9 +80,12 @@ const describe = (err: { code?: string; name?: string; message?: string }): Auth
   const code = err.code ?? err.name ?? "auth";
   switch (code) {
     case "NotAuthorizedException":
-      return new AuthError("That email and password were not accepted. Check them and try again.", "unauthorized");
+      return new AuthError("That username and password were not accepted. Check them and try again.", "unauthorized");
     case "UserNotFoundException":
-      return new AuthError("There is no MediaJel account with that email.", "unknown-user");
+      return new AuthError(
+        "There is no MediaJel account with that username. It is your dashboard username, not your email.",
+        "unknown-user",
+      );
     case "PasswordResetRequiredException":
       return new AuthError(
         "This account needs a password reset. Do it in the MediaJel dashboard, then come back.",
@@ -181,7 +184,7 @@ export const answerChallenge = (kind: AuthChallenge["kind"], answer: string): Pr
   new Promise<AuthSession>((resolve, reject) => {
     const current = pending;
     if (!current) {
-      reject(new AuthError("That sign-in has expired. Start again with your email and password.", "expired"));
+      reject(new AuthError("That sign-in has expired. Start again with your username and password.", "expired"));
       return;
     }
     const { user, username } = current;
