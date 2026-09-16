@@ -47,9 +47,11 @@ const PageRow = ({ page, site }: { page: Page; site: string }): ReactNode => {
   );
 };
 
-const PagesNote = ({ truncated }: { truncated: boolean }): ReactNode => (
+const PagesNote = ({ truncated, grouped }: { truncated: boolean; grouped: boolean }): ReactNode => (
   <p className="mj-fine mj-pages-note">
-    Counts transactions and sign-ups together.{truncated ? " Only the 250 busiest pages are listed." : ""}
+    Counts transactions and sign-ups together.
+    {grouped ? " Pages that differ only by an order number or another ID are counted as one." : ""}
+    {truncated ? " Only the 250 busiest pages are listed." : ""}
   </p>
 );
 
@@ -57,7 +59,7 @@ const PagesNote = ({ truncated }: { truncated: boolean }): ReactNode => (
 const Pages = ({ pages, truncated, site }: { pages: Page[]; truncated: boolean; site: string }): ReactNode => {
   const [all, setAll] = useState(false);
   const [filter, setFilter] = useState("");
-  const { shown, canFilter, canShowAll } = pageListing(pages, all, filter);
+  const { shown, canFilter, canShowAll, grouped } = pageListing(pages, all, filter);
 
   return (
     <>
@@ -81,7 +83,7 @@ const Pages = ({ pages, truncated, site }: { pages: Page[]; truncated: boolean; 
           Show all {pages.length} pages
         </button>
       )}
-      <PagesNote truncated={truncated} />
+      <PagesNote truncated={truncated} grouped={grouped} />
     </>
   );
 };

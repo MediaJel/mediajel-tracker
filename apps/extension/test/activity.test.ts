@@ -88,7 +88,16 @@ describe("the page list", () => {
   });
 
   test("a short list has nothing more to offer and nothing to filter", () => {
-    expect(pageListing(pages.slice(0, 3), false, "")).toMatchObject({ canFilter: false, canShowAll: false });
+    expect(pageListing(pages.slice(0, 3), false, "")).toMatchObject({
+      canFilter: false,
+      canShowAll: false,
+      grouped: false,
+    });
+  });
+
+  test("knows when a row stands for many pages", () => {
+    const shaped = [{ pageUrl: "https://www.binoidcbd.com/checkout/order-received/:id" }];
+    expect(pageListing(shaped, false, "").grouped).toBe(true);
   });
 });
 
@@ -102,6 +111,14 @@ describe("page URLs", () => {
     expect(pageLabel("https://checkout.dutchie.com/thank-you", "www.seedoflifelabs.com").host).toBe(
       "checkout.dutchie.com",
     );
+  });
+
+  test("a grouped page shape is not a link — it stands for many pages and is none of them", () => {
+    expect(pageLabel("https://www.binoidcbd.com/checkout/order-received/:id", "www.binoidcbd.com")).toEqual({
+      path: "/checkout/order-received/:id",
+      host: "",
+      href: null,
+    });
   });
 
   test("never turns a forged javascript: URL into a link", () => {

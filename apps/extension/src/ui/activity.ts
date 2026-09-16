@@ -82,14 +82,26 @@ export const tallySentence = (results: TagActivity[], goal: WidgetGoal, now = Da
 };
 
 /**
+ * The service groups pages that differ only by an identifier — every WooCommerce thank-you page
+ * is `/checkout/order-received/<order>` — into one shape with `:id` in its path. A shape stands for
+ * many pages and is none of them.
+ */
+const isShape = (path: string): boolean => /\/:id(\/|$)/.test(path);
+
+/**
  * Which of a tag's pages a sheet lists: the first ten until all are asked for, and a filter once
- * there are more than ten to look through.
+ * there are more than ten to look through. `grouped` says whether any row stands for many pages.
  */
 export const pageListing = <T extends { pageUrl: string }>(pages: T[], all: boolean, filter: string, preview = 10) => {
   const more = pages.length > preview;
   const needle = filter.trim().toLowerCase();
   const matching = needle ? pages.filter((page) => page.pageUrl.toLowerCase().includes(needle)) : pages;
-  return { shown: all ? matching : matching.slice(0, preview), canFilter: all && more, canShowAll: !all && more };
+  return {
+    shown: all ? matching : matching.slice(0, preview),
+    canFilter: all && more,
+    canShowAll: !all && more,
+    grouped: pages.some((page) => isShape(page.pageUrl)),
+  };
 };
 
 /**
@@ -106,7 +118,7 @@ export const pageLabel = (pageUrl: string, site: string): { path: string; host: 
     return {
       path: web ? `${url.pathname}${url.search}` : pageUrl,
       host: web && url.hostname !== site ? url.hostname : "",
-      href: web ? url.href : null,
+      href: web && !isShape(url.pathname) ? url.href : null,
     };
   } catch {
     return { path: pageUrl, host: "", href: null };
