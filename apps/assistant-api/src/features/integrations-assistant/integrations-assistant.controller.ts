@@ -138,7 +138,7 @@ export class IntegrationsAssistantController {
   @ApiOperation({
     summary: "Read what each app ID's tag recorded in the last seven days",
     description:
-      "Totals, the most recent transaction and sign-up, and the pages that converted, from internal-service. Takes up to five comma-separated app IDs; each one answers or is unavailable on its own, in the order asked.",
+      "Totals, the same counts per day, the most recent transaction and sign-up, and the pages that converted, from internal-service. Takes up to five comma-separated app IDs; each one answers or is unavailable on its own, in the order asked.",
   })
   @ApiResponse({ status: 200, description: "One entry per app ID, each ok or unavailable" })
   @ApiResponse({ status: 400, description: "appIds is missing, lists more than five, or is not app IDs" })

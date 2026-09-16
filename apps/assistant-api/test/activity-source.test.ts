@@ -68,6 +68,18 @@ describe("what internal-service is sent", () => {
     expect(await sourceWith().pageUrls("app-1", 7)).toEqual(rows);
     expect(sent[0]!.url).toBe("http://internal-service.test/api/tracker/events/page-url-activity/app-1?daysToTrack=7");
   });
+
+  test("days: their own path, and the rows out of internal-service's envelope", async () => {
+    const rows = [
+      { day: "2026-09-16", pageviews: 491, sessions: 221, transactions: 0, signups: 0, impressions: 0, total: 0 },
+    ];
+    const sent = internalServiceAnswers(200, { rows });
+
+    expect(await sourceWith().daily("shop 1/a", 7)).toEqual(rows);
+    expect(sent[0]!.url).toBe(
+      "http://internal-service.test/api/tracker/events/daily-activity/shop%201%2Fa?daysToTrack=7",
+    );
+  });
 });
 
 describe("a refusal from internal-service", () => {

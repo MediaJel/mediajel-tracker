@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import type { RawActivity, RawPageUrlRow, TagActivitySource } from "./tag-activity.source";
+import type { RawActivity, RawDailyRow, RawPageUrlRow, TagActivitySource } from "./tag-activity.source";
 
 /**
  * internal-service over `fetch`, with the same URL and bearer token gql-service reads it with.
@@ -53,6 +53,13 @@ export class InternalServiceActivitySource implements TagActivitySource {
   async pageUrls(appId: string, days: number): Promise<RawPageUrlRow[]> {
     const body = await this.get<{ rows: RawPageUrlRow[] }>(
       `/api/tracker/events/page-url-activity/${encodeURIComponent(appId)}?daysToTrack=${days}`,
+    );
+    return body.rows;
+  }
+
+  async daily(appId: string, days: number): Promise<RawDailyRow[]> {
+    const body = await this.get<{ rows: RawDailyRow[] }>(
+      `/api/tracker/events/daily-activity/${encodeURIComponent(appId)}?daysToTrack=${days}`,
     );
     return body.rows;
   }

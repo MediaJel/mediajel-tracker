@@ -5,6 +5,7 @@ import { IntegrationsAssistantController } from "~/features/integrations-assista
 import { IntegrationsAssistantService } from "~/features/integrations-assistant/integrations-assistant.service";
 import type {
   RawActivity,
+  RawDailyRow,
   RawPageUrlRow,
   TagActivitySource,
 } from "~/features/integrations-assistant/providers/tag-activity.source";
@@ -39,11 +40,31 @@ const row = (
 
 const THANK_YOU = row("https://shop.example.com/thank-you", 12, 1534.5);
 
+const day = (date: string, over: Partial<RawDailyRow> = {}): RawDailyRow => ({
+  day: date,
+  pageviews: 150,
+  sessions: 40,
+  transactions: 2,
+  signups: 0,
+  impressions: 0,
+  total: 255.75,
+  ...over,
+});
+
+const WEEK = ["2026-09-10", "2026-09-11", "2026-09-12", "2026-09-13", "2026-09-14", "2026-09-15", "2026-09-16"].map(
+  (date) => day(date),
+);
+
 type Answer<T> = (appId: string) => Promise<T>;
 
 /** Answers every app ID the same way unless told otherwise, and records what it was asked for. */
 const stubSource = (
-  answers: { activity?: Answer<RawActivity>; pageUrls?: Answer<RawPageUrlRow[]>; configured?: boolean } = {},
+  answers: {
+    activity?: Answer<RawActivity>;
+    pageUrls?: Answer<RawPageUrlRow[]>;
+    daily?: Answer<RawDailyRow[]>;
+    configured?: boolean;
+  } = {},
 ): TagActivitySource & { asked: string[] } => {
   const asked: string[] = [];
   return {
@@ -56,6 +77,10 @@ const stubSource = (
     pageUrls: (appId, days) => {
       asked.push(`pageUrls ${appId} ${days}`);
       return answers.pageUrls ? answers.pageUrls(appId) : Promise.resolve([THANK_YOU]);
+    },
+    daily: (appId, days) => {
+      asked.push(`daily ${appId} ${days}`);
+      return answers.daily ? answers.daily(appId) : Promise.resolve(WEEK);
     },
   };
 };
@@ -125,7 +150,11 @@ describe("each app ID stands alone", () => {
     const result = await serviceWith(source).read(["app-1"]);
 
     expect(result.days).toBe(7);
-    expect(source.asked).toEqual([`activity app-1 ${TAG_ACTIVITY_DAYS}`, `pageUrls app-1 ${TAG_ACTIVITY_DAYS}`]);
+    expect(source.asked).toEqual([
+      `activity app-1 ${TAG_ACTIVITY_DAYS}`,
+      `pageUrls app-1 ${TAG_ACTIVITY_DAYS}`,
+      `daily app-1 ${TAG_ACTIVITY_DAYS}`,
+    ]);
   });
 });
 
@@ -267,6 +296,43 @@ describe("pages, which are reported by shape rather than by URL", () => {
   });
 });
 
+describe("the days", () => {
+  test("come oldest first, counts as numbers and money to the cent, however internal-service sent them", async () => {
+    const tag = await onlyTag(
+      stubSource({
+        daily: async () => [
+          day("2026-09-16", { pageviews: "491", sessions: "221", total: "10.456" }),
+          day("2026-09-15", { transactions: "3", signups: 1 }),
+        ],
+      }),
+    );
+
+    expect(tag.daily).toEqual([
+      { day: "2026-09-15", pageviews: 150, sessions: 40, transactions: 3, signups: 1, transactionTotal: 255.75 },
+      { day: "2026-09-16", pageviews: 491, sessions: 221, transactions: 2, signups: 0, transactionTotal: 10.46 },
+    ]);
+  });
+
+  test("a row whose day is not a date has nowhere on the chart to go, and is left out", async () => {
+    const tag = await onlyTag(stubSource({ daily: async () => [day("yesterday"), day("2026-09-16")] }));
+
+    expect(tag.daily?.map((point) => point.day)).toEqual(["2026-09-16"]);
+  });
+
+  test("a daily read that fails leaves daily null, and the totals and pages standing", async () => {
+    // What every read gets until internal-service is deployed with the endpoint.
+    const tag = await onlyTag(
+      stubSource({
+        daily: failing("internal-service answered 404: Cannot GET /api/tracker/events/daily-activity/app-1."),
+      }),
+    );
+
+    expect(tag).toMatchObject({ daily: null, partial: false });
+    expect(tag.totals.pageviews).toBe(1200);
+    expect(tag.pages).toHaveLength(1);
+  });
+});
+
 describe("the five-minute cache", () => {
   test("a second read inside five minutes does not ask internal-service again, per app ID", async () => {
     const clock = { now: 0 };
@@ -277,7 +343,14 @@ describe("the five-minute cache", () => {
     clock.now += 4 * 60_000 + 59_000;
     await service.read(["app-1", "app-2"]);
 
-    expect(source.asked).toEqual(["activity app-1 7", "pageUrls app-1 7", "activity app-2 7", "pageUrls app-2 7"]);
+    expect(source.asked).toEqual([
+      "activity app-1 7",
+      "pageUrls app-1 7",
+      "daily app-1 7",
+      "activity app-2 7",
+      "pageUrls app-2 7",
+      "daily app-2 7",
+    ]);
   });
 
   test("after five minutes it does", async () => {
@@ -289,7 +362,7 @@ describe("the five-minute cache", () => {
     clock.now += 5 * 60_000;
     await service.read(["app-1"]);
 
-    expect(source.asked).toHaveLength(4);
+    expect(source.asked).toHaveLength(6);
   });
 
   test("an unavailable answer is not kept, so the next read tries again", async () => {
@@ -299,7 +372,7 @@ describe("the five-minute cache", () => {
     await service.read(["app-1"]);
     await service.read(["app-1"]);
 
-    expect(source.asked).toHaveLength(4);
+    expect(source.asked).toHaveLength(6);
   });
 
   test("nor is a partial one, so a recovered breakdown shows up on the next read", async () => {
@@ -317,6 +390,23 @@ describe("the five-minute cache", () => {
     const { tags } = await service.read(["app-1"]);
 
     expect(tags[0]).toMatchObject({ status: "ok", partial: false });
+  });
+
+  test("nor is one without its days, so the chart appears once internal-service can give them", async () => {
+    let daysFail = true;
+    const source = stubSource({
+      daily: async () => {
+        if (daysFail) throw new Error("internal-service answered 404.");
+        return WEEK;
+      },
+    });
+    const service = serviceWith(source);
+
+    await service.read(["app-1"]);
+    daysFail = false;
+    const { tags } = await service.read(["app-1"]);
+
+    expect(tags[0]).toMatchObject({ status: "ok", daily: expect.any(Array) });
   });
 });
 

@@ -3,7 +3,7 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import type { TagActivity, TagActivityResponse } from "../dto/activity.dto";
 import { ApiError } from "../errors";
 import { TAG_ACTIVITY_SOURCE } from "../providers/tag-activity.source";
-import type { RawActivity, RawPageUrlRow, TagActivitySource } from "../providers/tag-activity.source";
+import type { RawActivity, RawDailyRow, RawPageUrlRow, TagActivitySource } from "../providers/tag-activity.source";
 
 /**
  * What a site's tags have actually recorded, per app ID, over the last seven days.
@@ -110,6 +110,23 @@ const breakdown = (rows: RawPageUrlRow[]): Pick<TagActivityOk, "pages" | "trunca
   return { pages: pages.slice(0, PAGE_LIMIT), truncated: pages.length > PAGE_LIMIT };
 };
 
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+/** The days oldest first, as internal-service fills them; a row whose day is not a date has nowhere to go. */
+const perDay = (rows: RawDailyRow[]): Pick<TagActivityOk, "daily"> => ({
+  daily: rows
+    .filter((row) => typeof row.day === "string" && DAY.test(row.day))
+    .map((row) => ({
+      day: row.day,
+      pageviews: numeric(row.pageviews),
+      sessions: numeric(row.sessions),
+      transactions: numeric(row.transactions),
+      signups: numeric(row.signups),
+      transactionTotal: cents(row.total),
+    }))
+    .sort((a, b) => a.day.localeCompare(b.day)),
+});
+
 const reasonOf = (reason: unknown): string => (reason instanceof Error ? reason.message : String(reason));
 
 @Injectable()
@@ -156,9 +173,10 @@ export class ActivityService {
    * be fails that half of that app ID the same way a refused call does — never the whole request.
    */
   private async load(appId: string): Promise<TagActivity> {
-    const [recorded, pages] = await Promise.allSettled([
+    const [recorded, pages, days] = await Promise.allSettled([
       this.source.activity(appId, TAG_ACTIVITY_DAYS).then(summarize),
       this.source.pageUrls(appId, TAG_ACTIVITY_DAYS).then(breakdown),
+      this.source.daily(appId, TAG_ACTIVITY_DAYS).then(perDay),
     ]);
 
     if (recorded.status === "rejected") {
@@ -167,16 +185,28 @@ export class ActivityService {
       return { appId, status: "unavailable", message };
     }
 
+    const daily = this.settledDays(appId, days);
+
     // Only a whole answer is kept. A partial one would go on saying the breakdown is missing for
     // five minutes after internal-service recovered, and nothing the operator can do skips the cache.
     if (pages.status === "rejected") {
       this.logger.warn(`Page breakdown for ${appId} is unavailable: ${reasonOf(pages.reason)}`);
-      return { appId, status: "ok", ...recorded.value, pages: null, truncated: false, partial: true };
+      return { appId, status: "ok", ...recorded.value, ...daily, pages: null, truncated: false, partial: true };
     }
 
-    const tag: TagActivityOk = { appId, status: "ok", ...recorded.value, ...pages.value, partial: false };
-    this.cache.set(appId, { at: this.now(), tag });
+    const tag: TagActivityOk = { appId, status: "ok", ...recorded.value, ...pages.value, ...daily, partial: false };
+    if (daily.daily) this.cache.set(appId, { at: this.now(), tag });
     return tag;
+  }
+
+  /** The days, or null with the reason logged — a missing chart never costs the totals beside it. */
+  private settledDays(
+    appId: string,
+    days: PromiseSettledResult<Pick<TagActivityOk, "daily">>,
+  ): Pick<TagActivityOk, "daily"> {
+    if (days.status === "fulfilled") return days.value;
+    this.logger.warn(`Daily activity for ${appId} is unavailable: ${reasonOf(days.reason)}`);
+    return { daily: null };
   }
 
   /** Swept on every read, so the cache holds only what was read in the last five minutes. */

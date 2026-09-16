@@ -42,10 +42,11 @@ signs into. A verified token is the whole check; nobody holds a second credentia
 | `GET /api/assistant/activity?appIds=a,b` | `{ days, tags }` | what each app ID's tag recorded in the last seven days |
 
 `/activity` reads internal-service's `tracker/events/activity` and `page-url-activity` endpoints —
-the ones gql-service already reads — for up to five app IDs, and answers for each one on its own:
-`ok`, with totals, the latest transaction and sign-up, and the 250 pages that converted most; or
-`unavailable`, with internal-service's reason, and never zeros. A page breakdown that fails leaves
-the totals standing and sets `partial`. Whole answers are cached per app ID for five minutes.
+the ones gql-service already reads — and `daily-activity`, for up to five app IDs, and answers for
+each one on its own: `ok`, with totals, the same counts per day (`daily`), the latest transaction and
+sign-up, and the 250 pages that converted most; or `unavailable`, with internal-service's reason, and
+never zeros. A page breakdown that fails leaves the totals standing and sets `partial`; a daily read
+that fails leaves `daily` null. Whole answers are cached per app ID for five minutes.
 
 Pages are reported by shape, not by URL: internal-service lists one row per distinct URL, which on a
 WooCommerce checkout is one row per order, carrying a key that opens that order. The service drops

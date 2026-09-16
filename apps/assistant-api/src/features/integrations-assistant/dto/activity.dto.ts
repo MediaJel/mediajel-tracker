@@ -67,6 +67,23 @@ export type TagActivity =
       pages: { pageUrl: string; conversions: number; transactionTotal: number | null }[] | null;
       /** More pages converted than `pages` carries. */
       truncated: boolean;
+      /**
+       * The same counts per calendar day in UTC, oldest first — they add up to `totals`. Null when the
+       * daily read failed, the rest of the answer standing. The oldest day is partial for events,
+       * which age out of the 7-day table by the hour; the newest is today so far.
+       */
+      daily:
+        | {
+            /** "YYYY-MM-DD". */
+            day: string;
+            pageviews: number;
+            sessions: number;
+            transactions: number;
+            signups: number;
+            /** Rounded to the cent. */
+            transactionTotal: number;
+          }[]
+        | null;
       /** The totals stand but the page breakdown is missing. */
       partial: boolean;
     }
