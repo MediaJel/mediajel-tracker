@@ -136,6 +136,7 @@ const emptyStatus = (): TrackerStatus => ({
   event: "",
   collector: "",
   tagPresent: false,
+  tags: [],
   trackTransPresent: false,
   optedOut: false,
   warnings: ["The assistant has not read this page's tag yet."],

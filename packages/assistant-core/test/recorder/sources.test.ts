@@ -23,6 +23,7 @@ const makeHost = (tag: Partial<QueryStringContext> = {}): { host: SourceHost; em
   const page: PageContext = {
     tag: { appId: "test-app", collector: "//collector.test", ...tag } as QueryStringContext,
     tagPresent: true,
+    tags: [{ appId: "test-app", environment: "production", version: "2", delayed: false }],
     href: window.location.href,
     hostname: window.location.hostname,
     isOwn: () => false,

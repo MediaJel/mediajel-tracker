@@ -1,6 +1,6 @@
 import isUsPrivacyOptOut from "@mediajel/tracker-core/utils/privacy-opt-out";
 import { guard } from "@mediajel/tracker-core/utils/guard";
-import { PageContext } from "@mediajel/assistant-core/context";
+import { PageContext, TagSummary } from "@mediajel/assistant-core/context";
 
 /**
  * What the operator needs to know about the tag on THIS page before trusting a recording:
@@ -8,6 +8,7 @@ import { PageContext } from "@mediajel/assistant-core/context";
  */
 
 export interface TrackerStatus {
+  /** The first tag's app ID — the one Deploy offers an app-id file for. */
   appId: string;
   environment: string;
   version: string;
@@ -16,6 +17,8 @@ export interface TrackerStatus {
   collector: string;
   /** Whether a MediaJel tag was found on the page at all. */
   tagPresent: boolean;
+  /** Every MediaJel tag on the page, one per app ID, in document order. */
+  tags: TagSummary[];
   trackTransPresent: boolean;
   /** GPC/DNT stopped the tag before it initialised anything. */
   optedOut: boolean;
@@ -40,7 +43,11 @@ export const snapshotTracker = (ctx: PageContext): TrackerStatus => {
       "This browser sends GPC/DNT, so the tracker did not initialise here. Recording and Verify still work.",
     );
   } else if (ctx.tagPresent && !trackTransPresent) {
-    warnings.push("window.trackTrans is not on the page (yet) — the tag may still be loading, or it is disabled.");
+    warnings.push(
+      ctx.tags.some((found) => found.delayed)
+        ? "The MediaJel tag on this page is delayed by a page-speed plugin and hasn't run yet. Scroll or click the page to load it; Verify needs it running."
+        : "window.trackTrans is not on the page (yet) — the tag may still be loading, or it is disabled.",
+    );
   }
   if (event === "impression" || event === "signup") {
     warnings.push(`This tag runs with event=${event}, so window.trackTrans is a silent no-op on this page.`);
@@ -54,6 +61,7 @@ export const snapshotTracker = (ctx: PageContext): TrackerStatus => {
     event,
     collector: String(tag.collector ?? ""),
     tagPresent: ctx.tagPresent,
+    tags: ctx.tags,
     trackTransPresent,
     optedOut,
     warnings,

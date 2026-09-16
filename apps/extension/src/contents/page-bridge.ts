@@ -1,7 +1,7 @@
 import type { PlasmoCSConfig } from "plasmo";
 
-import { readPageContext } from "@mediajel/assistant-core/context";
-import { snapshotTracker } from "@mediajel/assistant-core/recorder/context";
+import { TagSearch, readPageContext } from "@mediajel/assistant-core/context";
+import { snapshotTracker, watchTrackTrans } from "@mediajel/assistant-core/recorder/context";
 import { Recorder, RecorderSink, createRecorder } from "@mediajel/assistant-core/recorder/recorder";
 import { runGenerated } from "@mediajel/assistant-core/verify/runner";
 
@@ -27,8 +27,10 @@ import { BridgeDown, BridgeUp, unwrap, wrap } from "~/bridge/protocol";
  * instead (it generates that call, with this file's built URL, into the service worker). The
  * effect is the same, and the `scripting` permission it needs is added for us.
  *
- * It matches every http(s) page, and is inert on all of them: until a `start-recording` arrives
- * this file wraps nothing, reads nothing and reports nothing.
+ * It matches every http(s) page, and is nearly inert on all of them: until a `start-recording`
+ * arrives it wraps nothing, and until the panel asks about the page it watches nothing. All it does
+ * unasked is read the page's script tags once the document settles, to say which MediaJel tags are
+ * there.
  */
 
 export const config: PlasmoCSConfig = {
@@ -54,17 +56,62 @@ const sink: RecorderSink = {
   flush: () => undefined,
 };
 
+/** The tag origin this build injects, so a staging build recognises its own tag as MediaJel's. */
+const TAG_SEARCH: TagSearch = { origins: [(process.env.PLASMO_PUBLIC_TAG_ORIGIN ?? "").trim()].filter(Boolean) };
+
 /**
  * Read fresh every time. At `document_start` there are no script tags yet, so a context
  * captured at load would report every tagged page as untagged — and the tag can arrive later
  * still, through GTM or an injection of our own.
  */
-const status = (): ReturnType<typeof snapshotTracker> => snapshotTracker(readPageContext());
+const status = (): ReturnType<typeof snapshotTracker> => snapshotTracker(readPageContext(window, TAG_SEARCH));
+
+let lastReported = "";
+
+/** Tells the panel about the page's tags — unless nothing it shows has changed since last time. */
+const report = (force = false): void => {
+  const next = status();
+  const key = JSON.stringify([next.tags, next.trackTransPresent, next.optedOut]);
+  if (!force && key === lastReported) return;
+  lastReported = key;
+  send({ type: "status", status: next });
+};
+
+const touchesScript = (record: MutationRecord): boolean =>
+  record.type === "attributes"
+    ? record.target.nodeName === "SCRIPT"
+    : Array.from(record.addedNodes).some((node) => node.nodeName === "SCRIPT");
+
+let watchingTags = false;
+let stopTrackTransWatch: (() => void) | null = null;
+
+/**
+ * Tags keep arriving after the first read: GTM inserts them late, and a page-speed plugin gives a
+ * delayed tag its real `src` only once the visitor interacts. Each changes which app IDs the panel
+ * shows and whether Verify can run, so once the panel has asked about this page, script insertions
+ * and `src` changes are watched — nothing else — and `trackTrans`, which the tag assigns late, is
+ * polled for a minute after one. A page the panel never asked about is never watched.
+ */
+const watchTags = (): void => {
+  if (watchingTags) return;
+  watchingTags = true;
+  new MutationObserver((records) => {
+    if (!records.some(touchesScript)) return;
+    report();
+    if (stopTrackTransWatch || typeof window.trackTrans === "function") return;
+    const stop = watchTrackTrans(() => report());
+    stopTrackTransWatch = stop;
+    setTimeout(() => {
+      stop();
+      if (stopTrackTransWatch === stop) stopTrackTransWatch = null;
+    }, 60_000);
+  }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["src"] });
+};
 
 const startRecording = (at: number): void => {
   startedAt = at;
   recorder ??= createRecorder({
-    page: readPageContext(),
+    page: readPageContext(window, TAG_SEARCH),
     sink,
     now: () => Math.max(0, Date.now() - startedAt),
   });
@@ -86,7 +133,7 @@ const injectTag = (url: string): void => {
   const script = document.createElement("script");
   script.src = url;
   script.async = true;
-  script.addEventListener("load", () => send({ type: "status", status: status() }));
+  script.addEventListener("load", () => report(true));
   (document.head ?? document.documentElement).appendChild(script);
 };
 
@@ -117,7 +164,8 @@ window.addEventListener("message", (event: MessageEvent) => {
       case "stop-recording":
         return recorder?.stop();
       case "snapshot":
-        return send({ type: "status", status: status() });
+        watchTags();
+        return report(true);
       case "verify":
         return verify(message.code);
       case "inject-tag":
@@ -138,7 +186,7 @@ send({ type: "ready" });
 // can do, so the panel is told once the document has settled rather than being left with the
 // empty answer document_start can give.
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => send({ type: "status", status: status() }), { once: true });
+  document.addEventListener("DOMContentLoaded", () => report(true), { once: true });
 } else {
-  send({ type: "status", status: status() });
+  report(true);
 }

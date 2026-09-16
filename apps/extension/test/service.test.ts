@@ -52,6 +52,7 @@ const STATUS: TrackerStatus = {
   event: "",
   collector: "//collector.test",
   tagPresent: true,
+  tags: [{ appId: "acme", environment: "production", version: "2", delayed: false }],
   trackTransPresent: true,
   optedOut: false,
   warnings: [],

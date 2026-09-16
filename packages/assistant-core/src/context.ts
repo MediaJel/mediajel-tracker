@@ -13,10 +13,15 @@ import { QueryStringContext } from "@mediajel/tracker-core/types";
  * nullable field would buy nothing but five guards.
  */
 export interface PageContext {
-  /** The MediaJel tag's parsed query string; empty when `tagPresent` is false. */
+  /** The first MediaJel tag's parsed query string; empty when `tagPresent` is false. */
   tag: QueryStringContext;
   /** Whether a MediaJel tag was actually found on the page. */
   tagPresent: boolean;
+  /**
+   * Every MediaJel tag on the page, one per app ID, in document order — `tag` is the first. A
+   * site can carry more than one, and each app ID has an activity record of its own.
+   */
+  tags: TagSummary[];
   /** The page's address, captured so nothing below reads `location` directly. */
   href: string;
   hostname: string;
@@ -30,6 +35,23 @@ export interface PageContext {
   isOwn(target: unknown): boolean;
 }
 
+/** One MediaJel tag found on the page. */
+export interface TagSummary {
+  appId: string;
+  environment: string;
+  version: string;
+  /**
+   * The script is in the page, but a page-speed plugin is holding it back until the visitor
+   * interacts — so the tag is installed and has not run.
+   */
+  delayed: boolean;
+}
+
+/** Where else a tag may be served from. The extension passes its own build's tag origin. */
+export interface TagSearch {
+  origins?: string[];
+}
+
 export const EMPTY_TAG = {
   appId: "",
   version: "",
@@ -39,40 +61,102 @@ export const EMPTY_TAG = {
 } as unknown as QueryStringContext;
 
 /**
- * Locate the MediaJel tag on the current page and read its configuration back out of the
- * script URL — the same query string `tracker-core/utils/get-context.ts` parses, except that
- * runs as the tag and can use `document.currentScript`, and this runs beside it and cannot.
- *
- * The match is on the query string rather than the host: staging, production and a local
- * harness all serve the same tag from different origins, and `appId`/`mediajelAppId` is the
- * one thing every one of them carries.
+ * Page-speed plugins hold scripts back by moving the URL out of `src` into an attribute of their
+ * own until the visitor interacts: WP Rocket's `data-rocket-src`, LiteSpeed's and Flying Scripts'
+ * `data-lazy-src`/`data-src`, Perfmatters' `data-pmdelayedscript`. A tag delayed that way has no
+ * `src` at all, and reading `src` alone reported it as missing.
  */
-export const findTagContext = (doc: Document = document): QueryStringContext | null => {
-  for (const script of Array.from(doc.getElementsByTagName("script"))) {
-    const src = script.src || "";
-    const query = src.slice(src.indexOf("?"));
-    if (!src.includes("?") || !/[?&](appId|mediajelAppId)=/.test(query)) continue;
+const DELAYED_SRC = ["data-rocket-src", "data-lazy-src", "data-src", "data-pmdelayedscript"];
 
-    const params = Object.fromEntries(new URLSearchParams(query).entries());
-    const { mediajelAppId, appId, version, ...rest } = params;
-    return {
-      ...rest,
-      appId: appId || mediajelAppId || "",
-      version: version || "1",
-      environment: params.environment || "production",
-      collector: params.collector || "",
-      tag: script.outerHTML.replace(/&amp;/g, "&").replace(/\\"/g, '"'),
-    } as unknown as QueryStringContext;
+/**
+ * The tag is served from cnna.io in production and staging, and from localhost by the training
+ * sandbox. A bare `appId` parameter is too common a name to claim on anybody else's host — a chat
+ * widget's loader can carry one — while `mediajelAppId` is ours wherever it is served from.
+ */
+const isTagHost = (hostname: string, extra: string[]): boolean =>
+  hostname === "cnna.io" ||
+  hostname.endsWith(".cnna.io") ||
+  hostname === "localhost" ||
+  hostname === "127.0.0.1" ||
+  extra.includes(hostname);
+
+const hostnamesOf = (origins: string[] = []): string[] =>
+  origins.flatMap((origin) => {
+    try {
+      return [new URL(origin).hostname];
+    } catch {
+      return [];
+    }
+  });
+
+/** A tag as it was found: its parsed configuration, and whether a plugin is holding it back. */
+type FoundTag = { context: QueryStringContext; delayed: boolean };
+
+const scriptUrl = (script: HTMLScriptElement): { url: URL; delayed: boolean } | null => {
+  const held = script.getAttribute("src") ? undefined : DELAYED_SRC.find((name) => script.getAttribute(name));
+  const raw = script.getAttribute(held ?? "src");
+  if (!raw) return null;
+  try {
+    return { url: new URL(raw, script.ownerDocument.baseURI), delayed: held !== undefined };
+  } catch {
+    return null;
   }
-  return null;
+};
+
+/** A bare `appId` counts only on a tag host; `mediajelAppId` counts wherever it is served from. */
+const isOurs = (url: URL, hosts: string[]): boolean =>
+  url.searchParams.has("mediajelAppId") || (url.searchParams.has("appId") && isTagHost(url.hostname, hosts));
+
+/**
+ * Read a tag's configuration back out of its URL — the same query string
+ * `tracker-core/utils/get-context.ts` parses, except that runs as the tag and can use
+ * `document.currentScript`, and this runs beside it and cannot.
+ */
+const contextOf = (url: URL, script: HTMLScriptElement): QueryStringContext => {
+  const params = Object.fromEntries(url.searchParams.entries());
+  const { mediajelAppId, appId, version, ...rest } = params;
+  return {
+    ...rest,
+    appId: appId || mediajelAppId || "",
+    version: version || "1",
+    environment: params.environment || "production",
+    collector: params.collector || "",
+    tag: script.outerHTML.replace(/&amp;/g, "&").replace(/\\"/g, '"'),
+  } as unknown as QueryStringContext;
+};
+
+const readTag = (script: HTMLScriptElement, hosts: string[]): FoundTag | null => {
+  const found = scriptUrl(script);
+  if (!found || !isOurs(found.url, hosts)) return null;
+  return { context: contextOf(found.url, script), delayed: found.delayed };
+};
+
+/** Every MediaJel tag on the page, one per app ID, in document order. */
+const findTags = (doc: Document, search: TagSearch): FoundTag[] => {
+  const hosts = hostnamesOf(search.origins);
+  const seen = new Set<string>();
+  const tags: FoundTag[] = [];
+  for (const script of Array.from(doc.getElementsByTagName("script"))) {
+    const tag = readTag(script, hosts);
+    if (!tag || seen.has(tag.context.appId)) continue;
+    seen.add(tag.context.appId);
+    tags.push(tag);
+  }
+  return tags;
 };
 
 /** The context for the page this code is running in. */
-export const readPageContext = (win: Window = window): PageContext => {
-  const tag = findTagContext(win.document);
+export const readPageContext = (win: Window = window, search: TagSearch = {}): PageContext => {
+  const found = findTags(win.document, search);
   return {
-    tag: tag ?? EMPTY_TAG,
-    tagPresent: tag !== null,
+    tag: found[0]?.context ?? EMPTY_TAG,
+    tagPresent: found.length > 0,
+    tags: found.map(({ context, delayed }) => ({
+      appId: String(context.appId ?? ""),
+      environment: String(context.environment ?? ""),
+      version: String(context.version ?? ""),
+      delayed,
+    })),
     href: win.location.href,
     hostname: win.location.hostname,
     isOwn: () => false,

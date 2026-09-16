@@ -87,6 +87,7 @@ const EMPTY_STATUS: TrackerStatus = {
   event: "",
   collector: "",
   tagPresent: false,
+  tags: [],
   trackTransPresent: false,
   optedOut: false,
   warnings: [],
