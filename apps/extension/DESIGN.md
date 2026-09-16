@@ -70,7 +70,7 @@ different product on every desk. Both files are variable across the weight axis,
 **Letterhead** (mark 18px · MEDIAJEL · hairline · WORK ORDER, with Start-over and gear at the
 right) → **the job title**: the site set as a 27px headline, with the job type and the signed-in
 person beneath it. The app id and the file the tag will become are machine facts and wait in the
-Deploy step and in Settings, where they are actionable → **zigzag rule** (48-tooth inline SVG,
+Deploy step and in Settings, where they are actionable → **the tally** (below) → **zigzag rule** (48-tooth inline SVG,
 `vector-effect: non-scaling-stroke`; identity-coloured while recording) → **the carbon stack** →
 **the action bar**.
 
@@ -92,6 +92,28 @@ for what they produce — Record, The event, The tag, Proof, Deploy.
 or why it cannot. It exists because in a document that scrolls, a primary action living inside the
 current section moves every time that section changes size — and because an action that is always
 in the same place can afford to explain itself. No section draws its own primary action.
+
+**The tally** sits under the job's name, above the zigzag: what MediaJel recorded from every
+MediaJel tag on the page over the last 7 days — Page views, Sessions, Transactions, Sign-ups. It is
+in the heading, not the stack, because it is a fact about the site: true before the job starts, and
+where the first real conversions show up after Deploy. It is a reading, not a dashboard — never the
+big-number-small-label hero row: `TAG ACTIVITY` in the letterhead's caps with the range beside it,
+the column names printed once, one row per app ID, zeros in soft ink, and one sentence in carbon ink
+only when it says something about the job in hand ("Page views are arriving, but no transactions
+were recorded."). With several tags a short mono app ID leads each row — the one place an app id
+reaches the heading, because two rows cannot otherwise be told apart. Every state is its own
+sentence (waiting for the page, no tag, failed, not configured); zeros never stand in for an answer.
+A problem is set in ink, not partner orange: the orange is under 4.5:1 as text on the light sheet,
+so it stays a border colour.
+
+**The activity report** is what Details opens. It takes the stack's place the way Settings does,
+with the action bar hidden and "Back to the job" at its foot, and prints one sheet per tag on the
+stock: the full app id in mono and the tag's environment, the counts with the money, the last
+transaction and sign-up as sentences, and conversions by page — path in mono, an off-site host under
+it, ten rows then all of them with a filter. A page URL is a link only when it is http(s): they
+arrive from tracked events, and anyone can send the collector one. A tag that could not be read gets
+a warning notice, with the service's own words behind its ⓘ. When an endpoint can read further back
+than the 7-day table, the range control belongs at the top of the report, not in the heading.
 
 **The tear.** The zigzag opens the stack at the top; the last sheet closes it with a matching
 perforated edge (a conic-gradient mask), so the ground below reads as the desk the ticket is lying

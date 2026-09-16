@@ -16,9 +16,12 @@ import { checkPayload } from "@mediajel/assistant-core/verify/payload-check";
 
 import type { Identity } from "~/auth/cognito";
 import type { Pending } from "~/sidepanel/usePanel";
+import type { TagActivityState } from "~/sidepanel/useTagActivity";
 import { Settings } from "~/store/settings";
 import Stamp from "~/ui/components/Stamp";
 import { ChevronDown, Gear, Mark, Person, Restart, Zigzag } from "~/ui/icons";
+import { ActivityReport } from "~/ui/screens/ActivityReport";
+import { ActivityTally } from "~/ui/screens/ActivityTally";
 import CodeSection from "~/ui/screens/CodeSection";
 import DeploySection, { TargetState } from "~/ui/screens/DeploySection";
 import EvidenceSection from "~/ui/screens/EvidenceSection";
@@ -105,6 +108,8 @@ export interface AppProps {
   site: string;
   session: WidgetSession;
   status: TrackerStatus;
+  /** The last 7 days of every MediaJel tag on the page. */
+  activity: TagActivityState;
   identity: Identity | null;
   settings: Settings;
   handlers: AppHandlers;
@@ -340,6 +345,7 @@ export const App = (props: AppProps): ReactNode => {
     site,
     session,
     status,
+    activity,
     identity,
     settings,
     handlers,
@@ -474,6 +480,8 @@ export const App = (props: AppProps): ReactNode => {
             {identity ? identity.name || identity.username : "Signed out"}
           </button>
         </p>
+
+        <ActivityTally activity={activity} goal={session.goal} />
       </header>
 
       <Zigzag live={session.step === "recording"} />
@@ -495,7 +503,11 @@ export const App = (props: AppProps): ReactNode => {
         </div>
       )}
 
-      {settingsOpen ? (
+      {activity.reportOpen && activity.phase === "ready" ? (
+        <div className="mj-stack">
+          <ActivityReport activity={activity} site={site} />
+        </div>
+      ) : settingsOpen ? (
         <div className="mj-stack">
           <SettingsOverlay
             identity={identity}

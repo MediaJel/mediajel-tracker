@@ -1830,3 +1830,343 @@ body :focus-visible {
     linear-gradient(#000 0 0) top / 100% calc(100% - 6px) no-repeat,
     conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 11px 6px repeat-x;
 }
+
+/* --- the activity report ------------------------------------------------------------------------ */
+
+/* Details takes the stack's place the way Settings does, and prints one sheet per tag on the stock
+   the job's own steps are on — so a long page list has the panel's full height. */
+.mj-report {
+  padding: 0 0 var(--mj-pad);
+}
+
+.mj-report-intro {
+  padding: 18px var(--mj-pad) 14px;
+}
+
+.mj-report-title {
+  width: fit-content;
+  margin: 0;
+  font-family: var(--mj-display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--mj-ink);
+}
+
+.mj-report-lede {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--mj-ink-soft);
+}
+
+.mj-report-sheet {
+  margin: 0 0 8px;
+  padding: 16px var(--mj-pad) 18px;
+  background: var(--mj-sheet);
+  box-shadow: var(--mj-press);
+}
+
+/* The full app ID is machine text, and this is the one place in the panel it is worth reading. */
+.mj-report-tag {
+  margin: 0;
+  font-family: var(--mj-mono);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--mj-ink);
+  overflow-wrap: anywhere;
+}
+
+.mj-report-tag-meta {
+  margin: 2px 0 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--mj-ink-soft);
+}
+
+.mj-report-last {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--mj-ink-soft);
+}
+
+.mj-report-last + .mj-report-last {
+  margin-top: 2px;
+}
+
+/* The notice sits on the sheet, so its paper is the stock's, as it is in the Record step. */
+.mj-report-unread {
+  margin: 0;
+}
+
+.mj-report-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px var(--mj-pad) 0;
+}
+
+.mj-pages {
+  margin: 18px 0 0;
+}
+
+.mj-pages-title {
+  margin: 0 0 4px;
+  font-family: var(--mj-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mj-ink);
+}
+
+.mj-pages-filter {
+  margin: 4px 0 6px;
+}
+
+.mj-pages-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mj-page {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 10px;
+  padding: 6px 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.mj-page-path {
+  flex: 1 1 0;
+  min-width: 0;
+  font-family: var(--mj-mono);
+  font-size: 12px;
+  color: var(--mj-ink);
+  overflow-wrap: anywhere;
+}
+
+.mj-page--link:hover .mj-page-path {
+  color: var(--mj-identity);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.mj-page-count {
+  flex: none;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--mj-ink-soft);
+}
+
+/* Another site's host — an off-site checkout — sits under the path it belongs to. */
+.mj-page-host {
+  flex: 1 0 100%;
+  order: 3;
+  font-size: 11px;
+  color: var(--mj-ink-soft);
+}
+
+.mj-pages-more {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+}
+
+.mj-pages-note {
+  margin-top: 10px;
+}
+
+/* --- small shared pieces ------------------------------------------------------------------------ */
+
+/* Lines inside one disclosure, each its own thought. */
+.mj-info-line {
+  display: block;
+}
+
+.mj-info-line + .mj-info-line {
+  margin-top: 6px;
+}
+
+/* What leaves the browser is said in privacy ink, before it leaves. */
+.mj-info-line--privacy {
+  color: var(--mj-privacy);
+}
+
+/* Read aloud, not shown: a table column that names itself only to a screen reader. */
+.mj-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --- the tally ------------------------------------------------------------------------------ */
+
+/* What MediaJel recorded from the site's tags, printed on the work order under the job's name.
+   A reading in the body face, not a row of hero figures: the column names once, one row per tag,
+   space between the columns and nothing boxed. */
+.mj-tally {
+  margin: 16px 0 0;
+}
+
+/* A line that carries an ⓘ: the disclosure's body wraps onto its own full-width line beneath. */
+.mj-inline-disclosure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 6px;
+}
+
+.mj-tally-title {
+  margin: 0;
+  font-family: var(--mj-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--mj-ink-soft);
+}
+
+.mj-tally-range {
+  margin-left: 6px;
+  font-family: var(--mj-body);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.mj-tally-details {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  padding: 3px 0 3px 6px;
+  border: 0;
+  background: none;
+  font-family: var(--mj-display);
+  font-size: 12px;
+  color: var(--mj-ink-soft);
+  cursor: pointer;
+  transition: color 160ms ease-out;
+}
+
+.mj-tally-details:hover,
+.mj-tally-details[aria-expanded="true"] {
+  color: var(--mj-ink);
+}
+
+.mj-chevron--up {
+  transform: rotate(180deg);
+}
+
+.mj-tally-grid {
+  width: 100%;
+  margin: 8px 0 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-variant-numeric: tabular-nums;
+  transition: opacity 160ms ease-out;
+}
+
+/* A refresh keeps the readings where they are, dimmed, rather than blanking the heading. */
+.mj-tally-grid--stale {
+  opacity: 0.5;
+}
+
+.mj-tally-grid th,
+.mj-tally-grid td {
+  padding: 0;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mj-tally-column {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--mj-ink-soft);
+}
+
+.mj-tally-value {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--mj-ink);
+}
+
+/* Several tags: a leading column names each row, and the values step down to fit four of them. */
+.mj-tally-grid--many .mj-tally-value {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* A zero is a reading too, but it should not shout over the numbers that moved. What a zero means
+   for this job is the sentence's to say. */
+.mj-tally-zero {
+  font-weight: 400;
+  color: var(--mj-ink-soft);
+}
+
+.mj-tally-id-column {
+  width: 66px;
+}
+
+.mj-tally-id {
+  font-family: var(--mj-mono);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--mj-ink-soft);
+}
+
+/* Partner orange is too light to set a sentence in on the light sheet (under 4.5:1), so a problem
+   is said in ink, and the words carry it. */
+.mj-tally-grid .mj-tally-unread {
+  overflow: visible;
+  white-space: normal;
+  font-size: 12.5px;
+  color: var(--mj-ink);
+}
+
+.mj-tally-note,
+.mj-tally-sentence {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--mj-ink-soft);
+}
+
+/* The one line of record the tally adds — set in the impression a receipt leaves. */
+.mj-tally-sentence {
+  color: var(--mj-carbon-ink);
+}
+
+.mj-tally-note--problem {
+  color: var(--mj-ink);
+}
+
+/* The opening skeleton holds the tally's place too, so the stack does not jump when it arrives. */
+.mj-skeleton-bar--tally {
+  height: 50px;
+}
+
+.mj-tally-skeleton {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+}
+
+.mj-tally-skeleton-row {
+  height: 14px;
+}
+
+.mj-tally-skeleton-row:first-child {
+  height: 36px;
+}
