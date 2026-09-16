@@ -1,10 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import type { Request } from "express";
 
+import type { TagActivityResponse } from "./dto/activity.dto";
 import type { DeployOutcome, DeployRequest, ExistingTag } from "./dto/deploy.dto";
 import type { GenerateRequest, GenerateResponse } from "./dto/generate.dto";
 import { ApiError } from "./errors";
 import type { Authorized, AuthorizedRequest, DeployTargetKind } from "./types/assistant.types";
+import { ActivityService } from "./services/activity.service";
 import { GithubService } from "./services/github.service";
 import { DeployService } from "./services/deploy.service";
 import { GenerateService } from "./services/generate.service";
@@ -22,6 +24,7 @@ export class IntegrationsAssistantService {
     private readonly generator: GenerateService,
     private readonly deployer: DeployService,
     private readonly github: GithubService,
+    private readonly activity: ActivityService,
     @Inject(LLM_PROVIDER) private readonly llm: LlmProvider,
   ) {}
 
@@ -45,6 +48,11 @@ export class IntegrationsAssistantService {
     return this.github.configured;
   }
 
+  /** Whether this service could read tag activity if asked. See ActivityService.configured. */
+  activityConfigured(): boolean {
+    return this.activity.configured;
+  }
+
   generate(input: GenerateRequest): Promise<GenerateResponse> {
     return this.generator.generate(input);
   }
@@ -55,5 +63,9 @@ export class IntegrationsAssistantService {
 
   deploy(input: DeployRequest, who: Authorized): Promise<DeployOutcome> {
     return this.deployer.deploy(input, who);
+  }
+
+  readActivity(appIds: string[]): Promise<TagActivityResponse> {
+    return this.activity.read(appIds);
   }
 }

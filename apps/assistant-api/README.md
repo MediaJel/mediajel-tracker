@@ -30,27 +30,41 @@ pressing Generate. Instructions are not the operator's data; evidence is.
 
 ## Endpoints
 
-All four require `Authorization: Bearer <Cognito ID token>` — the same pool the MediaJel dashboard
+All five require `Authorization: Bearer <Cognito ID token>` — the same pool the MediaJel dashboard
 signs into. A verified token is the whole check; nobody holds a second credential.
 
 | | | |
 |---|---|---|
-| `GET /api/assistant/health` | `{ ok, model, user }` | the session is accepted and the service is configured |
+| `GET /api/assistant/health` | `{ ok, model, user, deployConfigured, activityConfigured }` | the session is accepted; whether this service can deploy, and read tag activity |
 | `POST /api/assistant/generate` | `{ output, model, violations }` | evidence → a validated tag |
 | `GET /api/assistant/tag` | `{ exists, sha, content }` | the file a deploy would replace |
 | `POST /api/assistant/deploy` | `{ commitUrl, fileUrl, path, update }` | validate, then commit to `master` |
+| `GET /api/assistant/activity?appIds=a,b` | `{ days, tags }` | what each app ID's tag recorded in the last seven days |
+
+`/activity` reads internal-service's `tracker/events/activity` and `page-url-activity` endpoints —
+the ones gql-service already reads — for up to five app IDs, and answers for each one on its own:
+`ok`, with totals, the latest transaction and sign-up, and the 250 pages that converted most; or
+`unavailable`, with internal-service's reason, and never zeros. A page breakdown that fails leaves
+the totals standing and sets `partial`. Whole answers are cached per app ID for five minutes.
+
+Pages are reported by shape, not by URL: internal-service lists one row per distinct URL, which on a
+WooCommerce checkout is one row per order, carrying a key that opens that order. The service drops
+the query string and fragment, replaces identifier segments (all digits, a UUID, 16+ hex
+characters) with `:id`, and adds up the rows that share a shape — so
+`/checkout/order-received/:id` is one page, and no order key reaches the browser.
 
 Swagger is at `/api/docs`.
 
-## The two seams
+## The three seams
 
 They exist so the move into amplication is a provider binding rather than a rewrite. Nothing above
-either token knows — or may know — which implementation is bound.
+any of the tokens knows — or may know — which implementation is bound.
 
 | Token | Bound here | Bound there |
 |---|---|---|
 | `LLM_PROVIDER` | `OpenAiProvider` | `LlmOrchestrationService` (`common/llm-orchestration`) — Claude/DeepSeek/Gemini routing |
 | `INTEGRATIONS_KNOWLEDGE` | `StaticIntegrationsKnowledge` | `knowledge-base`'s vector search, so the AI Gateway answers integration questions from the same corpus |
+| `TAG_ACTIVITY_SOURCE` | `InternalServiceActivitySource` (`fetch`) | an adapter over `MicroservicesService.internal`, the axios instance external-service already points at internal-service |
 
 ## Local development
 
@@ -67,6 +81,7 @@ bun run dev                  # :3011, which is what the extension's .env.example
 | `GITHUB_TOKEN` | the deploy credential. Deploy returns a named 500 without it |
 | `WIDGET_AI_MODEL` | defaults to `gpt-5.5` |
 | `WIDGET_AUTH_REPO` | defaults to `MediaJel/mediajel-frictionless-custom-tag` |
+| `INTERNAL_SERVICE_URL`, `INTERNAL_SERVICE_BEARER_TOKEN` | internal-service and its bearer token — the pair gql-service reads. Activity returns a named 503 without them |
 
 Health and the guard work with only the two Cognito values set, which is enough to exercise
 Record → Review → Verify in the extension end to end.

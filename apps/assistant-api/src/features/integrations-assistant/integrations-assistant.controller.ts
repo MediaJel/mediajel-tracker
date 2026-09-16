@@ -3,6 +3,8 @@ import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import type { Request } from "express";
 import { z } from "zod";
 
+import { ActivityQuerySchema } from "./dto/activity.dto";
+import type { TagActivityResponse } from "./dto/activity.dto";
 import { DeployRequestSchema, TagQuerySchema } from "./dto/deploy.dto";
 import type { DeployOutcome, ExistingTag } from "./dto/deploy.dto";
 import { GenerateRequestSchema } from "./dto/generate.dto";
@@ -13,15 +15,17 @@ import { CognitoGuard } from "./guards/cognito.guard";
 import { IntegrationsAssistantService } from "./integrations-assistant.service";
 
 /**
- * The Integrations Assistant's four endpoints. Same contract the extension already speaks, so
- * the move off the Lambda is a URL change for the client and nothing else.
+ * The Integrations Assistant's five endpoints. The first four are the contract the extension
+ * already speaks, so the move off the Lambda is a URL change for the client and nothing else;
+ * /activity is new here.
  *
- *   GET  /health    → { ok, model, user, deployConfigured }   the session is accepted; can this service commit?
+ *   GET  /health    → { ok, model, user, … }     the session is accepted; can this service deploy, read activity?
  *   POST /generate  → { output, model, … }       evidence → a validated tag
  *   GET  /tag       → { exists, sha, content }   the file a deploy would replace
  *   POST /deploy    → { commitUrl, … }           validate, then commit with MediaJel's credential
+ *   GET  /activity  → { days, tags }             what each app ID's tag recorded in the last seven days
  *
- * All four require `Authorization: Bearer <Cognito ID token>`.
+ * All five require `Authorization: Bearer <Cognito ID token>`.
  */
 @ApiTags("Integrations Assistant")
 @Controller("assistant")
@@ -63,6 +67,7 @@ export class IntegrationsAssistantController {
     model: string;
     user: { username: string; email: string };
     deployConfigured: boolean;
+    activityConfigured: boolean;
   } {
     const who = this.assistant.who(request);
     return {
@@ -70,6 +75,7 @@ export class IntegrationsAssistantController {
       model: this.assistant.modelId(),
       user: { username: who.username, email: who.email },
       deployConfigured: this.assistant.deployConfigured(),
+      activityConfigured: this.assistant.activityConfigured(),
     };
   }
 
@@ -126,5 +132,20 @@ export class IntegrationsAssistantController {
     const who = this.assistant.who(request);
     const input = this.parse(DeployRequestSchema, body, "deploy request");
     return this.assistant.deploy(input, who);
+  }
+
+  @Get("activity")
+  @ApiOperation({
+    summary: "Read what each app ID's tag recorded in the last seven days",
+    description:
+      "Totals, the most recent transaction and sign-up, and the pages that converted, from internal-service. Takes up to five comma-separated app IDs; each one answers or is unavailable on its own, in the order asked.",
+  })
+  @ApiResponse({ status: 200, description: "One entry per app ID, each ok or unavailable" })
+  @ApiResponse({ status: 400, description: "appIds is missing, lists more than five, or is not app IDs" })
+  @ApiResponse({ status: 503, description: "The service has no internal-service configuration" })
+  async activity(@Req() request: Request & AuthorizedRequest, @Query() query: unknown): Promise<TagActivityResponse> {
+    this.assistant.who(request);
+    const { appIds } = this.parse(ActivityQuerySchema, query, "activity query");
+    return this.assistant.readActivity(appIds);
   }
 }
