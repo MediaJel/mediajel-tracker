@@ -6,6 +6,8 @@ import { DeployTargetKind } from "@mediajel/assistant-core/deploy/targets";
 import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
 import { WidgetSession } from "@mediajel/assistant-core/types";
 
+import { SIGNED_OUT } from "~/auth/signed-out";
+
 /**
  * MediaJel's assistant service, as the extension sees it.
  *
@@ -101,8 +103,17 @@ const statusFallback = (status: number): string => {
   return `The assistant service answered ${status}.`;
 };
 
+/**
+ * Whether a failure means the session itself is over: nobody is signed in, Cognito refused the refresh
+ * token, or the service would not accept the ID token. Signing in again is the only fix for any of them,
+ * so the background ends the session instead of reporting one more failed call.
+ */
+export const endsSession = (err: unknown): boolean =>
+  (err instanceof ServiceError && err.status === 401) || (err as { code?: unknown } | null)?.code === SIGNED_OUT;
+
 export const describeFailure = (err: unknown): string => {
-  if (err instanceof ServiceError) return err.message;
+  // The service's own words, and a session's end, are already written for the operator.
+  if (err instanceof ServiceError || endsSession(err)) return (err as Error).message;
   const message = err instanceof Error ? err.message : String(err);
   if (/timed out/i.test(message)) return "The assistant service did not answer in time. Try again.";
   if (/abort/i.test(message)) return "Cancelled.";
@@ -112,6 +123,12 @@ export const describeFailure = (err: unknown): string => {
   }
   return `The assistant service call failed: ${message}`;
 };
+
+/** A failure as the operator reads it, keeping the code that says what kind of failure it was. */
+const failure = (err: unknown): Error =>
+  Object.assign(new Error(describeFailure(err)), {
+    code: endsSession(err) ? SIGNED_OUT : err instanceof ServiceError ? err.code : undefined,
+  });
 
 const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
   new Promise<T>((resolve, reject) => {
@@ -178,7 +195,7 @@ export const checkAccess = async (token: TokenSource): Promise<string> => {
     // entirely, and silence is not the same as a no.
     return health.deployConfigured === false ? `${who} · deploys unavailable (service has no GitHub credential)` : who;
   } catch (err) {
-    throw new Error(describeFailure(err));
+    throw failure(err);
   }
 };
 
@@ -194,7 +211,7 @@ export const deployTag = async (token: TokenSource, input: DeployInput): Promise
       DEPLOY_TIMEOUT_MS,
     );
   } catch (err) {
-    throw new Error(describeFailure(err));
+    throw failure(err);
   }
 };
 
@@ -223,7 +240,7 @@ export const generateTag = async (
       GENERATION_TIMEOUT_MS,
     );
   } catch (err) {
-    throw new Error(describeFailure(err));
+    throw failure(err);
   }
 
   const parsed = GenerationSchema.safeParse(answer.output);
@@ -290,7 +307,7 @@ export const readTagActivity = async (
       ACTIVITY_TIMEOUT_MS,
     );
   } catch (err) {
-    throw Object.assign(new Error(describeFailure(err)), { code: err instanceof ServiceError ? err.code : undefined });
+    throw failure(err);
   }
 
   const parsed = TagActivityResponseSchema.safeParse(answer);

@@ -4,7 +4,9 @@ import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
 import { AuthState, JobPatch, JobView, Request, ResultOf } from "~/bridge/api";
 import { BridgeDown } from "~/bridge/protocol";
 import { answerChallenge, forgetPending, signIn } from "~/auth/cognito";
+import { SIGNED_OUT } from "~/auth/signed-out";
 import { siteOf } from "~/lib/site";
+import { failureAnswer } from "~/background/answer";
 import { heardTags } from "~/background/beacons";
 import { readTagsOnPage } from "~/background/page-tags";
 import { checkAccess, deployTag, generateTag, readExistingTag, readTagActivity } from "~/service/client";
@@ -129,17 +131,25 @@ const runGeneration = async (tabId: number, site: string, push: Push): Promise<v
     );
     advance(site, "result");
   } catch (err) {
-    if (generating.get(tabId) !== controller) return;
-    const message = err instanceof Error ? err.message : String(err);
-    if (message === "Cancelled.") return; // the cancel handler already moved the step
-    updateJob(site, (draft) => {
-      draft.generationError = message;
-    });
-    advance(site, "review");
-    push(tabId, { type: "generation-error", message });
+    if (generating.get(tabId) === controller) await failGeneration(tabId, site, err, push);
   } finally {
     if (generating.get(tabId) === controller) generating.delete(tabId);
   }
+};
+
+/**
+ * A failed run goes back to Evidence with its reason. When the session ended mid-run, the panel is
+ * sent to sign in as well — the reason stays on the job for when the operator is back.
+ */
+const failGeneration = async (tabId: number, site: string, err: unknown, push: Push): Promise<void> => {
+  const answer = await failureAnswer(err);
+  if (answer.error === "Cancelled.") return; // the cancel handler already moved the step
+  updateJob(site, (draft) => {
+    draft.generationError = answer.error;
+  });
+  advance(site, "review");
+  const message = answer.error;
+  push(tabId, answer.code === SIGNED_OUT ? { type: "signed-out", message } : { type: "generation-error", message });
 };
 
 const emptyStatus = (): TrackerStatus => ({

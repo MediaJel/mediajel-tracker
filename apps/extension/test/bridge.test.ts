@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
 
-import { ask } from "~/bridge/api";
+import { ask, onSignedOut } from "~/bridge/api";
 import { BridgeUp, unwrap, wrap } from "~/bridge/protocol";
 import { siteOf } from "~/lib/site";
 import { tagsOf } from "~/lib/status";
@@ -138,6 +138,26 @@ describe("ask", () => {
     await expect(
       answering({ ok: true }, () => ask({ type: "service/tag-activity", appIds: ["acme"] })),
     ).rejects.toThrow(/older than this panel/);
+  });
+
+  test("an answer that the session is over tells whoever is listening, and still rejects", async () => {
+    const reasons: string[] = [];
+    const stop = onSignedOut((reason) => reasons.push(reason));
+    try {
+      const reason = "Your MediaJel session has expired. Sign in again.";
+      await expect(
+        answering({ ok: false, error: reason, code: "signed-out" }, () =>
+          ask({ type: "service/tag-activity", appIds: ["acme"] }),
+        ),
+      ).rejects.toThrow(reason);
+      await expect(
+        answering({ ok: false, error: "Not allowed.", code: "forbidden" }, () => ask({ type: "auth/check-access" })),
+      ).rejects.toThrow("Not allowed.");
+
+      expect(reasons).toEqual([reason]);
+    } finally {
+      stop();
+    }
   });
 
   test("null is still an answer", async () => {

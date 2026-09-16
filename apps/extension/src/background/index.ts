@@ -1,6 +1,7 @@
 import { Request, Response } from "~/bridge/api";
 import { BridgeDown, BridgeUp } from "~/bridge/protocol";
 import { PANEL_PORT, RELAY_PORT } from "~/lib/ports";
+import { failureAnswer } from "~/background/answer";
 import { listenForTags } from "~/background/beacons";
 import { handle, rememberStatus } from "~/background/handle";
 import { flushAll, openJob, peekJob, subscribeJobs, updateJob } from "~/store/jobs";
@@ -187,11 +188,7 @@ chrome.runtime.onConnect.addListener((port) => {
 chrome.runtime.onMessage.addListener((request: Request, _sender, respond) => {
   handle(request, sendToTab, toPanel).then(
     (value) => respond({ ok: true, value } satisfies Response<unknown>),
-    (err: unknown) => {
-      const error = err instanceof Error ? err.message : String(err);
-      const code = (err as { code?: string })?.code;
-      respond({ ok: false, error, code } satisfies Response<never>);
-    },
+    (err: unknown) => void failureAnswer(err).then(respond),
   );
   return true; // the answer is asynchronous
 });

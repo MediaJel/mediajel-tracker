@@ -8,7 +8,7 @@ import { WidgetGoal, WidgetSession } from "@mediajel/assistant-core/types";
 
 import type { AuthChallenge, Identity } from "~/auth/cognito";
 import { AppFlowState, AppHandlers } from "~/ui/App";
-import { JobPatch, JobView, Push, ask } from "~/bridge/api";
+import { JobPatch, JobView, Push, ask, onSignedOut } from "~/bridge/api";
 import { PANEL_PORT } from "~/lib/ports";
 import { apiUrl } from "~/service/client";
 import { JobSummary } from "~/store/jobs";
@@ -154,6 +154,22 @@ export const usePanel = (): PanelState => {
     return id;
   };
 
+  /**
+   * The session is over — found out by any request, or pushed by the background mid-generation. The
+   * operator goes to sign in with the reason, instead of staying on a job whose every call now fails.
+   */
+  const signedOut = useCallback((reason: string) => {
+    setIdentity(null);
+    setChallenge(null);
+    setSession(null);
+    setFlowError("");
+    setDeployError("");
+    setAuthError(reason);
+    setScreen("sign-in");
+  }, []);
+
+  useEffect(() => onSignedOut(signedOut), [signedOut]);
+
   const loadJob = useCallback(async (id: number) => {
     const view = (await ask({ type: "job/open", tabId: id })) as JobView | null;
     if (!view) {
@@ -237,6 +253,8 @@ export const usePanel = (): PanelState => {
           return setVerifyRunErrors(push.errors);
         case "generation-error":
           return setDeployError("");
+        case "signed-out":
+          return signedOut(push.message);
         case "tags-heard":
           return push.site === siteRef.current ? setHeard(push.appIds) : undefined;
         default:
@@ -272,7 +290,7 @@ export const usePanel = (): PanelState => {
       closed = true;
       port?.disconnect();
     };
-  }, [screen, site, loadJob]);
+  }, [screen, site, loadJob, signedOut]);
 
   /** The elapsed clock in the Record body. Ticks only while recording. */
   const [, setTick] = useState(0);

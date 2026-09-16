@@ -6,7 +6,8 @@ import { JobView } from "~/bridge/api";
 import { BridgeDown } from "~/bridge/protocol";
 import { hear } from "~/background/beacons";
 import { handle, rememberStatus } from "~/background/handle";
-import { writeSession } from "~/store/auth";
+import { readSession, writeSession } from "~/store/auth";
+import { failureAnswer } from "~/background/answer";
 import { clearAllJobs, openJob, peekJob, releaseJob } from "~/store/jobs";
 import { clearExtensionStorage } from "./setup";
 
@@ -171,6 +172,72 @@ describe("what the panel is told about the page", () => {
     expect(seen).toEqual([
       { url: "https://assistant.test/activity?appIds=acme", authorization: "Bearer id-token-activity" },
     ]);
+  });
+});
+
+describe("a session that ends while the operator works", () => {
+  const signIn = (): Promise<void> =>
+    writeSession({
+      idToken: "id-token-rejected",
+      refreshToken: "refresh",
+      expiresAt: Date.now() + 60 * 60_000,
+      identity: { username: "dana", email: "dana@mediajel.com", name: "Dana" },
+    });
+
+  const refusing = async <T>(run: () => Promise<T>): Promise<T> => {
+    process.env.PLASMO_PUBLIC_WIDGET_API_URL = "https://assistant.test";
+    const original = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          error: { code: "unauthorized", message: "Your MediaJel session has expired. Sign in again." },
+        }),
+        { status: 401 },
+      )) as unknown as typeof fetch;
+    try {
+      return await run();
+    } finally {
+      globalThis.fetch = original;
+    }
+  };
+
+  test("a refused request clears the session and is answered as signed out, the reason with it", async () => {
+    await signIn();
+    const failure = await refusing(() =>
+      handle({ type: "service/tag-activity", appIds: ["acme"] }, send, push).then(
+        () => null,
+        (err: unknown) => failureAnswer(err),
+      ),
+    );
+
+    expect(failure).toEqual({
+      ok: false,
+      error: "Your MediaJel session has expired. Sign in again.",
+      code: "signed-out",
+    });
+    expect(await readSession()).toBeNull();
+  });
+
+  test("a failure that is not about the session leaves the operator signed in", async () => {
+    await signIn();
+    const failure = await failureAnswer(
+      Object.assign(new Error("Tag activity isn't set up."), { code: "activity-not-configured" }),
+    );
+
+    expect(failure).toEqual({ ok: false, error: "Tag activity isn't set up.", code: "activity-not-configured" });
+    expect(await readSession()).not.toBeNull();
+  });
+
+  test("a generation refused mid-run sends the panel to sign in", async () => {
+    await signIn();
+    const pushed: unknown[] = [];
+    await refusing(async () => {
+      await handle({ type: "service/generate", tabId: TAB }, send, (_tabId, message) => pushed.push(message));
+      for (let i = 0; i < 50 && pushed.length === 0; i += 1) await new Promise((resolve) => setTimeout(resolve, 10));
+    });
+
+    expect(pushed).toEqual([{ type: "signed-out", message: "Your MediaJel session has expired. Sign in again." }]);
+    expect(await readSession()).toBeNull();
   });
 });
 

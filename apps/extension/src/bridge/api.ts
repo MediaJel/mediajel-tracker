@@ -1,4 +1,5 @@
 import type { AuthChallenge, Identity } from "~/auth/cognito";
+import { SIGNED_OUT } from "~/auth/signed-out";
 import type { DeployOutcome, ExistingTag, TagActivityResponse } from "~/service/client";
 import type { JobSummary } from "~/store/jobs";
 import type { Settings } from "~/store/settings";
@@ -111,7 +112,22 @@ export type Push =
   | { type: "verify-result"; ok: boolean; errors: string[] }
   | { type: "dedup-cleared"; count: number }
   | { type: "generation-error"; message: string }
-  | { type: "tags-heard"; site: string; appIds: string[] };
+  | { type: "tags-heard"; site: string; appIds: string[] }
+  | { type: "signed-out"; message: string };
+
+type SignedOutListener = (reason: string) => void;
+const signedOutListeners = new Set<SignedOutListener>();
+
+/**
+ * Calls back whenever the background answers that the session has ended — whichever request found it
+ * out — so the panel goes to sign in rather than showing the failure under that one request.
+ */
+export const onSignedOut = (listener: SignedOutListener): (() => void) => {
+  signedOutListeners.add(listener);
+  return () => {
+    signedOutListeners.delete(listener);
+  };
+};
 
 /**
  * Ask the background something. Rejects with the background's own message, so a caller can put
@@ -121,7 +137,10 @@ export type Push =
 export const ask = async <K extends Request["type"]>(request: Extract<Request, { type: K }>): Promise<ResultOf[K]> => {
   const response = (await chrome.runtime.sendMessage(request)) as Response<ResultOf[K]> | undefined;
   if (!response) throw new Error("The assistant's background service did not answer. Try again.");
-  if (!response.ok) throw Object.assign(new Error(response.error), { code: response.code });
+  if (!response.ok) {
+    if (response.code === SIGNED_OUT) for (const listener of signedOutListeners) listener(response.error);
+    throw Object.assign(new Error(response.error), { code: response.code });
+  }
   // Every request the background knows answers with a value or null, and Chrome's messaging drops
   // an undefined value — so `{ ok: true }` alone is a background older than this panel, answering a
   // request it has no case for. Said here, instead of as a crash wherever the value is first used.

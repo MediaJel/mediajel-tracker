@@ -1,6 +1,7 @@
 import { Storage } from "@plasmohq/storage";
 
 import { AuthError, AuthSession, refresh } from "~/auth/cognito";
+import { SIGNED_OUT } from "~/auth/signed-out";
 import { AUTH_KEY } from "~/store/keys";
 
 /**
@@ -41,7 +42,7 @@ let refreshing: Promise<AuthSession> | null = null;
  */
 export const currentIdToken = async (): Promise<string> => {
   const session = await readSession();
-  if (!session) throw new AuthError("Sign in with your MediaJel account to use the assistant.", "signed-out");
+  if (!session) throw new AuthError("Sign in with your MediaJel account to use the assistant.", SIGNED_OUT);
   if (session.expiresAt - Date.now() > REFRESH_MARGIN_MS) return session.idToken;
 
   refreshing ??= refresh(session)
@@ -57,6 +58,6 @@ export const currentIdToken = async (): Promise<string> => {
     return (await refreshing).idToken;
   } catch {
     await clearSession();
-    throw new AuthError("Your MediaJel session has expired. Sign in again.", "signed-out");
+    throw new AuthError("Your MediaJel session has expired. Sign in again.", SIGNED_OUT);
   }
 };

@@ -5,11 +5,14 @@ import { afterEach, describe, expect, test } from "bun:test";
 import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
 import { WidgetSession, WIDGET_SESSION_VERSION } from "@mediajel/assistant-core/types";
 
+import { AuthError } from "~/auth/cognito";
+import { SIGNED_OUT } from "~/auth/signed-out";
 import {
   ServiceError,
   checkAccess,
   deployTag,
   describeFailure,
+  endsSession,
   generateTag,
   readExistingTag,
   readTagActivity,
@@ -287,6 +290,49 @@ describe("readTagActivity", () => {
   test("refuses an answer it cannot read, rather than showing numbers it had to guess at", async () => {
     server(() => ({ status: 200, json: { days: 7, tags: [{ appId: "pageviews", status: "ok" }] } }));
     await expect(readTagActivity(token, ["pageviews"])).rejects.toThrow(/cannot read/);
+  });
+});
+
+describe("a session that is over", () => {
+  const rejected = {
+    status: 401,
+    json: { error: { code: "unauthorized", message: "Your MediaJel session has expired. Sign in again." } },
+  };
+
+  test("a token the service refuses is the end of the session, whichever call found it", async () => {
+    server(() => rejected);
+
+    const activity = await readTagActivity(token, ["acme"]).catch((err: unknown) => err);
+    expect(activity).toMatchObject({ message: "Your MediaJel session has expired. Sign in again.", code: SIGNED_OUT });
+    expect(endsSession(activity)).toBe(true);
+
+    const access = await checkAccess(token).catch((err: unknown) => err);
+    expect((access as { code?: string }).code).toBe(SIGNED_OUT);
+
+    expect(endsSession(await readExistingTag(token, "domain", "shop.example.com").catch((err: unknown) => err))).toBe(
+      true,
+    );
+  });
+
+  test("so is having no session to take a token from — and it says so in its own words", async () => {
+    const none = async (): Promise<string> => {
+      throw new AuthError("Sign in with your MediaJel account to use the assistant.", SIGNED_OUT);
+    };
+    server(() => ({ status: 200, json: { days: 7, tags: [] } }));
+
+    const failure = await readTagActivity(none, ["acme"]).catch((err: unknown) => err);
+    expect(failure).toMatchObject({
+      message: "Sign in with your MediaJel account to use the assistant.",
+      code: SIGNED_OUT,
+    });
+  });
+
+  test("an account the service will not serve is still signed in — signing in again would change nothing", async () => {
+    server(() => ({ status: 403, json: { error: { code: "forbidden", message: "Not allowed." } } }));
+
+    const failure = await readTagActivity(token, ["acme"]).catch((err: unknown) => err);
+    expect(endsSession(failure)).toBe(false);
+    expect((failure as { code?: string }).code).toBe("forbidden");
   });
 });
 
