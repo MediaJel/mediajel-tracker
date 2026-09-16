@@ -291,6 +291,26 @@ describe("readTagActivity", () => {
     server(() => ({ status: 200, json: { days: 7, tags: [{ appId: "pageviews", status: "ok" }] } }));
     await expect(readTagActivity(token, ["pageviews"])).rejects.toThrow(/cannot read/);
   });
+
+  test("reads the days a newer service sends, and a service from before the chart as no days", async () => {
+    const day = { day: "2026-09-16", pageviews: 491, sessions: 221, transactions: 0, signups: 0, transactionTotal: 0 };
+    const [older] = ACTIVITY.tags;
+    server(() => ({
+      status: 200,
+      json: {
+        days: 7,
+        tags: [
+          { ...older, daily: [day] },
+          { ...older, appId: "older" },
+        ],
+      },
+    }));
+
+    const { tags } = await readTagActivity(token, ["pageviews", "older"]);
+
+    expect(tags[0]).toMatchObject({ daily: [day] });
+    expect(tags[1]).toMatchObject({ daily: null });
+  });
 });
 
 describe("a session that is over", () => {

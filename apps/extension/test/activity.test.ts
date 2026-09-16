@@ -21,6 +21,7 @@ const answered = (appId: string, totals: Partial<Extract<TagActivity, { status: 
     pages: [],
     truncated: false,
     partial: false,
+    daily: null,
     ...last,
   }) as TagActivity;
 

@@ -2167,3 +2167,130 @@ body :focus-visible {
 .mj-tally-skeleton-row:first-child {
   height: 36px;
 }
+
+/* --- by day ------------------------------------------------------------------------------- */
+
+/* A tag's week in the activity report: a reading of one day pinned above the columns, one band per
+   measure on its own scale, and the day names under the last band. The columns are carbon ink — the
+   receipts' colour, one step deeper so a 22px column clears 3:1 on the sheet — because they are the
+   record's own marks, not a highlight; today's column, still filling, is the same ink at half strength. */
+:root {
+  --mj-days-ink: #495da7;
+  --mj-days-wash: rgba(51, 64, 107, 0.07);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --mj-days-ink: #6a81ce;
+    --mj-days-wash: rgba(147, 166, 221, 0.1);
+  }
+}
+
+:root[data-theme="dark"] {
+  --mj-days-ink: #6a81ce;
+  --mj-days-wash: rgba(147, 166, 221, 0.1);
+}
+
+.mj-days-section {
+  margin: 18px 0 0;
+}
+
+.mj-days {
+  margin: 0;
+}
+
+.mj-days-readout {
+  margin: 0 0 8px;
+}
+
+/* The day being read, under the section's title: a line of the record, not a second heading. */
+.mj-days-when {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--mj-ink);
+}
+
+.mj-days-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 16px;
+  margin: 0;
+}
+
+/* Names above values, as the tally prints them — a reading, not a row of hero figures. */
+.mj-days-values div {
+  display: flex;
+  flex-direction: column;
+  min-width: 64px;
+}
+
+.mj-days-values dt {
+  font-size: 11px;
+  color: var(--mj-ink-soft);
+}
+
+.mj-days-values dd {
+  margin: 0;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--mj-ink);
+}
+
+.mj-days-plot {
+  display: block;
+  width: 100%;
+  border-radius: 3px;
+  touch-action: pan-y;
+}
+
+.mj-days-plot svg {
+  display: block;
+  overflow: visible;
+}
+
+.mj-days-band,
+.mj-days-peak,
+.mj-days-day {
+  font-family: var(--mj-body);
+  font-size: 11px;
+  fill: var(--mj-ink-soft);
+}
+
+.mj-days-peak {
+  text-anchor: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.mj-days-day {
+  text-anchor: middle;
+}
+
+.mj-days-day--chosen {
+  fill: var(--mj-ink);
+}
+
+.mj-days-rule {
+  stroke: var(--mj-rule);
+  stroke-width: 1;
+}
+
+.mj-days-bar {
+  fill: var(--mj-days-ink);
+}
+
+.mj-days-bar--today {
+  fill-opacity: 0.5;
+}
+
+.mj-days-wash {
+  fill: var(--mj-days-wash);
+}
+
+.mj-days-capture {
+  fill: transparent;
+  cursor: crosshair;
+}
+
+.mj-days-note {
+  margin: 6px 0 0;
+}

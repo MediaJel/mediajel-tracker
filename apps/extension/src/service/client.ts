@@ -278,6 +278,21 @@ const TagActivitySchema = z.discriminatedUnion("status", [
       .nullable(),
     truncated: z.boolean(),
     partial: z.boolean(),
+    // Absent from a service older than the chart, which is the same as a read that failed.
+    daily: z
+      .array(
+        z.object({
+          day: z.string(),
+          pageviews: z.number(),
+          sessions: z.number(),
+          transactions: z.number(),
+          signups: z.number(),
+          transactionTotal: z.number(),
+        }),
+      )
+      .nullable()
+      .optional()
+      .transform((days) => days ?? null),
   }),
   z.object({ appId: z.string(), status: z.literal("unavailable"), message: z.string() }),
 ]);

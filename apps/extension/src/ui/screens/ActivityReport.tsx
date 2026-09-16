@@ -6,6 +6,7 @@ import type { TagActivity } from "~/service/client";
 import type { TagActivityState } from "~/sidepanel/useTagActivity";
 import { amount, fullNumber, pageLabel, pageListing, when } from "~/ui/activity";
 import InfoTip from "~/ui/components/InfoTip";
+import { DaysSection } from "~/ui/screens/ActivityDays";
 import { ACTIVITY_DETAILS_ID, ACTIVITY_REPORT_ID, ACTIVITY_RETRY_ID } from "~/ui/screens/ActivityTally";
 
 /**
@@ -157,6 +158,7 @@ const Sheet = ({ result, tag, site, last, onRetry }: SheetProps): ReactNode => {
       {result.status === "ok" ? (
         <>
           <Facts result={result} />
+          <DaysSection daily={result.daily} />
           <PagesSection result={result} site={site} />
         </>
       ) : (

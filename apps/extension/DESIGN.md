@@ -119,6 +119,18 @@ service's own words behind its ⓘ; Details closes if a refresh leaves no readin
 to the tally. When an endpoint can read further back than the 7-day table, the range control belongs
 at the top of the report, not in the heading.
 
+**By day** is the figure on each report sheet: the tag's last week as columns, one band per measure —
+Page views, Transactions, Sign-ups, Sessions, and the transaction total once there is any — each on
+its own scale, because page views run hundreds of times the conversions and one axis would flatten
+them onto the baseline. The columns are carbon ink one step deeper (`--mj-days-ink`, so a 22px column
+clears 3:1 on the sheet); today's is at half strength because it is still filling. One day is read at
+a time — the latest at rest, whichever the pointer or the arrow keys choose — and printed above the
+bands in the tally's form (names once, a row of values), never as a tooltip over the marks. A band's
+only figure is its top, rounded to the next clean tick; a flat band is the answer "none". The oldest of
+internal-service's eight days is not drawn: the 7-day table has already let its early events expire,
+and it would read as a slump that never happened. Days are UTC, and say so; a screen reader gets the
+same numbers as a table. Built on visx alone, in the panel's own CSS — no chart library's chrome.
+
 **The tear.** The zigzag opens the stack at the top; the last sheet closes it with a matching
 perforated edge (a conic-gradient mask), so the ground below reads as the desk the ticket is lying
 on rather than as something missing.
