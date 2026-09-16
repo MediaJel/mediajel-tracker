@@ -143,3 +143,9 @@ describe("what the panel is told about the page", () => {
     ]);
   });
 });
+
+describe("a request this background does not know", () => {
+  test("is refused in words, rather than answered with nothing", async () => {
+    await expect(handle({ type: "service/from-a-newer-panel" } as never, send, push)).rejects.toThrow(/does not know/);
+  });
+});

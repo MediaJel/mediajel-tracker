@@ -337,6 +337,13 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
       advance(site, "done");
       return outcome;
     }
+
+    default:
+      // A panel newer than this background asked for something it has no case for. Answering with
+      // nothing surfaced as a crash layers away in the panel; refusing in words says what to do.
+      throw new Error(
+        `This version of the assistant's background does not know "${(request as { type: string }).type}". Reload the extension in chrome://extensions.`,
+      );
   }
 };
 

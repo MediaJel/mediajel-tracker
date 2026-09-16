@@ -116,5 +116,13 @@ export const ask = async <K extends Request["type"]>(request: Extract<Request, {
   const response = (await chrome.runtime.sendMessage(request)) as Response<ResultOf[K]> | undefined;
   if (!response) throw new Error("The assistant's background service did not answer. Try again.");
   if (!response.ok) throw Object.assign(new Error(response.error), { code: response.code });
+  // Every request the background knows answers with a value or null, and Chrome's messaging drops
+  // an undefined value — so `{ ok: true }` alone is a background older than this panel, answering a
+  // request it has no case for. Said here, instead of as a crash wherever the value is first used.
+  if (response.value === undefined) {
+    throw new Error(
+      "The assistant's background is older than this panel. Reload the extension in chrome://extensions, then reopen the panel.",
+    );
+  }
   return response.value;
 };

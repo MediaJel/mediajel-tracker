@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
 
+import { ask } from "~/bridge/api";
 import { BridgeUp, unwrap, wrap } from "~/bridge/protocol";
 import { siteOf } from "~/lib/site";
 import { tagsOf } from "~/lib/status";
@@ -87,5 +88,31 @@ describe("tagsOf", () => {
 
   test("an older page bridge with no tag on its page has no tags", () => {
     expect(tagsOf(older({}))).toEqual([]);
+  });
+});
+
+describe("ask", () => {
+  const runtime = (globalThis as unknown as { chrome: { runtime: { sendMessage: unknown } } }).chrome.runtime;
+  const answering = async (reply: unknown, run: () => Promise<unknown>): Promise<unknown> => {
+    const original = runtime.sendMessage;
+    runtime.sendMessage = async () => reply;
+    try {
+      return await run();
+    } finally {
+      runtime.sendMessage = original;
+    }
+  };
+
+  test("a background older than the panel answers ok with nothing — that is a reload, not a crash further down", async () => {
+    // Chrome's messaging drops an undefined value, so an unknown request arrives as { ok: true }.
+    await expect(
+      answering({ ok: true }, () => ask({ type: "service/tag-activity", appIds: ["acme"] })),
+    ).rejects.toThrow(/older than this panel/);
+  });
+
+  test("null is still an answer", async () => {
+    expect(
+      await answering({ ok: true, value: null }, () => ask({ type: "job/delete", site: "shop.example.com" })),
+    ).toBeNull();
   });
 });
