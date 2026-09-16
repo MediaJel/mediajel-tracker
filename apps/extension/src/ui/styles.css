@@ -1821,7 +1821,8 @@ body :focus-visible {
 /* The bottom of the ticket. The zigzag tears the stack open at the top; without a matching edge
    the last sheet just stops, and the ground below it reads as something missing rather than as
    the desk the ticket is lying on. */
-.mj-stack > li:last-child {
+.mj-stack > li:last-child,
+.mj-report-sheet--last {
   padding-bottom: 10px;
   -webkit-mask:
     linear-gradient(#000 0 0) top / 100% calc(100% - 6px) no-repeat,
@@ -1934,8 +1935,6 @@ body :focus-visible {
   align-items: baseline;
   gap: 0 10px;
   padding: 6px 0;
-  color: inherit;
-  text-decoration: none;
 }
 
 .mj-page-path {
@@ -1945,12 +1944,6 @@ body :focus-visible {
   font-size: 12px;
   color: var(--mj-ink);
   overflow-wrap: anywhere;
-}
-
-.mj-page--link:hover .mj-page-path {
-  color: var(--mj-identity);
-  text-decoration: underline;
-  text-underline-offset: 2px;
 }
 
 .mj-page-count {
@@ -2082,14 +2075,17 @@ body :focus-visible {
 
 .mj-tally-grid th,
 .mj-tally-grid td {
-  padding: 0;
+  padding: 0 8px 0 0;
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.mj-tally-column {
+/* A column name wraps rather than being cut to "Transactio…" when the panel is narrower than 400px. */
+.mj-tally-grid .mj-tally-column {
+  white-space: normal;
+  overflow-wrap: anywhere;
   font-size: 11px;
   font-weight: 400;
   color: var(--mj-ink-soft);
@@ -2115,6 +2111,7 @@ body :focus-visible {
   color: var(--mj-ink-soft);
 }
 
+/* Eight mono characters plus the column gap: the short ID must never be cut. */
 .mj-tally-id-column {
   width: 66px;
 }

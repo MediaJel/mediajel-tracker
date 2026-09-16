@@ -4,9 +4,9 @@ import { TagSummary } from "@mediajel/assistant-core/context";
 
 import type { TagActivity } from "~/service/client";
 import type { TagActivityState } from "~/sidepanel/useTagActivity";
-import { dollars, fullNumber, pageLabel, pageListing, when } from "~/ui/activity";
+import { amount, fullNumber, pageLabel, pageListing, when } from "~/ui/activity";
 import InfoTip from "~/ui/components/InfoTip";
-import { ACTIVITY_DETAILS_ID, ACTIVITY_REPORT_ID } from "~/ui/screens/ActivityTally";
+import { ACTIVITY_DETAILS_ID, ACTIVITY_REPORT_ID, ACTIVITY_RETRY_ID } from "~/ui/screens/ActivityTally";
 
 /**
  * Details: the whole of each tag's last 7 days, one sheet per tag, in the place the job's steps
@@ -14,7 +14,7 @@ import { ACTIVITY_DETAILS_ID, ACTIVITY_REPORT_ID } from "~/ui/screens/ActivityTa
  * and the job is untouched underneath.
  *
  * This is where the machine facts live that the tally keeps off the heading: the full app ID, the
- * tag's environment and version, the money, and the pages the conversions happened on.
+ * tag's environment and version, the transaction total, and the pages the conversions happened on.
  */
 
 type Answered = Extract<TagActivity, { status: "ok" }>;
@@ -22,27 +22,16 @@ type Page = NonNullable<Answered["pages"]>[number];
 
 const conversions = (page: Page): string =>
   `${fullNumber(page.conversions)} ${page.conversions === 1 ? "conversion" : "conversions"}${
-    page.transactionTotal ? ` · ${dollars(page.transactionTotal)}` : ""
+    page.transactionTotal ? ` · ${amount(page.transactionTotal)} total` : ""
   }`;
 
 const PageRow = ({ page, site }: { page: Page; site: string }): ReactNode => {
-  const { path, host, href } = pageLabel(page.pageUrl, site);
-  const content = (
-    <>
+  const { path, host } = pageLabel(page.pageUrl, site);
+  return (
+    <li className="mj-page">
       <span className="mj-page-path">{path}</span>
       {host && <span className="mj-page-host">{host}</span>}
       <span className="mj-page-count">{conversions(page)}</span>
-    </>
-  );
-  return (
-    <li>
-      {href ? (
-        <a className="mj-page mj-page--link" href={href} target="_blank" rel="noreferrer">
-          {content}
-        </a>
-      ) : (
-        <span className="mj-page">{content}</span>
-      )}
     </li>
   );
 };
@@ -73,11 +62,15 @@ const Pages = ({ pages, truncated, site }: { pages: Page[]; truncated: boolean; 
           onChange={(event) => setFilter(event.target.value)}
         />
       )}
-      <ul className="mj-pages-list">
-        {shown.map((page) => (
-          <PageRow key={page.pageUrl} page={page} site={site} />
-        ))}
-      </ul>
+      {shown.length === 0 ? (
+        <p className="mj-empty">No page matches “{filter.trim()}”.</p>
+      ) : (
+        <ul className="mj-pages-list">
+          {shown.map((page) => (
+            <PageRow key={page.pageUrl} page={page} site={site} />
+          ))}
+        </ul>
+      )}
       {canShowAll && (
         <button type="button" className="mj-link mj-pages-more" onClick={() => setAll(true)}>
           Show all {pages.length} pages
@@ -111,16 +104,16 @@ const Facts = ({ result }: { result: Answered }): ReactNode => {
       <dl className="mj-counts">
         <dt>Page views</dt>
         <dd>{fullNumber(totals.pageviews)}</dd>
-        <dt>Sessions</dt>
-        <dd>{fullNumber(totals.sessions)}</dd>
         <dt>Transactions</dt>
         <dd>{fullNumber(totals.transactions)}</dd>
         <dt>Sign-ups</dt>
         <dd>{fullNumber(totals.signups)}</dd>
+        <dt>Sessions</dt>
+        <dd>{fullNumber(totals.sessions)}</dd>
         {totals.transactionTotal > 0 && (
           <>
-            <dt>Total</dt>
-            <dd>{dollars(totals.transactionTotal)}</dd>
+            <dt>Transaction total</dt>
+            <dd>{amount(totals.transactionTotal)}</dd>
           </>
         )}
         {totals.impressions > 0 && (
@@ -142,11 +135,19 @@ const describeTag = (tag: TagSummary | undefined): string => {
   return `Environment ${tag.environment} · version ${tag.version}${held}`;
 };
 
-const Sheet = (props: { result: TagActivity; tag?: TagSummary; site: string; onRetry(): void }): ReactNode => {
-  const { result, tag, site, onRetry } = props;
+interface SheetProps {
+  result: TagActivity;
+  tag?: TagSummary;
+  site: string;
+  /** The last sheet tears off at the bottom, the way the stack's last sheet does. */
+  last: boolean;
+  onRetry(): void;
+}
+
+const Sheet = ({ result, tag, site, last, onRetry }: SheetProps): ReactNode => {
   const headingId = `mj-activity-tag-${result.appId}`;
   return (
-    <section className="mj-report-sheet" aria-labelledby={headingId}>
+    <section className={last ? "mj-report-sheet mj-report-sheet--last" : "mj-report-sheet"} aria-labelledby={headingId}>
       <h3 id={headingId} className="mj-report-tag">
         {result.appId}
       </h3>
@@ -171,18 +172,30 @@ const Sheet = (props: { result: TagActivity; tag?: TagSummary; site: string; onR
   );
 };
 
+/**
+ * When Details closes without the reader asking — a refresh that failed takes its readings away —
+ * focus must not fall to the page body: it goes to the tally's Try again, or its Details button.
+ */
+const keepFocusOnTheTally = (): void => {
+  if (document.activeElement && document.activeElement !== document.body) return;
+  (document.getElementById(ACTIVITY_RETRY_ID) ?? document.getElementById(ACTIVITY_DETAILS_ID))?.focus();
+};
+
 export const ActivityReport = ({ activity, site }: { activity: TagActivityState; site: string }): ReactNode => {
   const heading = useRef<HTMLHeadingElement>(null);
 
-  // Opening Details moves the reader to it; closing it hands focus back to the button that opened it.
-  useEffect(() => heading.current?.focus(), []);
+  // Opening Details moves the reader to it; closing it hands focus back to the tally.
+  useEffect(() => {
+    heading.current?.focus();
+    return keepFocusOnTheTally;
+  }, []);
   const close = (): void => {
     activity.closeReport();
     document.getElementById(ACTIVITY_DETAILS_ID)?.focus();
   };
 
   return (
-    <div
+    <section
       id={ACTIVITY_REPORT_ID}
       className="mj-report"
       aria-labelledby="mj-report-title"
@@ -199,12 +212,13 @@ export const ActivityReport = ({ activity, site }: { activity: TagActivityState;
           </button>
         </p>
       </div>
-      {activity.results.map((result) => (
+      {activity.results.map((result, index) => (
         <Sheet
           key={result.appId}
           result={result}
           tag={activity.tags.find((tag) => tag.appId === result.appId)}
           site={site}
+          last={index === activity.results.length - 1}
           onRetry={activity.refresh}
         />
       ))}
@@ -213,6 +227,6 @@ export const ActivityReport = ({ activity, site }: { activity: TagActivityState;
           Back to the job
         </button>
       </div>
-    </div>
+    </section>
   );
 };

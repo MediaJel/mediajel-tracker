@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
 
 import type { TagActivity } from "~/service/client";
-import { ago, pageLabel, pageListing, shortAppId, tallyNumber, tallySentence } from "~/ui/activity";
+import { ago, amount, pageLabel, pageListing, shortAppId, tallyNumber, tallySentence } from "~/ui/activity";
 
 /**
  * The words the panel uses about a client's traffic. A tally that says "nothing was recorded"
- * when page views are arriving — or that links a forged `javascript:` page URL — would be worse
- * than no tally at all.
+ * when page views are arriving — or while a tag it could not read may hold the purchases — would be
+ * worse than no tally at all.
  */
 
 const NOW = Date.parse("2026-09-17T12:00:00Z");
@@ -49,6 +49,15 @@ describe("the tally's sentence", () => {
     );
   });
 
+  test("says nothing about what was not recorded while another tag could not be read", () => {
+    const results: TagActivity[] = [
+      answered("pageviews-tag", { pageviews: 900 }),
+      { appId: "transactions-tag", status: "unavailable", message: "timed out" },
+    ];
+
+    expect(tallySentence(results, "transaction", NOW)).toBe("");
+  });
+
   test("stays quiet when no tag could be read — a failure is not a quiet week", () => {
     expect(tallySentence([{ appId: "a", status: "unavailable", message: "timed out" }], "transaction", NOW)).toBe("");
   });
@@ -58,6 +67,11 @@ describe("numbers and names", () => {
   test("keeps four columns inside the panel by going compact past 9,999", () => {
     expect(tallyNumber(4088)).toBe("4,088");
     expect(tallyNumber(12_940)).toBe("12.9K");
+  });
+
+  test("prints a transaction total without claiming a currency the data does not carry", () => {
+    expect(amount(828235.42)).toBe("828,235.42");
+    expect(amount(12)).toBe("12.00");
   });
 
   test("a short app ID is enough to tell two tags apart", () => {
@@ -106,23 +120,17 @@ describe("page URLs", () => {
     expect(pageLabel("https://www.seedoflifelabs.com/location/billings/?ref=1", "www.seedoflifelabs.com")).toEqual({
       path: "/location/billings/?ref=1",
       host: "",
-      href: "https://www.seedoflifelabs.com/location/billings/?ref=1",
     });
     expect(pageLabel("https://checkout.dutchie.com/thank-you", "www.seedoflifelabs.com").host).toBe(
       "checkout.dutchie.com",
     );
   });
 
-  test("a grouped page shape is not a link — it stands for many pages and is none of them", () => {
+  test("prints a grouped shape and anything that is not a web URL as it came", () => {
     expect(pageLabel("https://www.binoidcbd.com/checkout/order-received/:id", "www.binoidcbd.com")).toEqual({
       path: "/checkout/order-received/:id",
       host: "",
-      href: null,
     });
-  });
-
-  test("never turns a forged javascript: URL into a link", () => {
-    expect(pageLabel("javascript:alert(1)", "shop.example.com").href).toBeNull();
-    expect(pageLabel("not a url", "shop.example.com")).toEqual({ path: "not a url", host: "", href: null });
+    expect(pageLabel("not a url", "shop.example.com")).toEqual({ path: "not a url", host: "" });
   });
 });

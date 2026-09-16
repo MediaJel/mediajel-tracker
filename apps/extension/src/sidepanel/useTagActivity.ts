@@ -116,6 +116,7 @@ export const useTagActivity = ({ active, site, status, statusKnown }: Inputs): T
     if (!wanted) {
       shownRef.current = "";
       setLookup(idle(wanted));
+      setReportOpen(false);
       return;
     }
     const again = shownRef.current === wanted;
@@ -124,6 +125,8 @@ export const useTagActivity = ({ active, site, status, statusKnown }: Inputs): T
       if (request !== requestRef.current) return;
       shownRef.current = next.phase === "ready" ? wanted : "";
       setLookup(next);
+      // Details has nothing to show without readings; left open, it would come back uninvited later.
+      setReportOpen((open) => open && next.phase === "ready");
     });
   }, [active, wanted, attempt]);
 

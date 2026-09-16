@@ -12,7 +12,7 @@ type Answered = Extract<TagActivity, { status: "ok" }>;
 
 const whole = new Intl.NumberFormat("en-US");
 const compact = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
-const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+const twoPlaces = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const moment = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 const relative = new Intl.RelativeTimeFormat("en-US", { numeric: "auto" });
 
@@ -21,7 +21,12 @@ export const tallyNumber = (n: number): string => (n > 9_999 ? compact.format(n)
 
 export const fullNumber = (n: number): string => whole.format(n);
 
-export const dollars = (n: number): string => money.format(n);
+/**
+ * A transaction total, without a currency symbol: the service sums what the tags sent and carries no
+ * currency, and "USD" is only a tag's default — a CAD shop's sales are not dollars, and a mix of
+ * currencies summed under "$" would be an invented figure.
+ */
+export const amount = (n: number): string => twoPlaces.format(n);
 
 /** Enough of an app ID to tell two tags on one page apart; the whole of it is in Details. */
 export const shortAppId = (appId: string): string => appId.split("-")[0].slice(0, 8) || appId;
@@ -76,6 +81,8 @@ export const tallySentence = (results: TagActivity[], goal: WidgetGoal, now = Da
     const by = answered.length > 1 ? `, by tag ${shortAppId(latest.appId)}` : "";
     return `Last ${JOB[goal].one} recorded ${ago(latest[JOB[goal].last] ?? "", now)}${by}.`;
   }
+  // A tag that could not be read may hold exactly what the quiet sentences below would deny.
+  if (answered.length < results.length) return "";
   // Counted, but with no time to put on it: say nothing rather than guess at one.
   if (answered.some((result) => result.totals[JOB[goal].count] > 0)) return "";
   return quietSentence(answered, goal);
@@ -105,22 +112,22 @@ export const pageListing = <T extends { pageUrl: string }>(pages: T[], all: bool
 };
 
 /**
- * A recorded page as a row shows it. The host appears only when it is not the job's own site —
- * a checkout on another domain is exactly what an engineer needs to notice.
+ * A recorded page as a row prints it: its path, and its host only when that is not the job's own
+ * site — a checkout on another domain is exactly what an engineer needs to notice.
  *
- * `href` is null for anything but http(s). These URLs arrive from tracked events, and anyone can
- * send the collector an event; a `javascript:` URL must never become a link in this panel.
+ * Printed, never linked. Every listed page is one where a conversion fired, and opening it runs the
+ * client's tag: a click from here could add page views to the counts on screen, or record a test
+ * purchase on a thank-you page in production.
  */
-export const pageLabel = (pageUrl: string, site: string): { path: string; host: string; href: string | null } => {
+export const pageLabel = (pageUrl: string, site: string): { path: string; host: string } => {
   try {
     const url = new URL(pageUrl);
     const web = url.protocol === "http:" || url.protocol === "https:";
     return {
       path: web ? `${url.pathname}${url.search}` : pageUrl,
       host: web && url.hostname !== site ? url.hostname : "",
-      href: web && !isShape(url.pathname) ? url.href : null,
     };
   } catch {
-    return { path: pageUrl, host: "", href: null };
+    return { path: pageUrl, host: "" };
   }
 };

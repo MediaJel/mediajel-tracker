@@ -20,14 +20,15 @@ import { ChevronDown } from "~/ui/icons";
 
 export const ACTIVITY_REPORT_ID = "mj-activity-report";
 export const ACTIVITY_DETAILS_ID = "mj-activity-details";
+export const ACTIVITY_RETRY_ID = "mj-activity-retry";
 
 type Props = { activity: TagActivityState; goal: WidgetGoal };
 
 const COLUMNS = [
   { key: "pageviews", label: "Page views" },
-  { key: "sessions", label: "Sessions" },
   { key: "transactions", label: "Transactions" },
   { key: "signups", label: "Sign-ups" },
+  { key: "sessions", label: "Sessions" },
 ] as const;
 
 /** More rows than this and the heading stops being a heading; the rest are in Details. */
@@ -120,7 +121,7 @@ const Note = ({ children, problem = false }: { children: ReactNode; problem?: bo
 const Failure = ({ activity }: { activity: TagActivityState }): ReactNode => (
   <Note problem>
     {activity.error || "Tag activity couldn’t load."} That says nothing about whether the tags are firing.{" "}
-    <button type="button" className="mj-link" onClick={activity.refresh}>
+    <button id={ACTIVITY_RETRY_ID} type="button" className="mj-link" onClick={activity.refresh}>
       Try again
     </button>
   </Note>
