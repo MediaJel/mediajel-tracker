@@ -4,6 +4,7 @@ import { TagSummary } from "@mediajel/assistant-core/context";
 import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
 
 import { ask } from "~/bridge/api";
+import { tagsOf } from "~/lib/status";
 import type { TagActivity } from "~/service/client";
 
 /**
@@ -101,8 +102,9 @@ export const useTagActivity = ({ active, site, status, statusKnown }: Inputs): T
   /** The app IDs the answers on screen belong to. */
   const shownRef = useRef("");
 
-  // Every status push is a new array; the app IDs it names are what decide a lookup.
-  const key = useMemo(() => [...new Set(status.tags.map((tag) => tag.appId).filter(Boolean))].join(","), [status.tags]);
+  // Every status push is a new object; the app IDs it names are what decide a lookup.
+  const tags = useMemo(() => tagsOf(status), [status]);
+  const key = useMemo(() => [...new Set(tags.map((tag) => tag.appId).filter(Boolean))].join(","), [tags]);
   // The app IDs to look up — empty when the page reported no tag, null until it has reported at all.
   const wanted = statusKnown ? key : null;
 
@@ -132,7 +134,7 @@ export const useTagActivity = ({ active, site, status, statusKnown }: Inputs): T
 
   return {
     ...lookup,
-    tags: status.tags,
+    tags,
     slow,
     reportOpen,
     refresh: () => setAttempt((value) => value + 1),
