@@ -2,9 +2,9 @@
   "name": "@mediajel/assistant-api",
   "version": "1.0.0",
   "private": true,
-  "description": "The Integrations Assistant's server side, as a NestJS app. Everything of substance lives in src/features/integrations-assistant \u2014 a self-contained feature module shaped to be lifted into amplication-nestjs-microservices' external-service, where main.ts and app.module.ts here are thrown away.",
+  "description": "The Integrations Assistant's server side, as a NestJS app. Everything of substance lives in src/features/integrations-assistant — a self-contained feature module shaped to be lifted into amplication-nestjs-microservices' external-service, where main.ts and app.module.ts here are thrown away.",
   "license": "ISC",
-  "//node": "Nest's DI needs emitDecoratorMetadata, so this builds with tsc (not bun's runtime). The repo pins Node 22 in .nvmrc \u2014 see apps/extension/README.md for why newer breaks the extension's watcher.",
+  "//node": "Nest's DI needs emitDecoratorMetadata, so this builds with tsc (not bun's runtime). The repo pins Node 22 in .nvmrc — see apps/extension/README.md for why newer breaks the extension's watcher.",
   "scripts": {
     "dev": "nest start --watch",
     "build": "nest build",
@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.45",
+    "@clickhouse/client": "^1.23.1",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.0",
     "@nestjs/core": "^11.0.0",

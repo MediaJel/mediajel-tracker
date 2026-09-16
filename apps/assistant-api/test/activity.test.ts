@@ -4,8 +4,11 @@ import { ApiError } from "~/features/integrations-assistant/errors";
 import { IntegrationsAssistantController } from "~/features/integrations-assistant/integrations-assistant.controller";
 import { IntegrationsAssistantService } from "~/features/integrations-assistant/integrations-assistant.service";
 import type {
-  RawActivity,
+  DailyActivitySource,
   RawDailyRow,
+} from "~/features/integrations-assistant/providers/daily-activity.source";
+import type {
+  RawActivity,
   RawPageUrlRow,
   TagActivitySource,
 } from "~/features/integrations-assistant/providers/tag-activity.source";
@@ -62,7 +65,6 @@ const stubSource = (
   answers: {
     activity?: Answer<RawActivity>;
     pageUrls?: Answer<RawPageUrlRow[]>;
-    daily?: Answer<RawDailyRow[]>;
     configured?: boolean;
   } = {},
 ): TagActivitySource & { asked: string[] } => {
@@ -78,6 +80,17 @@ const stubSource = (
       asked.push(`pageUrls ${appId} ${days}`);
       return answers.pageUrls ? answers.pageUrls(appId) : Promise.resolve([THANK_YOU]);
     },
+  };
+};
+
+/** Answers the days the same way for every app ID unless told otherwise, and records what it was asked for. */
+const stubDays = (
+  answers: { daily?: Answer<RawDailyRow[]>; configured?: boolean } = {},
+): DailyActivitySource & { asked: string[] } => {
+  const asked: string[] = [];
+  return {
+    asked,
+    configured: () => answers.configured ?? true,
     daily: (appId, days) => {
       asked.push(`daily ${appId} ${days}`);
       return answers.daily ? answers.daily(appId) : Promise.resolve(WEEK);
@@ -91,15 +104,19 @@ const failing =
     throw new Error(message);
   };
 
-const serviceWith = (source: TagActivitySource, clock = { now: 0 }): ActivityService => {
-  const service = new ActivityService(source);
+const serviceWith = (
+  source: TagActivitySource,
+  clock = { now: 0 },
+  days: DailyActivitySource = stubDays(),
+): ActivityService => {
+  const service = new ActivityService(source, days);
   service.useClock(() => clock.now);
   return service;
 };
 
 /** The one app ID's answer, narrowed to a successful read. */
-const onlyTag = async (source: TagActivitySource) => {
-  const [tag] = (await serviceWith(source).read(["app-1"])).tags;
+const onlyTag = async (source: TagActivitySource, days?: DailyActivitySource) => {
+  const [tag] = (await serviceWith(source, { now: 0 }, days).read(["app-1"])).tags;
   if (tag?.status !== "ok") throw new Error(`expected an answer, got ${JSON.stringify(tag)}`);
   return tag;
 };
@@ -147,14 +164,12 @@ describe("each app ID stands alone", () => {
 
   test("every app ID is read over the same seven days, and the answer says which", async () => {
     const source = stubSource();
-    const result = await serviceWith(source).read(["app-1"]);
+    const days = stubDays();
+    const result = await serviceWith(source, { now: 0 }, days).read(["app-1"]);
 
     expect(result.days).toBe(7);
-    expect(source.asked).toEqual([
-      `activity app-1 ${TAG_ACTIVITY_DAYS}`,
-      `pageUrls app-1 ${TAG_ACTIVITY_DAYS}`,
-      `daily app-1 ${TAG_ACTIVITY_DAYS}`,
-    ]);
+    expect(source.asked).toEqual([`activity app-1 ${TAG_ACTIVITY_DAYS}`, `pageUrls app-1 ${TAG_ACTIVITY_DAYS}`]);
+    expect(days.asked).toEqual([`daily app-1 ${TAG_ACTIVITY_DAYS}`]);
   });
 });
 
@@ -297,9 +312,10 @@ describe("pages, which are reported by shape rather than by URL", () => {
 });
 
 describe("the days", () => {
-  test("come oldest first, counts as numbers and money to the cent, however internal-service sent them", async () => {
+  test("come oldest first, counts as numbers and money to the cent, however ClickHouse sent them", async () => {
     const tag = await onlyTag(
-      stubSource({
+      stubSource(),
+      stubDays({
         daily: async () => [
           day("2026-09-16", { pageviews: "491", sessions: "221", total: "10.456" }),
           day("2026-09-15", { transactions: "3", signups: 1 }),
@@ -314,22 +330,33 @@ describe("the days", () => {
   });
 
   test("a row whose day is not a date has nowhere on the chart to go, and is left out", async () => {
-    const tag = await onlyTag(stubSource({ daily: async () => [day("yesterday"), day("2026-09-16")] }));
+    const tag = await onlyTag(stubSource(), stubDays({ daily: async () => [day("yesterday"), day("2026-09-16")] }));
 
     expect(tag.daily?.map((point) => point.day)).toEqual(["2026-09-16"]);
   });
 
   test("a daily read that fails leaves daily null, and the totals and pages standing", async () => {
-    // What every read gets until internal-service is deployed with the endpoint.
     const tag = await onlyTag(
-      stubSource({
-        daily: failing("internal-service answered 404: Cannot GET /api/tracker/events/daily-activity/app-1."),
-      }),
+      stubSource(),
+      stubDays({ daily: failing("ClickHouse could not answer for the days: Timeout exceeded: elapsed 20.1 seconds") }),
     );
 
     expect(tag).toMatchObject({ daily: null, partial: false });
     expect(tag.totals.pageviews).toBe(1200);
     expect(tag.pages).toHaveLength(1);
+  });
+
+  test("a service with no ClickHouse configuration answers without days, asks nothing, and keeps the answer", async () => {
+    const source = stubSource();
+    const days = stubDays({ configured: false });
+    const service = serviceWith(source, { now: 0 }, days);
+
+    const first = await service.read(["app-1"]);
+    await service.read(["app-1"]);
+
+    expect(first.tags[0]).toMatchObject({ status: "ok", daily: null });
+    expect(days.asked).toEqual([]);
+    expect(source.asked).toHaveLength(2);
   });
 });
 
@@ -343,14 +370,7 @@ describe("the five-minute cache", () => {
     clock.now += 4 * 60_000 + 59_000;
     await service.read(["app-1", "app-2"]);
 
-    expect(source.asked).toEqual([
-      "activity app-1 7",
-      "pageUrls app-1 7",
-      "daily app-1 7",
-      "activity app-2 7",
-      "pageUrls app-2 7",
-      "daily app-2 7",
-    ]);
+    expect(source.asked).toEqual(["activity app-1 7", "pageUrls app-1 7", "activity app-2 7", "pageUrls app-2 7"]);
   });
 
   test("after five minutes it does", async () => {
@@ -362,7 +382,7 @@ describe("the five-minute cache", () => {
     clock.now += 5 * 60_000;
     await service.read(["app-1"]);
 
-    expect(source.asked).toHaveLength(6);
+    expect(source.asked).toHaveLength(4);
   });
 
   test("an unavailable answer is not kept, so the next read tries again", async () => {
@@ -372,7 +392,7 @@ describe("the five-minute cache", () => {
     await service.read(["app-1"]);
     await service.read(["app-1"]);
 
-    expect(source.asked).toHaveLength(6);
+    expect(source.asked).toHaveLength(4);
   });
 
   test("nor is a partial one, so a recovered breakdown shows up on the next read", async () => {
@@ -392,15 +412,15 @@ describe("the five-minute cache", () => {
     expect(tags[0]).toMatchObject({ status: "ok", partial: false });
   });
 
-  test("nor is one without its days, so the chart appears once internal-service can give them", async () => {
+  test("nor is one without its days, so the chart appears once ClickHouse can give them", async () => {
     let daysFail = true;
-    const source = stubSource({
+    const days = stubDays({
       daily: async () => {
-        if (daysFail) throw new Error("internal-service answered 404.");
+        if (daysFail) throw new Error("ClickHouse could not answer for the days: connect ECONNREFUSED");
         return WEEK;
       },
     });
-    const service = serviceWith(source);
+    const service = serviceWith(stubSource(), { now: 0 }, days);
 
     await service.read(["app-1"]);
     daysFail = false;
@@ -430,7 +450,7 @@ describe("a service with no internal-service configuration", () => {
       {} as never,
       {} as never,
       { configured: true } as never,
-      new ActivityService(stubSource({ configured: false })),
+      new ActivityService(stubSource({ configured: false }), stubDays()),
       { modelId: () => "stub-model" } as never,
     );
 
@@ -438,7 +458,7 @@ describe("a service with no internal-service configuration", () => {
       mjUser: { username: "pacholo", email: "pacholo@mediajel.com", name: "Pacholo", sub: "s-1" },
     } as never);
 
-    expect(health).toMatchObject({ deployConfigured: true, activityConfigured: false });
+    expect(health).toMatchObject({ deployConfigured: true, activityConfigured: false, dailyConfigured: true });
   });
 });
 

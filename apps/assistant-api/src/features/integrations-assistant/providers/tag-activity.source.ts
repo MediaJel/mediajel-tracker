@@ -2,8 +2,7 @@
  * What a tag has recorded lately, behind one seam.
  *
  * The numbers are internal-service's — the `tracker/events/activity` and `page-url-activity`
- * endpoints gql-service already reads, and `daily-activity` beside them — and never a ClickHouse
- * query of this module's own:
+ * endpoints gql-service already reads — and never a ClickHouse query of this module's own:
  * internal-service owns those queries, and a second copy here would drift the first time either
  * side changed a filter.
  *
@@ -49,31 +48,12 @@ export interface RawPageUrlRow {
   tr_total: Count | null;
 }
 
-/**
- * One row of `GET /api/tracker/events/daily-activity/:appId?daysToTrack=N`: one per calendar day in
- * UTC, oldest first and zero-filled, counted exactly as `activity` counts — so the rows add up to its
- * totals. The oldest day is partial for events, which age out of the 7-day table by the hour.
- */
-export interface RawDailyRow {
-  /** "YYYY-MM-DD". */
-  day: string;
-  pageviews: Count;
-  sessions: Count;
-  transactions: Count;
-  signups: Count;
-  impressions: Count;
-  /** That day's transaction totals, summed. */
-  total: Count;
-}
-
 export interface TagActivitySource {
   /** Whether the source can answer at all — asked by /health, and before every read. */
   configured(): boolean;
   activity(appId: string, days: number): Promise<RawActivity>;
   /** The rows, unwrapped from internal-service's `{ rows }` envelope. */
   pageUrls(appId: string, days: number): Promise<RawPageUrlRow[]>;
-  /** The rows, unwrapped from internal-service's `{ rows }` envelope. */
-  daily(appId: string, days: number): Promise<RawDailyRow[]>;
 }
 
 export const TAG_ACTIVITY_SOURCE = Symbol("TAG_ACTIVITY_SOURCE");

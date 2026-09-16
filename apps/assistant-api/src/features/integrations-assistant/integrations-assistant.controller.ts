@@ -68,6 +68,7 @@ export class IntegrationsAssistantController {
     user: { username: string; email: string };
     deployConfigured: boolean;
     activityConfigured: boolean;
+    dailyConfigured: boolean;
   } {
     const who = this.assistant.who(request);
     return {
@@ -76,6 +77,7 @@ export class IntegrationsAssistantController {
       user: { username: who.username, email: who.email },
       deployConfigured: this.assistant.deployConfigured(),
       activityConfigured: this.assistant.activityConfigured(),
+      dailyConfigured: this.assistant.dailyConfigured(),
     };
   }
 

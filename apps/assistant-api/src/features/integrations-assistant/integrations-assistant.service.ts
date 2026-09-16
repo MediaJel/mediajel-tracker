@@ -53,6 +53,11 @@ export class IntegrationsAssistantService {
     return this.activity.configured;
   }
 
+  /** Whether this service could read each tag's days if asked. See ActivityService.dailyConfigured. */
+  dailyConfigured(): boolean {
+    return this.activity.dailyConfigured;
+  }
+
   generate(input: GenerateRequest): Promise<GenerateResponse> {
     return this.generator.generate(input);
   }

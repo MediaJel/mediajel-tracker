@@ -3,7 +3,9 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import type { TagActivity, TagActivityResponse } from "../dto/activity.dto";
 import { ApiError } from "../errors";
 import { TAG_ACTIVITY_SOURCE } from "../providers/tag-activity.source";
-import type { RawActivity, RawDailyRow, RawPageUrlRow, TagActivitySource } from "../providers/tag-activity.source";
+import { DAILY_ACTIVITY_SOURCE } from "../providers/daily-activity.source";
+import type { DailyActivitySource, RawDailyRow } from "../providers/daily-activity.source";
+import type { RawActivity, RawPageUrlRow, TagActivitySource } from "../providers/tag-activity.source";
 
 /**
  * What a site's tags have actually recorded, per app ID, over the last seven days.
@@ -127,6 +129,9 @@ const perDay = (rows: RawDailyRow[]): Pick<TagActivityOk, "daily"> => ({
     .sort((a, b) => a.day.localeCompare(b.day)),
 });
 
+/** The answer for a service with no days source: none, and nothing to try again for. */
+const NO_DAYS: Promise<Pick<TagActivityOk, "daily">> = Promise.resolve({ daily: null });
+
 const reasonOf = (reason: unknown): string => (reason instanceof Error ? reason.message : String(reason));
 
 @Injectable()
@@ -135,7 +140,10 @@ export class ActivityService {
   private readonly cache = new Map<string, { at: number; tag: TagActivityOk }>();
   private now: () => number = () => Date.now();
 
-  constructor(@Inject(TAG_ACTIVITY_SOURCE) private readonly source: TagActivitySource) {}
+  constructor(
+    @Inject(TAG_ACTIVITY_SOURCE) private readonly source: TagActivitySource,
+    @Inject(DAILY_ACTIVITY_SOURCE) private readonly days: DailyActivitySource,
+  ) {}
 
   /**
    * Tests bind their own clock rather than waiting out the cache. A method rather than a
@@ -152,6 +160,11 @@ export class ActivityService {
    */
   get configured(): boolean {
     return this.source.configured();
+  }
+
+  /** Whether the days can be read — asked by /health; without them `daily` is null and the rest stands. */
+  get dailyConfigured(): boolean {
+    return this.days.configured();
   }
 
   async read(appIds: string[]): Promise<TagActivityResponse> {
@@ -173,10 +186,11 @@ export class ActivityService {
    * be fails that half of that app ID the same way a refused call does — never the whole request.
    */
   private async load(appId: string): Promise<TagActivity> {
+    const wantDays = this.days.configured();
     const [recorded, pages, days] = await Promise.allSettled([
       this.source.activity(appId, TAG_ACTIVITY_DAYS).then(summarize),
       this.source.pageUrls(appId, TAG_ACTIVITY_DAYS).then(breakdown),
-      this.source.daily(appId, TAG_ACTIVITY_DAYS).then(perDay),
+      wantDays ? this.days.daily(appId, TAG_ACTIVITY_DAYS).then(perDay) : NO_DAYS,
     ]);
 
     if (recorded.status === "rejected") {
@@ -195,7 +209,9 @@ export class ActivityService {
     }
 
     const tag: TagActivityOk = { appId, status: "ok", ...recorded.value, ...pages.value, ...daily, partial: false };
-    if (daily.daily) this.cache.set(appId, { at: this.now(), tag });
+    // Days that could not be read are not kept either, so the chart appears on the next read; a
+    // service with no days source has its whole answer without them.
+    if (daily.daily || !wantDays) this.cache.set(appId, { at: this.now(), tag });
     return tag;
   }
 

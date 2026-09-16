@@ -2,6 +2,8 @@ import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 
 import { ActivityService } from "./services/activity.service";
+import { ClickHouseDailySource } from "./providers/clickhouse-daily.source";
+import { DAILY_ACTIVITY_SOURCE } from "./providers/daily-activity.source";
 import { CognitoGuard } from "./guards/cognito.guard";
 import { DeployService } from "./services/deploy.service";
 import { GenerateService } from "./services/generate.service";
@@ -20,13 +22,15 @@ import { ValidateService } from "./services/validate.service";
  *
  * This module is written to be lifted into amplication-nestjs-microservices'
  * `external-service/src/features/` unchanged — the app around it (main.ts, app.module.ts) is
- * scaffolding that gets thrown away. Three bindings are the seams that make that move mechanical:
+ * scaffolding that gets thrown away. Four bindings are the seams that make that move mechanical:
  *
  *   LLM_PROVIDER           → LlmOrchestrationService (common/llm-orchestration)
  *   INTEGRATIONS_KNOWLEDGE → knowledge-base's vector search over the same corpus
  *   TAG_ACTIVITY_SOURCE    → an adapter over MicroservicesService.internal (axios to internal-service)
+ *   DAILY_ACTIVITY_SOURCE  → that repo's ClickhouseService, or internal-service once it serves the days;
+ *                            here, ClickHouse read directly
  *
- * Nothing above any of the tokens knows which implementation is bound, so the swap is three lines
+ * Nothing above any of the tokens knows which implementation is bound, so the swap is four lines
  * in this file and no change anywhere else.
  */
 @Module({
@@ -43,6 +47,7 @@ import { ValidateService } from "./services/validate.service";
     { provide: LLM_PROVIDER, useClass: OpenAiProvider },
     { provide: INTEGRATIONS_KNOWLEDGE, useClass: StaticIntegrationsKnowledge },
     { provide: TAG_ACTIVITY_SOURCE, useClass: InternalServiceActivitySource },
+    { provide: DAILY_ACTIVITY_SOURCE, useClass: ClickHouseDailySource },
   ],
   exports: [IntegrationsAssistantService],
 })

@@ -35,18 +35,21 @@ signs into. A verified token is the whole check; nobody holds a second credentia
 
 | | | |
 |---|---|---|
-| `GET /api/assistant/health` | `{ ok, model, user, deployConfigured, activityConfigured }` | the session is accepted; whether this service can deploy, and read tag activity |
+| `GET /api/assistant/health` | `{ ok, model, user, deployConfigured, activityConfigured, dailyConfigured }` | the session is accepted; whether this service can deploy, and read tag activity |
 | `POST /api/assistant/generate` | `{ output, model, violations }` | evidence → a validated tag |
 | `GET /api/assistant/tag` | `{ exists, sha, content }` | the file a deploy would replace |
 | `POST /api/assistant/deploy` | `{ commitUrl, fileUrl, path, update }` | validate, then commit to `master` |
 | `GET /api/assistant/activity?appIds=a,b` | `{ days, tags }` | what each app ID's tag recorded in the last seven days |
 
 `/activity` reads internal-service's `tracker/events/activity` and `page-url-activity` endpoints —
-the ones gql-service already reads — and `daily-activity`, for up to five app IDs, and answers for
-each one on its own: `ok`, with totals, the same counts per day (`daily`), the latest transaction and
-sign-up, and the 250 pages that converted most; or `unavailable`, with internal-service's reason, and
-never zeros. A page breakdown that fails leaves the totals standing and sets `partial`; a daily read
-that fails leaves `daily` null. Whole answers are cached per app ID for five minutes.
+the ones gql-service already reads — for up to five app IDs, and answers for each one on its own:
+`ok`, with totals, the same counts per day (`daily`), the latest transaction and sign-up, and the 250
+pages that converted most; or `unavailable`, with internal-service's reason, and never zeros. The days
+come from ClickHouse directly (`CLICKHOUSE_*`): internal-service has no per-day endpoint, so this
+service runs its `activity` query cut into calendar days against the same 7-day table, read-only. A
+page breakdown that fails leaves the totals standing and sets `partial`; a daily read that fails, or a
+service with no ClickHouse configuration, leaves `daily` null. Whole answers are cached per app ID for
+five minutes.
 
 Pages are reported by shape, not by URL: internal-service lists one row per distinct URL, which on a
 WooCommerce checkout is one row per order, carrying a key that opens that order. The service drops
@@ -83,6 +86,7 @@ bun run dev                  # :3011, which is what the extension's .env.example
 | `WIDGET_AI_MODEL` | defaults to `gpt-5.5` |
 | `WIDGET_AUTH_REPO` | defaults to `MediaJel/mediajel-frictionless-custom-tag` |
 | `INTERNAL_SERVICE_URL`, `INTERNAL_SERVICE_BEARER_TOKEN` | internal-service and its bearer token — the pair gql-service reads. Activity returns a named 503 without them |
+| `CLICKHOUSE_URL`, `CLICKHOUSE_USER`, `CLICKHOUSE_PASSWORD` | ClickHouse, for each tag's days — internal-service's `CLICKHOUSE_HOST` (a URL, `https://…:8443`), user and password. `daily` is null without them |
 
 Health and the guard work with only the two Cognito values set, which is enough to exercise
 Record → Review → Verify in the extension end to end.
