@@ -35,6 +35,12 @@ describe("the postMessage envelope", () => {
     }
   });
 
+  test("ignores a bridge from another build of the wire — an older copy on the page must not answer for this one", () => {
+    const older = { __mj: "up", payload: { type: "status", status: { appId: "", tagPresent: false } } };
+    expect(unwrap<BridgeUp>(messageEvent(older), "up")).toBeNull();
+    expect(unwrap<BridgeUp>(messageEvent(wrap("up", { type: "ready" })), "up")).toEqual({ type: "ready" });
+  });
+
   test("carries the __mj key the recorder's postMessage source already skips, so the bridge never records itself", () => {
     expect(Object.keys(wrap("up", { type: "ready" }))).toContain("__mj");
   });

@@ -24,6 +24,17 @@ import type { TimelineEvent, VerifyCapture, WidgetPage } from "@mediajel/assista
 
 export const ENVELOPE = "__mj" as const;
 
+/**
+ * Which build of this wire a message was written for. Bump it whenever a message's shape changes.
+ *
+ * More than one copy of the assistant can share a page — an older build still installed beside
+ * this one, or a tab that outlived an update — and every copy's page-bridge answers every relay on
+ * the window. Unversioned, a status from a bridge that predates `tags` blanked the panel, and one
+ * whose detection predates delayed tags answered "No MediaJel tag" over this build's answer.
+ * A message written for another version of the wire is not this build's to read.
+ */
+const WIRE_VERSION = 2;
+
 /** What the page-bridge sends up. */
 export type BridgeUp =
   | { type: "ready" }
@@ -48,15 +59,25 @@ export type Direction = "up" | "down";
 
 export interface Envelope<T> {
   [ENVELOPE]: Direction;
+  v: number;
   payload: T;
 }
 
-export const wrap = <T>(direction: Direction, payload: T): Envelope<T> => ({ [ENVELOPE]: direction, payload });
+export const wrap = <T>(direction: Direction, payload: T): Envelope<T> => ({
+  [ENVELOPE]: direction,
+  v: WIRE_VERSION,
+  payload,
+});
 
-/** Reads a payload off a MessageEvent, or null when it is not ours or not our direction. */
+/** Whether a message is this build's, travelling this way. */
+const isOurs = (data: unknown, direction: Direction): data is Envelope<unknown> =>
+  !!data &&
+  typeof data === "object" &&
+  (data as Partial<Envelope<unknown>>)[ENVELOPE] === direction &&
+  (data as Partial<Envelope<unknown>>).v === WIRE_VERSION;
+
+/** Reads a payload off a MessageEvent, or null when it is not ours, not our direction, or another build's. */
 export const unwrap = <T>(event: MessageEvent, direction: Direction): T | null => {
-  if (event.source !== window) return null;
-  const data = event.data as Partial<Envelope<T>> | null;
-  if (!data || typeof data !== "object" || data[ENVELOPE] !== direction) return null;
-  return (data.payload ?? null) as T | null;
+  if (event.source !== window || !isOurs(event.data, direction)) return null;
+  return (event.data.payload ?? null) as T | null;
 };
