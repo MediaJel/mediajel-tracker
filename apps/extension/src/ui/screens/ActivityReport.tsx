@@ -131,6 +131,8 @@ const Facts = ({ result }: { result: Answered }): ReactNode => {
 
 const describeTag = (tag: TagSummary | undefined): string => {
   if (!tag) return "";
+  // Found through its running Snowplow tracker, with no script tag to read the rest from.
+  if (!tag.environment) return "Running on this page — found through its tracker, not a script tag";
   const held = tag.delayed ? " · held back by a page-speed plugin until the visitor interacts" : "";
   return `Environment ${tag.environment} · version ${tag.version}${held}`;
 };

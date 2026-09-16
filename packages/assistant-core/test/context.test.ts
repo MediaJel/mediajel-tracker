@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { TagSearch, readPageContext } from "@mediajel/assistant-core/context";
 import { snapshotTracker } from "@mediajel/assistant-core/recorder/context";
+import { askRunningTags } from "@mediajel/assistant-core/trackers";
 
 /**
  * Which MediaJel tags a page carries decides what the panel can look up and what it warns about,
@@ -73,6 +74,60 @@ describe("finding MediaJel tags", () => {
     expect(tagsOn(`<script src="http://localhost:1234/?appId=sandbox"></script>`)[0]?.appId).toBe("sandbox");
     expect(tagsOn(staging)).toEqual([]);
     expect(tagsOn(staging, { origins: ["https://tags.staging.example"] })[0]?.appId).toBe("staging");
+  });
+});
+
+describe("tags Snowplow says are running", () => {
+  /** Snowplow's loader: a command function with a queue, running function commands with its trackers. */
+  const snowplowWith = (trackers: Record<string, unknown>) => {
+    const tracker = Object.assign(
+      (command: unknown) => {
+        if (typeof command === "function") command.call(trackers);
+      },
+      { q: [] as unknown[] },
+    );
+    return { tracker } as unknown as Window;
+  };
+
+  test("answers with the app IDs the page's trackers are named after", () => {
+    const answers: string[][] = [];
+    askRunningTags(snowplowWith({ "7bc01df0": {}, "83bd0b2c": {} }), (appIds) => answers.push(appIds));
+    expect(answers).toEqual([["7bc01df0", "83bd0b2c"]]);
+  });
+
+  test("leaves a page's own `tracker` global alone when it is not Snowplow's", () => {
+    let called = false;
+    const page = { tracker: () => (called = true) } as unknown as Window;
+    askRunningTags(page, () => (called = true));
+    expect(called).toBe(false);
+  });
+
+  test("a Snowplow that throws does not throw into the page", () => {
+    const page = {
+      tracker: Object.assign(
+        () => {
+          throw new Error("broken");
+        },
+        { q: [] },
+      ),
+    } as unknown as Window;
+    expect(() => askRunningTags(page, () => undefined)).not.toThrow();
+  });
+
+  test("a running tag with no readable script is still found, and names the page's tag", () => {
+    const page = readPageContext(pageWith(""), { running: ["proxied-app"] });
+
+    expect(page.tagPresent).toBe(true);
+    expect(String(page.tag.appId)).toBe("proxied-app");
+    expect(page.tags).toEqual([{ appId: "proxied-app", environment: "", version: "", delayed: false }]);
+  });
+
+  test("a delayed script whose tag has since run is one tag, and not delayed", () => {
+    const page = readPageContext(pageWith(WP_ROCKET_TAG), { running: ["7bc01df0-c859-4392-b90d-a949e95dfe6f"] });
+
+    expect(page.tags).toEqual([
+      { appId: "7bc01df0-c859-4392-b90d-a949e95dfe6f", environment: "weave", version: "2", delayed: false },
+    ]);
   });
 });
 
