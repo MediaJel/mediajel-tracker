@@ -5,7 +5,15 @@ import { afterEach, describe, expect, test } from "bun:test";
 import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
 import { WidgetSession, WIDGET_SESSION_VERSION } from "@mediajel/assistant-core/types";
 
-import { ServiceError, checkAccess, deployTag, describeFailure, generateTag, readExistingTag } from "~/service/client";
+import {
+  ServiceError,
+  checkAccess,
+  deployTag,
+  describeFailure,
+  generateTag,
+  readExistingTag,
+  readTagActivity,
+} from "~/service/client";
 
 /**
  * What the extension asks the assistant service, and what it does with the answers.
@@ -233,6 +241,52 @@ describe("generateTag", () => {
     await expect(
       generateTag(token, { session: SESSION, status: STATUS, hostname: "shop.example.com" }),
     ).rejects.toThrow(/does not match the tag contract/);
+  });
+});
+
+describe("readTagActivity", () => {
+  const ACTIVITY = {
+    days: 7,
+    tags: [
+      {
+        appId: "pageviews",
+        status: "ok",
+        totals: { pageviews: 4088, sessions: 1672, transactions: 0, signups: 0, impressions: 0, transactionTotal: 0 },
+        lastTransactionAt: null,
+        lastSignUpAt: null,
+        pages: [],
+        truncated: false,
+        partial: false,
+      },
+      { appId: "transactions", status: "unavailable", message: "internal-service did not answer within 20 s" },
+    ],
+  };
+
+  test("asks for every tag on the page in one call, in the page's order", async () => {
+    const { calls } = server(() => ({ status: 200, json: ACTIVITY }));
+
+    const answer = await readTagActivity(token, ["pageviews", "transactions"]);
+
+    expect(calls[0].url).toBe("https://assistant.test/activity?appIds=pageviews,transactions");
+    expect(calls[0].headers.authorization).toBe("Bearer id-token-123");
+    expect(answer.tags.map((tag) => tag.status)).toEqual(["ok", "unavailable"]);
+  });
+
+  test("keeps the service's error code, so a missing source reads differently from a failed lookup", async () => {
+    server(() => ({
+      status: 503,
+      json: { error: { code: "activity-not-configured", message: "This service has no tag activity source." } },
+    }));
+
+    const failure = await readTagActivity(token, ["pageviews"]).catch((err: Error & { code?: string }) => err);
+    expect(failure).toBeInstanceOf(Error);
+    expect((failure as Error).message).toBe("This service has no tag activity source.");
+    expect((failure as Error & { code?: string }).code).toBe("activity-not-configured");
+  });
+
+  test("refuses an answer it cannot read, rather than showing numbers it had to guess at", async () => {
+    server(() => ({ status: 200, json: { days: 7, tags: [{ appId: "pageviews", status: "ok" }] } }));
+    await expect(readTagActivity(token, ["pageviews"])).rejects.toThrow(/cannot read/);
   });
 });
 

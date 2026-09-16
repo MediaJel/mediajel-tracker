@@ -5,7 +5,7 @@ import { AuthState, JobPatch, JobView, Request, ResultOf } from "~/bridge/api";
 import { BridgeDown } from "~/bridge/protocol";
 import { answerChallenge, forgetPending, signIn } from "~/auth/cognito";
 import { siteOf } from "~/lib/site";
-import { checkAccess, deployTag, generateTag, readExistingTag } from "~/service/client";
+import { checkAccess, deployTag, generateTag, readExistingTag, readTagActivity } from "~/service/client";
 import { clearSession, currentIdToken, readSession, writeSession } from "~/store/auth";
 import { advance, clearAllJobs, deleteJob, listJobs, openJob, peekJob, resetJob, updateJob } from "~/store/jobs";
 import { readSettings, writeSettings } from "~/store/settings";
@@ -20,9 +20,19 @@ import { readSettings, writeSettings } from "~/store/settings";
  */
 
 /** The tracker status last reported by each tab's page bridge. Cheap to lose; re-asked on open. */
-const statuses = new Map<number, TrackerStatus>();
-export const rememberStatus = (tabId: number, status: TrackerStatus): void => {
-  statuses.set(tabId, status);
+const statuses = new Map<number, { site: string; status: TrackerStatus }>();
+export const rememberStatus = (tabId: number, site: string, status: TrackerStatus): void => {
+  statuses.set(tabId, { site, status });
+};
+
+/**
+ * A status describes the page that sent it. Once the tab has moved to another site it describes
+ * somebody else's tags — and handing it back used to show that site's app IDs on this one until
+ * the new page reported.
+ */
+const statusOf = (tabId: number, site?: string): TrackerStatus | null => {
+  const entry = statuses.get(tabId);
+  return entry && (site === undefined || entry.site === site) ? entry.status : null;
 };
 
 /** In-flight generations, so Cancel has something to abort and a stale answer cannot land. */
@@ -88,7 +98,7 @@ const runGeneration = async (tabId: number, site: string, push: Push): Promise<v
   try {
     const { output, model, violations } = await generateTag(currentIdToken, {
       session,
-      status: statuses.get(tabId) ?? emptyStatus(),
+      status: statusOf(tabId, site) ?? emptyStatus(),
       hostname: site,
       signal: controller.signal,
     });
@@ -144,7 +154,7 @@ const emptyStatus = (): TrackerStatus => ({
 
 const view = async (tabId: number): Promise<JobView> => {
   const site = await siteOfTab(tabId);
-  return { site, session: await openJob(site), status: statuses.get(tabId) ?? null };
+  return { site, session: await openJob(site), status: statusOf(tabId, site) };
 };
 
 export const handle = async (request: Request, send: Send, push: Push): Promise<ResultOf[Request["type"]]> => {
@@ -186,7 +196,7 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
       // Ask the page what it can see now rather than trusting a snapshot from a page-load ago;
       // a tag can arrive late, and Verify's whole story depends on whether it is there.
       send(request.tabId, { type: "snapshot" });
-      return { site, session: await openJob(site), status: statuses.get(request.tabId) ?? null };
+      return { site, session: await openJob(site), status: statusOf(request.tabId, site) };
     }
 
     case "job/list":
@@ -242,7 +252,7 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
 
     case "page/snapshot":
       send(request.tabId, { type: "snapshot" });
-      return statuses.get(request.tabId) ?? null;
+      return statusOf(request.tabId);
 
     case "page/verify": {
       const site = await siteOfTab(request.tabId);
@@ -267,7 +277,7 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
     }
 
     case "page/clear-dedup": {
-      const appId = statuses.get(request.tabId)?.appId ?? "";
+      const appId = statusOf(request.tabId)?.appId ?? "";
       if (!appId) throw new Error("This page has no MediaJel tag, so there is no dedup state to clear.");
       send(request.tabId, { type: "clear-dedup", appId });
       return null;
@@ -290,6 +300,9 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
 
     case "service/existing-tag":
       return readExistingTag(currentIdToken, request.kind, request.name);
+
+    case "service/tag-activity":
+      return readTagActivity(currentIdToken, request.appIds);
 
     case "service/deploy": {
       const site = await siteOfTab(request.tabId);

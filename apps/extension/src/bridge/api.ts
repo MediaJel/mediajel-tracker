@@ -1,5 +1,5 @@
 import type { AuthChallenge, Identity } from "~/auth/cognito";
-import type { DeployOutcome, ExistingTag } from "~/service/client";
+import type { DeployOutcome, ExistingTag, TagActivityResponse } from "~/service/client";
 import type { JobSummary } from "~/store/jobs";
 import type { Settings } from "~/store/settings";
 import type { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
@@ -46,7 +46,8 @@ export type Request =
   | { type: "service/generate"; tabId: number }
   | { type: "service/cancel-generate"; tabId: number }
   | { type: "service/existing-tag"; kind: "domain" | "app-id"; name: string }
-  | { type: "service/deploy"; tabId: number; kind: "domain" | "app-id"; name: string; expectedSha?: string };
+  | { type: "service/deploy"; tabId: number; kind: "domain" | "app-id"; name: string; expectedSha?: string }
+  | { type: "service/tag-activity"; appIds: string[] };
 
 /** The data-only edits the panel is allowed to make to a job. Steps go through `job/advance`. */
 export type JobPatch =
@@ -95,6 +96,7 @@ export interface ResultOf {
   "service/cancel-generate": null;
   "service/existing-tag": ExistingTag;
   "service/deploy": DeployOutcome;
+  "service/tag-activity": TagActivityResponse;
 }
 
 /** What the background pushes at a bound panel without being asked. */

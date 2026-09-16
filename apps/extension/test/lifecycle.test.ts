@@ -1,7 +1,11 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 
+import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
+
+import { JobView } from "~/bridge/api";
 import { BridgeDown } from "~/bridge/protocol";
-import { handle } from "~/background/handle";
+import { handle, rememberStatus } from "~/background/handle";
+import { writeSession } from "~/store/auth";
 import { clearAllJobs, openJob, peekJob, releaseJob } from "~/store/jobs";
 import { clearExtensionStorage } from "./setup";
 
@@ -88,5 +92,54 @@ describe("job/advance after the worker has been recycled", () => {
     const step = await handle({ type: "job/advance", tabId: TAB, to: "deploy" }, send, push);
     expect(step).toBe("home");
     expect(peekJob(SITE)?.step).toBe("home");
+  });
+});
+
+describe("what the panel is told about the page", () => {
+  const STATUS: TrackerStatus = {
+    appId: "acme",
+    environment: "production",
+    version: "2",
+    event: "",
+    collector: "",
+    tagPresent: true,
+    tags: [{ appId: "acme", environment: "production", version: "2", delayed: false }],
+    trackTransPresent: true,
+    optedOut: false,
+    warnings: [],
+  };
+
+  test("never hands back the tags of the site the tab was on before", async () => {
+    rememberStatus(TAB, "previous-client.example", STATUS);
+    expect(((await handle({ type: "job/open", tabId: TAB }, send, push)) as JobView | null)?.status).toBeNull();
+
+    rememberStatus(TAB, SITE, STATUS);
+    expect(((await handle({ type: "job/open", tabId: TAB }, send, push)) as JobView | null)?.status).toEqual(STATUS);
+  });
+
+  test("looks tag activity up with the signed-in user's token — the panel never holds one", async () => {
+    process.env.PLASMO_PUBLIC_WIDGET_API_URL = "https://assistant.test";
+    await writeSession({
+      idToken: "id-token-activity",
+      refreshToken: "refresh",
+      expiresAt: Date.now() + 60 * 60_000,
+      identity: { username: "dana", email: "dana@mediajel.com", name: "Dana" },
+    });
+    const original = globalThis.fetch;
+    const seen: { url: string; authorization: string }[] = [];
+    globalThis.fetch = (async (input: string, init?: RequestInit) => {
+      seen.push({ url: String(input), authorization: (init?.headers as Record<string, string>).authorization });
+      return new Response(JSON.stringify({ days: 7, tags: [] }), { status: 200 });
+    }) as typeof fetch;
+
+    try {
+      await handle({ type: "service/tag-activity", appIds: ["acme"] }, send, push);
+    } finally {
+      globalThis.fetch = original;
+    }
+
+    expect(seen).toEqual([
+      { url: "https://assistant.test/activity?appIds=acme", authorization: "Bearer id-token-activity" },
+    ]);
   });
 });

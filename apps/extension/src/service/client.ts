@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import { GenerationOutput, GenerationSchema } from "@mediajel/assistant-core/ai/schema";
 import { buildPrompt } from "@mediajel/assistant-core/ai/prompt";
 import { DeployTargetKind } from "@mediajel/assistant-core/deploy/targets";
@@ -74,6 +76,8 @@ export interface DeployOutcome {
 const GENERATION_TIMEOUT_MS = 120_000;
 const HEALTH_TIMEOUT_MS = 20_000;
 const DEPLOY_TIMEOUT_MS = 60_000;
+/** The service gives each app ID 20 s against internal-service, all of them at once. */
+const ACTIVITY_TIMEOUT_MS = 30_000;
 
 export const apiUrl = (): string => (process.env.PLASMO_PUBLIC_WIDGET_API_URL || "").trim().replace(/\/+$/, "");
 
@@ -134,7 +138,9 @@ const call = async <T>(
 ): Promise<T> => {
   const base = apiUrl();
   if (!base) {
-    throw new Error("This build has no assistant service URL (PLASMO_PUBLIC_WIDGET_API_URL), so it cannot generate.");
+    throw new Error(
+      "This build has no assistant service URL (PLASMO_PUBLIC_WIDGET_API_URL), so it cannot reach the assistant service.",
+    );
   }
 
   const response = await fetch(`${base}${path}`, {
@@ -232,4 +238,64 @@ export const generateTag = async (
     // means it passed; a non-empty one is shown to the operator rather than hidden.
     violations: answer.violations ?? [],
   };
+};
+
+const ActivityTotalsSchema = z.object({
+  pageviews: z.number(),
+  sessions: z.number(),
+  transactions: z.number(),
+  signups: z.number(),
+  impressions: z.number(),
+  transactionTotal: z.number(),
+});
+
+const TagActivitySchema = z.discriminatedUnion("status", [
+  z.object({
+    appId: z.string(),
+    status: z.literal("ok"),
+    totals: ActivityTotalsSchema,
+    lastTransactionAt: z.string().nullable(),
+    lastSignUpAt: z.string().nullable(),
+    pages: z
+      .array(z.object({ pageUrl: z.string(), conversions: z.number(), transactionTotal: z.number().nullable() }))
+      .nullable(),
+    truncated: z.boolean(),
+    partial: z.boolean(),
+  }),
+  z.object({ appId: z.string(), status: z.literal("unavailable"), message: z.string() }),
+]);
+
+const TagActivityResponseSchema = z.object({ days: z.number(), tags: z.array(TagActivitySchema) });
+
+/** One tag's last days as MediaJel recorded them — or why that could not be read. */
+export type TagActivity = z.infer<typeof TagActivitySchema>;
+export type TagActivityResponse = z.infer<typeof TagActivityResponseSchema>;
+
+/**
+ * What MediaJel recorded for each tag on the page over the last 7 days, one answer per app ID and
+ * in the order asked. Only the app IDs leave the browser — nothing read from the page itself.
+ *
+ * A failure keeps the service's error code, so the panel can tell "this service has no activity
+ * source" from "the activity could not be read right now".
+ */
+export const readTagActivity = async (
+  token: TokenSource,
+  appIds: string[],
+  signal?: AbortSignal,
+): Promise<TagActivityResponse> => {
+  let answer: unknown;
+  try {
+    answer = await withTimeout(
+      call<unknown>(`/activity?appIds=${appIds.map(encodeURIComponent).join(",")}`, token, { method: "GET", signal }),
+      ACTIVITY_TIMEOUT_MS,
+    );
+  } catch (err) {
+    throw Object.assign(new Error(describeFailure(err)), { code: err instanceof ServiceError ? err.code : undefined });
+  }
+
+  const parsed = TagActivityResponseSchema.safeParse(answer);
+  if (!parsed.success) {
+    throw new Error("The assistant service answered with tag activity this version of the extension cannot read.");
+  }
+  return parsed.data;
 };

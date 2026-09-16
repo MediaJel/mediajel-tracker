@@ -14,6 +14,8 @@ import { JobSummary } from "~/store/jobs";
 import { DEFAULT_SETTINGS, Settings } from "~/store/settings";
 import { TargetState } from "~/ui/screens/DeploySection";
 
+import { TagActivityState, useTagActivity } from "./useTagActivity";
+
 /**
  * Everything the panel knows and every move it can make.
  *
@@ -61,6 +63,8 @@ export interface PanelState {
   site: string;
   session: WidgetSession | null;
   status: TrackerStatus;
+  /** The last 7 days of every MediaJel tag on the page. */
+  activity: TagActivityState;
   jobs: JobSummary[];
   flow: AppFlowState;
   generateBlocked: string;
@@ -95,6 +99,17 @@ const EMPTY_STATUS: TrackerStatus = {
 
 const DEFAULT_TAG_URL = (process.env.PLASMO_PUBLIC_TAG_URL ?? "").trim();
 
+/**
+ * What the panel should believe about the page once a job has (re)opened, or null to keep what it
+ * has. A status describes one page: across a site change the previous one named somebody else's
+ * tags — and would have looked up somebody else's activity — so it goes, and the panel waits for
+ * this page to report. On the same site, a missing status just means the worker was recycled.
+ */
+const adoptStatus = (previousSite: string, view: JobView): { status: TrackerStatus; known: boolean } | null => {
+  if (view.site !== previousSite) return { status: view.status ?? EMPTY_STATUS, known: view.status !== null };
+  return view.status ? { status: view.status, known: true } : null;
+};
+
 const message = (err: unknown): string => (err instanceof Error ? err.message : String(err));
 
 export const usePanel = (): PanelState => {
@@ -107,6 +122,9 @@ export const usePanel = (): PanelState => {
   const [site, setSite] = useState("");
   const [session, setSession] = useState<WidgetSession | null>(null);
   const [status, setStatus] = useState<TrackerStatus>(EMPTY_STATUS);
+  /** Whether `status` came from this site's page, rather than being the empty placeholder. */
+  const [statusKnown, setStatusKnown] = useState(false);
+  const siteRef = useRef("");
   /** Why this service could not deploy even if the operator is signed in. Empty when it can. */
   const [deployUnavailable, setDeployUnavailable] = useState("");
   const [jobs, setJobs] = useState<JobSummary[]>([]);
@@ -137,9 +155,14 @@ export const usePanel = (): PanelState => {
       setScreen("no-site");
       return;
     }
+    const adopted = adoptStatus(siteRef.current, view);
+    siteRef.current = view.site;
+    if (adopted) {
+      setStatus(adopted.status);
+      setStatusKnown(adopted.known);
+    }
     setSite(view.site);
     setSession(view.session);
-    if (view.status) setStatus(view.status);
     setScreen("job");
   }, []);
 
@@ -198,6 +221,7 @@ export const usePanel = (): PanelState => {
         case "session":
           return setSession(push.session);
         case "status":
+          setStatusKnown(true);
           return setStatus(push.status);
         case "verify-result":
           return setVerifyRunErrors(push.errors);
@@ -432,6 +456,8 @@ export const usePanel = (): PanelState => {
 
   const fallbackTargets = useMemo(() => deployTargets(site, status.appId), [site, status.appId]);
 
+  const activity = useTagActivity({ active: screen === "job", site, status, statusKnown });
+
   const flow: AppFlowState = {
     verifyRunErrors,
     deploy: {
@@ -461,6 +487,14 @@ export const usePanel = (): PanelState => {
     site,
     session,
     status,
+    // The report and Settings take the same place in the panel, so opening one closes the other.
+    activity: {
+      ...activity,
+      openReport: () => {
+        setSettingsOpen(false);
+        activity.openReport();
+      },
+    },
     jobs,
     flow,
     generateBlocked,
@@ -474,7 +508,10 @@ export const usePanel = (): PanelState => {
       setExpanded((current) =>
         current.includes(number) ? current.filter((entry) => entry !== number) : [...current, number],
       ),
-    onOpenSettings: () => setSettingsOpen(true),
+    onOpenSettings: () => {
+      activity.closeReport();
+      setSettingsOpen(true);
+    },
     onCloseSettings: () => setSettingsOpen(false),
     onOpenJob: (next) =>
       void (async () => {

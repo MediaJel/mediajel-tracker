@@ -98,7 +98,7 @@ const handleUp = async (tabId: number, site: string, message: BridgeUp): Promise
       return;
 
     case "status":
-      rememberStatus(tabId, message.status);
+      rememberStatus(tabId, site, message.status);
       toPanel(tabId, message);
       return;
 
