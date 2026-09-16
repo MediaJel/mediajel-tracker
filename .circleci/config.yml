@@ -26,6 +26,34 @@ commands:
           command: |
             curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.8"
             echo 'export PATH="$HOME/.bun/bin:$PATH"' >> "$BASH_ENV"
+  bun-test:
+    description: Run one workspace's bun tests, and run them again if the run stalls
+    parameters:
+      title:
+        type: string
+      workspace:
+        type: string
+    steps:
+      - run:
+          name: << parameters.title >>
+          working_directory: << parameters.workspace >>
+          # Bun 1.3 can stall between printing a test file's name and running its first test when
+          # the executor's two CPUs are busy (oven-sh/bun#31653): nothing fails and nothing prints,
+          # so the job sits out CircleCI's ten-minute silence limit. It has stalled this repo's
+          # builds that way on a different file each time, and never on the next build. These
+          # suites finish in seconds, so a run still going after two minutes is that stall rather
+          # than a slow test: it is stopped and run once more. A failing test fails the step on the
+          # first run — only a stall is retried.
+          command: |
+            for attempt in 1 2; do
+              code=0
+              timeout --kill-after=10s 2m bun run test || code=$?
+              case "$code" in
+                124|137) echo "bun test stalled on attempt $attempt of 2 and was stopped (oven-sh/bun#31653)." ;;
+                *) exit "$code" ;;
+              esac
+            done
+            exit 1
   install-and-check:
     description: Install dependencies (hoisted) and type-check the tracker + its packages
     steps:
@@ -35,9 +63,9 @@ commands:
       - run:
           name: Type checking (tracker + shared packages)
           command: bun x turbo run check --filter=mediajel-tracker
-      - run:
-          name: Unit tests (assistant-core — headless bun test, no Cypress deps)
-          command: bun x turbo run test --filter=@mediajel/assistant-core
+      - bun-test:
+          title: Unit tests (assistant-core — headless bun test, no Cypress deps)
+          workspace: packages/assistant-core
       - run:
           name: Build tag
           command: bun x turbo run build --filter=mediajel-tracker
@@ -74,8 +102,11 @@ jobs:
             echo "PLASMO_PUBLIC_TAG_ORIGIN=${PLASMO_PUBLIC_TAG_ORIGIN:-https://tags.cnna.io}" >> .env.production
             echo "CRX_PUBLIC_KEY=${CRX_PUBLIC_KEY}" >> .env.production
       - run:
-          name: Type check, lint and test the extension
-          command: bun x turbo run check lint test --filter=@mediajel/extension
+          name: Type check and lint the extension
+          command: bun x turbo run check lint --filter=@mediajel/extension
+      - bun-test:
+          title: Test the extension
+          workspace: apps/extension
       - run:
           name: Build and package the extension
           command: bun x turbo run build --filter=@mediajel/extension
