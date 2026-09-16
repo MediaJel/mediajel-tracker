@@ -4,6 +4,7 @@ import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
 
 import { JobView } from "~/bridge/api";
 import { BridgeDown } from "~/bridge/protocol";
+import { hear } from "~/background/beacons";
 import { handle, rememberStatus } from "~/background/handle";
 import { writeSession } from "~/store/auth";
 import { clearAllJobs, openJob, peekJob, releaseJob } from "~/store/jobs";
@@ -115,6 +116,13 @@ describe("what the panel is told about the page", () => {
 
     rememberStatus(TAB, SITE, STATUS);
     expect(((await handle({ type: "job/open", tabId: TAB }, send, push)) as JobView | null)?.status).toEqual(STATUS);
+  });
+
+  test("hands the panel the tags this tab has been heard sending, even before the page reports", async () => {
+    await hear(TAB, SITE, ["heard-app"]);
+    expect(((await handle({ type: "job/open", tabId: TAB }, send, push)) as JobView | null)?.heard).toEqual([
+      "heard-app",
+    ]);
   });
 
   test("looks tag activity up with the signed-in user's token — the panel never holds one", async () => {

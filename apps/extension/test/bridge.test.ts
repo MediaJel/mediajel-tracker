@@ -89,6 +89,19 @@ describe("tagsOf", () => {
   test("an older page bridge with no tag on its page has no tags", () => {
     expect(tagsOf(older({}))).toEqual([]);
   });
+
+  test("a tag heard sending events is known even when no script on the page names it", () => {
+    expect(tagsOf(older({ tags: [] }), ["proxied-app"])).toEqual([
+      { appId: "proxied-app", environment: "", version: "", delayed: false },
+    ]);
+  });
+
+  test("a delayed tag that has since been heard sending is one tag, and not delayed", () => {
+    const tags = [{ appId: "7bc01df0", environment: "weave", version: "2", delayed: true }];
+    expect(tagsOf(older({ appId: "7bc01df0", tags }), ["7bc01df0"])).toEqual([
+      { appId: "7bc01df0", environment: "weave", version: "2", delayed: false },
+    ]);
+  });
 });
 
 describe("ask", () => {

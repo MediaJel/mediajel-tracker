@@ -5,6 +5,7 @@ import { AuthState, JobPatch, JobView, Request, ResultOf } from "~/bridge/api";
 import { BridgeDown } from "~/bridge/protocol";
 import { answerChallenge, forgetPending, signIn } from "~/auth/cognito";
 import { siteOf } from "~/lib/site";
+import { heardTags } from "~/background/beacons";
 import { checkAccess, deployTag, generateTag, readExistingTag, readTagActivity } from "~/service/client";
 import { clearSession, currentIdToken, readSession, writeSession } from "~/store/auth";
 import { advance, clearAllJobs, deleteJob, listJobs, openJob, peekJob, resetJob, updateJob } from "~/store/jobs";
@@ -154,7 +155,7 @@ const emptyStatus = (): TrackerStatus => ({
 
 const view = async (tabId: number): Promise<JobView> => {
   const site = await siteOfTab(tabId);
-  return { site, session: await openJob(site), status: statusOf(tabId, site) };
+  return { site, session: await openJob(site), status: statusOf(tabId, site), heard: await heardTags(tabId, site) };
 };
 
 export const handle = async (request: Request, send: Send, push: Push): Promise<ResultOf[Request["type"]]> => {
@@ -196,7 +197,12 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
       // Ask the page what it can see now rather than trusting a snapshot from a page-load ago;
       // a tag can arrive late, and Verify's whole story depends on whether it is there.
       send(request.tabId, { type: "snapshot" });
-      return { site, session: await openJob(site), status: statusOf(request.tabId, site) };
+      return {
+        site,
+        session: await openJob(site),
+        status: statusOf(request.tabId, site),
+        heard: await heardTags(request.tabId, site),
+      };
     }
 
     case "job/list":

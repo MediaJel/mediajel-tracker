@@ -41,7 +41,8 @@
     "permissions": [
       "sidePanel",
       "storage",
-      "tabs"
+      "tabs",
+      "webRequest"
     ],
     "host_permissions": [
       "$PLASMO_PUBLIC_WIDGET_API_URL/*",

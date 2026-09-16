@@ -61,6 +61,8 @@ export interface JobView {
   site: string;
   session: WidgetSession;
   status: TrackerStatus | null;
+  /** App IDs this tab's page has been heard sending events from, on this site. */
+  heard: string[];
 }
 
 export type Response<T> = { ok: true; value: T } | { ok: false; error: string; code?: string };
@@ -105,7 +107,8 @@ export type Push =
   | { type: "status"; status: TrackerStatus }
   | { type: "verify-result"; ok: boolean; errors: string[] }
   | { type: "dedup-cleared"; count: number }
-  | { type: "generation-error"; message: string };
+  | { type: "generation-error"; message: string }
+  | { type: "tags-heard"; site: string; appIds: string[] };
 
 /**
  * Ask the background something. Rejects with the background's own message, so a caller can put

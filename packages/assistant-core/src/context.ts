@@ -47,15 +47,9 @@ export interface TagSummary {
   delayed: boolean;
 }
 
-/** What else the page can say about its tags, beyond its scripts. */
+/** Where else a tag may be served from. The extension passes its own build's tag origin. */
 export interface TagSearch {
-  /** Where else a tag may be served from. The extension passes its own build's tag origin. */
   origins?: string[];
-  /**
-   * App IDs the page's Snowplow reports it is tracking with (`askRunningTags`). A tag that is
-   * running is found even with no readable script, and is not delayed, whatever its script says.
-   */
-  running?: string[];
 }
 
 export const EMPTY_TAG = {
@@ -151,39 +145,18 @@ const findTags = (doc: Document, search: TagSearch): FoundTag[] => {
   return tags;
 };
 
-const summaryOf = ({ context, delayed }: FoundTag): TagSummary => ({
-  appId: String(context.appId ?? ""),
-  environment: String(context.environment ?? ""),
-  version: String(context.version ?? ""),
-  delayed,
-});
-
-/**
- * The scripts' tags, joined by the ones Snowplow says are running. A running tag has plainly run,
- * so it is not delayed; one with no script to read has no environment or version to report.
- */
-const withRunning = (tags: TagSummary[], running: string[]): TagSummary[] => {
-  const runs = new Set(running.filter(Boolean));
-  const known = new Set(tags.map((tag) => tag.appId));
-  const extra = [...runs].filter((appId) => !known.has(appId));
-  return [
-    ...tags.map((tag) => (runs.has(tag.appId) ? { ...tag, delayed: false } : tag)),
-    ...extra.map((appId) => ({ appId, environment: "", version: "", delayed: false })),
-  ];
-};
-
-/** The first tag's context; a tag known only from its tracker still names its app ID. */
-const firstContext = (found: FoundTag[], tags: TagSummary[]): QueryStringContext =>
-  found[0]?.context ?? (tags[0] ? ({ ...EMPTY_TAG, appId: tags[0].appId } as QueryStringContext) : EMPTY_TAG);
-
 /** The context for the page this code is running in. */
 export const readPageContext = (win: Window = window, search: TagSearch = {}): PageContext => {
   const found = findTags(win.document, search);
-  const tags = withRunning(found.map(summaryOf), search.running ?? []);
   return {
-    tag: firstContext(found, tags),
-    tagPresent: tags.length > 0,
-    tags,
+    tag: found[0]?.context ?? EMPTY_TAG,
+    tagPresent: found.length > 0,
+    tags: found.map(({ context, delayed }) => ({
+      appId: String(context.appId ?? ""),
+      environment: String(context.environment ?? ""),
+      version: String(context.version ?? ""),
+      delayed,
+    })),
     href: win.location.href,
     hostname: win.location.hostname,
     isOwn: () => false,

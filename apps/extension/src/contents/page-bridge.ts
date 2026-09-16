@@ -2,7 +2,6 @@ import type { PlasmoCSConfig } from "plasmo";
 
 import { TagSearch, readPageContext } from "@mediajel/assistant-core/context";
 import { snapshotTracker, watchTrackTrans } from "@mediajel/assistant-core/recorder/context";
-import { askRunningTags } from "@mediajel/assistant-core/trackers";
 import { Recorder, RecorderSink, createRecorder } from "@mediajel/assistant-core/recorder/recorder";
 import { runGenerated } from "@mediajel/assistant-core/verify/runner";
 
@@ -65,12 +64,7 @@ const TAG_SEARCH: TagSearch = { origins: [(process.env.PLASMO_PUBLIC_TAG_ORIGIN 
  * captured at load would report every tagged page as untagged — and the tag can arrive later
  * still, through GTM or an injection of our own.
  */
-/** App IDs the page's Snowplow last said it is tracking with — the tags that have actually run. */
-let running: string[] = [];
-
-const search = (): TagSearch => ({ ...TAG_SEARCH, running });
-
-const status = (): ReturnType<typeof snapshotTracker> => snapshotTracker(readPageContext(window, search()));
+const status = (): ReturnType<typeof snapshotTracker> => snapshotTracker(readPageContext(window, TAG_SEARCH));
 
 let lastReported = "";
 
@@ -82,17 +76,6 @@ const report = (force = false): void => {
   lastReported = key;
   send({ type: "status", status: next });
 };
-
-/**
- * Asks the page's Snowplow which MediaJel tags are running, so a tag is found however it was loaded
- * — GTM, a proxy, a script that removed itself. The answer may come later, when the SDK loads; a
- * changed answer is reported like any other change. Only ever asked once the panel has asked.
- */
-const askSnowplow = (): void =>
-  askRunningTags(window, (appIds) => {
-    running = appIds;
-    report();
-  });
 
 const touchesScript = (record: MutationRecord): boolean =>
   record.type === "attributes"
@@ -116,11 +99,7 @@ const watchTags = (): void => {
     if (!records.some(touchesScript)) return;
     report();
     if (stopTrackTransWatch || typeof window.trackTrans === "function") return;
-    // trackTrans appearing is the tag having run: its tracker exists now, so Snowplow is asked again.
-    const stop = watchTrackTrans(() => {
-      report();
-      askSnowplow();
-    });
+    const stop = watchTrackTrans(() => report());
     stopTrackTransWatch = stop;
     setTimeout(() => {
       stop();
@@ -132,7 +111,7 @@ const watchTags = (): void => {
 const startRecording = (at: number): void => {
   startedAt = at;
   recorder ??= createRecorder({
-    page: readPageContext(window, search()),
+    page: readPageContext(window, TAG_SEARCH),
     sink,
     now: () => Math.max(0, Date.now() - startedAt),
   });
@@ -186,8 +165,7 @@ window.addEventListener("message", (event: MessageEvent) => {
         return recorder?.stop();
       case "snapshot":
         watchTags();
-        report(true);
-        return askSnowplow();
+        return report(true);
       case "verify":
         return verify(message.code);
       case "inject-tag":

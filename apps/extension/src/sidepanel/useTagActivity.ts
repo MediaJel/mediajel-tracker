@@ -89,13 +89,17 @@ interface Inputs {
   status: TrackerStatus;
   /** Whether `status` came from this site's page, rather than being the empty placeholder. */
   statusKnown: boolean;
+  /** App IDs the page has been heard sending events from — continuous, and independent of the page's scripts. */
+  heard: string[];
 }
 
-export const useTagActivity = ({ active, site, status, statusKnown }: Inputs): TagActivityState => {
+export const useTagActivity = ({ active, site, status, statusKnown, heard }: Inputs): TagActivityState => {
   const [lookup, setLookup] = useState<Lookup>(NOTHING);
   const [reportOpen, setReportOpen] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const slow = usePageSilence(active, statusKnown, site);
+  // A tag heard sending is an answer even while the page itself has said nothing.
+  const known = statusKnown || heard.length > 0;
+  const slow = usePageSilence(active, known, site);
 
   /** Which request is current, so a slow answer for a page we have left can never land. */
   const requestRef = useRef(0);
@@ -103,10 +107,10 @@ export const useTagActivity = ({ active, site, status, statusKnown }: Inputs): T
   const shownRef = useRef("");
 
   // Every status push is a new object; the app IDs it names are what decide a lookup.
-  const tags = useMemo(() => tagsOf(status), [status]);
+  const tags = useMemo(() => tagsOf(status, heard), [status, heard]);
   const key = useMemo(() => [...new Set(tags.map((tag) => tag.appId).filter(Boolean))].join(","), [tags]);
   // The app IDs to look up — empty when the page reported no tag, null until it has reported at all.
-  const wanted = statusKnown ? key : null;
+  const wanted = known ? key : null;
 
   useEffect(() => {
     setReportOpen(false);

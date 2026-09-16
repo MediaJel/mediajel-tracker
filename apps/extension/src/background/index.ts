@@ -1,6 +1,7 @@
 import { Request, Response } from "~/bridge/api";
 import { BridgeDown, BridgeUp } from "~/bridge/protocol";
 import { PANEL_PORT, RELAY_PORT } from "~/lib/ports";
+import { listenForTags } from "~/background/beacons";
 import { handle, rememberStatus } from "~/background/handle";
 import { flushAll, openJob, peekJob, subscribeJobs, updateJob } from "~/store/jobs";
 import { siteOf } from "~/lib/site";
@@ -114,6 +115,10 @@ const handleUp = async (tabId: number, site: string, message: BridgeUp): Promise
  * to bind wins, which is also the one the operator is looking at.
  */
 const panelSites = new Map<string, number>();
+
+// Every tag a tab's page is heard sending events from reaches that tab's panel the moment it is
+// first heard — however late the tag loaded, and whether or not the page's scripts can still talk.
+listenForTags((tabId, site, appIds) => toPanel(tabId, { type: "tags-heard", site, appIds }));
 
 subscribeJobs((site, session) => {
   const tabId = panelSites.get(site);

@@ -124,6 +124,8 @@ export const usePanel = (): PanelState => {
   const [status, setStatus] = useState<TrackerStatus>(EMPTY_STATUS);
   /** Whether `status` came from this site's page, rather than being the empty placeholder. */
   const [statusKnown, setStatusKnown] = useState(false);
+  /** App IDs this tab's page has been heard sending events from — known even when the page is silent. */
+  const [heard, setHeard] = useState<string[]>([]);
   const siteRef = useRef("");
   /** Why this service could not deploy even if the operator is signed in. Empty when it can. */
   const [deployUnavailable, setDeployUnavailable] = useState("");
@@ -161,6 +163,8 @@ export const usePanel = (): PanelState => {
       setStatus(adopted.status);
       setStatusKnown(adopted.known);
     }
+    // An older background sends no `heard`; nothing heard is exactly what that means.
+    setHeard(view.heard ?? []);
     setSite(view.site);
     setSession(view.session);
     setScreen("job");
@@ -227,6 +231,8 @@ export const usePanel = (): PanelState => {
           return setVerifyRunErrors(push.errors);
         case "generation-error":
           return setDeployError("");
+        case "tags-heard":
+          return push.site === siteRef.current ? setHeard(push.appIds) : undefined;
         default:
           return undefined;
       }
@@ -456,7 +462,7 @@ export const usePanel = (): PanelState => {
 
   const fallbackTargets = useMemo(() => deployTargets(site, status.appId), [site, status.appId]);
 
-  const activity = useTagActivity({ active: screen === "job", site, status, statusKnown });
+  const activity = useTagActivity({ active: screen === "job", site, status, statusKnown, heard });
 
   const flow: AppFlowState = {
     verifyRunErrors,
