@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { hear, heardTags } from "~/background/beacons";
+import { hear, heardIn, heardTags } from "~/background/beacons";
 import { appIdsInBeacon } from "~/lib/beacons";
 
 /**
@@ -41,6 +41,32 @@ describe("appIdsInBeacon", () => {
         body: JSON.stringify({ schema: "iglu:com.example/other/jsonschema/1-0-0", data: [{ aid: "x" }] }),
       }),
     ).toEqual([]);
+  });
+});
+
+describe("which requests are heard", () => {
+  const request = (overrides: Partial<chrome.webRequest.OnBeforeRequestDetails>) =>
+    ({
+      tabId: 7,
+      frameId: 0,
+      initiator: "https://www.seedoflifelabs.com",
+      url: COLLECTOR,
+      method: "POST",
+      requestBody: { raw: [{ bytes: new TextEncoder().encode(batch({ e: "pv", aid: "7bc01df0" })).buffer }] },
+      ...overrides,
+    }) as chrome.webRequest.OnBeforeRequestDetails;
+
+  test("the tab's own page names its site and the tags it sent", () => {
+    expect(heardIn(request({}))).toEqual({ site: "www.seedoflifelabs.com", appIds: ["7bc01df0"] });
+  });
+
+  test("an embedded frame on another host is not the tab's page", () => {
+    expect(heardIn(request({ frameId: 4, initiator: "https://menu.example.com" }))).toBeNull();
+  });
+
+  test("a request from no tab, or from a page with no site, names nothing", () => {
+    expect(heardIn(request({ tabId: -1 }))).toBeNull();
+    expect(heardIn(request({ initiator: "null" }))).toBeNull();
   });
 });
 

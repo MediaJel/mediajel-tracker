@@ -60,9 +60,17 @@ const bodyOf = (details: chrome.webRequest.OnBeforeRequestDetails): string | und
   return bytes ? new TextDecoder().decode(bytes) : undefined;
 };
 
-/** What a request to a collector says, if anything: the page it came from and the tags it named. */
-const heardIn = (details: chrome.webRequest.OnBeforeRequestDetails): { site: string; appIds: string[] } | null => {
-  const site = siteOf(details.initiator ?? "");
+/**
+ * What a request to a collector says, if anything: the page it came from and the tags it named.
+ *
+ * Only the tab's own page is heard, never a frame inside it. A request names its sender's origin,
+ * not the tab's, so an embedded menu on another host sending events of its own would read as the
+ * tab having moved to that host — and replace the page's list with the frame's.
+ */
+export const heardIn = (
+  details: chrome.webRequest.OnBeforeRequestDetails,
+): { site: string; appIds: string[] } | null => {
+  const site = details.frameId === 0 ? siteOf(details.initiator ?? "") : null;
   if (details.tabId < 0 || !site) return null;
   const appIds = appIdsInBeacon({ url: details.url, body: bodyOf(details) });
   return appIds.length > 0 ? { site, appIds } : null;
