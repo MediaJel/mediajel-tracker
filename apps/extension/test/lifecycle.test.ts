@@ -26,7 +26,7 @@ const SITE = "shop.example.com";
 const TAB = 1;
 
 const sent: BridgeDown[] = [];
-const send = (_tabId: number, message: BridgeDown): boolean => {
+const send = async (_tabId: number, message: BridgeDown): Promise<boolean> => {
   sent.push(message);
   return true;
 };
@@ -116,6 +116,28 @@ describe("what the panel is told about the page", () => {
 
     rememberStatus(TAB, SITE, STATUS);
     expect(((await handle({ type: "job/open", tabId: TAB }, send, push)) as JobView | null)?.status).toEqual(STATUS);
+  });
+
+  test("reads the page's tags itself, so a worker that lost the page's report still knows them", async () => {
+    const scripting = (chrome as unknown as { scripting: Record<string, unknown> }).scripting;
+    const original = scripting.executeScript;
+    document.head.innerHTML = `<script src="https://tags.cnna.io/?appId=Eaze&version=2" id="mediajel" data-nscript="afterInteractive"></script>`;
+    // Run the injected function here, against this document, the way Chrome runs it in the tab.
+    scripting.executeScript = async ({ func, args }: { func: (...a: unknown[]) => unknown; args: unknown[] }) => [
+      { frameId: 0, result: func(...args) },
+    ];
+    try {
+      const view = (await handle({ type: "job/open", tabId: TAB }, send, push)) as JobView | null;
+      expect(view?.found).toEqual([{ appId: "Eaze", environment: "production", version: "2", delayed: false }]);
+
+      scripting.executeScript = async () => {
+        throw new Error("Cannot access contents of the page.");
+      };
+      expect(((await handle({ type: "job/open", tabId: TAB }, send, push)) as JobView | null)?.found).toBeNull();
+    } finally {
+      scripting.executeScript = original;
+      document.head.innerHTML = "";
+    }
   });
 
   test("hands the panel the tags this tab has been heard sending, even before the page reports", async () => {

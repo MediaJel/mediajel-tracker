@@ -96,6 +96,23 @@ describe("tagsOf", () => {
     ]);
   });
 
+  test("a tag the background read from the page counts while the page's bridge has said nothing", () => {
+    const found = [{ appId: "Eaze", environment: "production", version: "2", delayed: false }];
+    expect(tagsOf(older({ tags: [] }), [], found)).toEqual(found);
+  });
+
+  test("a tag both reads found is one tag, and running if either read saw it run", () => {
+    const reported = [{ appId: "7bc01df0", environment: "weave", version: "2", delayed: true }];
+    const found = [
+      { appId: "7bc01df0", environment: "weave", version: "2", delayed: false },
+      { appId: "second", environment: "production", version: "2", delayed: true },
+    ];
+    expect(tagsOf(older({ appId: "7bc01df0", tags: reported }), [], found)).toEqual([
+      { appId: "7bc01df0", environment: "weave", version: "2", delayed: false },
+      { appId: "second", environment: "production", version: "2", delayed: true },
+    ]);
+  });
+
   test("a delayed tag that has since been heard sending is one tag, and not delayed", () => {
     const tags = [{ appId: "7bc01df0", environment: "weave", version: "2", delayed: true }];
     expect(tagsOf(older({ appId: "7bc01df0", tags }), ["7bc01df0"])).toEqual([

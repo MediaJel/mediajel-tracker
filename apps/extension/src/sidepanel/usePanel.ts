@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { TagSummary } from "@mediajel/assistant-core/context";
 import { deployTargets } from "@mediajel/assistant-core/deploy/targets";
 import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
 import { canDeploy, canGenerate } from "@mediajel/assistant-core/state/machine";
@@ -126,6 +127,8 @@ export const usePanel = (): PanelState => {
   const [statusKnown, setStatusKnown] = useState(false);
   /** App IDs this tab's page has been heard sending events from — known even when the page is silent. */
   const [heard, setHeard] = useState<string[]>([]);
+  /** The tags the background read from the page itself when the job opened; null until it has read them. */
+  const [found, setFound] = useState<TagSummary[] | null>(null);
   const siteRef = useRef("");
   /** Why this service could not deploy even if the operator is signed in. Empty when it can. */
   const [deployUnavailable, setDeployUnavailable] = useState("");
@@ -158,6 +161,7 @@ export const usePanel = (): PanelState => {
       return;
     }
     const adopted = adoptStatus(siteRef.current, view);
+    const sameSite = view.site === siteRef.current;
     siteRef.current = view.site;
     if (adopted) {
       setStatus(adopted.status);
@@ -165,6 +169,8 @@ export const usePanel = (): PanelState => {
     }
     // An older background sends no `heard`; nothing heard is exactly what that means.
     setHeard(view.heard ?? []);
+    // A page that could not be read this time keeps what was read from it before; another site's never carries over.
+    setFound((previous) => view.found ?? (sameSite ? previous : null));
     setSite(view.site);
     setSession(view.session);
     setScreen("job");
@@ -462,7 +468,7 @@ export const usePanel = (): PanelState => {
 
   const fallbackTargets = useMemo(() => deployTargets(site, status.appId), [site, status.appId]);
 
-  const activity = useTagActivity({ active: screen === "job", site, status, statusKnown, heard });
+  const activity = useTagActivity({ active: screen === "job", site, status, statusKnown, heard, found });
 
   const flow: AppFlowState = {
     verifyRunErrors,

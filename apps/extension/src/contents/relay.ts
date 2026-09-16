@@ -54,4 +54,11 @@ window.addEventListener("message", (event: MessageEvent) => {
   }
 });
 
+// The way down when the port is closed. Chrome stops an idle worker and the port goes with it, and
+// this relay only reopens one when the page next says something — so the background sends commands
+// as one-off messages too, which only this extension's background can send to this tab.
+chrome.runtime.onMessage.addListener((message: BridgeDown) => {
+  window.postMessage(wrap("down", message), "*");
+});
+
 ensure();

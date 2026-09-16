@@ -1,11 +1,12 @@
 import type { PlasmoCSConfig } from "plasmo";
 
-import { TagSearch, readPageContext } from "@mediajel/assistant-core/context";
+import { readPageContext } from "@mediajel/assistant-core/context";
 import { snapshotTracker, watchTrackTrans } from "@mediajel/assistant-core/recorder/context";
 import { Recorder, RecorderSink, createRecorder } from "@mediajel/assistant-core/recorder/recorder";
 import { runGenerated } from "@mediajel/assistant-core/verify/runner";
 
 import { BridgeDown, BridgeUp, unwrap, wrap } from "~/bridge/protocol";
+import { TAG_SEARCH } from "~/lib/tags";
 
 /**
  * The assistant's half that has to live in the page.
@@ -55,9 +56,6 @@ const sink: RecorderSink = {
   // there is nothing left to do here — the events are already gone from this realm.
   flush: () => undefined,
 };
-
-/** The tag origin this build injects, so a staging build recognises its own tag as MediaJel's. */
-const TAG_SEARCH: TagSearch = { origins: [(process.env.PLASMO_PUBLIC_TAG_ORIGIN ?? "").trim()].filter(Boolean) };
 
 /**
  * Read fresh every time. At `document_start` there are no script tags yet, so a context

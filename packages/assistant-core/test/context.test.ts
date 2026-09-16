@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { TagSearch, readPageContext } from "@mediajel/assistant-core/context";
+import { TAG_URL_ATTRIBUTES, TagSearch, readPageContext, tagsAmong } from "@mediajel/assistant-core/context";
 import { snapshotTracker } from "@mediajel/assistant-core/recorder/context";
 
 /**
@@ -73,6 +73,37 @@ describe("finding MediaJel tags", () => {
     expect(tagsOn(`<script src="http://localhost:1234/?appId=sandbox"></script>`)[0]?.appId).toBe("sandbox");
     expect(tagsOn(staging)).toEqual([]);
     expect(tagsOn(staging, { origins: ["https://tags.staging.example"] })[0]?.appId).toBe("staging");
+  });
+});
+
+describe("finding tags in copies of a page's scripts", () => {
+  /** What reading a script out of a page in another realm yields: its URL attributes and its base. */
+  const copyOf = (attributes: Record<string, string>, baseURI = "https://www.eaze.com/") => ({
+    baseURI,
+    getAttribute: (name: string) => attributes[name] ?? null,
+  });
+
+  test("reads a Next.js-injected tag — as www.eaze.com serves it — from a copy of its script", () => {
+    // next/script's afterInteractive inserts this after hydration, long after the document loaded.
+    const nextScript = copyOf({ src: "https://tags.cnna.io/?appId=Eaze&version=2", id: "mediajel", "data-nscript": "afterInteractive" });
+
+    expect(tagsAmong([nextScript])).toEqual([{ appId: "Eaze", environment: "production", version: "2", delayed: false }]);
+  });
+
+  test("resolves a URL against the page it came from, and knows a held-back tag", () => {
+    expect(tagsAmong([copyOf({ "data-rocket-src": "//tags.cnna.io?appId=held" })])).toEqual([
+      { appId: "held", environment: "production", version: "1", delayed: true },
+    ]);
+  });
+
+  test("finds the same tags in copies as in the live page", () => {
+    const markup = `${WP_ROCKET_TAG}<script src="https://tags.cnna.io/?appId=acme&environment=weave"></script>`;
+    const live = Array.from(pageWith(markup).document.getElementsByTagName("script"));
+    const copies = live.map((script) =>
+      copyOf(Object.fromEntries(TAG_URL_ATTRIBUTES.map((name) => [name, script.getAttribute(name) ?? ""]))),
+    );
+
+    expect(tagsAmong(copies)).toEqual(readPageContext(pageWith(markup)).tags);
   });
 });
 

@@ -2,6 +2,7 @@ import type { AuthChallenge, Identity } from "~/auth/cognito";
 import type { DeployOutcome, ExistingTag, TagActivityResponse } from "~/service/client";
 import type { JobSummary } from "~/store/jobs";
 import type { Settings } from "~/store/settings";
+import type { TagSummary } from "@mediajel/assistant-core/context";
 import type { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
 import type { WidgetGoal, WidgetSession, WidgetStep } from "@mediajel/assistant-core/types";
 
@@ -63,6 +64,8 @@ export interface JobView {
   status: TrackerStatus | null;
   /** App IDs this tab's page has been heard sending events from, on this site. */
   heard: string[];
+  /** The MediaJel tags the background read from the page itself just now; null when it could not read it. */
+  found: TagSummary[] | null;
 }
 
 export type Response<T> = { ok: true; value: T } | { ok: false; error: string; code?: string };

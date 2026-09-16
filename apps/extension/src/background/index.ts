@@ -20,14 +20,30 @@ import { siteOf } from "~/lib/site";
 /** Open relay ports, by tab. A tab has exactly one live document, so one port each. */
 const relays = new Map<number, chrome.runtime.Port>();
 
-export const sendToTab = (tabId: number, message: BridgeDown): boolean => {
+/**
+ * Delivers a command to a tab's page, resolving false only when nothing in the page can receive it.
+ *
+ * The relay's port is the usual way down, but this worker cannot count on having one: Chrome stops
+ * the worker after thirty idle seconds, which closes every port, and a relay only reopens its port
+ * when its page next sends something up. A page that is not recording sends nothing, so a snapshot
+ * or a start-recording used to vanish — the panel waited forever for tags, a recording captured
+ * nothing. The relay also listens for one-off messages, and those reach it without a port.
+ */
+export const sendToTab = async (tabId: number, message: BridgeDown): Promise<boolean> => {
   const port = relays.get(tabId);
-  if (!port) return false;
   try {
-    port.postMessage(message);
-    return true;
+    if (port) {
+      port.postMessage(message);
+      return true;
+    }
   } catch {
     relays.delete(tabId);
+  }
+  try {
+    await chrome.tabs.sendMessage(tabId, message, { frameId: 0 });
+    return true;
+  } catch {
+    // No relay of this extension in the page: a tab opened before it was installed, updated or reloaded.
     return false;
   }
 };
@@ -51,12 +67,15 @@ const handleUp = async (tabId: number, site: string, message: BridgeUp): Promise
       {
         const session = peekJob(site);
         if (session?.step === "recording") {
-          sendToTab(tabId, { type: "start-recording", startedAt: session.startedAt });
+          void sendToTab(tabId, { type: "start-recording", startedAt: session.startedAt });
         }
         if (session?.step === "verify" && session.generation) {
-          sendToTab(tabId, { type: "verify", code: session.generation.code });
+          void sendToTab(tabId, { type: "verify", code: session.generation.code });
         }
       }
+      // A panel is open on this tab, so the new document should watch for tags as the panel's own
+      // snapshot would have: next/script and GTM insert the tag after the document has loaded.
+      if (panels.has(tabId)) void sendToTab(tabId, { type: "snapshot" });
       return;
 
     case "event": {
@@ -68,7 +87,7 @@ const handleUp = async (tabId: number, site: string, message: BridgeUp): Promise
       const session = peekJob(site);
       if (!session) return;
       if (session.step !== "recording") {
-        sendToTab(tabId, { type: "stop-recording" });
+        void sendToTab(tabId, { type: "stop-recording" });
         return;
       }
       updateJob(site, (draft) => draft.timeline.push(message.event), { flush: message.flush });

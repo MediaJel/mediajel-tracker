@@ -68,6 +68,19 @@ export const EMPTY_TAG = {
  */
 const DELAYED_SRC = ["data-rocket-src", "data-lazy-src", "data-src", "data-pmdelayedscript"];
 
+/** Every attribute a tag's URL can be found in — all a copy of a script needs to carry to be read. */
+export const TAG_URL_ATTRIBUTES = ["src", ...DELAYED_SRC];
+
+/**
+ * A script element as reading a tag needs it. A live element is one; so is a copy made in another
+ * realm and sent across, which has attributes and a base URL but no document of its own.
+ */
+export interface ScriptSource {
+  getAttribute(name: string): string | null;
+  baseURI: string;
+  outerHTML?: string;
+}
+
 /**
  * The tag is served from cnna.io in production and staging, and from localhost by the training
  * sandbox. A bare `appId` parameter is too common a name to claim on anybody else's host — a chat
@@ -92,12 +105,12 @@ const hostnamesOf = (origins: string[] = []): string[] =>
 /** A tag as it was found: its parsed configuration, and whether a plugin is holding it back. */
 type FoundTag = { context: QueryStringContext; delayed: boolean };
 
-const scriptUrl = (script: HTMLScriptElement): { url: URL; delayed: boolean } | null => {
+const scriptUrl = (script: ScriptSource): { url: URL; delayed: boolean } | null => {
   const held = script.getAttribute("src") ? undefined : DELAYED_SRC.find((name) => script.getAttribute(name));
   const raw = script.getAttribute(held ?? "src");
   if (!raw) return null;
   try {
-    return { url: new URL(raw, script.ownerDocument.baseURI), delayed: held !== undefined };
+    return { url: new URL(raw, script.baseURI), delayed: held !== undefined };
   } catch {
     return null;
   }
@@ -112,7 +125,7 @@ const isOurs = (url: URL, hosts: string[]): boolean =>
  * `tracker-core/utils/get-context.ts` parses, except that runs as the tag and can use
  * `document.currentScript`, and this runs beside it and cannot.
  */
-const contextOf = (url: URL, script: HTMLScriptElement): QueryStringContext => {
+const contextOf = (url: URL, script: ScriptSource): QueryStringContext => {
   const params = Object.fromEntries(url.searchParams.entries());
   const { mediajelAppId, appId, version, ...rest } = params;
   return {
@@ -121,22 +134,22 @@ const contextOf = (url: URL, script: HTMLScriptElement): QueryStringContext => {
     version: version || "1",
     environment: params.environment || "production",
     collector: params.collector || "",
-    tag: script.outerHTML.replace(/&amp;/g, "&").replace(/\\"/g, '"'),
+    tag: (script.outerHTML ?? "").replace(/&amp;/g, "&").replace(/\\"/g, '"'),
   } as unknown as QueryStringContext;
 };
 
-const readTag = (script: HTMLScriptElement, hosts: string[]): FoundTag | null => {
+const readTag = (script: ScriptSource, hosts: string[]): FoundTag | null => {
   const found = scriptUrl(script);
   if (!found || !isOurs(found.url, hosts)) return null;
   return { context: contextOf(found.url, script), delayed: found.delayed };
 };
 
-/** Every MediaJel tag on the page, one per app ID, in document order. */
-const findTags = (doc: Document, search: TagSearch): FoundTag[] => {
+/** Every MediaJel tag among these scripts, one per app ID, in the order given. */
+const findTags = (scripts: ScriptSource[], search: TagSearch): FoundTag[] => {
   const hosts = hostnamesOf(search.origins);
   const seen = new Set<string>();
   const tags: FoundTag[] = [];
-  for (const script of Array.from(doc.getElementsByTagName("script"))) {
+  for (const script of scripts) {
     const tag = readTag(script, hosts);
     if (!tag || seen.has(tag.context.appId)) continue;
     seen.add(tag.context.appId);
@@ -145,18 +158,24 @@ const findTags = (doc: Document, search: TagSearch): FoundTag[] => {
   return tags;
 };
 
+const summaryOf = ({ context, delayed }: FoundTag): TagSummary => ({
+  appId: String(context.appId ?? ""),
+  environment: String(context.environment ?? ""),
+  version: String(context.version ?? ""),
+  delayed,
+});
+
+/** The MediaJel tags among a page's scripts — live elements, or copies read out of the page elsewhere. */
+export const tagsAmong = (scripts: ScriptSource[], search: TagSearch = {}): TagSummary[] =>
+  findTags(scripts, search).map(summaryOf);
+
 /** The context for the page this code is running in. */
 export const readPageContext = (win: Window = window, search: TagSearch = {}): PageContext => {
-  const found = findTags(win.document, search);
+  const found = findTags(Array.from(win.document.getElementsByTagName("script")), search);
   return {
     tag: found[0]?.context ?? EMPTY_TAG,
     tagPresent: found.length > 0,
-    tags: found.map(({ context, delayed }) => ({
-      appId: String(context.appId ?? ""),
-      environment: String(context.environment ?? ""),
-      version: String(context.version ?? ""),
-      delayed,
-    })),
+    tags: found.map(summaryOf),
     href: win.location.href,
     hostname: win.location.hostname,
     isOwn: () => false,

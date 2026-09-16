@@ -91,14 +91,16 @@ interface Inputs {
   statusKnown: boolean;
   /** App IDs the page has been heard sending events from — continuous, and independent of the page's scripts. */
   heard: string[];
+  /** The tags the background read from the page when the job opened; null when it could not read the page. */
+  found: TagSummary[] | null;
 }
 
-export const useTagActivity = ({ active, site, status, statusKnown, heard }: Inputs): TagActivityState => {
+export const useTagActivity = ({ active, site, status, statusKnown, heard, found }: Inputs): TagActivityState => {
   const [lookup, setLookup] = useState<Lookup>(NOTHING);
   const [reportOpen, setReportOpen] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  // A tag heard sending is an answer even while the page itself has said nothing.
-  const known = statusKnown || heard.length > 0;
+  // A read of the page, or a tag heard sending, is an answer even while the page's bridge has said nothing.
+  const known = statusKnown || heard.length > 0 || found !== null;
   const slow = usePageSilence(active, known, site);
 
   /** Which request is current, so a slow answer for a page we have left can never land. */
@@ -107,7 +109,7 @@ export const useTagActivity = ({ active, site, status, statusKnown, heard }: Inp
   const shownRef = useRef("");
 
   // Every status push is a new object; the app IDs it names are what decide a lookup.
-  const tags = useMemo(() => tagsOf(status, heard), [status, heard]);
+  const tags = useMemo(() => tagsOf(status, heard, found ?? []), [status, heard, found]);
   const key = useMemo(() => [...new Set(tags.map((tag) => tag.appId).filter(Boolean))].join(","), [tags]);
   // The app IDs to look up — empty when the page reported no tag, null until it has reported at all.
   const wanted = known ? key : null;
