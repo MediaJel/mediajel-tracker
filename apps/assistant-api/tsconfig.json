@@ -1,0 +1,25 @@
+{
+  "extends": "@mediajel/tsconfig/base.json",
+  "//compilerOptions": "Nest needs real emit and decorator metadata, which the shared base (bundler resolution, noEmit) does not do — those four are overridden here and nowhere else. `~/*` matches the extension's convention so a reader moving between the two apps is not re-learning imports.",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "types": ["node", "bun-types"],
+    "noEmit": false,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false,
+    "sourceMap": true,
+    "declaration": false,
+    "paths": {
+      "~/*": ["./src/*"]
+    }
+  },
+  "//include": "src only: `rootDir` is src, and tsc refuses to emit a program containing files outside it. The tests are checked by tsconfig.test.json, which emits nothing.",
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

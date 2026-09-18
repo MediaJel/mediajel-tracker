@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  // fallow has no Plasmo plugin, and Plasmo loads an extension's code by file convention rather
+  // than through an import: the popup, the side panel, the background service worker and every
+  // content script. Without these the whole extension read as unreachable from anything, so
+  // every file in it was reported unused and no unused export inside it could be told apart.
+  "entry": [
+    "apps/extension/src/popup.tsx",
+    "apps/extension/src/sidepanel/index.tsx",
+    "apps/extension/src/background/index.ts",
+    "apps/extension/src/contents/*.ts",
+    // The Playwright harness: specs are loaded by convention, the stub by the browser, the two
+    // scripts by node — nothing imports them.
+    "apps/extension/e2e/*.spec.ts",
+    "apps/extension/e2e/stub/chrome-stub.js",
+    "apps/extension/e2e/build-preview.mjs",
+    "apps/extension/e2e/build-announcing-tag.mjs",
+    "apps/extension/e2e/vendor-tag.mjs"
+  ]
+}

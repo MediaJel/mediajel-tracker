@@ -1,0 +1,294 @@
+/**
+ * The panel's stylesheet entry: Tailwind's theme and utilities, the base layer (the two faces and
+ * the element resets), and the design tokens — every colour a `light-dark()` pair, mapped onto
+ * shadcn's vocabulary in `@theme inline`. The layers are ordered by first appearance — theme,
+ * base, utilities — which is the order Tailwind's own entry declares. Everything a screen looks
+ * like is said in its component's classes; there is no second sheet.
+ */
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "./base.css" layer(base);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/**
+ * Tokens (see DESIGN.md), defined once. Each is a `light-dark()` pair and `color-scheme` is the
+ * single switch: the OS decides by default, and Settings' explicit choice, stamped as
+ * `data-theme` on the root, wins in both directions. The four brand inks — identity, platform,
+ * partner, privacy — are untouched; the neutrals are warm paper and ink, never screen grey.
+ */
+:root {
+  color-scheme: light dark;
+
+  /* Stock. */
+  --mj-stock: light-dark(#efeae0, #14120f);
+  --mj-sheet: light-dark(#fbf8f2, #1d1a16);
+  --mj-carbon: light-dark(#e6e0d3, #171512);
+
+  --mj-ink: light-dark(#1a1713, #f2ede4);
+  --mj-ink-soft: light-dark(#5b5348, #a89f92);
+  --mj-ink-faint: light-dark(#948b7c, #6f675c);
+  --mj-rule: light-dark(#d8d0c0, #38332c);
+
+  --mj-identity: light-dark(#1f4fe0, #7fa0ff);
+  --mj-identity-hover: light-dark(#1a45c4, #9ab4ff);
+  --mj-platform: light-dark(#0b8f6b, #4fd6ac);
+  --mj-partner: light-dark(#db4a15, #ff9666);
+  --mj-privacy: light-dark(#6c34e8, #c0a6ff);
+
+  /* What a carbon copy actually leaves: a blue-black impression, softer than the ink above it. */
+  --mj-carbon-ink: light-dark(#33406b, #93a6dd);
+
+  /* The by-day columns: carbon ink one step deeper, so a 22px column clears 3:1 on the sheet. */
+  --mj-days-ink: light-dark(#495da7, #6a81ce);
+  --mj-days-wash: light-dark(rgb(51 64 107 / 12%), rgb(147 166 221 / 16%));
+
+  /* Inks that pass as TEXT. Platform and partner were drawn for borders and stamps: as running text
+     on the light sheet they measure 3.8:1 and 3.96:1, so text in those roles takes these instead. */
+  --mj-platform-text: light-dark(#087a5a, #4fd6ac);
+  --mj-warning-text: light-dark(#ab3d14, #fcac86);
+  /* Text on a filled identity or platform ground, and the one filled stamp's ground. */
+  --mj-on-ink: light-dark(#ffffff, #14120f);
+  --mj-stamp-fill: light-dark(#0a7f5f, #4fd6ac);
+
+  /* Type. Jost is the Futura the brand asked for; Mulish carries Avenir's proportions at text
+     sizes. Mono is a system stack on purpose — it only ever sets machine text. */
+  --mj-display: "Jost", "Futura", "Century Gothic", system-ui, sans-serif;
+  --mj-body: "Mulish", "Avenir Next", "Avenir", -apple-system, "Segoe UI", sans-serif;
+  --mj-mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  --mj-radius: 3px;
+  --mj-pad: 20px;
+
+  /* Shadows are colours with a geometry, so the colour is the token. */
+  --mj-shadow-ink: light-dark(rgb(26 23 19 / 9%), rgb(0 0 0 / 55%));
+  --mj-press-dark: light-dark(rgb(26 23 19 / 7%), rgb(0 0 0 / 40%));
+  --mj-press-light: light-dark(rgb(255 255 255 / 55%), rgb(255 255 255 / 5%));
+  --mj-shadow: 0 -10px 28px var(--mj-shadow-ink);
+  /* The impression: a line pressed into stock reads as a dark edge with a light one under it. */
+  --mj-press: inset 0 1px 0 var(--mj-press-dark), inset 0 2px 0 var(--mj-press-light);
+
+  /* The two renditions that are not colours, so `light-dark()` cannot carry them: a stamp's ink
+     soaks into paper (multiply) but would subtract into the dark ground, and the single-colour
+     mark is drawn in ink, so on the dark ground it is inverted. They follow the same switch. */
+  --mj-stamp-blend: multiply;
+  --mj-mark-filter: none;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --mj-stamp-blend: normal;
+  --mj-mark-filter: invert(1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --mj-stamp-blend: normal;
+    --mj-mark-filter: invert(1);
+  }
+}
+
+/* `dark:` follows the same switch. Colours never need it (the tokens carry both renditions); it
+   exists for the two things that are not colours — the stamp's blend mode and the mark's inversion. */
+@custom-variant dark {
+  &:where(:root[data-theme="dark"], :root[data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+}
+
+/* The state variants shadcn's components are written against (from shadcn 4.21's tailwind.css). */
+@custom-variant data-open (&:where([data-state="open"]));
+@custom-variant data-closed (&:where([data-state="closed"]));
+@custom-variant data-checked (&:where([data-state="checked"]));
+@custom-variant data-on (&:where([data-state="on"]));
+@custom-variant data-active (&:where([data-state="active"]));
+
+/**
+ * shadcn's vocabulary and DESIGN.md's are the same colours: a `bg-primary` is the identity ink, a
+ * `text-muted-foreground` is soft ink, a `border-border` is a rule. The panel's own names are
+ * utilities too, so a class can say `text-carbon-ink` or `border-privacy` the way the design does.
+ */
+@theme inline {
+  --color-background: var(--mj-sheet);
+  --color-foreground: var(--mj-ink);
+  --color-card: var(--mj-sheet);
+  --color-card-foreground: var(--mj-ink);
+  --color-popover: var(--mj-stock);
+  --color-popover-foreground: var(--mj-ink);
+  --color-primary: var(--mj-identity);
+  --color-primary-foreground: var(--mj-on-ink);
+  --color-primary-hover: var(--mj-identity-hover);
+  --color-secondary: var(--mj-stock);
+  --color-secondary-foreground: var(--mj-ink-soft);
+  --color-muted: var(--mj-stock);
+  --color-muted-foreground: var(--mj-ink-soft);
+  --color-accent: var(--mj-carbon);
+  --color-accent-foreground: var(--mj-ink);
+  --color-destructive: var(--mj-partner);
+  --color-border: var(--mj-rule);
+  --color-input: var(--mj-rule);
+  --color-ring: var(--mj-identity);
+  --color-chart-1: var(--mj-days-ink);
+  --color-chart-2: var(--mj-platform);
+  --color-chart-3: var(--mj-partner);
+  --color-chart-4: var(--mj-privacy);
+  --color-chart-5: var(--mj-ink-soft);
+
+  --color-stock: var(--mj-stock);
+  --color-sheet: var(--mj-sheet);
+  --color-carbon: var(--mj-carbon);
+  --color-carbon-ink: var(--mj-carbon-ink);
+  --color-ink: var(--mj-ink);
+  --color-ink-soft: var(--mj-ink-soft);
+  --color-ink-faint: var(--mj-ink-faint);
+  --color-rule: var(--mj-rule);
+  --color-identity: var(--mj-identity);
+  --color-platform: var(--mj-platform);
+  --color-platform-text: var(--mj-platform-text);
+  --color-partner: var(--mj-partner);
+  --color-warning-text: var(--mj-warning-text);
+  --color-privacy: var(--mj-privacy);
+  --color-days-wash: var(--mj-days-wash);
+  --color-on-ink: var(--mj-on-ink);
+  --color-stamp-fill: var(--mj-stamp-fill);
+
+  --font-sans: var(--mj-body);
+  --font-display: var(--mj-display);
+  --font-mono: var(--mj-mono);
+
+  /* Paper, not pill: every corner is 3px; the suggestion card's 4px is the one exception. */
+  --radius-sm: 3px;
+  --radius-md: 3px;
+  --radius-lg: 3px;
+  --radius-xl: 4px;
+
+  --shadow-press: var(--mj-press);
+  --shadow-bar: var(--mj-shadow);
+  --shadow-choice: 0 1px 3px rgb(26 23 19 / 12%);
+  --shadow-guess: 0 6px 18px rgb(31 79 224 / 10%);
+
+  /* The panel's type scale, in the pixels it was drawn in. */
+  --text-3xs: 9px;
+  --text-3xs--line-height: 1.3;
+  --text-2xs: 10px;
+  --text-2xs--line-height: 1.4;
+  --text-xs: 11px;
+  --text-xs--line-height: 1.45;
+  --text-sm: 12px;
+  --text-sm--line-height: 1.45;
+  --text-md: 12.5px;
+  --text-md--line-height: 1.5;
+  --text-base: 13px;
+  --text-base--line-height: 1.5;
+  --text-lg: 14px;
+  --text-lg--line-height: 1.55;
+  --text-xl: 15px;
+  --text-xl--line-height: 1.4;
+  --text-2xl: 16px;
+  --text-2xl--line-height: 1.4;
+  --text-title: 27px;
+  --text-title--line-height: 1.14;
+
+  /* The one breakpoint. The panel is drawn at 400px and stays one column; from 40rem — a side panel
+     dragged wide, a devtools-sized window — the ledger's receipt prints beside its rows instead of
+     under them. Nothing else changes with width. */
+  --breakpoint-wide: 40rem;
+
+  --tracking-caps: 0.14em;
+  --tracking-stamp: 0.12em;
+  --tracking-label: 0.08em;
+
+  /* The panel's motion, all of it: a stamp landing, and the wash across a working button. Each is
+     used behind a reduced-motion guard, so nothing moves for someone who asked it not to. */
+  --animate-stamp-land: stamp-land 240ms ease-out;
+  --animate-wash: wash 1400ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  --animate-settling: settling 1600ms ease-in-out infinite;
+  --animate-rec: rec 1.2s ease-out infinite;
+
+  @keyframes stamp-land {
+    0% {
+      transform: rotate(-8deg) scale(1.12);
+      opacity: 0.4;
+    }
+    100% {
+      transform: rotate(-4deg) scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes wash {
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes settling {
+    from {
+      background-position: 140% 0;
+    }
+    to {
+      background-position: -40% 0;
+    }
+  }
+
+  @keyframes rec {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--mj-identity) 45%, transparent);
+    }
+    100% {
+      box-shadow: 0 0 0 8px transparent;
+    }
+  }
+}
+
+/* The pinned action, working. It keeps its ink so the bar does not go grey and dead under the
+   operator's eyes; the press is inverted, which is what a key held down looks like; and a slow
+   wash crosses the label, left to right — it reads as "still going", not as decoration. Reduced
+   motion leaves the wash parked off the button's edge. */
+@utility btn-working {
+  position: relative;
+  overflow: hidden;
+  cursor: progress;
+  box-shadow: var(--mj-press);
+  opacity: 0.92;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 22%) 50%, transparent 100%);
+    transform: translateX(-100%);
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    &::after {
+      animation: var(--animate-wash);
+    }
+  }
+}
+
+/* A scroll container's own bar: thin, in the rule colour on no track, so a scrolling rail or receipt
+   is not edged with the browser's grey. */
+@utility scrollbar-rule {
+  scrollbar-width: thin;
+  scrollbar-color: var(--mj-rule) transparent;
+}
+
+/* The bottom of the ticket. The zigzag tears the stack open at the top; without a matching edge
+   the last sheet just stops, and the ground below it reads as something missing rather than as
+   the desk the ticket is lying on. The padding is the room the teeth are cut from. */
+@utility tear-bottom {
+  padding-bottom: 10px;
+  mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - 6px) no-repeat,
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 11px 6px repeat-x;
+}
