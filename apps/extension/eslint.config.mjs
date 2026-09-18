@@ -12,9 +12,10 @@ import globals from "globals";
 export default [
   ...config,
   {
-    // e2e/fixtures/vendor is the production tag build fetched by e2e/vendor-tag.mjs; e2e/out is
-    // what the harness generates. Neither is ours to lint.
-    ignores: ["dist/**", ".plasmo/**", "e2e/fixtures/vendor/**", "e2e/out/**"],
+    // e2e/fixtures/vendor is the production tag build fetched by e2e/vendor-tag.mjs,
+    // e2e/fixtures/announcing this repo's tag build made by e2e/build-announcing-tag.mjs, and
+    // e2e/out what the harness generates. None of them is ours to lint.
+    ignores: ["dist/**", ".plasmo/**", "e2e/fixtures/vendor/**", "e2e/fixtures/announcing/**", "e2e/out/**"],
   },
   {
     files: ["**/*.{ts,tsx}"],

@@ -46,9 +46,16 @@ const DETAIL: Record<Status, (entry: Entry) => { mono?: string | null; soft?: st
   missing: () => ({}),
 };
 
+/** A status this build does not know — a record written by another version — is shown as it came, in soft ink. */
+const statusOf = (entry: Entry): { label: string; ink: string } =>
+  STATUS[entry.status] ?? { label: entry.status, ink: "text-muted-foreground" };
+
+const detailOf = (entry: Entry): { mono?: string | null; soft?: string | null } =>
+  (DETAIL[entry.status] ?? (() => ({})))(entry);
+
 const CoverageRow = ({ entry }: { entry: Entry }): ReactNode => {
-  const status = STATUS[entry.status];
-  const { mono, soft } = DETAIL[entry.status](entry);
+  const status = statusOf(entry);
+  const { mono, soft } = detailOf(entry);
   return (
     <TableRow>
       <TableHead scope="row" className="w-24 font-mono">

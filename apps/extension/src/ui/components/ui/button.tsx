@@ -1,6 +1,7 @@
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-import { ComponentProps } from "react";
+import { ComponentProps, forwardRef } from "react";
+
 import { cn } from "~/lib/utils";
 
 /**
@@ -11,6 +12,7 @@ import { cn } from "~/lib/utils";
  * deliberate: no `disabled:` styles, because the panel never disables a control — it marks the
  * one next action `aria-disabled` and says why underneath; no focus ring of its own, because the
  * base layer draws the 2px identity ring on everything; and no transition on `all`, only colour.
+ * The ref is forwarded because a Radix trigger (`asChild`) anchors and focuses through it.
  */
 const buttonVariants = cva(
   "inline-flex shrink-0 cursor-pointer items-center justify-center border whitespace-nowrap font-semibold transition-colors duration-150 ease-out select-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
@@ -51,14 +53,18 @@ export interface ButtonProps extends ComponentProps<"button">, VariantProps<type
   working?: boolean;
 }
 
-export const Button = ({ className, variant, size, asChild = false, working = false, ...props }: ButtonProps) => {
-  const Comp = asChild ? Slot : "button";
-  return (
-    <Comp
-      data-slot="button"
-      data-working={working || undefined}
-      className={cn(buttonVariants({ variant, size }), working && "btn-working", className)}
-      {...props}
-    />
-  );
-};
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, working = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button";
+    return (
+      <Comp
+        ref={ref}
+        data-slot="button"
+        data-working={working || undefined}
+        className={cn(buttonVariants({ variant, size }), working && "btn-working", className)}
+        {...props}
+      />
+    );
+  },
+);
+Button.displayName = "Button";

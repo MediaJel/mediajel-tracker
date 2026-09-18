@@ -16,6 +16,7 @@ import { DEFAULT_SETTINGS, Settings } from "~/store/settings";
 import { TargetState } from "~/ui/screens/DeploySection";
 
 import { TagActivityState, useTagActivity } from "./useTagActivity";
+import { normalizeView } from "~/sidepanel/view";
 
 /**
  * Everything the panel knows and every move it can make.
@@ -158,11 +159,14 @@ export const usePanel = (): PanelState => {
   useEffect(() => onSignedOut(signedOut), [signedOut]);
 
   const loadJob = useCallback(async (id: number) => {
-    const view = (await ask({ type: "job/open", tabId: id })) as JobView | null;
-    if (!view) {
+    const answer = (await ask({ type: "job/open", tabId: id })) as JobView | null;
+    if (!answer) {
       setScreen("no-site");
       return;
     }
+    // An older service worker — the extension rebuilt on disk but not yet reloaded — answers in
+    // its own shape; the page reads as one nothing is known about yet rather than as a crash.
+    const view = normalizeView(answer);
     siteRef.current = view.site;
     setStatus(view.status);
     setTags(view.tags);
