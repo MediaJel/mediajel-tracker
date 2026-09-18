@@ -55,6 +55,12 @@ const openRecord = async (page: Page): Promise<void> => {
   await page.locator("[data-slot=ledger-row]", { hasText: "record" }).first().locator("button").first().click();
 };
 
+/** The ledger with the newest page view chosen — a receipt of plain fields, their type chips and entities. */
+const openPageView = async (page: Page): Promise<void> => {
+  await openView("events")(page);
+  await page.locator("[data-slot=ledger-row]", { hasText: "Page view" }).first().locator("button").first().click();
+};
+
 /** The ledger filtered to one family by its toggle. */
 const filterEvents =
   (family: string) =>
@@ -112,6 +118,7 @@ const SCENARIOS: Scenario[] = [
   { name: "events-detail", ready: ["[data-slot=ledger-detail] [data-slot=badge]"], act: openRecord },
   { name: "events-wide", width: 800, ready: ["[data-slot=ledger-unchosen]"], act: openView("events") },
   { name: "events-wide-detail", width: 800, ready: ["[data-slot=ledger-detail] [data-slot=badge]"], act: openRecord },
+  { name: "events-wide-pageview", width: 800, ready: ["[data-slot=ledger-detail] table"], act: openPageView },
   { name: "events-dropped", ready: ["[data-slot=ledger-dropped]"], act: openView("events") },
   { name: "events-error", ready: ["[data-slot=ledger-empty]"], act: openView("events") },
   { name: "events-partners", ready: ["[data-slot=ledger][data-family=partner]"], act: filterEvents("Partners") },

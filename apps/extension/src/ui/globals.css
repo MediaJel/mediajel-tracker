@@ -276,6 +276,13 @@
   }
 }
 
+/* A scroll container's own bar: thin, in the rule colour on no track, so a scrolling rail or receipt
+   is not edged with the browser's grey. */
+@utility scrollbar-rule {
+  scrollbar-width: thin;
+  scrollbar-color: var(--mj-rule) transparent;
+}
+
 /* The bottom of the ticket. The zigzag tears the stack open at the top; without a matching edge
    the last sheet just stops, and the ground below it reads as something missing rather than as
    the desk the ticket is lying on. The padding is the room the teeth are cut from. */

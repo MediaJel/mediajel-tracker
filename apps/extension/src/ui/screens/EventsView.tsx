@@ -412,29 +412,24 @@ interface PaneProps {
   onClose(): void;
 }
 
-/** The receipt's pane: beside the rail from 40rem, a drawer under it below. Escape anywhere in it puts the receipt away. */
-const Pane = ({ chosen, rows, tags, onClose }: PaneProps): ReactNode => {
-  const onKeyDown = (keyboard: KeyboardEvent): void => {
-    if (keyboard.key === "Escape" && chosen) onClose();
-  };
-  return (
-    <section
-      data-slot="ledger-pane"
-      aria-label="Receipt"
-      onKeyDown={onKeyDown}
-      className={cn(
-        "min-h-0 flex-col overflow-y-auto border-border wide:flex wide:flex-auto wide:border-t-0 wide:border-l",
-        chosen ? "flex flex-[3_1_0%] border-t" : "hidden",
-      )}
-    >
-      {chosen ? (
-        <Receipt key={chosen.id} event={chosen} row={rows.get(chosen.id)!} tags={tags} onClose={onClose} />
-      ) : (
-        <Unchosen />
-      )}
-    </section>
-  );
-};
+/** What the pane holds: the chosen row's receipt, or the note that one prints here. */
+const PaneBody = ({ chosen, rows, tags, onClose }: PaneProps): ReactNode =>
+  chosen ? <Receipt event={chosen} row={rows.get(chosen.id)!} tags={tags} onClose={onClose} /> : <Unchosen />;
+
+/** The receipt's pane: beside the rail from 40rem, a drawer under it below. Keyed by the choice, so every receipt opens at its head. */
+const Pane = (props: PaneProps): ReactNode => (
+  <section
+    key={props.chosen?.id ?? ""}
+    data-slot="ledger-pane"
+    aria-label="Receipt"
+    className={cn(
+      "min-h-0 flex-col overflow-y-auto border-border scrollbar-rule wide:flex wide:flex-auto wide:border-t-0 wide:border-l",
+      props.chosen ? "flex flex-[3_1_0%] border-t" : "hidden",
+    )}
+  >
+    <PaneBody {...props} />
+  </section>
+);
 
 interface RowProps {
   row: Row;
@@ -447,11 +442,16 @@ interface RowProps {
 /** What marks the chosen row, for assistive tech and for the stylesheet alike. */
 const CHOSEN = { "aria-current": "true", "data-chosen": true } as const;
 
-/** A row's second line: the clock first, then who it belongs to, a fact, and the status word. */
+/** Who a row belongs to: whole up to half the line, then cut with an ellipsis; in mono when it is machine text. */
+const Who = ({ row }: { row: Row }): ReactNode => (
+  <span className={cn("max-w-[45%] flex-none truncate", row.mono && "font-mono")}>{row.who}</span>
+);
+
+/** A row's second line: the clock first, then who it belongs to, a fact that yields, and a status word that never does. */
 const SecondLine = ({ row }: { row: Row }): ReactNode => (
-  <span className="flex gap-x-2 text-xs whitespace-nowrap text-muted-foreground">
+  <span className="flex gap-x-2 overflow-hidden text-xs whitespace-nowrap text-muted-foreground">
     <span className="flex-none font-mono tabular-nums">{row.clock}</span>
-    <span className="flex-none">{row.who}</span>
+    <Who row={row} />
     {row.facts && <span className="min-w-0 truncate text-foreground">{row.facts}</span>}
     {row.status && <span className={cn("flex-none", row.problem && "text-warning-text")}>{row.status}</span>}
   </span>
@@ -466,14 +466,14 @@ const LedgerRow = ({ row, chosen, tabStop, onChoose }: RowProps): ReactNode => (
       {...(chosen ? CHOSEN : {})}
       tabIndex={tabStop ? 0 : -1}
       onClick={() => onChoose(row.id)}
-      className="group flex w-full cursor-pointer items-start gap-2.5 border-0 bg-transparent px-5 py-2 text-left hover:bg-stock data-chosen:bg-carbon motion-safe:transition-colors motion-safe:duration-150 wide:px-3.5"
+      className="group flex w-full cursor-pointer items-start gap-2.5 border-0 bg-transparent px-5 py-2 text-left hover:bg-stock focus-visible:-outline-offset-2 data-chosen:bg-carbon motion-safe:transition-colors motion-safe:duration-150 wide:px-3.5"
     >
       <span className="mt-0.5 flex-none text-muted-foreground">{MARKS[row.family]}</span>
       <span className="min-w-0 flex-auto">
         <span className="block truncate text-base text-foreground">{row.name}</span>
         <SecondLine row={row} />
       </span>
-      <Chevron className="mt-1 hidden -rotate-90 wide:group-data-chosen:block" />
+      <Chevron className="mt-1 hidden text-muted-foreground group-data-chosen:block wide:-rotate-90" />
     </button>
   </li>
 );
@@ -487,7 +487,7 @@ const PageBand = ({ count, url, site }: { count: number; url: string; site: stri
         {padCount(count)}
       </Badge>
       <span className="min-w-0">
-        <span className="block truncate font-display text-base font-semibold text-foreground">{label.path}</span>
+        <span className="block font-display text-base font-semibold wrap-anywhere text-foreground">{label.path}</span>
         {label.host && <span className="block text-xs text-muted-foreground">{label.host}</span>}
       </span>
     </li>
@@ -614,7 +614,7 @@ interface FilterProps {
 const LedgerFilter = ({ query, family, onQuery, onFamily }: FilterProps): ReactNode => (
   <div
     data-slot="ledger-filter"
-    className="grid flex-none gap-2 px-5 pb-2 wide:grid-cols-[minmax(0,1fr)_auto] wide:items-center"
+    className="grid flex-none gap-2 border-b border-border px-5 pb-2.5 wide:grid-cols-[minmax(0,1fr)_auto] wide:items-center"
   >
     <Input
       type="search"
@@ -642,7 +642,13 @@ const LedgerFilter = ({ query, family, onQuery, onFamily }: FilterProps): ReactN
 );
 
 /** Other vendors' trackers, apart and closed: an engineer can tell ours from theirs without confusing the two. */
-const OtherTrackers = ({ events, rows, chosenId, onChoose }: Choosing & { events: WireEvent[] }): ReactNode =>
+const OtherTrackers = ({
+  events,
+  rows,
+  chosenId,
+  tabStop,
+  onChoose,
+}: Choosing & { events: WireEvent[]; tabStop: string | null }): ReactNode =>
   events.length > 0 ? (
     <Collapsible className="mt-3 px-5 wide:px-3.5">
       <CollapsibleTrigger asChild>
@@ -667,7 +673,7 @@ const OtherTrackers = ({ events, rows, chosenId, onChoose }: Choosing & { events
               key={event.id}
               row={rows.get(event.id)!}
               chosen={chosenId === event.id}
-              tabStop
+              tabStop={tabStop === event.id}
               onChoose={onChoose}
             />
           ))}
@@ -702,7 +708,10 @@ const Rail = ({ ledger, query, kept, foreign, open, ...list }: RailProps): React
   <div
     data-slot="ledger-rail"
     onKeyDown={walk}
-    className={cn("min-h-0 overflow-y-auto pb-4 wide:w-64 wide:flex-none", open ? "flex-[2_1_0%]" : "flex-auto")}
+    className={cn(
+      "min-h-0 overflow-y-auto pb-4 scrollbar-rule wide:w-64 wide:flex-none",
+      open ? "min-h-[12rem] flex-[2_1_0%]" : "flex-auto",
+    )}
   >
     {kept.size > 0 ? (
       <Ledger {...list} />
@@ -711,7 +720,13 @@ const Rail = ({ ledger, query, kept, foreign, open, ...list }: RailProps): React
         <Nothing ledger={ledger} query={query} family={list.family} />
       </div>
     )}
-    <OtherTrackers events={foreign} rows={list.rows} chosenId={list.chosenId} onChoose={list.onChoose} />
+    <OtherTrackers
+      events={foreign}
+      rows={list.rows}
+      chosenId={list.chosenId}
+      tabStop={list.tabStop}
+      onChoose={list.onChoose}
+    />
     {ledger.dropped > 0 && (
       <Fine data-slot="ledger-dropped" className="mt-2 px-5">
         The oldest {ledger.dropped} events were let go to stay within the browser’s memory.
@@ -727,9 +742,15 @@ const listed = (events: WireEvent[], family: Filter): WireEvent[] =>
 
 const newestRow = (pages: Pages): string | null => pages[0]?.events[0]?.id ?? null;
 
-/** The one row Tab lands on: the chosen row while it is listed, else the newest. */
-const tabStopOf = (chosen: WireEvent | null, kept: Set<string>, pages: Pages): string | null =>
-  chosen && kept.has(chosen.id) ? chosen.id : newestRow(pages);
+/** The chosen row's id while it is on screen — in the ledger or among the other trackers. */
+const listedChoice = (chosen: WireEvent | null, kept: Set<string>, foreign: WireEvent[]): string | null =>
+  chosen && (kept.has(chosen.id) || foreign.includes(chosen)) ? chosen.id : null;
+
+const firstForeign = (foreign: WireEvent[]): string | null => foreign[0]?.id ?? null;
+
+/** The one row Tab lands on: the chosen row while it is on screen, else the newest listed, else the first other tracker. */
+const tabStopOf = (chosen: WireEvent | null, kept: Set<string>, pages: Pages, foreign: WireEvent[]): string | null =>
+  listedChoice(chosen, kept, foreign) ?? newestRow(pages) ?? firstForeign(foreign);
 
 export const EventsView = ({
   ledger,
@@ -764,11 +785,14 @@ export const EventsView = ({
     setChosenId(null);
     if (chosenId) document.getElementById(rowDomId(chosenId))?.focus();
   };
+  const onEscape = (keyboard: KeyboardEvent): void => {
+    if (keyboard.key === "Escape" && chosen) putAway();
+  };
   return (
     <section data-slot="events" aria-labelledby="mj-events-title" className="flex min-h-0 flex-auto flex-col bg-stock">
       <Head ledger={ledger} />
       <LedgerFilter query={query} family={family} onQuery={setQuery} onFamily={setFamily} />
-      <div data-slot="ledger-split" className="flex min-h-0 flex-auto flex-col wide:flex-row">
+      <div data-slot="ledger-split" onKeyDown={onEscape} className="flex min-h-0 flex-auto flex-col wide:flex-row">
         <Rail
           ledger={ledger}
           query={query}
@@ -781,7 +805,7 @@ export const EventsView = ({
           site={site}
           rows={rows}
           chosenId={chosenId}
-          tabStop={tabStopOf(chosen, kept, pages)}
+          tabStop={tabStopOf(chosen, kept, pages, foreign)}
           onChoose={setChosenId}
         />
         <Pane chosen={chosen} rows={rows} tags={tags} onClose={putAway} />

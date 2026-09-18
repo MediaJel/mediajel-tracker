@@ -13,7 +13,7 @@ export const Input = ({ className, type, ...props }: ComponentProps<"input">) =>
     type={type}
     data-slot="input"
     className={cn(
-      "min-h-[30px] w-full min-w-0 rounded-sm border border-input bg-sheet px-2 py-[5px] text-sm text-foreground placeholder:text-ink-faint",
+      "min-h-[30px] w-full min-w-0 rounded-sm border border-input bg-sheet px-2 py-[5px] text-sm text-foreground placeholder:text-muted-foreground",
       className,
     )}
     {...props}

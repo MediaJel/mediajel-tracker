@@ -28,6 +28,8 @@ export interface Row {
   name: string;
   /** The tag or partner the event belongs to, in soft ink. */
   who: string;
+  /** Whether `who` is machine text — an app id, a host, a tracker's name — and sets in mono. */
+  mono: boolean;
   /** What is worth a second line: an order id and total, a schema name, an item's sku and name. */
   facts: string;
   /** A word only when something went wrong or is still in flight; "" when the request landed. */
@@ -83,10 +85,16 @@ const transactionFacts = (event: CollectorEvent): string => {
 
 type Bones = Omit<Row, "id" | "status" | "problem" | "clock" | "at">;
 
+/** The tag an event belongs to, by its short app id; "tag unknown" in the body face when the wire did not say. */
+const tagWho = (appId: string): Pick<Row, "who" | "mono"> => {
+  const id = appId ? shortAppId(appId) : "";
+  return { who: id || "tag unknown", mono: Boolean(id) };
+};
+
 const collectorRow = (event: CollectorEvent): Bones => ({
   family: "collector",
   name: event.name,
-  who: shortAppId(event.appId) || "tag unknown",
+  ...tagWho(event.appId),
   facts: event.schema ? schemaShort(event.schema) : transactionFacts(event),
 });
 
@@ -115,7 +123,7 @@ const partnerFacts = (event: PartnerSignal): string => {
 const partnerRow = (event: PartnerSignal): Bones => ({
   family: "partner",
   name: partnerName(event.partner, event.purpose),
-  who: event.appId ? shortAppId(event.appId) : "tag unknown",
+  ...tagWho(event.appId),
   facts: partnerFacts(event),
 });
 
@@ -123,6 +131,7 @@ const customRow = (event: CustomTagFetch): Bones => ({
   family: "custom",
   name: `Custom tag · ${event.name}`,
   who: event.scope === "domain" ? "domain file" : "app-id file",
+  mono: false,
   facts: "",
 });
 
@@ -141,6 +150,7 @@ const registeredRow = (event: ThirdPartyRegistration): Bones => ({
   family: "custom",
   name: "Third-party tags registered",
   who: tagsCount(event.triggers.reduce((sum, trigger) => sum + trigger.count, 0)),
+  mono: false,
   facts: event.triggers.map((trigger) => TRIGGERS[trigger.trigger]).join(" · "),
 });
 
@@ -149,6 +159,7 @@ const firedRow = (event: ThirdPartyFire): Bones => ({
   family: "custom",
   name: "Third-party tag",
   who: event.host,
+  mono: true,
   facts: `${TRIGGERS[event.trigger]} · ${event.element}`,
 });
 
@@ -159,6 +170,7 @@ const foreignRow = (event: ForeignEvent): Bones => ({
   family: "foreign",
   name: `${event.collector} · ${EVENT_KINDS[event.code]?.label ?? event.code}`,
   who: event.tracker,
+  mono: true,
   facts: event.version,
 });
 

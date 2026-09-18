@@ -15,7 +15,7 @@ export const Panel = ({ plain = false, children }: { plain?: boolean; children: 
  * height the letterhead and the action bar leave, and scrolling on its own. The scroll IS the
  * record of the job.
  */
-const STACK = "m-0 flex-auto list-none overflow-y-auto bg-stock p-0 pb-2.5";
+const STACK = "m-0 flex-auto list-none overflow-y-auto bg-stock p-0 pb-2.5 scrollbar-rule";
 
 export const Stack = ({ list = false, className, ...props }: { list?: boolean } & HTMLAttributes<HTMLElement>) =>
   list ? <ol className={cn(STACK, className)} {...props} /> : <div className={cn(STACK, className)} {...props} />;

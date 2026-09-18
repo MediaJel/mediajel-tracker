@@ -186,11 +186,15 @@ digits at least, and the page's label (the host at the root, else the path, an o
 it). One row per event: a family mark drawn at 1.5px like the zigzag (a collector's tray, a
 beacon's pixel, the platform and network kinds for custom and other tags), a plain name ("Page
 view", "Page ping", "record", "Transaction", "Item"), and a second line in soft ink that opens with
-the clock in mono, then the tag it belongs to, a fact worth reading (an order and its total, a
-schema's name and version) and a status word only when something went wrong ("sending…" in soft
-ink; "failed (503)" and "blocked" in warning ink — a word, never a colour alone). The rows are one
-Tab stop: Up and Down walk them, Home and End jump, and the receipt follows; the chosen row sits on
-carbon with `aria-current` and, beside the pane, a chevron pointing at it. The receipt is a slip of
+the clock in mono, then the tag it belongs to (in mono when it is machine text — an app id, a
+host, a tracker's name), a fact worth reading (an order and its total, a schema's name and version)
+and a status word only when something went wrong ("sending…" in soft ink; "failed (503)" and
+"blocked" in warning ink — a word, never a colour alone); when the line is short of room the fact
+yields first, who is cut at half the line, and the status word never yields. The rows are one Tab
+stop: Up and Down walk them, Home and End jump, the receipt follows, and Escape puts it away from
+either side; the chosen row sits on carbon with `aria-current` and a chevron in soft ink pointing
+at its receipt — right, beside the pane; down, at the drawer. Every scroll container's bar is thin
+and in the rule colour (`scrollbar-rule`). The receipt is a slip of
 its own on the stock: a head that stays put while the rest scrolls — the mark, the name in the
 display face, the transport as a chip, the status word — then three facts and the payload in parts
 behind hairlines, every part open with a chevron to fold it (Event, App, User, Session, Page,

@@ -248,3 +248,10 @@ describe("walking the ledger by keyboard", () => {
     expect(rowDomId("r1:0")).toBe("mj-event-r1:0");
   });
 });
+
+describe("who a row belongs to", () => {
+  test("an app id is machine text and sets in mono; an unknown tag is a phrase in the body face", () => {
+    expect([rowOf(event()).who, rowOf(event()).mono]).toEqual(["5f976cbb", true]);
+    expect([rowOf(event({ appId: "" })).who, rowOf(event({ appId: "" })).mono]).toEqual(["tag unknown", false]);
+  });
+});
