@@ -23,5 +23,9 @@ export default defineConfig({
   },
   use: {
     viewport: { width: 400, height: 1000 },
+    // The panel prints times and numbers in the browser's locale and zone; pinning both keeps the
+    // reference screenshots the same on every machine that renders them.
+    timezoneId: "UTC",
+    locale: "en-US",
   },
 });

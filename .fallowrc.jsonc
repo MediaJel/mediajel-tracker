@@ -9,9 +9,11 @@
     "apps/extension/src/sidepanel/index.tsx",
     "apps/extension/src/background/index.ts",
     "apps/extension/src/contents/*.ts",
-    // The Playwright harness: specs are loaded by convention and the vendoring script by node —
-    // nothing imports them.
+    // The Playwright harness: specs are loaded by convention, the stub by the browser, the two
+    // scripts by node — nothing imports them.
     "apps/extension/e2e/*.spec.ts",
+    "apps/extension/e2e/stub/chrome-stub.js",
+    "apps/extension/e2e/build-preview.mjs",
     "apps/extension/e2e/vendor-tag.mjs"
   ]
 }
