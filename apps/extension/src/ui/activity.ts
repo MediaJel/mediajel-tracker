@@ -1,4 +1,4 @@
-import { TagState } from "@mediajel/assistant-core/tags";
+import { TagRecord, TagState } from "@mediajel/assistant-core/tags";
 import { WidgetGoal } from "@mediajel/assistant-core/types";
 
 import type { TagActivity } from "~/service/client";
@@ -44,6 +44,18 @@ export const stateLabel = (state: TagState): string => STATE_LABELS[state];
 
 /** Enough of an app ID to tell two tags on one page apart; the whole of it is in Details. */
 export const shortAppId = (appId: string): string => appId.split("-")[0].slice(0, 8) || appId;
+
+/**
+ * One line under the readings on what the page's tags are doing — only when it adds to the numbers.
+ * A tag sending events needs no sentence; one that is installed, held back, opted out, disabled or
+ * failed is the reason the numbers may not move, and is named.
+ */
+export const stateSentence = (tags: TagRecord[]): string => {
+  const notable = tags.filter((tag) => tag.state !== "sending");
+  if (notable.length === 0) return "";
+  if (tags.length === 1) return `This tag is ${stateLabel(notable[0].state)}.`;
+  return `${notable.map((tag) => `${shortAppId(tag.appId)} is ${stateLabel(tag.state)}`).join("; ")}.`;
+};
 
 const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
   ["day", 86_400_000],

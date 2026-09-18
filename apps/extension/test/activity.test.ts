@@ -1,7 +1,17 @@
 import { describe, expect, test } from "bun:test";
 
 import type { TagActivity } from "~/service/client";
-import { ago, amount, pageLabel, pageListing, shortAppId, stateLabel, tallyNumber, tallySentence } from "~/ui/activity";
+import {
+  ago,
+  amount,
+  pageLabel,
+  pageListing,
+  shortAppId,
+  stateLabel,
+  stateSentence,
+  tallyNumber,
+  tallySentence,
+} from "~/ui/activity";
 
 /**
  * The words the panel uses about a client's traffic. A tally that says "nothing was recorded"
@@ -65,6 +75,28 @@ describe("the tally's sentence", () => {
 });
 
 describe("a tag's state, in words", () => {
+  const record = (
+    appId: string,
+    state: "installed" | "held-back" | "running" | "sending" | "opted-out" | "disabled" | "failed",
+  ) => ({
+    appId,
+    state,
+    environment: "",
+    version: "",
+    event: "",
+    announced: false,
+    firstSeenAt: 0,
+  });
+
+  test("a page whose tags are all sending needs no sentence; one that is not is named", () => {
+    expect(stateSentence([])).toBe("");
+    expect(stateSentence([record("a", "sending")])).toBe("");
+    expect(stateSentence([record("a", "installed")])).toBe("This tag is installed, not running yet.");
+    expect(stateSentence([record("7bc01df0-c859", "held-back"), record("b", "sending")])).toBe(
+      "7bc01df0 is held back by a page-speed plugin until the visitor interacts.",
+    );
+  });
+
   test("every state has a label, and none asks for a reload", () => {
     for (const state of ["installed", "held-back", "running", "sending", "opted-out", "disabled", "failed"] as const) {
       expect(stateLabel(state)).not.toMatch(/reload/i);

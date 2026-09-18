@@ -4,7 +4,7 @@ import { WidgetGoal } from "@mediajel/assistant-core/types";
 
 import type { TagActivity } from "~/service/client";
 import type { TagActivityState } from "~/sidepanel/useTagActivity";
-import { shortAppId, tallyNumber, tallySentence } from "~/ui/activity";
+import { shortAppId, stateSentence, tallyNumber, tallySentence } from "~/ui/activity";
 import InfoTip from "~/ui/components/InfoTip";
 import { ChevronDown } from "~/ui/icons";
 
@@ -102,6 +102,7 @@ const Readings = ({ activity, goal }: Props): ReactNode => {
       </table>
       <MoreTags hidden={activity.results.length - MAX_ROWS} />
       <Sentence text={tallySentence(activity.results, goal)} />
+      <Sentence text={stateSentence(activity.tags)} />
     </>
   );
 };

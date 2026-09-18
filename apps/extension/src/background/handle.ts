@@ -158,11 +158,15 @@ const view = async (tabId: number): Promise<JobView> => {
   return { site, session, status: trackerStatus(tab), tags: tab.tags, settled: tab.settled };
 };
 
-/** Reads the page's scripts now and records what they name, so the answer is as fresh as the page. */
-const readScriptsNow = async (tabId: number, site: string): Promise<void> => {
+/** Reads the page's scripts now, records what they name, and tells the panel when that is news. */
+const publishScripts = async (tabId: number, site: string, push: Push): Promise<void> => {
   const found = await readTagsOnPage(tabId);
-  if (found) await learn(tabId, site, { kind: "scripts", tags: found });
+  const tab = found && (await learn(tabId, site, { kind: "scripts", tags: found }));
+  if (tab) push(tabId, { type: "tags", site, tags: tab.tags, settled: tab.settled, status: trackerStatus(tab) });
 };
+
+/** An injected tag is in the page's scripts a moment later; read them then, so its row fills in. */
+const INJECTED_SCRIPT_READ_MS = 1_500;
 
 export const handle = async (request: Request, send: Send, push: Push): Promise<ResultOf[Request["type"]]> => {
   switch (request.type) {
@@ -204,7 +208,7 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
       // tag can arrive late, and Verify's whole story depends on whether it is there — and read
       // its scripts from here, which needs nothing in the page to answer.
       void deliver(send, request.tabId, { type: "snapshot" });
-      await readScriptsNow(request.tabId, site);
+      await publishScripts(request.tabId, site, push);
       return view(request.tabId);
     }
 
@@ -272,8 +276,9 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
     }
 
     case "page/inject-tag": {
-      await siteOfTab(request.tabId);
+      const site = await siteOfTab(request.tabId);
       if (!(await deliver(send, request.tabId, { type: "inject-tag", url: request.url }))) throw new Error(UNREACHABLE);
+      setTimeout(() => void publishScripts(request.tabId, site, push), INJECTED_SCRIPT_READ_MS);
       await writeSettings({ lastInjectedTagUrl: request.url });
       return null;
     }
