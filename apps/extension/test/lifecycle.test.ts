@@ -235,6 +235,55 @@ describe("a session that ends while the operator works", () => {
   });
 });
 
+describe("a tab open before the extension was", () => {
+  test("is attached to on the first command nothing in it could receive, then told", async () => {
+    const chromeApi = (globalThis as unknown as { chrome: { scripting: Record<string, unknown> } }).chrome;
+    const original = chromeApi.scripting.executeScript;
+    const injected: string[] = [];
+    chromeApi.scripting.executeScript = async ({ files, world }: { files: string[]; world?: string }) => {
+      injected.push(`${world ?? "ISOLATED"}:${files.join(",")}`);
+      return [];
+    };
+    let attached = false;
+    const delivered: BridgeDown[] = [];
+    const sendOnceAttached = async (_tabId: number, message: BridgeDown): Promise<boolean> => {
+      if (!attached && injected.length === 2) attached = true;
+      if (attached) delivered.push(message);
+      return attached;
+    };
+    try {
+      await handle({ type: "page/start-recording", tabId: TAB, goal: "transaction" }, sendOnceAttached, push);
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      expect(injected).toEqual(["ISOLATED:relay.test.js", "MAIN:page-bridge.test.js"]);
+      expect(delivered.map((message) => message.type)).toEqual(["start-recording"]);
+    } finally {
+      chromeApi.scripting.executeScript = original;
+    }
+  });
+
+  test("a page Chrome keeps extensions out of says so, and never asks for a reload", async () => {
+    const chromeApi = (globalThis as unknown as { chrome: { scripting: Record<string, unknown> } }).chrome;
+    const original = chromeApi.scripting.executeScript;
+    chromeApi.scripting.executeScript = async () => {
+      throw new Error("Cannot access a chrome:// URL");
+    };
+    const unreachable = async (): Promise<boolean> => false;
+    try {
+      await handle({ type: "page/start-recording", tabId: TAB, goal: "transaction" }, unreachable, push);
+      await handle({ type: "job/advance", tabId: TAB, to: "review" }, unreachable, push);
+      const failure = await handle(
+        { type: "page/inject-tag", tabId: TAB, url: "https://tags.cnna.io/?appId=x" },
+        unreachable,
+        push,
+      ).catch((err: unknown) => err);
+      expect((failure as Error).message).toContain("Chrome does not allow extensions on it");
+      expect((failure as Error).message).not.toMatch(/reload/i);
+    } finally {
+      chromeApi.scripting.executeScript = original;
+    }
+  });
+});
+
 describe("a request this background does not know", () => {
   test("is refused in words, rather than answered with nothing", async () => {
     await expect(handle({ type: "service/from-a-newer-panel" } as never, send, push)).rejects.toThrow(/does not know/);

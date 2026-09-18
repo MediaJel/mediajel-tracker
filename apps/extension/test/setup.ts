@@ -58,6 +58,8 @@ const session = area();
   },
   runtime: {
     id: "mj-test-extension",
+    getManifest: () => ({ content_scripts: [{ js: ["relay.test.js"], matches: ["http://*/*", "https://*/*"] }] }),
+    onInstalled: { addListener: () => undefined },
     connect: () => ({
       postMessage: () => undefined,
       disconnect: () => undefined,
@@ -78,7 +80,13 @@ const session = area();
     onRemoved: { addListener: () => undefined, removeListener: () => undefined },
   },
   webRequest: { onBeforeRequest: { addListener: () => undefined } },
-  scripting: { registerContentScripts: async () => undefined },
+  scripting: {
+    registerContentScripts: async () => undefined,
+    getRegisteredContentScripts: async () => [
+      { id: "srcContentsPageBridge", js: ["page-bridge.test.js"], world: "MAIN" },
+    ],
+    executeScript: async () => [],
+  },
   sidePanel: { setPanelBehavior: async () => undefined, open: async () => undefined },
 };
 

@@ -8,6 +8,7 @@ import { answerChallenge, forgetPending, signIn } from "~/auth/cognito";
 import { SIGNED_OUT } from "~/auth/signed-out";
 import { siteOf } from "~/lib/site";
 import { failureAnswer } from "~/background/answer";
+import { attach } from "~/background/attach";
 import { learn, tagsOfTab } from "~/background/tag-state";
 import { readTagsOnPage } from "~/background/page-tags";
 import { checkAccess, deployTag, generateTag, readExistingTag, readTagActivity } from "~/service/client";
@@ -34,6 +35,16 @@ const generating = new Map<number, AbortController>();
 /** Delivers a command to a tab's page; resolves false when nothing in the page could receive it. */
 type Send = (tabId: number, message: BridgeDown) => Promise<boolean>;
 type Push = (tabId: number, message: unknown) => void;
+
+/**
+ * Delivers a command, attaching to the page first when nothing there could receive it — a tab
+ * open before this build of the extension was. Only a page Chrome keeps extensions out of stays
+ * unreachable.
+ */
+const deliver = async (send: Send, tabId: number, message: BridgeDown): Promise<boolean> =>
+  (await send(tabId, message)) || ((await attach(tabId)) && send(tabId, message));
+
+const UNREACHABLE = "The assistant could not attach to this page; Chrome does not allow extensions on it.";
 
 const siteOfTab = async (tabId: number): Promise<string> => {
   const tab = await chrome.tabs.get(tabId);
@@ -192,7 +203,7 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
       // Ask the page what it can see now rather than trusting what it said a page-load ago — a
       // tag can arrive late, and Verify's whole story depends on whether it is there — and read
       // its scripts from here, which needs nothing in the page to answer.
-      void send(request.tabId, { type: "snapshot" });
+      void deliver(send, request.tabId, { type: "snapshot" });
       await readScriptsNow(request.tabId, site);
       return view(request.tabId);
     }
@@ -234,7 +245,7 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
       // A fresh job: new session id, new startedAt — every event's `t` is measured from it.
       const session = await resetJob(site, { goal: request.goal });
       const step = advance(site, "recording");
-      void send(request.tabId, { type: "start-recording", startedAt: session.startedAt });
+      void deliver(send, request.tabId, { type: "start-recording", startedAt: session.startedAt });
       return step ?? "home";
     }
 
@@ -244,7 +255,7 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
       // Chrome has very likely recycled it and `live` is empty — and `advance` on an empty map
       // returns null, which used to leave the operator pressing Stop against a dead step.
       await openJob(site);
-      void send(request.tabId, { type: "stop-recording" });
+      void deliver(send, request.tabId, { type: "stop-recording" });
       return advance(site, "review") ?? "recording";
     }
 
@@ -255,17 +266,14 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
       updateJob(site, (draft) => {
         draft.verify = { captured: draft.verify?.captured ?? [], errors: [] };
       });
-      if (!(await send(request.tabId, { type: "verify", code: session.generation.code }))) {
-        throw new Error("The assistant is not attached to this page. Reload it and try again.");
-      }
+      if (!(await deliver(send, request.tabId, { type: "verify", code: session.generation.code })))
+        throw new Error(UNREACHABLE);
       return null;
     }
 
     case "page/inject-tag": {
       await siteOfTab(request.tabId);
-      if (!(await send(request.tabId, { type: "inject-tag", url: request.url }))) {
-        throw new Error("The assistant is not attached to this page. Reload it and try again.");
-      }
+      if (!(await deliver(send, request.tabId, { type: "inject-tag", url: request.url }))) throw new Error(UNREACHABLE);
       await writeSettings({ lastInjectedTagUrl: request.url });
       return null;
     }

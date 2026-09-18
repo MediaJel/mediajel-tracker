@@ -4,6 +4,7 @@ import { PANEL_PORT, RELAY_PORT } from "~/lib/ports";
 import { Evidence, trackerStatus } from "@mediajel/assistant-core/tags";
 
 import { failureAnswer } from "~/background/answer";
+import { attachAll } from "~/background/attach";
 import { listenForTags } from "~/background/beacons";
 import { handle } from "~/background/handle";
 import { readTagsOnPage } from "~/background/page-tags";
@@ -176,6 +177,10 @@ chrome.tabs.onUpdated.addListener((tabId, change, tab) => {
 });
 
 chrome.tabs.onRemoved.addListener((tabId) => void forgetTab(tabId));
+
+// Installed, updated, or reloaded over open tabs: give every one of them a relay and a bridge now,
+// so nothing has to be reloaded to be seen — every dev rebuild included.
+chrome.runtime.onInstalled.addListener(() => void attachAll());
 
 subscribeJobs((site, session) => {
   const tabId = panelSites.get(site);
