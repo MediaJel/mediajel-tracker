@@ -7,7 +7,7 @@ import { canDeploy, canGenerate } from "@mediajel/assistant-core/state/machine";
 import { WidgetGoal, WidgetSession } from "@mediajel/assistant-core/types";
 
 import type { AuthChallenge, Identity } from "~/auth/cognito";
-import { AppFlowState, AppHandlers } from "~/ui/App";
+import { AppFlowState, AppHandlers } from "~/ui/contract";
 import { JobPatch, JobView, Push, ask, onSignedOut } from "~/bridge/api";
 import { PANEL_PORT } from "~/lib/ports";
 import { apiUrl } from "~/service/client";
