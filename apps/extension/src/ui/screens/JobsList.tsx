@@ -5,6 +5,7 @@ import { JobSummary } from "~/store/jobs";
 import { ActionBar } from "~/ui/components/ActionBar";
 import { Letterhead } from "~/ui/components/Letterhead";
 import { Panel, Stack } from "~/ui/components/Panel";
+import { Fine, Lede, SectionBody } from "~/ui/components/Section";
 import Stamp from "~/ui/components/Stamp";
 import { Button } from "~/ui/components/ui/button";
 import { Close } from "~/ui/icons";
@@ -101,13 +102,13 @@ export const JobsList = ({ jobs, currentSite, onOpen, onDelete, onBack }: JobsLi
     <Stack list aria-label="Your jobs">
       {jobs.length === 0 ? (
         <li className="bg-sheet shadow-press">
-          <div className="mj-section-body">
-            <p className="mj-lede">No jobs yet.</p>
-            <p className="mj-fine">
+          <SectionBody>
+            <Lede>No jobs yet.</Lede>
+            <Fine>
               Open a client’s site and start recording. The job is saved here as you go, so you can leave it half
               finished and come back tomorrow.
-            </p>
-          </div>
+            </Fine>
+          </SectionBody>
         </li>
       ) : (
         jobs.map((job) => (

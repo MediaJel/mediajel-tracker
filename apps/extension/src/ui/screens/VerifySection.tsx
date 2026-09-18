@@ -2,6 +2,8 @@ import { checkPayload } from "@mediajel/assistant-core/verify/payload-check";
 import { InterceptedCall } from "@mediajel/assistant-core/verify/interceptor";
 import { WidgetSession } from "@mediajel/assistant-core/types";
 import { ReactNode } from "react";
+
+import { Working } from "~/ui/components/Section";
 import { Button } from "~/ui/components/ui/button";
 import { Alert } from "~/ui/components/ui/alert";
 
@@ -81,12 +83,7 @@ export const VerifySection = ({
         </Alert>
       )}
 
-      {captured.length === 0 && errors.length === 0 && (
-        <div className="mj-working">
-          <span className="mj-rec-dot" aria-hidden="true" />
-          <span>Waiting for the tag to fire…</span>
-        </div>
-      )}
+      {captured.length === 0 && errors.length === 0 && <Working>Waiting for the tag to fire…</Working>}
 
       {captured.length > 0 && (
         <ol className="mj-captures">

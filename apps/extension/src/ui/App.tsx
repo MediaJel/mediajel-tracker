@@ -20,8 +20,10 @@ import type { TagActivityState } from "~/sidepanel/useTagActivity";
 import { Settings } from "~/store/settings";
 import { ActionBar } from "~/ui/components/ActionBar";
 import { Chevron } from "~/ui/components/Chevron";
+import { Definitions } from "~/ui/components/Definitions";
 import { Letterhead } from "~/ui/components/Letterhead";
 import { Panel, Stack } from "~/ui/components/Panel";
+import { Fine, SectionBody } from "~/ui/components/Section";
 import Stamp from "~/ui/components/Stamp";
 import {
   AlertDialog,
@@ -231,21 +233,17 @@ const stampFor = (id: string): ReactNode => {
 
 /** What 01 shows once the recording is over: the record, not the controls. */
 const RecordSummary = ({ session }: { session: WidgetSession }): ReactNode => (
-  <div className="mj-section-body">
-    <dl className="mj-counts">
-      <dt>job</dt>
-      <dd>{JOB_TITLES[session.goal]}</dd>
-      <dt>events</dt>
-      <dd>{session.timeline.length}</dd>
-      <dt>pages</dt>
-      <dd>{session.pages.length}</dd>
-      <dt>duration</dt>
-      <dd>{seconds(session)}s</dd>
-    </dl>
-    {session.truncated ? (
-      <p className="mj-fine">Some cheap events were dropped to stay inside the storage budget.</p>
-    ) : null}
-  </div>
+  <SectionBody>
+    <Definitions
+      entries={[
+        ["job", JOB_TITLES[session.goal]],
+        ["events", session.timeline.length],
+        ["pages", session.pages.length],
+        ["duration", `${seconds(session)}s`],
+      ]}
+    />
+    {session.truncated ? <Fine>Some cheap events were dropped to stay inside the storage budget.</Fine> : null}
+  </SectionBody>
 );
 
 /**

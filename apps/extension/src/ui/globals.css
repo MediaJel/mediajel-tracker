@@ -210,6 +210,7 @@
   --animate-stamp-land: stamp-land 240ms ease-out;
   --animate-wash: wash 1400ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
   --animate-settling: settling 1600ms ease-in-out infinite;
+  --animate-rec: rec 1.2s ease-out infinite;
 
   @keyframes stamp-land {
     0% {
@@ -234,6 +235,15 @@
     }
     to {
       background-position: -40% 0;
+    }
+  }
+
+  @keyframes rec {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--mj-identity) 45%, transparent);
+    }
+    100% {
+      box-shadow: 0 0 0 8px transparent;
     }
   }
 }

@@ -1,8 +1,11 @@
 import { TrackerStatus } from "@mediajel/assistant-core/tags";
 import { TimelineEventKind, WidgetGoal, WidgetSession } from "@mediajel/assistant-core/types";
-import { Fragment, ReactNode } from "react";
-import { Button } from "~/ui/components/ui/button";
+import { ReactNode } from "react";
+
+import { Definitions } from "~/ui/components/Definitions";
+import { Empty, Lede, RecDot, SectionBody, SectionFooter } from "~/ui/components/Section";
 import { Alert } from "~/ui/components/ui/alert";
+import { Button } from "~/ui/components/ui/button";
 
 /**
  * Section 01 — Record. Two states share the body: choosing the job (step `home`) and the live
@@ -51,15 +54,44 @@ const Warnings = ({ status }: { status: TrackerStatus }): ReactNode | null =>
     </Alert>
   );
 
+/** The live readout: the recording light, REC, and the clock beside what has been caught so far. */
+const Readout = ({ session }: { session: WidgetSession }): ReactNode => (
+  <div data-slot="rec" className="mb-2.5 flex items-center gap-2">
+    <RecDot />
+    <span className="font-display text-xs font-bold tracking-stamp text-primary">REC</span>
+    <span className="font-mono text-xs tabular-nums text-muted-foreground">
+      {elapsed(session)} · {session.timeline.length} events · {session.pages.length}{" "}
+      {session.pages.length === 1 ? "page" : "pages"}
+    </span>
+  </div>
+);
+
+/**
+ * What has been caught, by kind — or, while nothing has, which it is. "0 events" beside a running
+ * clock is the one moment an operator cannot tell a working recorder from a broken one, so the
+ * empty state says which it is and what would end it: the recorder is genuinely idle until the
+ * page does something, and a page at rest between clicks is the expected case, not a fault.
+ */
+const Caught = ({ session }: { session: WidgetSession }): ReactNode => {
+  const counts = countByKind(session);
+  if (counts.length === 0) {
+    return (
+      <Empty role="status">
+        Nothing yet. The recorder is watching this page and stays quiet until it does something — the first click,
+        request or route change will appear here.
+      </Empty>
+    );
+  }
+  return <Definitions entries={counts} />;
+};
+
 export const RecordSection = ({ session, status, onStart, onDiscard }: RecordSectionProps): ReactNode => {
   if (session.step === "home") {
     return (
-      <div className="mj-section-body">
-        <p className="mj-lede">
-          Choose the job. The assistant records this page while you simulate it, then writes the tag.
-        </p>
+      <SectionBody>
+        <Lede>Choose the job. The assistant records this page while you simulate it, then writes the tag.</Lede>
         <Warnings status={status} />
-        <div className="mj-goals">
+        <div data-slot="goals" className="grid gap-2">
           <Button type="button" onClick={() => onStart("transaction")}>
             Track transactions
           </Button>
@@ -67,54 +99,25 @@ export const RecordSection = ({ session, status, onStart, onDiscard }: RecordSec
             Track sign-ups
           </Button>
         </div>
-      </div>
+      </SectionBody>
     );
   }
 
-  const counts = countByKind(session);
   const job = session.goal === "transaction" ? "a transaction" : "a sign-up";
-
   return (
-    <div className="mj-section-body">
-      <p className="mj-lede">
+    <SectionBody>
+      <Lede>
         Simulate {job} on this page now — place the order the way a customer would. Navigating is fine; the recording
         follows.
-      </p>
-      <div className="mj-rec-row">
-        <span className="mj-rec-dot" aria-hidden="true" />
-        <span className="mj-rec-label">REC</span>
-        <span className="mj-rec-meta">
-          {elapsed(session)} · {session.timeline.length} events · {session.pages.length}{" "}
-          {session.pages.length === 1 ? "page" : "pages"}
-        </span>
-      </div>
-      {counts.length > 0 ? (
-        <dl className="mj-counts">
-          {counts.map(([label, count]) => (
-            <Fragment key={label}>
-              <dt>{label}</dt>
-              <dd>{count}</dd>
-            </Fragment>
-          ))}
-        </dl>
-      ) : (
-        /*
-         * Nothing captured yet. "0 events" beside a running clock is the one moment an operator
-         * cannot tell a working recorder from a broken one, so this says which it is and what
-         * would end it — the recorder is genuinely idle until the page does something, and a
-         * page at rest between clicks is the expected case, not a fault.
-         */
-        <p className="mj-empty" role="status">
-          Nothing yet. The recorder is watching this page and stays quiet until it does something — the first click,
-          request or route change will appear here.
-        </p>
-      )}
-      <div className="mj-section-footer">
+      </Lede>
+      <Readout session={session} />
+      <Caught session={session} />
+      <SectionFooter>
         <Button type="button" variant="outline" onClick={onDiscard}>
           Discard
         </Button>
-      </div>
-    </div>
+      </SectionFooter>
+    </SectionBody>
   );
 };
 

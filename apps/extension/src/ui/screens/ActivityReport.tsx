@@ -5,6 +5,7 @@ import { TagRecord } from "@mediajel/assistant-core/tags";
 import type { TagActivity } from "~/service/client";
 import type { TagActivityState } from "~/sidepanel/useTagActivity";
 import { amount, fullNumber, pageLabel, pageListing, stateLabel, when } from "~/ui/activity";
+import { Definitions } from "~/ui/components/Definitions";
 import InfoTip from "~/ui/components/InfoTip";
 import { DaysSection } from "~/ui/screens/ActivityDays";
 import { ACTIVITY_DETAILS_ID, ACTIVITY_REPORT_ID, ACTIVITY_RETRY_ID } from "~/ui/screens/ActivityTally";
@@ -100,37 +101,26 @@ const PagesSection = ({ result, site }: { result: Answered; site: string }): Rea
 const lastSeen = (label: string, at: string | null): string =>
   at ? `Last ${label}: ${when(at)}.` : `No ${label} in the last 7 days.`;
 
-const Facts = ({ result }: { result: Answered }): ReactNode => {
-  const { totals } = result;
-  return (
-    <>
-      <dl className="mj-counts">
-        <dt>Page views</dt>
-        <dd>{fullNumber(totals.pageviews)}</dd>
-        <dt>Transactions</dt>
-        <dd>{fullNumber(totals.transactions)}</dd>
-        <dt>Sign-ups</dt>
-        <dd>{fullNumber(totals.signups)}</dd>
-        <dt>Sessions</dt>
-        <dd>{fullNumber(totals.sessions)}</dd>
-        {totals.transactionTotal > 0 && (
-          <>
-            <dt>Transaction total</dt>
-            <dd>{amount(totals.transactionTotal)}</dd>
-          </>
-        )}
-        {totals.impressions > 0 && (
-          <>
-            <dt>Ad impressions</dt>
-            <dd>{fullNumber(totals.impressions)}</dd>
-          </>
-        )}
-      </dl>
-      <p className="mj-report-last">{lastSeen("transaction", result.lastTransactionAt)}</p>
-      <p className="mj-report-last">{lastSeen("sign-up", result.lastSignUpAt)}</p>
-    </>
-  );
+/** The counts, and the two that only exist once there is money or ad traffic to count. */
+const factEntries = (totals: Answered["totals"]): [string, string][] => {
+  const entries: [string, string][] = [
+    ["Page views", fullNumber(totals.pageviews)],
+    ["Transactions", fullNumber(totals.transactions)],
+    ["Sign-ups", fullNumber(totals.signups)],
+    ["Sessions", fullNumber(totals.sessions)],
+  ];
+  if (totals.transactionTotal > 0) entries.push(["Transaction total", amount(totals.transactionTotal)]);
+  if (totals.impressions > 0) entries.push(["Ad impressions", fullNumber(totals.impressions)]);
+  return entries;
 };
+
+const Facts = ({ result }: { result: Answered }): ReactNode => (
+  <>
+    <Definitions entries={factEntries(result.totals)} />
+    <p className="mj-report-last">{lastSeen("transaction", result.lastTransactionAt)}</p>
+    <p className="mj-report-last">{lastSeen("sign-up", result.lastSignUpAt)}</p>
+  </>
+);
 
 const describeTag = (tag: TagRecord | undefined): string => {
   if (!tag) return "";

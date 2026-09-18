@@ -10,6 +10,7 @@ import "~/ui/globals.built.css";
 import { Button } from "~/ui/components/ui/button";
 import { Letterhead } from "~/ui/components/Letterhead";
 import { Panel } from "~/ui/components/Panel";
+import { Fine, Lede, SectionFooter } from "~/ui/components/Section";
 import { Skeleton } from "~/ui/components/ui/skeleton";
 
 /**
@@ -77,16 +78,16 @@ export const SidePanel = (): ReactNode => {
   if (panel.screen === "no-site") {
     return (
       <Frame>
-        <p className="mj-lede">This tab is not on a website yet.</p>
-        <p className="mj-fine">
+        <Lede>This tab is not on a website yet.</Lede>
+        <Fine>
           Open the client’s site in this tab and the work order for it appears here. Recording, verifying and deploying
           all happen against the real page, so there is nothing useful to show until there is one.
-        </p>
-        <div className="mj-section-footer">
+        </Fine>
+        <SectionFooter>
           <Button type="button" variant="outline" onClick={panel.handlers.onOpenJobs}>
             Your jobs
           </Button>
-        </div>
+        </SectionFooter>
       </Frame>
     );
   }
