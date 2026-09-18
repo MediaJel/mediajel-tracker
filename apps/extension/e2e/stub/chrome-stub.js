@@ -596,65 +596,120 @@
     BROWSER_FIELDS,
     DEVICE_FIELDS,
   ];
-  const wireEvent = (seq, pageKey, pageUrl, overrides) => ({
+  const RECORD_CONFIG = configOf(APP_IDS[0]);
+  const signal = (seq, pageKey, pageUrl, overrides) => ({
     id: `r${seq}:0`,
     seq,
-    at: NOW - 60_000 + seq * 4_000,
+    at: NOW - 60_000 + seq * 3_000,
     request: `r${seq}`,
     pageKey,
     pageUrl,
-    appId: APP_IDS[0],
+    appId: "",
     outcome: { kind: "ok", status: 200, fromCache: false },
-    source: "collector",
-    transport: "post",
-    collector: COLLECTOR,
-    kind: "page-view",
-    code: "pv",
-    name: "Page view",
-    groups: [],
-    entities: [WEB_PAGE],
-    batch: { index: 0, size: 1 },
     ...overrides,
   });
-  const RECORD_CONFIG = configOf(APP_IDS[0]);
-  /** Two pages of a checkout, newest first: the thank-you page's transaction, then the checkout's page view and record. */
+  const collector = (seq, pageKey, pageUrl, overrides) =>
+    signal(seq, pageKey, pageUrl, {
+      appId: APP_IDS[0],
+      source: "collector",
+      transport: "post",
+      collector: COLLECTOR,
+      kind: "page-view",
+      code: "pv",
+      name: "Page view",
+      groups: [],
+      entities: [WEB_PAGE],
+      batch: { index: 0, size: 1 },
+      ...overrides,
+    });
+  const partner = (seq, pageKey, pageUrl, overrides) =>
+    signal(seq, pageKey, pageUrl, { source: "partner", unconfigured: false, companion: false, ...overrides });
+  /** Two pages of a checkout, newest first: the thank-you page and everything the purchase fired, then the checkout's boot. */
   const WIRE = [
-    wireEvent(8, "doc-2", THANKS, {
+    collector(16, "doc-2", THANKS, {
       kind: "page-ping",
       code: "pp",
       name: "Page ping",
       groups: [PING_FIELDS, ...common("pp", THANKS, "Thank you")],
       outcome: { kind: "blocked", error: "net::ERR_BLOCKED_BY_CLIENT" },
     }),
-    wireEvent(7, "doc-2", THANKS, {
+    signal(15, "doc-2", THANKS, {
+      source: "third-party",
+      phase: "fired",
+      trigger: "onTransaction",
+      element: "image",
+      host: "www.googletagmanager.com",
+      url: "https://www.googletagmanager.com/gtag/conversion?id=AW-17979043318&value=84&currency=USD",
+    }),
+    partner(14, "doc-2", THANKS, {
+      partner: "dstillery",
+      purpose: "conversion",
+      segment: "TerrabisMundelein-S3.TR",
+      order: { id: "T4821", amount: "84" },
+      url: "https://action.dstillery.com/orbserv/nsjs?adv=cl172365597545365&ns=8779&nc=TerrabisMundelein-S3.TR&ncv=76&dstOrderId=T4821&dstOrderAmount=84",
+    }),
+    partner(13, "doc-2", THANKS, {
+      partner: "nexxen",
+      purpose: "conversion",
+      segment: "bVey-3fRZmk1",
+      order: { id: "T4821", amount: "84" },
+      url: "https://r.turn.com/r/beacon?b2=bVey-3fRZmk1&cid=T4821&bprice=84",
+    }),
+    collector(12, "doc-2", THANKS, {
       kind: "transaction-item",
       code: "ti",
       name: "Item",
       groups: [itemFields("PR-1", "Pre-roll 1g", "10", "2"), ...common("ti", THANKS, "Thank you")],
       batch: { index: 2, size: 3 },
     }),
-    wireEvent(6, "doc-2", THANKS, {
+    collector(11, "doc-2", THANKS, {
       kind: "transaction-item",
       code: "ti",
       name: "Item",
       groups: [itemFields("BD-35", "Blue Dream 3.5g", "42", "2"), ...common("ti", THANKS, "Thank you")],
       batch: { index: 1, size: 3 },
     }),
-    wireEvent(5, "doc-2", THANKS, {
+    collector(10, "doc-2", THANKS, {
       kind: "transaction",
       code: "tr",
       name: "Transaction",
       groups: [TRANSACTION_FIELDS, ...common("tr", THANKS, "Thank you")],
       batch: { index: 0, size: 3 },
     }),
-    wireEvent(4, "doc-2", THANKS, { groups: common("pv", THANKS, "Thank you") }),
-    wireEvent(3, "doc-1", CHECKOUT, {
+    collector(9, "doc-2", THANKS, { groups: common("pv", THANKS, "Thank you") }),
+    signal(8, "doc-1", CHECKOUT, {
+      source: "third-party",
+      phase: "registered",
+      triggers: [{ trigger: "onTransaction", count: 1, hosts: ["www.googletagmanager.com"] }],
+    }),
+    collector(7, "doc-1", CHECKOUT, {
       kind: "page-ping",
       code: "pp",
       name: "Page ping",
       groups: [PING_FIELDS, ...common("pp", CHECKOUT, "Checkout")],
     }),
-    wireEvent(2, "doc-1", CHECKOUT, {
+    signal(6, "doc-1", CHECKOUT, {
+      source: "foreign",
+      collector: "col.surfside.io",
+      kind: "self-describing",
+      code: "ue",
+      tracker: "surf",
+      version: "js-3.24.2",
+    }),
+    partner(5, "doc-1", CHECKOUT, {
+      partner: "liquidm",
+      purpose: "sync",
+      segment: "bLeKCx2Vm0S5qAaJ7dE1fw",
+      url: "https://tracking.lqm.io/odin/handle_sync.js?seg=bLeKCx2Vm0S5qAaJ7dE1fw&gdpr=0&gdpr_consent=&cb=1789759557364",
+    }),
+    partner(4, "doc-1", CHECKOUT, {
+      partner: "dstillery",
+      purpose: "audience",
+      segment: "00000",
+      unconfigured: true,
+      url: "https://action.dstillery.com/orbserv/nsjs?adv=cl172365597545365&ns=8779&nc=00000&ncv=76",
+    }),
+    collector(3, "doc-1", CHECKOUT, {
       kind: "self-describing",
       code: "ue",
       name: "record",
@@ -677,16 +732,22 @@
       },
       groups: common("ue", CHECKOUT, "Checkout"),
     }),
-    wireEvent(1, "doc-1", CHECKOUT, { groups: common("pv", CHECKOUT, "Checkout") }),
+    signal(2, "doc-1", CHECKOUT, {
+      source: "custom-tag",
+      scope: "domain",
+      name: SITE,
+      url: `https://test-custom-tags.cnna.io/domains/${btoa(SITE)}.js`,
+    }),
+    collector(1, "doc-1", CHECKOUT, { groups: common("pv", CHECKOUT, "Checkout") }),
   ];
   const LEDGER_PAGES = [
-    { key: "doc-2", url: THANKS, at: NOW - 44_000 },
-    { key: "doc-1", url: CHECKOUT, at: NOW - 56_000 },
+    { key: "doc-2", url: THANKS, at: NOW - 33_000 },
+    { key: "doc-1", url: CHECKOUT, at: NOW - 57_000 },
   ];
   const LEDGERS = {
     empty: { site: SITE, events: [], pages: [], dropped: 0, seq: 0 },
-    live: { site: SITE, events: WIRE, pages: LEDGER_PAGES, dropped: 0, seq: 8 },
-    dropped: { site: SITE, events: WIRE, pages: LEDGER_PAGES, dropped: 312, seq: 320 },
+    live: { site: SITE, events: WIRE, pages: LEDGER_PAGES, dropped: 0, seq: 16 },
+    dropped: { site: SITE, events: WIRE, pages: LEDGER_PAGES, dropped: 312, seq: 328 },
   };
   const readLedger = () => {
     if (scenario.events === "error")
@@ -729,6 +790,10 @@
     "events-detail": { step: "home", events: "live" },
     "events-dropped": { step: "home", events: "dropped" },
     "events-error": { step: "home", events: "error" },
+    "events-partners": { step: "home", events: "live" },
+    "events-custom-tag": { step: "home", events: "live" },
+    "events-foreign": { step: "home", events: "live" },
+    "events-two-tags": { step: "home", page: "two", events: "live" },
     "analytics-1": { step: "home" },
     "analytics-3": { step: "home", page: "three", activity: { unavailable: [1] } },
     "analytics-daily-null": { step: "home", activity: { daily: null } },

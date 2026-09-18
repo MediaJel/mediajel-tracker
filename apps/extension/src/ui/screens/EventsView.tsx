@@ -1,13 +1,26 @@
 import { Fragment, KeyboardEvent, ReactNode, useEffect, useRef, useState } from "react";
 
-import { CollectorEvent, Entity, FieldGroup, WireEvent } from "@mediajel/assistant-core/wire/types";
-import { byPage } from "@mediajel/assistant-core/wire/view";
+import { TagRecord } from "@mediajel/assistant-core/tags";
+import { attributePartner } from "@mediajel/assistant-core/wire/partners";
+import {
+  CollectorEvent,
+  CustomTagFetch,
+  Entity,
+  FieldGroup,
+  ForeignEvent,
+  PartnerSignal,
+  ThirdPartyFire,
+  ThirdPartyRegistration,
+  WireEvent,
+} from "@mediajel/assistant-core/wire/types";
+import { attributed, byPage } from "@mediajel/assistant-core/wire/view";
 
 import { cn } from "~/lib/utils";
 import type { WireEventsState } from "~/sidepanel/useWireEvents";
 import { Definitions } from "~/ui/components/Definitions";
 import { Stack } from "~/ui/components/Panel";
 import { Empty, Fine, Machine } from "~/ui/components/Section";
+import { Chevron } from "~/ui/components/Chevron";
 import { Badge } from "~/ui/components/ui/badge";
 import { Button } from "~/ui/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/ui/components/ui/collapsible";
@@ -15,7 +28,21 @@ import { Input } from "~/ui/components/ui/input";
 import { Table, TableBody, TableCell, TableRow } from "~/ui/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "~/ui/components/ui/toggle-group";
 import { Beacon, Collector, KindIcon } from "~/ui/icons";
-import { Family, Row, clock, matches, padCount, pageLabel, recordAsTag, rowOf, schemaShort, typeOf } from "~/ui/ledger";
+import { shortAppId } from "~/ui/activity";
+import {
+  Family,
+  Row,
+  TRIGGERS,
+  clock,
+  matches,
+  padCount,
+  pageLabel,
+  partnerName,
+  recordAsTag,
+  rowOf,
+  schemaShort,
+  typeOf,
+} from "~/ui/ledger";
 import { ConfigurationGroups } from "~/ui/screens/ConfigurationSlip";
 import { configurationOf } from "~/ui/tag-config";
 
@@ -185,38 +212,155 @@ const CollectorReceipt = ({ event }: { event: CollectorEvent }): ReactNode => (
   </>
 );
 
-const facts = (event: CollectorEvent): [string, string][] => [
+const collectorFacts = (event: CollectorEvent): [string, string][] => [
   ["Collector", event.collector],
   ["Time", clock(event.at)],
   ["App", event.appId || "not named"],
 ];
 
-/** The receipt a row opens into: the transport chip and the status, three facts, then the payload. */
-const Receipt = ({ event, row }: { event: CollectorEvent; row: Row }): ReactNode => (
+/** Where a partner signal was attributed from, in one sentence. */
+const attributionLine = (event: PartnerSignal, tags: TagRecord[]): string => {
+  const attribution = attributePartner(event, tags);
+  if (attribution.how === "matched")
+    return `Matches this page’s tag ${shortAppId(attribution.appId)} by its ${attribution.param}.`;
+  return attribution.how === "sole-tag"
+    ? "Attributed to the page’s only tag."
+    : "No tag on this page names this segment.";
+};
+
+const partnerNotes = (event: PartnerSignal): string[] => [
+  ...(event.unconfigured ? ["The tag’s own default: no Dstillery segment was configured for this page."] : []),
+  ...(event.companion ? ["The same pixel on the partner’s companion host."] : []),
+];
+
+const PartnerReceipt = ({ event, tags }: { event: PartnerSignal; tags: TagRecord[] }): ReactNode => (
+  <>
+    <Definitions
+      className={FACTS}
+      entries={[
+        ["Partner", partnerName(event.partner, event.purpose)],
+        ["Time", clock(event.at)],
+        ["Segment", event.segment || "—"],
+        ["URL", event.url],
+      ]}
+    />
+    <Fine className="mt-2">{attributionLine(event, tags)}</Fine>
+    {partnerNotes(event).map((note) => (
+      <Fine key={note}>{note}</Fine>
+    ))}
+  </>
+);
+
+const CustomTagReceipt = ({ event }: { event: CustomTagFetch }): ReactNode => (
+  <Definitions
+    className={FACTS}
+    entries={[
+      ["Loads", event.scope === "domain" ? "the domain’s custom tag" : "the app ID’s custom tag"],
+      ["Name", event.name],
+      ["Time", clock(event.at)],
+      ["URL", event.url],
+    ]}
+  />
+);
+
+const registrationFacts = (event: ThirdPartyRegistration): [string, string][] =>
+  event.triggers.map((trigger) => [
+    TRIGGERS[trigger.trigger],
+    `${trigger.count} to ${trigger.hosts.join(", ") || "—"}`,
+  ]);
+
+const ThirdPartyReceipt = ({ event }: { event: ThirdPartyRegistration | ThirdPartyFire }): ReactNode =>
+  event.phase === "fired" ? (
+    <Definitions
+      className={FACTS}
+      entries={[
+        ["Trigger", TRIGGERS[event.trigger]],
+        ["As", event.element],
+        ["Host", event.host],
+        ["Time", clock(event.at)],
+        ["URL", event.url],
+      ]}
+    />
+  ) : (
+    <Definitions className={FACTS} entries={[["Time", clock(event.at)], ...registrationFacts(event)]} />
+  );
+
+const ForeignReceipt = ({ event }: { event: ForeignEvent }): ReactNode => (
+  <>
+    <Definitions
+      className={FACTS}
+      entries={[
+        ["Collector", event.collector],
+        ["Tracker", event.tracker],
+        ["Version", event.version],
+        ["Event", event.code],
+        ["Time", clock(event.at)],
+      ]}
+    />
+    <Fine className="mt-2">Another vendor’s tracker: that it sent is kept, not what it sent.</Fine>
+  </>
+);
+
+const FACTS =
+  "mt-2 mb-0 grid-cols-[auto_1fr] gap-y-1 text-sm [&_dd]:text-left [&_dd]:font-mono [&_dd]:text-xs [&_dd]:wrap-anywhere";
+
+const METHODS: Record<Exclude<WireEvent["source"], "collector" | "third-party">, string> = {
+  partner: "get",
+  "custom-tag": "fetch",
+  foreign: "get",
+};
+
+/** The transport as the chip prints it. */
+const method = (event: WireEvent): string => {
+  if (event.source === "collector") return event.transport;
+  if (event.source === "third-party") return event.phase === "fired" ? event.element : "page";
+  return METHODS[event.source];
+};
+
+const CollectorBody = ({ event }: { event: CollectorEvent }): ReactNode => (
+  <>
+    <Definitions className={FACTS} entries={collectorFacts(event)} />
+    <CollectorReceipt event={event} />
+  </>
+);
+
+type BodyOf<K extends WireEvent["source"]> = (event: Extract<WireEvent, { source: K }>, tags: TagRecord[]) => ReactNode;
+
+/** What a receipt holds under its transport — the facts and the payload — by source. */
+const BODIES: { [K in WireEvent["source"]]: BodyOf<K> } = {
+  collector: (event) => <CollectorBody event={event} />,
+  partner: (event, tags) => <PartnerReceipt event={event} tags={tags} />,
+  "custom-tag": (event) => <CustomTagReceipt event={event} />,
+  "third-party": (event) => <ThirdPartyReceipt event={event} />,
+  foreign: (event) => <ForeignReceipt event={event} />,
+};
+
+const Body = ({ event, tags }: { event: WireEvent; tags: TagRecord[] }): ReactNode =>
+  (BODIES[event.source] as (event: WireEvent, tags: TagRecord[]) => ReactNode)(event, tags);
+
+/** The receipt a row opens into: the transport as a chip and the status word, then its facts and payload. */
+const Receipt = ({ event, row, tags }: { event: WireEvent; row: Row; tags: TagRecord[] }): ReactNode => (
   <div data-slot="ledger-detail" className="px-5 pt-1 pb-4">
     <div className="flex items-center gap-2">
-      <Badge variant="chip">{event.transport}</Badge>
+      <Badge variant="chip">{method(event)}</Badge>
       {row.status && (
         <span className={cn("text-xs", row.problem ? "text-warning-text" : "text-muted-foreground")}>{row.status}</span>
       )}
     </div>
-    <Definitions
-      className="mt-2 mb-0 grid-cols-[auto_1fr] gap-y-1 text-sm [&_dd]:text-left [&_dd]:font-mono [&_dd]:text-xs [&_dd]:wrap-anywhere"
-      entries={facts(event)}
-    />
-    <CollectorReceipt event={event} />
+    <Body event={event} tags={tags} />
   </div>
 );
 
 interface RowProps {
   event: WireEvent;
   row: Row;
+  tags: TagRecord[];
   open: boolean;
   onToggle(id: string | null): void;
 }
 
 /** One event's row: the trigger is the row, its content the receipt; Escape closes it and comes back to the row. */
-const LedgerRow = ({ event, row, open, onToggle }: RowProps): ReactNode => {
+const LedgerRow = ({ event, row, tags, open, onToggle }: RowProps): ReactNode => {
   const trigger = useRef<HTMLButtonElement>(null);
   const onKeyDown = (keyboard: KeyboardEvent): void => {
     if (keyboard.key !== "Escape" || !open) return;
@@ -247,7 +391,7 @@ const LedgerRow = ({ event, row, open, onToggle }: RowProps): ReactNode => {
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <Receipt event={event} row={row} />
+          <Receipt event={event} row={row} tags={tags} />
         </CollapsibleContent>
       </li>
     </Collapsible>
@@ -275,8 +419,10 @@ const keep = (row: Row, family: Filter, query: string): boolean =>
   (family === "all" || row.family === family) && matches(row, query);
 
 interface LedgerProps {
-  ledger: WireEventsState;
+  events: WireEvent[];
+  family: Filter;
   site: string;
+  tags: TagRecord[];
   rows: Map<string, Row>;
   kept: Set<string>;
   openId: string | null;
@@ -284,13 +430,18 @@ interface LedgerProps {
 }
 
 /** The pages and their rows, newest first, the newest two hundred of them until the rest are asked for. */
-const Ledger = ({ ledger, site, rows, kept, openId, onToggle }: LedgerProps): ReactNode => {
+const Ledger = ({ events, family, site, tags, rows, kept, openId, onToggle }: LedgerProps): ReactNode => {
   const [all, setAll] = useState(false);
-  const pages = byPage({ ...ledger, events: ledger.events.filter((event) => kept.has(event.id)) });
+  const pages = byPage({ site, events: events.filter((event) => kept.has(event.id)), pages: [], dropped: 0, seq: 0 });
   let drawn = 0;
   return (
     <>
-      <ol data-slot="ledger" aria-label="Events on this tab, newest first" className="m-0 list-none p-0 tear-bottom">
+      <ol
+        data-slot="ledger"
+        data-family={family}
+        aria-label="Events on this tab, newest first"
+        className="m-0 list-none p-0 tear-bottom"
+      >
         {pages.map(({ page, events }) => (
           <Fragment key={page.key}>
             <PageBand count={events.length} url={page.url} site={site} />
@@ -300,6 +451,7 @@ const Ledger = ({ ledger, site, rows, kept, openId, onToggle }: LedgerProps): Re
                   key={event.id}
                   event={event}
                   row={rows.get(event.id)!}
+                  tags={tags}
                   open={openId === event.id}
                   onToggle={onToggle}
                 />
@@ -394,7 +546,62 @@ const LedgerFilter = ({ query, family, onQuery, onFamily }: FilterProps): ReactN
   </div>
 );
 
-export const EventsView = ({ ledger, site }: { ledger: WireEventsState; site: string }): ReactNode => {
+/** Other vendors' trackers, apart and closed: an engineer can tell ours from theirs without confusing the two. */
+const OtherTrackers = ({
+  events,
+  rows,
+  tags,
+  openId,
+  onToggle,
+}: Pick<LedgerProps, "events" | "rows" | "tags" | "openId" | "onToggle">): ReactNode =>
+  events.length > 0 ? (
+    <Collapsible className="mt-3 px-5">
+      <CollapsibleTrigger asChild>
+        <Button
+          type="button"
+          variant="ghost"
+          size="none"
+          className="group gap-[3px] py-[3px] font-display text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground aria-expanded:text-foreground"
+        >
+          Other trackers on this page ({events.length})
+          <Chevron className="group-aria-expanded:rotate-180" />
+        </Button>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <ol
+          data-slot="ledger-foreign"
+          aria-label="Other trackers on this page"
+          className="m-0 -mx-5 mt-2 list-none p-0"
+        >
+          {events.map((event) => (
+            <LedgerRow
+              key={event.id}
+              event={event}
+              row={rows.get(event.id)!}
+              tags={tags}
+              open={openId === event.id}
+              onToggle={onToggle}
+            />
+          ))}
+        </ol>
+      </CollapsibleContent>
+    </Collapsible>
+  ) : null;
+
+/** The rows the list draws: with every family, other vendors' trackers keep to their own group at the foot. */
+const listed = (events: WireEvent[], family: Filter): WireEvent[] =>
+  family === "all" ? events.filter((event) => event.source !== "foreign") : events;
+
+export const EventsView = ({
+  ledger,
+  site,
+  tags,
+}: {
+  ledger: WireEventsState;
+  site: string;
+  /** The page's tags, for attributing partner signals to the tag whose segment they carry. */
+  tags: TagRecord[];
+}): ReactNode => {
   const [query, setQuery] = useState("");
   const [family, setFamily] = useState<Filter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
@@ -403,20 +610,33 @@ export const EventsView = ({ ledger, site }: { ledger: WireEventsState; site: st
     openLedger();
     return closeLedger;
   }, [openLedger, closeLedger]);
-  const rows = new Map(ledger.events.map((event) => [event.id, rowOf(event)]));
-  const kept = new Set([...rows.values()].filter((row) => keep(row, family, query)).map((row) => row.id));
+  const events = attributed(ledger.events, tags);
+  const rows = new Map(events.map((event) => [event.id, rowOf(event)]));
+  const own = listed(events, family);
+  const kept = new Set(own.filter((event) => keep(rows.get(event.id)!, family, query)).map((event) => event.id));
+  const foreign = family === "all" ? events.filter((event) => event.source === "foreign") : [];
   return (
     <Stack>
       <section data-slot="events" aria-labelledby="mj-events-title" className="pb-5">
         <Head ledger={ledger} />
         <LedgerFilter query={query} family={family} onQuery={setQuery} onFamily={setFamily} />
         {kept.size > 0 ? (
-          <Ledger ledger={ledger} site={site} rows={rows} kept={kept} openId={openId} onToggle={setOpenId} />
+          <Ledger
+            events={own}
+            family={family}
+            site={site}
+            tags={tags}
+            rows={rows}
+            kept={kept}
+            openId={openId}
+            onToggle={setOpenId}
+          />
         ) : (
           <div className="px-5">
             <Nothing ledger={ledger} query={query} family={family} />
           </div>
         )}
+        <OtherTrackers events={foreign} rows={rows} tags={tags} openId={openId} onToggle={setOpenId} />
         {ledger.dropped > 0 && (
           <Fine data-slot="ledger-dropped" className="mt-2 px-5">
             The oldest {ledger.dropped} events were let go to stay within the browser’s memory.

@@ -42,6 +42,41 @@ navigation from cart to thank-you that this product is entirely about.
 through `chrome.scripting.registerContentScripts` from the service worker (main-world scripts are
 filtered out of the manifest by design) and adds the `scripting` permission for us.
 
+## The views
+
+The work order reads on a strip of index tabs under the zigzag. Every view is about the site the
+panel is bound to; a new site opens on Overview.
+
+- **Overview** — the tally: what MediaJel recorded from every tag on the page over the last 7
+  days, one reading per app ID with the tag's environment, version and state under it, the four
+  counts, and the week for the tag the sentence singles out. The numbers come from the assistant
+  service (`service/tag-activity`, app IDs only leave the browser).
+- **Analytics** — every reading in full, one sheet per tag: the counts, the money, the last events,
+  the days, and conversions by page. What Details used to open.
+- **Events** — the ledger: everything this tab's page was heard sending, newest first under the
+  page that sent it, each row opening into its decoded receipt. Read from the tab's own traffic
+  through `chrome.webRequest` and the page bridge; nothing here leaves the browser, nothing is
+  fetched to read it, and no schema is validated (no Iglu Central request). Sources, in the order
+  they arrive on a tagged page: the tag's collector events (`payload_data` batches to `*.cnna.io`,
+  decoded field by field from the public Snowplow tracker protocol — the Snowplow Inspector is the
+  reference for the protocol only, its code and strings are under the Snowplow Community License
+  and are not reused), the audience beacons the tag fires from its segment parameters (Nexxen at
+  `r.turn.com`, Dstillery at `action.dstillery.com` and its `action.media6degrees.com` companion,
+  LiquidM's sync script at `tracking.lqm.io`, Bing UET at `bat.bing.com`), the per-domain and
+  per-app-id custom-tag fetches, third-party tags registered through
+  `window.registerThirdPartyTags` (reported by the bridge; the templates themselves are never
+  stored), and — only while a panel is open — other vendors' Snowplow trackers, under "Other".
+  Each tab keeps its last 300 events in session storage, and lets the oldest go past that.
+- **Tracking setup** — the job: record the event, mark it, write the tag, prove it here, deploy
+  it. The carbon stack and its pinned action.
+
+Under every app ID, in Overview and Analytics, "Tag configuration" opens into the tag's whole
+setup: every parameter it runs with, grouped and labelled, from the highest-ranked source that has
+spoken — the tag's own `record` event on the wire (which carries the merged context, including the
+`s3.pv`/`s3.tr` defaults of `00000` the tag synthesises without `window.overrides`), else its
+announcement, else the script on the page. What the assistant service is sent for a generation is
+projected to the older shape first, so the widening of the tag record never enlarges what leaves.
+
 ## Signing in
 
 `amazon-cognito-identity-js` against the same user pool the MediaJel dashboard uses, over SRP —

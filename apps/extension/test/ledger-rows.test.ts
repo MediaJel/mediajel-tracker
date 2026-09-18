@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { CollectorEvent } from "@mediajel/assistant-core/wire/types";
+import { CollectorEvent, WireEvent } from "@mediajel/assistant-core/wire/types";
 
 import { matches, padCount, pageLabel, rowOf, schemaShort, typeOf } from "~/ui/ledger";
 
@@ -128,6 +128,98 @@ describe("the list's helpers", () => {
       "array",
       "object",
       "null",
+    ]);
+  });
+});
+
+describe("the other sources' rows", () => {
+  const base = {
+    id: "x",
+    seq: 9,
+    at: 0,
+    request: "x",
+    pageKey: "doc",
+    pageUrl: "",
+    appId: "",
+    outcome: { kind: "ok", status: 200, fromCache: false },
+  } as const;
+
+  test("a partner beacon is named for its partner and purpose, with the tag's default said as such", () => {
+    const row = rowOf({
+      ...base,
+      source: "partner",
+      partner: "dstillery",
+      purpose: "audience",
+      segment: "00000",
+      unconfigured: true,
+      companion: false,
+      url: "",
+    } as WireEvent);
+    expect([row.family, row.name, row.who, row.facts]).toEqual([
+      "partner",
+      "Dstillery · page-view beacon",
+      "tag unknown",
+      "not configured (tag default)",
+    ]);
+    const sale = rowOf({
+      ...base,
+      appId: "5f976cbb-7d29",
+      source: "partner",
+      partner: "nexxen",
+      purpose: "conversion",
+      segment: "b",
+      unconfigured: false,
+      companion: false,
+      order: { id: "T4821", amount: "84" },
+      url: "",
+    } as WireEvent);
+    expect([sale.name, sale.who, sale.facts]).toEqual(["Nexxen · transaction beacon", "5f976cbb", "T4821 · 84"]);
+  });
+
+  test("a custom tag is named for what it loads; a third-party tag for its host and moment; another vendor's tracker for its collector", () => {
+    expect(
+      rowOf({ ...base, source: "custom-tag", scope: "domain", name: "terrabis.co", url: "" } as WireEvent).name,
+    ).toBe("Custom tag · terrabis.co");
+    const fired = rowOf({
+      ...base,
+      source: "third-party",
+      phase: "fired",
+      trigger: "onTransaction",
+      element: "image",
+      host: "www.googletagmanager.com",
+      url: "",
+    } as WireEvent);
+    expect([fired.family, fired.name, fired.who, fired.facts]).toEqual([
+      "custom",
+      "Third-party tag · www.googletagmanager.com",
+      "transaction",
+      "image",
+    ]);
+    const registered = rowOf({
+      ...base,
+      source: "third-party",
+      phase: "registered",
+      triggers: [{ trigger: "onSignup", count: 2, hosts: ["a.example"] }],
+    } as WireEvent);
+    expect([registered.name, registered.who, registered.facts]).toEqual([
+      "Third-party tags registered",
+      "2 tags",
+      "sign-up",
+    ]);
+    const foreign = rowOf({
+      ...base,
+      source: "foreign",
+      collector: "col.surfside.io",
+      kind: "self-describing",
+      code: "ue",
+      tracker: "surf",
+      version: "js-3.24.2",
+    } as WireEvent);
+    expect([foreign.family, foreign.name, foreign.who, foreign.facts]).toEqual([
+      "foreign",
+      "col.surfside.io · Self-describing event",
+      "surf",
+      "js-3.24.2",
     ]);
   });
 });

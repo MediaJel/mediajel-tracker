@@ -162,7 +162,7 @@ const Views = (props: AppProps): ReactNode => (
       <AnalyticsView activity={props.activity} site={props.site} />
     </TabsContent>
     <TabsContent value="events">
-      <EventsView ledger={props.ledger} site={props.site} />
+      <EventsView ledger={props.ledger} site={props.site} tags={props.activity.tags} />
     </TabsContent>
     <TabsContent value="setup">
       <SetupView {...props} />

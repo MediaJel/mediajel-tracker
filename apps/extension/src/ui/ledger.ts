@@ -1,5 +1,16 @@
 import { RecordedTag, TagRecord } from "@mediajel/assistant-core/tags";
-import { CollectorEvent, Outcome, WireEvent } from "@mediajel/assistant-core/wire/types";
+import { EVENT_KINDS } from "@mediajel/assistant-core/wire/protocol";
+import {
+  CollectorEvent,
+  CustomTagFetch,
+  ForeignEvent,
+  PartnerSignal,
+  ThirdPartyFire,
+  ThirdPartyRegistration,
+  ThirdPartyTriggerName,
+  Outcome,
+  WireEvent,
+} from "@mediajel/assistant-core/wire/types";
 
 import { shortAppId } from "~/ui/activity";
 
@@ -79,12 +90,85 @@ const collectorRow = (event: CollectorEvent): Bones => ({
   facts: event.schema ? schemaShort(event.schema) : transactionFacts(event),
 });
 
-/** A row for a source the ledger does not know how to say yet: named by its source, nothing more. */
-const unknownRow = (event: WireEvent): Bones => ({ family: "foreign", name: event.source, who: "", facts: "" });
+const PARTNERS: Record<string, string> = {
+  nexxen: "Nexxen",
+  dstillery: "Dstillery",
+  liquidm: "LiquidM",
+  bing: "Bing Ads",
+};
+const PURPOSES: Record<string, string> = {
+  audience: "page-view beacon",
+  conversion: "transaction beacon",
+  sync: "segment sync",
+  loader: "page load",
+};
+
+/** A partner's own name and what the request was for. */
+export const partnerName = (partner: string, purpose: string): string =>
+  `${PARTNERS[partner] ?? partner} · ${PURPOSES[purpose] ?? purpose}`;
+
+const partnerFacts = (event: PartnerSignal): string => {
+  if (event.unconfigured) return "not configured (tag default)";
+  return event.order ? `${event.order.id} · ${event.order.amount}` : "";
+};
+
+const partnerRow = (event: PartnerSignal): Bones => ({
+  family: "partner",
+  name: partnerName(event.partner, event.purpose),
+  who: event.appId ? shortAppId(event.appId) : "tag unknown",
+  facts: partnerFacts(event),
+});
+
+const customRow = (event: CustomTagFetch): Bones => ({
+  family: "custom",
+  name: `Custom tag · ${event.name}`,
+  who: event.scope === "domain" ? "domain file" : "app-id file",
+  facts: "",
+});
+
+/** The moments a third-party tag fires at, in words. */
+export const TRIGGERS: Record<ThirdPartyTriggerName, string> = {
+  onTransaction: "transaction",
+  onAddToCart: "add to cart",
+  onRemoveFromCart: "remove from cart",
+  onSignup: "sign-up",
+};
+
+const registeredRow = (event: ThirdPartyRegistration): Bones => ({
+  family: "custom",
+  name: "Third-party tags registered",
+  who: `${event.triggers.reduce((sum, trigger) => sum + trigger.count, 0)} tags`,
+  facts: event.triggers.map((trigger) => TRIGGERS[trigger.trigger]).join(" · "),
+});
+
+const firedRow = (event: ThirdPartyFire): Bones => ({
+  family: "custom",
+  name: `Third-party tag · ${event.host}`,
+  who: TRIGGERS[event.trigger],
+  facts: event.element,
+});
+
+const thirdPartyRow = (event: ThirdPartyRegistration | ThirdPartyFire): Bones =>
+  event.phase === "fired" ? firedRow(event) : registeredRow(event);
+
+const foreignRow = (event: ForeignEvent): Bones => ({
+  family: "foreign",
+  name: `${event.collector} · ${EVENT_KINDS[event.code]?.label ?? event.code}`,
+  who: event.tracker,
+  facts: event.version,
+});
+
+const ROWS: { [K in WireEvent["source"]]: (event: Extract<WireEvent, { source: K }>) => Bones } = {
+  collector: collectorRow,
+  partner: partnerRow,
+  "custom-tag": customRow,
+  "third-party": thirdPartyRow,
+  foreign: foreignRow,
+};
 
 /** One event as its row. */
 export const rowOf = (event: WireEvent): Row => ({
-  ...(event.source === "collector" ? collectorRow(event) : unknownRow(event)),
+  ...(ROWS[event.source] as (event: WireEvent) => Bones)(event),
   id: event.id,
   status: statusWord(event.outcome),
   problem: PROBLEMS.has(event.outcome.kind),

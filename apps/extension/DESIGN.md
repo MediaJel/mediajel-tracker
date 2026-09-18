@@ -193,7 +193,9 @@ Data | JSON toggle; the tag's own `record` event opens into its configuration, p
 slip's own groups. Above the list: the heading with the count on this tab and "Clear"; a search
 and four families (All · Collector · Partners · Custom tags · Other); and one line in soft ink,
 deliberately not privacy purple, saying all of it is read from the tab's own traffic and none of
-it leaves the browser. Empty, it listens; filtered to nothing, it says what nothing matched; past
+it leaves the browser. Other vendors' trackers keep to their own closed group at the foot, "Other
+trackers on this page", so an engineer can tell ours from theirs without confusing the two; a
+partner beacon's receipt says which tag it was attributed to and by which parameter. Empty, it listens; filtered to nothing, it says what nothing matched; past
 the memory cap, one line says how many of the oldest were let go. New rows announce themselves
 politely, at most once every four seconds. Schema and Errors are what the Data | JSON toggle grows
 when Iglu validation arrives; nothing is drawn for them until it does.

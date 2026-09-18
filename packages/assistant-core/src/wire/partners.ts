@@ -1,4 +1,5 @@
-import type { Decoded, PartnerSignal } from "@mediajel/assistant-core/wire/types";
+import type { TagRecord } from "@mediajel/assistant-core/tags";
+import type { Decoded, PartnerSignal, Partner } from "@mediajel/assistant-core/wire/types";
 import { maskedUrl, parseUrl } from "@mediajel/assistant-core/wire/url";
 
 /**
@@ -90,4 +91,37 @@ export const recognisePartner = (url: string): Signal | null => {
     appId: "",
     pageUrl: "",
   };
+};
+
+/** The parameters a partner's segment can come from, in the order the tag reads them. */
+const SEGMENT_PARAMS: Record<Partner, string[]> = {
+  nexxen: ["s2.pv", "s2.tr", "s2"],
+  dstillery: ["s3.pv", "s3.tr", "s3"],
+  liquidm: ["segmentId", "s1"],
+  bing: ["tagId"],
+};
+
+export interface Attribution {
+  appId: string;
+  /** The parameter whose configured value the signal carried, when one did. */
+  param: string | null;
+  how: "matched" | "sole-tag" | "none";
+}
+
+const matchIn = (tag: TagRecord, params: string[], segment: string): string | null =>
+  params.find((param) => tag.config?.params[param] === segment) ?? null;
+
+/**
+ * Which tag a partner signal belongs to: the one whose configured segment it carries, else the
+ * page's only tag. Worked out from the tags known now, because the pixels fire before the record
+ * event that names the segments lands — a stored guess would have frozen a wrong answer.
+ */
+export const attributePartner = (signal: PartnerSignal, tags: TagRecord[]): Attribution => {
+  for (const tag of tags) {
+    const param = matchIn(tag, SEGMENT_PARAMS[signal.partner], signal.segment);
+    if (param) return { appId: tag.appId, param, how: "matched" };
+  }
+  return tags.length === 1
+    ? { appId: tags[0].appId, param: null, how: "sole-tag" }
+    : { appId: "", param: null, how: "none" };
 };

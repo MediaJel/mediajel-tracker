@@ -360,6 +360,13 @@ while an engineer simulates a transaction or sign-up, has a model write the fric
 in house conventions, verifies it on that page with `trackTrans` intercepted (nothing reaches the
 collector), and deploys it to `master` of `mediajel-frictionless-custom-tag`.
 
+The panel reads in four views: **Overview** (what every tag on the page recorded over the last 7
+days), **Analytics** (the same per tag, in full), **Events** (a ledger of what the page's tag
+sends — collector events decoded from the tracker protocol, the Nexxen/Dstillery/LiquidM/Bing
+beacons it fires from its segment parameters, custom-tag fetches, registered third-party tags —
+read from the tab's own traffic and never sent anywhere) and **Tracking setup** (the job). Under
+every app ID, the tag's configuration is one disclosure away, read off its own `record` event.
+
 It used to be a lazy chunk inside the tag, opened with `window.enableTrackerWidget()`. It is not
 any more, and the tag carries nothing for it — no stub, no bytes. Engineers sign in with the
 MediaJel account they already have (the dashboard's Cognito pool); the model and the deploy

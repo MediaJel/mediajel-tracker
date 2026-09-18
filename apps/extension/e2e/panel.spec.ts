@@ -53,6 +53,19 @@ const openRecord = async (page: Page): Promise<void> => {
   await page.locator("[data-slot=ledger-row]", { hasText: "record" }).first().locator("button").first().click();
 };
 
+/** The ledger filtered to one family by its toggle. */
+const filterEvents =
+  (family: string) =>
+  async (page: Page): Promise<void> => {
+    await openView("events")(page);
+    await page.locator("[data-slot=ledger-filter] button", { hasText: family }).first().click();
+  };
+/** The ledger with the other vendors' trackers opened. */
+const openForeign = async (page: Page): Promise<void> => {
+  await openView("events")(page);
+  await page.locator("button", { hasText: "Other trackers on this page" }).first().click();
+};
+
 /** A job screen is ready when its section is drawn under the strip. */
 const job = (selector: string): string[] => [selector, "[data-slot=view-tabs]"];
 /** A job scenario lives on the setup view; the stub opens on Overview. */
@@ -97,6 +110,10 @@ const SCENARIOS: Scenario[] = [
   { name: "events-detail", ready: ["[data-slot=ledger-detail] [data-slot=badge]"], act: openRecord },
   { name: "events-dropped", ready: ["[data-slot=ledger-dropped]"], act: openView("events") },
   { name: "events-error", ready: ["[data-slot=ledger-empty]"], act: openView("events") },
+  { name: "events-partners", ready: ["[data-slot=ledger][data-family=partner]"], act: filterEvents("Partners") },
+  { name: "events-custom-tag", ready: ["[data-slot=ledger][data-family=custom]"], act: filterEvents("Custom") },
+  { name: "events-foreign", ready: ["[data-slot=ledger-foreign] [data-slot=ledger-row]"], act: openForeign },
+  { name: "events-two-tags", ready: ["[data-slot=ledger][data-family=partner]"], act: filterEvents("Partners") },
   { name: "analytics-1", ready: ["[data-slot=analytics] [data-slot=chart] svg"], act: openView("analytics") },
   {
     name: "analytics-3",

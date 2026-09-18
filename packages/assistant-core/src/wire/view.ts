@@ -1,3 +1,5 @@
+import type { TagRecord } from "@mediajel/assistant-core/tags";
+import { attributePartner } from "@mediajel/assistant-core/wire/partners";
 import type { LedgerDelta, LedgerPage, LedgerView, TabLedger, WireEvent } from "@mediajel/assistant-core/wire/types";
 
 /**
@@ -69,3 +71,9 @@ export const byPage = (view: LedgerView): PageGroup[] => {
     .map(([key, events]) => ({ page: pages.get(key) ?? { key, url: events[0].pageUrl, at: events[0].at }, events }))
     .sort((a, b) => b.events[0].seq - a.events[0].seq);
 };
+
+/** Every partner signal with the tag it belongs to, from the tags known now. */
+export const attributed = (events: WireEvent[], tags: TagRecord[]): WireEvent[] =>
+  events.map((event) =>
+    event.source === "partner" && !event.appId ? { ...event, appId: attributePartner(event, tags).appId } : event,
+  );

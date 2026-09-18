@@ -1,7 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
-import { CollectorEvent, LedgerView } from "@mediajel/assistant-core/wire/types";
-import { applyDelta, byPage, mergeRead } from "@mediajel/assistant-core/wire/view";
+import type { TagRecord } from "@mediajel/assistant-core/tags";
+import { CollectorEvent, LedgerView, PartnerSignal } from "@mediajel/assistant-core/wire/types";
+import { applyDelta, attributed, byPage, mergeRead } from "@mediajel/assistant-core/wire/view";
 
 /**
  * What the panel does with a ledger: pushes on top of a read, reads over pushes, and the rows
@@ -72,5 +73,37 @@ describe("rows under their pages", () => {
     expect(groups[0].page.url).toBe("https://shop.example.com/b");
     expect(groups[0].events.map((e) => e.seq)).toEqual([5, 4]);
     expect(groups[1].events.map((e) => e.seq)).toEqual([3, 2, 1]);
+  });
+});
+
+describe("partner signals with their tags", () => {
+  test("a signal the wire could not attribute takes the tag whose segment it carries; the rest are untouched", () => {
+    const tag: TagRecord = {
+      appId: "app",
+      state: "sending",
+      environment: "",
+      version: "",
+      event: "",
+      announced: false,
+      firstSeenAt: 0,
+      collector: "",
+      enabled: true,
+      config: { params: { "s3.pv": "SEG" }, src: "", element: "", source: "record" },
+      lastHeardAt: null,
+    };
+    const pixel: PartnerSignal = {
+      ...event(9, "a"),
+      appId: "",
+      source: "partner",
+      partner: "dstillery",
+      purpose: "audience",
+      segment: "SEG",
+      unconfigured: false,
+      companion: false,
+      url: "",
+    };
+    const [first, second] = attributed([pixel, event(1, "a")], [tag]);
+    expect(first.appId).toBe("app");
+    expect(second).toBe(second);
   });
 });

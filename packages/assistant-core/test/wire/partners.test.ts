@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
 
+import type { TagRecord } from "@mediajel/assistant-core/tags";
+import { attributePartner } from "@mediajel/assistant-core/wire/partners";
+import type { PartnerSignal } from "@mediajel/assistant-core/wire/types";
+
 import { PARTNER_HOSTS, recognisePartner } from "@mediajel/assistant-core/wire/partners";
 
 /**
@@ -109,5 +113,63 @@ describe("recognising a partner request", () => {
       "tracking.lqm.io",
       "bat.bing.com",
     ]);
+  });
+});
+
+describe("which tag a partner signal belongs to", () => {
+  const tag = (appId: string, params: Record<string, string>): TagRecord => ({
+    appId,
+    state: "sending",
+    environment: "production",
+    version: "2",
+    event: "",
+    announced: false,
+    firstSeenAt: 0,
+    collector: "",
+    enabled: true,
+    config: { params, src: "", element: "", source: "script" },
+    lastHeardAt: null,
+  });
+  const signal = (partner: PartnerSignal["partner"], segment: string): PartnerSignal => ({
+    id: "p1",
+    seq: 1,
+    at: 0,
+    request: "p1",
+    pageKey: "doc",
+    pageUrl: "",
+    appId: "",
+    outcome: { kind: "pending" },
+    source: "partner",
+    partner,
+    purpose: "audience",
+    segment,
+    unconfigured: false,
+    companion: false,
+    url: "",
+  });
+
+  test("the tag whose configured segment it carries, by the parameter that named it", () => {
+    const tags = [tag("a", { "s3.pv": "A-PV" }), tag("b", { "s3.pv": "B-PV", "s2.tr": "B-TR" })];
+    expect(attributePartner(signal("dstillery", "B-PV"), tags)).toEqual({ appId: "b", param: "s3.pv", how: "matched" });
+    expect(attributePartner(signal("nexxen", "B-TR"), tags)).toEqual({ appId: "b", param: "s2.tr", how: "matched" });
+    expect(attributePartner(signal("liquidm", "seg"), [tag("c", { segmentId: "seg" })])).toEqual({
+      appId: "c",
+      param: "segmentId",
+      how: "matched",
+    });
+  });
+
+  test("the page's only tag when nothing names the segment, and no tag at all otherwise", () => {
+    expect(attributePartner(signal("dstillery", "00000"), [tag("a", {})])).toEqual({
+      appId: "a",
+      param: null,
+      how: "sole-tag",
+    });
+    expect(attributePartner(signal("dstillery", "00000"), [tag("a", {}), tag("b", {})])).toEqual({
+      appId: "",
+      param: null,
+      how: "none",
+    });
+    expect(attributePartner(signal("dstillery", "00000"), [])).toEqual({ appId: "", param: null, how: "none" });
   });
 });
