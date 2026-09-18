@@ -32,7 +32,7 @@ both directions. Nothing has a second definition inside a media or `[data-theme]
 | `--mj-sheet` | `#fbf8f2` | `#1d1a16` | the live sheet |
 | `--mj-carbon` | `#e6e0d3` | `#171512` | a sealed step's carbon copy |
 | `--mj-carbon-ink` | `#33406b` | `#93a6dd` | the impression a carbon copy leaves |
-| `--mj-days-ink` / `-wash` | `#495da7` / 7% carbon-ink | `#6a81ce` / 10% | the by-day columns, and the wash under the day being read |
+| `--mj-days-ink` / `-wash` | `#495da7` / 12% carbon-ink | `#6a81ce` / 16% | the by-day columns, and the wash under the day being read |
 | `--mj-ink` / `-soft` / `-faint` | `#1a1713` / `#5b5348` / `#948b7c` | `#f2ede4` / `#a89f92` / `#6f675c` | text tiers (`-faint` is disabled/decorative only) |
 | `--mj-rule` | `#d8d0c0` | `#38332c` | the few remaining hairlines, zigzag at rest |
 | `--mj-identity` | `#1f4fe0` | `#7fa0ff` | the live ink: REC, primary, focus, links, in-progress stamps |
@@ -147,10 +147,10 @@ re-reads on its own. A problem is set in ink, not partner orange: the orange is 
 on the light sheet, so it stays a border colour.
 
 **The week** sits under the tally's rows, on the main panel: two bands — page views, and the job's
-own measure — for the tag the tally's sentence singles out, at 28px plots under a caption in the
-tally's form ("By day · Today so far · Wed, Sep 16 — 580 page views · 5 transactions", following
-the pointer or the arrow keys, the latest day at rest). With several tags the caption leads with
-the short app ID. It dims with the readings while a refresh is in flight, and says nothing at all
+own measure — for the tag the tally's sentence singles out, at 40px plots under a one-line caption
+naming the day being read ("By day · Today so far · Wed, Sep 16", following the pointer or the
+arrow keys, the latest day at rest; the day's counts follow it for a screen reader only). With
+several tags the caption leads with the short app ID. It dims with the readings while a refresh is in flight, and says nothing at all
 when the tag has no days; Details draws every band of every tag.
 
 **The activity report** is what Details opens. It takes the stack's place the way Settings does,
@@ -171,12 +171,13 @@ as columns, one band per measure — Page views, Transactions, Sign-ups, Session
 transaction total once there is any — each on its own scale, because page views run hundreds of
 times the conversions and one axis would flatten them onto the baseline. Each band is a small
 multiple on shadcn's Chart (recharts): the columns are carbon ink one step deeper (`--mj-days-ink`,
-so a 22px column clears 3:1 on the sheet); today's is at half strength because it is still
-filling; the wash under the day being read is the only colour that moves, and it spans every band
-of the figure. One day is read at a time — the latest at rest, whichever the pointer or the arrow
-keys choose — and printed above the bands in the tally's form (names once, a row of values), never
-as a tooltip over the marks. A band's only figure is its top, rounded to the next clean tick; a
-flat band is the answer "none". The oldest of the eight days is not drawn: the 7-day table has
+so a 16px column clears 3:1 on the sheet); today's is at half strength because it is still
+filling; the wash under the day being read is the only colour that moves, and it is drawn in every
+band of the figure. One day is read at a time — the latest at rest, whichever the pointer or the
+arrow keys choose — and each band prints that day's count in its header beside its name, the way
+the tally prints a name and its number; under a pointer the band being hovered also says the day
+and its count in a tip beside the column. A band's scale is one figure at the right end of its top
+hairline, rounded to the next clean tick; a flat band prints no scale and is the answer "none". The oldest of the eight days is not drawn: the 7-day table has
 already let its early events expire, and it would read as a slump that never happened. Days are
 UTC, and say so; a screen reader gets the same numbers as a table.
 

@@ -4,22 +4,34 @@ import { KeyboardEvent, ReactNode } from "react";
 import { cn } from "~/lib/utils";
 import type { TagActivityState } from "~/sidepanel/useTagActivity";
 import { shortAppId, stripTag } from "~/ui/activity";
-import { BandChart, DaysTable, useChosenDay } from "~/ui/components/DayBands";
+import { BandChart, DaysTable, dayValues, useChosenDay } from "~/ui/components/DayBands";
 import { Band, Day, daysToDraw, readoutLabel, stripBands, todayOf } from "~/ui/days";
 
 /**
  * The week on the main panel: two bands under the tally — page views, and the job's own measure —
- * for the tag the tally already singles out. One day is read at a time, in a caption in the tally's
- * form; Details draws every band of every tag. With several tags the caption leads with the short
- * app ID, the one place an app id reaches the heading, because two weeks cannot otherwise be told
- * apart.
+ * for the tag the tally already singles out. One day is read at a time: the caption names it, and
+ * each band's header prints its count for that day; Details draws every band of every tag. With
+ * several tags the caption leads with the short app ID, the one place an app id reaches the
+ * heading, because two weeks cannot otherwise be told apart.
  */
 
-/** "By day · Today so far, Wed, Sep 16 — 1,204 page views · 3 transactions", following the reading. */
-const caption = (prefix: string, day: Day, bands: Band[], today: string): string =>
-  `${prefix}By day · ${readoutLabel(day.day, today)} — ${bands
-    .map((band) => `${band.format(day[band.measure])} ${band.label.toLowerCase()}`)
-    .join(" · ")}`;
+/** "By day · Today so far · Wed, Sep 16", the day in ink; the counts follow it for a screen reader only. */
+const Caption = ({
+  prefix,
+  day,
+  bands,
+  today,
+}: {
+  prefix: string;
+  day: Day;
+  bands: Band[];
+  today: string;
+}): ReactNode => (
+  <figcaption className="mb-1 text-xs text-muted-foreground" aria-live="polite">
+    {prefix}By day · <span className="text-foreground">{readoutLabel(day.day, today)}</span>
+    <span className="sr-only"> — {dayValues(day, bands)}</span>
+  </figcaption>
+);
 
 interface Week {
   /** The short app ID that leads the caption when the page has several tags, else "". */
@@ -59,19 +71,8 @@ const WeekFigure = ({ prefix, days, goal, stale, chosen, onChoose, step }: WeekF
       className={cn("mx-0 mt-2.5 mb-0 transition-opacity duration-150", stale && "opacity-50")}
       aria-busy={stale}
     >
-      <figcaption className="mb-1 text-xs text-muted-foreground" aria-live="polite">
-        {caption(prefix, days[chosen], bands, today)}
-      </figcaption>
-      <BandChart
-        days={days}
-        bands={bands}
-        plot={28}
-        chosen={chosen}
-        onChoose={onChoose}
-        step={step}
-        today={today}
-        syncId="week"
-      />
+      <Caption prefix={prefix} day={days[chosen]} bands={bands} today={today} />
+      <BandChart days={days} bands={bands} plot={40} chosen={chosen} onChoose={onChoose} step={step} today={today} />
       <DaysTable days={days} bands={bands} today={today} />
     </figure>
   );

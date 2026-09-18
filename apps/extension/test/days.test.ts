@@ -9,6 +9,7 @@ import {
   daysToDraw,
   readoutLabel,
   stripBands,
+  tipLabel,
   todayOf,
   topOf,
 } from "~/ui/days";
@@ -78,11 +79,13 @@ describe("naming a day", () => {
     expect(todayOf(Date.parse("2026-09-16T23:30:00Z"))).toBe("2026-09-16");
     expect(axisLabel("2026-09-16", today)).toBe("Today");
     expect(readoutLabel("2026-09-16", today)).toBe("Today so far · Wed, Sep 16");
+    expect(tipLabel("2026-09-16", today)).toBe("Today so far");
   });
 
   test("any other day is its weekday, and its date in the readout", () => {
     expect(axisLabel("2026-09-13", today)).toBe("Sun");
     expect(readoutLabel("2026-09-13", today)).toBe("Sun, Sep 13");
+    expect(tipLabel("2026-09-13", today)).toBe("Sun, Sep 13");
   });
 });
 

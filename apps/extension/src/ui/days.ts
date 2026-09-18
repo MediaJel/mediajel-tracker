@@ -87,6 +87,10 @@ export const axisLabel = (day: string, today: string): string => (day === today 
 export const readoutLabel = (day: string, today: string): string =>
   day === today ? `Today so far · ${dated.format(inUtc(day))}` : dated.format(inUtc(day));
 
+/** A day as the tip beside a column names it: dated, or "Today so far" — the date is in the caption. */
+export const tipLabel = (day: string, today: string): string =>
+  day === today ? "Today so far" : dated.format(inUtc(day));
+
 /** The day under a pointer `x` pixels into a figure `width` wide: every day owns its whole column. */
 export const dayAt = (x: number, width: number, count: number): number =>
   Math.min(count - 1, Math.max(0, Math.floor((x / Math.max(width, 1)) * count)));

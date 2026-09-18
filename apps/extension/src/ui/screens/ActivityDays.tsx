@@ -6,7 +6,8 @@ import { Day, bandsFor, daysToDraw, todayOf } from "~/ui/days";
 
 /**
  * By day, on a report sheet: a tag's last week in every band the record has — the four counts, and
- * the transaction total once there is any money — with the day being read printed above them.
+ * the transaction total once there is any money — with the day being read named above them and its
+ * counts in the band headers.
  */
 
 const DaysFigure = ({ days }: { days: Day[] }): ReactNode => {
@@ -16,16 +17,7 @@ const DaysFigure = ({ days }: { days: Day[] }): ReactNode => {
   return (
     <figure className="m-0">
       <DayReadout day={days[chosen]} bands={bands} today={today} />
-      <BandChart
-        days={days}
-        bands={bands}
-        plot={36}
-        chosen={chosen}
-        onChoose={choose}
-        step={step}
-        today={today}
-        syncId="days"
-      />
+      <BandChart days={days} bands={bands} plot={44} chosen={chosen} onChoose={choose} step={step} today={today} />
       <DaysTable days={days} bands={bands} today={today} />
       <Fine className="mt-1.5">Days run midnight to midnight UTC.</Fine>
     </figure>

@@ -40,7 +40,7 @@
 
   /* The by-day columns: carbon ink one step deeper, so a 22px column clears 3:1 on the sheet. */
   --mj-days-ink: light-dark(#495da7, #6a81ce);
-  --mj-days-wash: light-dark(rgb(51 64 107 / 7%), rgb(147 166 221 / 10%));
+  --mj-days-wash: light-dark(rgb(51 64 107 / 12%), rgb(147 166 221 / 16%));
 
   /* Inks that pass as TEXT. Platform and partner were drawn for borders and stamps: as running text
      on the light sheet they measure 3.8:1 and 3.96:1, so text in those roles takes these instead. */
