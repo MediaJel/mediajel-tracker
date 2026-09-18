@@ -7,7 +7,7 @@ import { Mark } from "~/ui/icons";
 import { useTheme } from "~/ui/useTheme";
 import { usePanel } from "~/sidepanel/usePanel";
 
-import "~/ui/styles.css";
+import "~/ui/globals.built.css";
 
 /**
  * The side panel: the assistant, whole.

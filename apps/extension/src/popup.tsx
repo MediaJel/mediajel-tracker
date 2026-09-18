@@ -7,7 +7,7 @@ import SignIn from "~/ui/SignIn";
 import { Mark } from "~/ui/icons";
 import { useTheme } from "~/ui/useTheme";
 
-import "~/ui/styles.css";
+import "~/ui/globals.built.css";
 
 /**
  * The toolbar popup: sign in, or open the panel.

@@ -63,12 +63,15 @@ const Suggestion = ({
 
 const Entry = ({
   event,
+  edge,
   pinned,
   expanded,
   onExpand,
   onPin,
 }: {
   event: TimelineEvent;
+  /** Where the rail ends: it runs through every dot and is broken only at the list's ends. */
+  edge: { first: boolean; last: boolean };
   pinned: boolean;
   expanded: boolean;
   onExpand(): void;
@@ -78,7 +81,12 @@ const Entry = ({
   const facts = factsLine(reading.facts);
   return (
     <li className={`mj-tl${pinned ? " mj-tl--pinned" : ""}${reading.background ? " mj-tl--quiet" : ""}`}>
-      <span className="mj-tl-rail" aria-hidden="true">
+      <span
+        className="mj-tl-rail"
+        aria-hidden="true"
+        data-first={edge.first || undefined}
+        data-last={edge.last || undefined}
+      >
         <span className="mj-tl-dot">{pinned ? <Check /> : <KindIcon kind={event.kind} />}</span>
       </span>
       <div className="mj-tl-body">
@@ -187,10 +195,11 @@ export const EvidenceSection = ({
           )}
 
           <ol className="mj-timeline" aria-label="What happened on the page">
-            {entries.map((event) => (
+            {entries.map((event, index) => (
               <Entry
                 key={event.id}
                 event={event}
+                edge={{ first: index === 0, last: index === entries.length - 1 }}
                 pinned={session.markedIds.includes(event.id)}
                 expanded={expandedId === event.id}
                 onExpand={() => setExpandedId(expandedId === event.id ? null : event.id)}
