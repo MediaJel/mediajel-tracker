@@ -2,7 +2,7 @@ process.env.PLASMO_PUBLIC_WIDGET_API_URL = "https://assistant.test";
 
 import { afterEach, describe, expect, test } from "bun:test";
 
-import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
+import { TrackerStatus } from "@mediajel/assistant-core/tags";
 import { WidgetSession, WIDGET_SESSION_VERSION } from "@mediajel/assistant-core/types";
 
 import { AuthError } from "~/auth/cognito";
@@ -63,7 +63,17 @@ const STATUS: TrackerStatus = {
   event: "",
   collector: "//collector.test",
   tagPresent: true,
-  tags: [{ appId: "acme", environment: "production", version: "2", delayed: false }],
+  tags: [
+    {
+      appId: "acme",
+      state: "running",
+      environment: "production",
+      version: "2",
+      event: "",
+      announced: false,
+      firstSeenAt: 0,
+    },
+  ],
   trackTransPresent: true,
   optedOut: false,
   warnings: [],

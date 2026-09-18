@@ -1,5 +1,6 @@
 import { deployTargets } from "@mediajel/assistant-core/deploy/targets";
-import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
+import { TrackerStatus } from "@mediajel/assistant-core/tags";
+import { trackerStatus } from "@mediajel/assistant-core/tags";
 
 import { AuthState, JobPatch, JobView, Request, ResultOf } from "~/bridge/api";
 import { BridgeDown } from "~/bridge/protocol";
@@ -7,7 +8,7 @@ import { answerChallenge, forgetPending, signIn } from "~/auth/cognito";
 import { SIGNED_OUT } from "~/auth/signed-out";
 import { siteOf } from "~/lib/site";
 import { failureAnswer } from "~/background/answer";
-import { heardTags } from "~/background/beacons";
+import { learn, tagsOfTab } from "~/background/tag-state";
 import { readTagsOnPage } from "~/background/page-tags";
 import { checkAccess, deployTag, generateTag, readExistingTag, readTagActivity } from "~/service/client";
 import { clearSession, currentIdToken, readSession, writeSession } from "~/store/auth";
@@ -23,21 +24,9 @@ import { readSettings, writeSettings } from "~/store/settings";
  * panel as one string written to be read, instead of as an exception someone has to interpret.
  */
 
-/** The tracker status last reported by each tab's page bridge. Cheap to lose; re-asked on open. */
-const statuses = new Map<number, { site: string; status: TrackerStatus }>();
-export const rememberStatus = (tabId: number, site: string, status: TrackerStatus): void => {
-  statuses.set(tabId, { site, status });
-};
-
-/**
- * A status describes the page that sent it. Once the tab has moved to another site it describes
- * somebody else's tags — and handing it back used to show that site's app IDs on this one until
- * the new page reported.
- */
-const statusOf = (tabId: number, site?: string): TrackerStatus | null => {
-  const entry = statuses.get(tabId);
-  return entry && (site === undefined || entry.site === site) ? entry.status : null;
-};
+/** What the Record step and the prompt read about a tab's page, from everything learned about it. */
+const statusOf = async (tabId: number, site: string): Promise<TrackerStatus> =>
+  trackerStatus(await tagsOfTab(tabId, site));
 
 /** In-flight generations, so Cancel has something to abort and a stale answer cannot land. */
 const generating = new Map<number, AbortController>();
@@ -103,7 +92,7 @@ const runGeneration = async (tabId: number, site: string, push: Push): Promise<v
   try {
     const { output, model, violations } = await generateTag(currentIdToken, {
       session,
-      status: statusOf(tabId, site) ?? emptyStatus(),
+      status: await statusOf(tabId, site),
       hostname: site,
       signal: controller.signal,
     });
@@ -152,23 +141,16 @@ const failGeneration = async (tabId: number, site: string, err: unknown, push: P
   push(tabId, answer.code === SIGNED_OUT ? { type: "signed-out", message } : { type: "generation-error", message });
 };
 
-const emptyStatus = (): TrackerStatus => ({
-  appId: "",
-  environment: "",
-  version: "",
-  event: "",
-  collector: "",
-  tagPresent: false,
-  tags: [],
-  trackTransPresent: false,
-  optedOut: false,
-  warnings: ["The assistant has not read this page's tag yet."],
-});
-
 const view = async (tabId: number): Promise<JobView> => {
   const site = await siteOfTab(tabId);
-  const [session, heard, found] = await Promise.all([openJob(site), heardTags(tabId, site), readTagsOnPage(tabId)]);
-  return { site, session, status: statusOf(tabId, site), heard, found };
+  const [session, tab] = await Promise.all([openJob(site), tagsOfTab(tabId, site)]);
+  return { site, session, status: trackerStatus(tab), tags: tab.tags, settled: tab.settled };
+};
+
+/** Reads the page's scripts now and records what they name, so the answer is as fresh as the page. */
+const readScriptsNow = async (tabId: number, site: string): Promise<void> => {
+  const found = await readTagsOnPage(tabId);
+  if (found) await learn(tabId, site, { kind: "scripts", tags: found });
 };
 
 export const handle = async (request: Request, send: Send, push: Push): Promise<ResultOf[Request["type"]]> => {
@@ -205,10 +187,13 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
 
     case "job/open": {
       const tab = await chrome.tabs.get(request.tabId);
-      if (!siteOf(tab.url ?? "")) return null;
-      // Ask the page what it can see now rather than trusting a snapshot from a page-load ago;
-      // a tag can arrive late, and Verify's whole story depends on whether it is there.
+      const site = siteOf(tab.url ?? "");
+      if (!site) return null;
+      // Ask the page what it can see now rather than trusting what it said a page-load ago — a
+      // tag can arrive late, and Verify's whole story depends on whether it is there — and read
+      // its scripts from here, which needs nothing in the page to answer.
       void send(request.tabId, { type: "snapshot" });
+      await readScriptsNow(request.tabId, site);
       return view(request.tabId);
     }
 
@@ -263,10 +248,6 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
       return advance(site, "review") ?? "recording";
     }
 
-    case "page/snapshot":
-      void send(request.tabId, { type: "snapshot" });
-      return statusOf(request.tabId);
-
     case "page/verify": {
       const site = await siteOfTab(request.tabId);
       const session = peekJob(site) ?? (await openJob(site));
@@ -290,7 +271,8 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
     }
 
     case "page/clear-dedup": {
-      const appId = statusOf(request.tabId)?.appId ?? "";
+      const site = await siteOfTab(request.tabId);
+      const { appId } = await statusOf(request.tabId, site);
       if (!appId) throw new Error("This page has no MediaJel tag, so there is no dedup state to clear.");
       void send(request.tabId, { type: "clear-dedup", appId });
       return null;

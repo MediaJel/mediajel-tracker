@@ -128,16 +128,14 @@ const Failure = ({ activity }: { activity: TagActivityState }): ReactNode => (
 );
 
 const QUIET: Partial<Record<TagActivityState["phase"], string>> = {
-  "no-tags": "No MediaJel tag found on this page, so there’s no activity to look up.",
+  listening: "Listening for this page’s tags…",
+  "no-tags":
+    "No MediaJel tag has announced itself or sent events from this page. Still listening: a tag that loads later, or one a page-speed plugin releases when you interact with the page, appears here on its own.",
   "not-configured": "Tag activity isn’t set up on the assistant service yet.",
 };
 
 /** What the tally says when there is nothing to read yet and no failure to report, if anything. */
-const quietNote = (activity: TagActivityState): string | undefined =>
-  QUIET[activity.phase] ??
-  (activity.slow
-    ? "Waiting for this page to say which tags it has. Reload the page if this doesn’t change."
-    : undefined);
+const quietNote = (activity: TagActivityState): string | undefined => QUIET[activity.phase];
 
 /** Everything the tally can say instead of its readings — each one a different fact, never zeros. */
 const Body = ({ activity, goal }: Props): ReactNode => {

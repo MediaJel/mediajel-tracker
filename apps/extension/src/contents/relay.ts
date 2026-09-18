@@ -1,6 +1,7 @@
 import type { PlasmoCSConfig } from "plasmo";
 
-import { BridgeDown, BridgeUp, unwrap, wrap } from "~/bridge/protocol";
+import { BridgeDown, BridgeUp, WIRE_VERSION, unwrap, wrap } from "~/bridge/protocol";
+import { claimRelay } from "~/bridge/claim";
 import { RELAY_PORT } from "~/lib/ports";
 
 /**
@@ -44,7 +45,7 @@ const connect = (): chrome.runtime.Port | null => {
 
 const ensure = (): chrome.runtime.Port | null => (port ??= connect());
 
-window.addEventListener("message", (event: MessageEvent) => {
+const forward = (event: MessageEvent): void => {
   const message = unwrap<BridgeUp>(event, "up");
   if (!message) return;
   try {
@@ -52,13 +53,24 @@ window.addEventListener("message", (event: MessageEvent) => {
   } catch {
     port = null;
   }
-});
+};
 
 // The way down when the port is closed. Chrome stops an idle worker and the port goes with it, and
 // this relay only reopens one when the page next says something — so the background sends commands
 // as one-off messages too, which only this extension's background can send to this tab.
-chrome.runtime.onMessage.addListener((message: BridgeDown) => {
+const fromBackground = (message: BridgeDown): void => {
   window.postMessage(wrap("down", message), "*");
+};
+
+// A relay injected over a live one — the extension attaching to a tab it was installed over —
+// takes the old one's place; two would forward every event twice.
+claimRelay(WIRE_VERSION, () => {
+  window.removeEventListener("message", forward);
+  chrome.runtime.onMessage.removeListener(fromBackground);
+  port?.disconnect();
+  port = null;
 });
 
+window.addEventListener("message", forward);
+chrome.runtime.onMessage.addListener(fromBackground);
 ensure();

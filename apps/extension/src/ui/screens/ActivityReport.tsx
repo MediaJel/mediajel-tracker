@@ -1,10 +1,10 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 
-import { TagSummary } from "@mediajel/assistant-core/context";
+import { TagRecord } from "@mediajel/assistant-core/tags";
 
 import type { TagActivity } from "~/service/client";
 import type { TagActivityState } from "~/sidepanel/useTagActivity";
-import { amount, fullNumber, pageLabel, pageListing, when } from "~/ui/activity";
+import { amount, fullNumber, pageLabel, pageListing, stateLabel, when } from "~/ui/activity";
 import InfoTip from "~/ui/components/InfoTip";
 import { DaysSection } from "~/ui/screens/ActivityDays";
 import { ACTIVITY_DETAILS_ID, ACTIVITY_REPORT_ID, ACTIVITY_RETRY_ID } from "~/ui/screens/ActivityTally";
@@ -130,17 +130,18 @@ const Facts = ({ result }: { result: Answered }): ReactNode => {
   );
 };
 
-const describeTag = (tag: TagSummary | undefined): string => {
+const describeTag = (tag: TagRecord | undefined): string => {
   if (!tag) return "";
-  // Heard sending events from this page, with no script tag to read the rest from.
-  if (!tag.environment) return "Sending events from this page — no script tag on it names this tag";
-  const held = tag.delayed ? " · held back by a page-speed plugin until the visitor interacts" : "";
-  return `Environment ${tag.environment} · version ${tag.version}${held}`;
+  // Known only from the events it sends, or from Snowplow: nothing on the page names its configuration.
+  const configuration = tag.environment
+    ? `Environment ${tag.environment} · version ${tag.version}`
+    : "Nothing on the page names this tag’s configuration";
+  return `${configuration} · ${stateLabel(tag.state)}`;
 };
 
 interface SheetProps {
   result: TagActivity;
-  tag?: TagSummary;
+  tag?: TagRecord;
   site: string;
   /** The last sheet tears off at the bottom, the way the stack's last sheet does. */
   last: boolean;

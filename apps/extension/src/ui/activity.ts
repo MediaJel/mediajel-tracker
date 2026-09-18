@@ -1,3 +1,4 @@
+import { TagState } from "@mediajel/assistant-core/tags";
 import { WidgetGoal } from "@mediajel/assistant-core/types";
 
 import type { TagActivity } from "~/service/client";
@@ -27,6 +28,19 @@ export const fullNumber = (n: number): string => whole.format(n);
  * currencies summed under "$" would be an invented figure.
  */
 export const amount = (n: number): string => twoPlaces.format(n);
+
+const STATE_LABELS: Record<TagState, string> = {
+  installed: "installed, not running yet",
+  "held-back": "held back by a page-speed plugin until the visitor interacts",
+  running: "running, nothing sent yet",
+  sending: "sending events",
+  "opted-out": "not tracking: this browser sends GPC/DNT",
+  disabled: "disabled (enable=false)",
+  failed: "failed to start",
+};
+
+/** A tag's state as the report prints it beside its configuration. */
+export const stateLabel = (state: TagState): string => STATE_LABELS[state];
 
 /** Enough of an app ID to tell two tags on one page apart; the whole of it is in Details. */
 export const shortAppId = (appId: string): string => appId.split("-")[0].slice(0, 8) || appId;

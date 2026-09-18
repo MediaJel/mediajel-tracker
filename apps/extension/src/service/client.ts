@@ -3,7 +3,7 @@ import { z } from "zod";
 import { GenerationOutput, GenerationSchema } from "@mediajel/assistant-core/ai/schema";
 import { buildPrompt } from "@mediajel/assistant-core/ai/prompt";
 import { DeployTargetKind } from "@mediajel/assistant-core/deploy/targets";
-import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
+import { TrackerStatus } from "@mediajel/assistant-core/tags";
 import { WidgetSession } from "@mediajel/assistant-core/types";
 
 import { SIGNED_OUT } from "~/auth/signed-out";

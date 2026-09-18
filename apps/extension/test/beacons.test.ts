@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { hear, heardIn, heardTags } from "~/background/beacons";
+import { heardIn } from "~/background/beacons";
 import { appIdsInBeacon } from "~/lib/beacons";
 
 /**
@@ -67,26 +67,5 @@ describe("which requests are heard", () => {
   test("a request from no tab, or from a page with no site, names nothing", () => {
     expect(heardIn(request({ tabId: -1 }))).toBeNull();
     expect(heardIn(request({ initiator: "null" }))).toBeNull();
-  });
-});
-
-describe("what a tab has been heard sending", () => {
-  test("is kept per tab and per site, so another site's tags never show on this one", async () => {
-    await hear(101, "www.seedoflifelabs.com", ["7bc01df0"]);
-
-    expect(await heardTags(101, "www.seedoflifelabs.com")).toEqual(["7bc01df0"]);
-    expect(await heardTags(101, "www.binoidcbd.com")).toEqual([]);
-    expect(await heardTags(102, "www.seedoflifelabs.com")).toEqual([]);
-  });
-
-  test("reports only news — a tag heard again on every page ping changes nothing", async () => {
-    expect(await hear(103, "shop.example.com", ["pageviews"])).toEqual(["pageviews"]);
-    expect(await hear(103, "shop.example.com", ["pageviews"])).toBeNull();
-    expect(await hear(103, "shop.example.com", ["pageviews", "transactions"])).toEqual(["pageviews", "transactions"]);
-  });
-
-  test("keeps both of two beacons that land together", async () => {
-    await Promise.all([hear(104, "shop.example.com", ["first"]), hear(104, "shop.example.com", ["second"])]);
-    expect(await heardTags(104, "shop.example.com")).toEqual(["first", "second"]);
   });
 });

@@ -1,11 +1,9 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 
-import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
-
 import { JobView } from "~/bridge/api";
 import { BridgeDown } from "~/bridge/protocol";
-import { hear } from "~/background/beacons";
-import { handle, rememberStatus } from "~/background/handle";
+import { handle } from "~/background/handle";
+import { learn } from "~/background/tag-state";
 import { readSession, writeSession } from "~/store/auth";
 import { failureAnswer } from "~/background/answer";
 import { clearAllJobs, openJob, peekJob, releaseJob } from "~/store/jobs";
@@ -98,28 +96,18 @@ describe("job/advance after the worker has been recycled", () => {
 });
 
 describe("what the panel is told about the page", () => {
-  const STATUS: TrackerStatus = {
-    appId: "acme",
-    environment: "production",
-    version: "2",
-    event: "",
-    collector: "",
-    tagPresent: true,
-    tags: [{ appId: "acme", environment: "production", version: "2", delayed: false }],
-    trackTransPresent: true,
-    optedOut: false,
-    warnings: [],
-  };
+  const open = async (): Promise<JobView | null> =>
+    (await handle({ type: "job/open", tabId: TAB }, send, push)) as JobView | null;
 
   test("never hands back the tags of the site the tab was on before", async () => {
-    rememberStatus(TAB, "previous-client.example", STATUS);
-    expect(((await handle({ type: "job/open", tabId: TAB }, send, push)) as JobView | null)?.status).toBeNull();
+    await learn(TAB, "previous-client.example", { kind: "beacon", appIds: ["theirs"] });
+    expect((await open())?.tags).toEqual([]);
 
-    rememberStatus(TAB, SITE, STATUS);
-    expect(((await handle({ type: "job/open", tabId: TAB }, send, push)) as JobView | null)?.status).toEqual(STATUS);
+    await learn(TAB, SITE, { kind: "beacon", appIds: ["ours"] });
+    expect((await open())?.tags.map((tag) => [tag.appId, tag.state])).toEqual([["ours", "sending"]]);
   });
 
-  test("reads the page's tags itself, so a worker that lost the page's report still knows them", async () => {
+  test("reads the page's scripts itself, so a worker that lost the page's word still knows its tags", async () => {
     const scripting = (chrome as unknown as { scripting: Record<string, unknown> }).scripting;
     const original = scripting.executeScript;
     document.head.innerHTML = `<script src="https://tags.cnna.io/?appId=Eaze&version=2" id="mediajel" data-nscript="afterInteractive"></script>`;
@@ -128,24 +116,30 @@ describe("what the panel is told about the page", () => {
       { frameId: 0, result: func(...args) },
     ];
     try {
-      const view = (await handle({ type: "job/open", tabId: TAB }, send, push)) as JobView | null;
-      expect(view?.found).toEqual([{ appId: "Eaze", environment: "production", version: "2", delayed: false }]);
+      const view = await open();
+      expect(view?.tags).toMatchObject([
+        { appId: "Eaze", state: "installed", environment: "production", version: "2", announced: false },
+      ]);
+      expect(view?.status.appId).toBe("Eaze");
 
       scripting.executeScript = async () => {
         throw new Error("Cannot access contents of the page.");
       };
-      expect(((await handle({ type: "job/open", tabId: TAB }, send, push)) as JobView | null)?.found).toBeNull();
+      // A page that cannot be read keeps what was known; it is not a page without tags.
+      expect((await open())?.tags.map((tag) => tag.appId)).toEqual(["Eaze"]);
     } finally {
       scripting.executeScript = original;
       document.head.innerHTML = "";
     }
   });
 
-  test("hands the panel the tags this tab has been heard sending, even before the page reports", async () => {
-    await hear(TAB, SITE, ["heard-app"]);
-    expect(((await handle({ type: "job/open", tabId: TAB }, send, push)) as JobView | null)?.heard).toEqual([
-      "heard-app",
-    ]);
+  test("says whether the page has settled, and derives the warnings from what is known", async () => {
+    expect(await open()).toMatchObject({ settled: false, status: { warnings: [] } });
+    await learn(TAB, SITE, { kind: "settled" });
+    const view = await open();
+    expect(view?.settled).toBe(true);
+    expect(view?.status.warnings.join(" ")).toContain("No MediaJel tag has spoken up");
+    expect(view?.status.warnings.join(" ")).not.toMatch(/reload/i);
   });
 
   test("looks tag activity up with the signed-in user's token — the panel never holds one", async () => {

@@ -3,8 +3,8 @@ import { SIGNED_OUT } from "~/auth/signed-out";
 import type { DeployOutcome, ExistingTag, TagActivityResponse } from "~/service/client";
 import type { JobSummary } from "~/store/jobs";
 import type { Settings } from "~/store/settings";
-import type { TagSummary } from "@mediajel/assistant-core/context";
-import type { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
+import type { TagRecord } from "@mediajel/assistant-core/tags";
+import type { TrackerStatus } from "@mediajel/assistant-core/tags";
 import type { WidgetGoal, WidgetSession, WidgetStep } from "@mediajel/assistant-core/types";
 
 /**
@@ -40,7 +40,6 @@ export type Request =
   // — the page —
   | { type: "page/start-recording"; tabId: number; goal: WidgetGoal }
   | { type: "page/stop-recording"; tabId: number }
-  | { type: "page/snapshot"; tabId: number }
   | { type: "page/verify"; tabId: number }
   | { type: "page/inject-tag"; tabId: number; url: string }
   | { type: "page/clear-dedup"; tabId: number }
@@ -62,11 +61,12 @@ export type JobPatch =
 export interface JobView {
   site: string;
   session: WidgetSession;
-  status: TrackerStatus | null;
-  /** App IDs this tab's page has been heard sending events from, on this site. */
-  heard: string[];
-  /** The MediaJel tags the background read from the page itself just now; null when it could not read it. */
-  found: TagSummary[] | null;
+  /** What the Record step and the prompt read, derived from `tags`. */
+  status: TrackerStatus;
+  /** Every MediaJel tag known on this tab's page, in the order first seen. */
+  tags: TagRecord[];
+  /** Whether the page has had its moment to load a tag — "no tag" means nothing before this. */
+  settled: boolean;
 }
 
 export type Response<T> = { ok: true; value: T } | { ok: false; error: string; code?: string };
@@ -94,7 +94,6 @@ export interface ResultOf {
   "job/patch": WidgetSession;
   "page/start-recording": WidgetStep;
   "page/stop-recording": WidgetStep;
-  "page/snapshot": TrackerStatus | null;
   "page/verify": null;
   "page/inject-tag": null;
   "page/clear-dedup": null;
@@ -108,11 +107,11 @@ export interface ResultOf {
 /** What the background pushes at a bound panel without being asked. */
 export type Push =
   | { type: "session"; session: WidgetSession }
-  | { type: "status"; status: TrackerStatus }
+  /** What is now known about the bound tab's tags — after any source learned something new. */
+  | { type: "tags"; site: string; tags: TagRecord[]; settled: boolean; status: TrackerStatus }
   | { type: "verify-result"; ok: boolean; errors: string[] }
   | { type: "dedup-cleared"; count: number }
   | { type: "generation-error"; message: string }
-  | { type: "tags-heard"; site: string; appIds: string[] }
   | { type: "signed-out"; message: string };
 
 type SignedOutListener = (reason: string) => void;

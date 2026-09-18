@@ -1,4 +1,4 @@
-import type { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
+import type { AnnouncedTag, PageFacts } from "@mediajel/assistant-core/tags";
 import type { TimelineEvent, VerifyCapture, WidgetPage } from "@mediajel/assistant-core/types";
 
 /**
@@ -32,15 +32,24 @@ export const ENVELOPE = "__mj" as const;
  * the window. Unversioned, a status from a bridge that predates `tags` blanked the panel, and one
  * whose detection predates delayed tags answered "No MediaJel tag" over this build's answer.
  * A message written for another version of the wire is not this build's to read.
+ *
+ * Version 3: the bridge no longer reports a status of its own; it says what it saw — the
+ * trackers Snowplow holds, the tag announcing itself, the page's facts, and when the page settled.
  */
-const WIRE_VERSION = 2;
+export const WIRE_VERSION = 3;
 
 /** What the page-bridge sends up. */
 export type BridgeUp =
   | { type: "ready" }
   | { type: "event"; event: TimelineEvent; flush?: boolean }
   | { type: "page"; page: WidgetPage }
-  | { type: "status"; status: TrackerStatus }
+  /** The app IDs the page's Snowplow queue named — every MediaJel tag that has run. */
+  | { type: "tags-running"; appIds: string[] }
+  /** A tag announced itself (the tag of tracker-core's `announce`). */
+  | { type: "tag-announced"; tag: AnnouncedTag }
+  | { type: "page-facts"; facts: PageFacts }
+  /** The page has had its moment to load a tag. */
+  | { type: "settled" }
   | { type: "verify-result"; ok: boolean; errors: string[] }
   | { type: "verify-capture"; capture: VerifyCapture }
   | { type: "dedup-cleared"; count: number };

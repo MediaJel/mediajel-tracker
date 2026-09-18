@@ -1,24 +1,27 @@
 import type { PlasmoCSConfig } from "plasmo";
 
 import { readPageContext } from "@mediajel/assistant-core/context";
-import { snapshotTracker, watchTrackTrans } from "@mediajel/assistant-core/recorder/context";
 import { Recorder, RecorderSink, createRecorder } from "@mediajel/assistant-core/recorder/recorder";
+import { askRunningTags } from "@mediajel/assistant-core/trackers";
 import { runGenerated } from "@mediajel/assistant-core/verify/runner";
+import isUsPrivacyOptOut from "@mediajel/tracker-core/utils/privacy-opt-out";
 
-import { BridgeDown, BridgeUp, unwrap, wrap } from "~/bridge/protocol";
+import { claimBridge } from "~/bridge/claim";
+import { BridgeDown, BridgeUp, WIRE_VERSION, unwrap, wrap } from "~/bridge/protocol";
 import { TAG_SEARCH } from "~/lib/tags";
 
 /**
  * The assistant's half that has to live in the page.
  *
  * `world: "MAIN"` puts this in the page's own realm, which is the only place `window.fetch`,
- * `XMLHttpRequest.prototype`, `history.pushState`, `window.dataLayer` and `window.trackTrans`
- * actually exist as the page sees them — an isolated content script gets its own copies and
- * would record an empty timeline while swearing everything was fine.
+ * `XMLHttpRequest.prototype`, `history.pushState`, `window.dataLayer`, `window.trackTrans` and
+ * the tag's Snowplow queue actually exist as the page sees them — an isolated content script
+ * gets its own copies and would record an empty timeline while swearing everything was fine.
  *
  * The price is that `chrome.*` is gone here. Nothing in this file stores, fetches or decides
- * anything: it observes, and it posts. The background holds the session, so a recording
- * survives the navigation from cart to thank-you that this whole product is about.
+ * anything: it observes, and it posts. The background holds the session and everything known
+ * about the page's tags, so a recording survives the navigation from cart to thank-you that this
+ * whole product is about.
  *
  * `run_at: document_start` is not a preference. `fetch` must be wrapped before the page's own
  * code gets a reference to it, or the first checkout call is invisible.
@@ -29,9 +32,9 @@ import { TAG_SEARCH } from "~/lib/tags";
  * effect is the same, and the `scripting` permission it needs is added for us.
  *
  * It matches every http(s) page, and is nearly inert on all of them: until a `start-recording`
- * arrives it wraps nothing, and until the panel asks about the page it watches nothing. All it does
- * unasked is read the page's script tags once the document settles, to say which MediaJel tags are
- * there.
+ * arrives it wraps nothing. What it does unasked is ask the tag's Snowplow, once it appears,
+ * which trackers it holds, and say when the page has settled — the two things the panel cannot
+ * learn from outside the page.
  */
 
 export const config: PlasmoCSConfig = {
@@ -42,11 +45,18 @@ export const config: PlasmoCSConfig = {
   css: [],
 };
 
+/** How often, and for how long after a page loads, to look for the tag's Snowplow loader. */
+const QUEUE_POLL_MS = 100;
+const QUEUE_POLL_FOR_MS = 60_000;
+/** The page's moment to load a tag after `load`; "no tag" means nothing before it. */
+const SETTLE_AFTER_LOAD_MS = 1_000;
+
 let recorder: Recorder | null = null;
 let startedAt = Date.now();
+let standingDown = false;
 
 const send = (message: BridgeUp): void => {
-  window.postMessage(wrap("up", message), "*");
+  if (!standingDown) window.postMessage(wrap("up", message), "*");
 };
 
 const sink: RecorderSink = {
@@ -57,53 +67,49 @@ const sink: RecorderSink = {
   flush: () => undefined,
 };
 
-/**
- * Read fresh every time. At `document_start` there are no script tags yet, so a context
- * captured at load would report every tagged page as untagged — and the tag can arrive later
- * still, through GTM or an injection of our own.
- */
-const status = (): ReturnType<typeof snapshotTracker> => snapshotTracker(readPageContext(window, TAG_SEARCH));
+/** What only the page can say about itself, read fresh every time it is asked. */
+const facts = (): void =>
+  send({
+    type: "page-facts",
+    facts: { trackTransPresent: typeof window.trackTrans === "function", optedOut: isUsPrivacyOptOut() },
+  });
 
-let lastReported = "";
+/** Asks the tag's Snowplow which trackers it holds; false when there is no loader to ask yet. */
+const askQueue = (): boolean => askRunningTags(window, (appIds) => send({ type: "tags-running", appIds }));
 
-/** Tells the panel about the page's tags — unless nothing it shows has changed since last time. */
-const report = (force = false): void => {
-  const next = status();
-  const key = JSON.stringify([next.tags, next.trackTransPresent, next.optedOut]);
-  if (!force && key === lastReported) return;
-  lastReported = key;
-  send({ type: "status", status: next });
+let queuePoll: ReturnType<typeof setInterval> | null = null;
+
+const stopWatchingQueue = (): void => {
+  if (queuePoll) clearInterval(queuePoll);
+  queuePoll = null;
 };
 
-const touchesScript = (record: MutationRecord): boolean =>
-  record.type === "attributes"
-    ? record.target.nodeName === "SCRIPT"
-    : Array.from(record.addedNodes).some((node) => node.nodeName === "SCRIPT");
-
-let watchingTags = false;
-let stopTrackTransWatch: (() => void) | null = null;
-
 /**
- * Tags keep arriving after the first read: GTM inserts them late, and a page-speed plugin gives a
- * delayed tag its real `src` only once the visitor interacts. Each changes which app IDs the panel
- * shows and whether Verify can run, so once the panel has asked about this page, script insertions
- * and `src` changes are watched — nothing else — and `trackTrans`, which the tag assigns late, is
- * polled for a minute after one. A page the panel never asked about is never watched.
+ * The tag's loader is not there at document_start — the tag arrives with the page, from GTM, or
+ * when a page-speed plugin lets it — so the queue is looked for on the cadence MediaJel's own
+ * helpers use, and asked once it exists. Snowplow answers whenever its SDK has loaded.
  */
-const watchTags = (): void => {
-  if (watchingTags) return;
-  watchingTags = true;
-  new MutationObserver((records) => {
-    if (!records.some(touchesScript)) return;
-    report();
-    if (stopTrackTransWatch || typeof window.trackTrans === "function") return;
-    const stop = watchTrackTrans(() => report());
-    stopTrackTransWatch = stop;
-    setTimeout(() => {
-      stop();
-      if (stopTrackTransWatch === stop) stopTrackTransWatch = null;
-    }, 60_000);
-  }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ["src"] });
+const watchQueue = (): void => {
+  if (askQueue()) {
+    stopWatchingQueue();
+    return;
+  }
+  if (queuePoll) return;
+  const until = Date.now() + QUEUE_POLL_FOR_MS;
+  queuePoll = setInterval(() => {
+    if (askQueue() || Date.now() > until) stopWatchingQueue();
+  }, QUEUE_POLL_MS);
+};
+
+let settleTimer: ReturnType<typeof setTimeout> | null = null;
+
+const settle = (): void => {
+  settleTimer = setTimeout(() => {
+    settleTimer = null;
+    facts();
+    watchQueue();
+    send({ type: "settled" });
+  }, SETTLE_AFTER_LOAD_MS);
 };
 
 const startRecording = (at: number): void => {
@@ -131,7 +137,10 @@ const injectTag = (url: string): void => {
   const script = document.createElement("script");
   script.src = url;
   script.async = true;
-  script.addEventListener("load", () => report(true));
+  script.addEventListener("load", () => {
+    facts();
+    watchQueue();
+  });
   (document.head ?? document.documentElement).appendChild(script);
 };
 
@@ -152,39 +161,48 @@ const clearDedup = (appId: string): void => {
   send({ type: "dedup-cleared", count });
 };
 
-window.addEventListener("message", (event: MessageEvent) => {
+/** The panel asked about this page: say what it can see now, and look for the tag again. */
+const snapshot = (): void => {
+  facts();
+  watchQueue();
+};
+
+/** What each command from the background does here, by its type. */
+const COMMANDS: { [K in BridgeDown["type"]]: (message: Extract<BridgeDown, { type: K }>) => void } = {
+  "start-recording": (message) => startRecording(message.startedAt),
+  "stop-recording": () => recorder?.stop(),
+  snapshot: () => snapshot(),
+  verify: (message) => verify(message.code),
+  "inject-tag": (message) => injectTag(message.url),
+  "clear-dedup": (message) => clearDedup(message.appId),
+};
+
+const onCommand = (event: MessageEvent): void => {
   const message = unwrap<BridgeDown>(event, "down");
   if (!message) return;
   try {
-    switch (message.type) {
-      case "start-recording":
-        return startRecording(message.startedAt);
-      case "stop-recording":
-        return recorder?.stop();
-      case "snapshot":
-        watchTags();
-        return report(true);
-      case "verify":
-        return verify(message.code);
-      case "inject-tag":
-        return injectTag(message.url);
-      case "clear-dedup":
-        return clearDedup(message.appId);
-    }
+    (COMMANDS[message.type] as (command: BridgeDown) => void)(message);
   } catch (err) {
     // This runs inside a client's production page. A throw here would surface as their error.
 
     console.warn("[MJ:Assistant] bridge command failed:", err);
   }
+};
+
+// A bridge injected over a live one — the extension attaching to a tab it was installed over —
+// takes the old one's place; two would record every event twice.
+claimBridge(window, WIRE_VERSION, () => {
+  standingDown = true;
+  window.removeEventListener("message", onCommand);
+  window.removeEventListener("load", settle);
+  stopWatchingQueue();
+  if (settleTimer) clearTimeout(settleTimer);
+  recorder?.stop();
 });
 
-send({ type: "ready" });
+window.addEventListener("message", onCommand);
+watchQueue();
+if (document.readyState === "complete") settle();
+else window.addEventListener("load", settle, { once: true });
 
-// A tag that loads after us — through GTM, or through our own injection — changes what Verify
-// can do, so the panel is told once the document has settled rather than being left with the
-// empty answer document_start can give.
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => report(true), { once: true });
-} else {
-  report(true);
-}
+send({ type: "ready" });

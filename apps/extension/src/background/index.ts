@@ -1,9 +1,14 @@
 import { Request, Response } from "~/bridge/api";
 import { BridgeDown, BridgeUp } from "~/bridge/protocol";
 import { PANEL_PORT, RELAY_PORT } from "~/lib/ports";
+import { Evidence, trackerStatus } from "@mediajel/assistant-core/tags";
+
 import { failureAnswer } from "~/background/answer";
 import { listenForTags } from "~/background/beacons";
-import { handle, rememberStatus } from "~/background/handle";
+import { handle } from "~/background/handle";
+import { readTagsOnPage } from "~/background/page-tags";
+import { resumption } from "~/background/resume";
+import { forgetTab, learn } from "~/background/tag-state";
 import { flushAll, openJob, peekJob, subscribeJobs, updateJob } from "~/store/jobs";
 import { siteOf } from "~/lib/site";
 
@@ -60,24 +65,46 @@ const toPanel = (tabId: number, message: unknown): void => {
   }
 };
 
+/**
+ * Something was learned about a tab's tags. The owner keeps it; the panel bound to the tab hears
+ * about it only when it is news.
+ */
+const publish = async (tabId: number, site: string, evidence: Evidence): Promise<void> => {
+  const tab = await learn(tabId, site, evidence);
+  if (tab) toPanel(tabId, { type: "tags", site, tags: tab.tags, settled: tab.settled, status: trackerStatus(tab) });
+};
+
+/** The scripts in the page, read by this worker, are one more piece of evidence about it. */
+const readScripts = async (tabId: number, site: string): Promise<void> => {
+  const found = await readTagsOnPage(tabId);
+  if (found) await publish(tabId, site, { kind: "scripts", tags: found });
+};
+
+/** A new document in a tab mid-job: pick the recording, or the proof, back up. */
+const resume = (tabId: number, site: string): void => {
+  const command = resumption(peekJob(site));
+  if (command) void sendToTab(tabId, command);
+};
+
 const handleUp = async (tabId: number, site: string, message: BridgeUp): Promise<void> => {
   switch (message.type) {
     case "ready":
-      // A new document in a tab we are recording: the sources were re-installed by the fresh
-      // page-bridge, so tell it to pick the recording back up from where the clock was.
-      {
-        const session = peekJob(site);
-        if (session?.step === "recording") {
-          void sendToTab(tabId, { type: "start-recording", startedAt: session.startedAt });
-        }
-        if (session?.step === "verify" && session.generation) {
-          void sendToTab(tabId, { type: "verify", code: session.generation.code });
-        }
-      }
-      // A panel is open on this tab, so the new document should watch for tags as the panel's own
-      // snapshot would have: next/script and GTM insert the tag after the document has loaded.
-      if (panels.has(tabId)) void sendToTab(tabId, { type: "snapshot" });
+      void publish(tabId, site, { kind: "document" });
+      resume(tabId, site);
       return;
+
+    case "tags-running":
+      return publish(tabId, site, { kind: "running", appIds: message.appIds });
+
+    case "tag-announced":
+      return publish(tabId, site, { kind: "announced", tag: message.tag });
+
+    case "page-facts":
+      return publish(tabId, site, { kind: "facts", facts: message.facts });
+
+    case "settled":
+      await publish(tabId, site, { kind: "settled" });
+      return readScripts(tabId, site);
 
     case "event": {
       // A recording that has been stopped must not keep growing. The page-bridge can miss its
@@ -118,11 +145,6 @@ const handleUp = async (tabId: number, site: string, message: BridgeUp): Promise
       toPanel(tabId, { type: "verify-result", ok: message.ok, errors: message.errors });
       return;
 
-    case "status":
-      rememberStatus(tabId, site, message.status);
-      toPanel(tabId, message);
-      return;
-
     case "dedup-cleared":
       toPanel(tabId, message);
       return;
@@ -136,9 +158,24 @@ const handleUp = async (tabId: number, site: string, message: BridgeUp): Promise
  */
 const panelSites = new Map<string, number>();
 
-// Every tag a tab's page is heard sending events from reaches that tab's panel the moment it is
-// first heard — however late the tag loaded, and whether or not the page's scripts can still talk.
-listenForTags((tabId, site, appIds) => toPanel(tabId, { type: "tags-heard", site, appIds }));
+// Every tag a tab's page is heard sending events from reaches the tab's owner the moment it is
+// heard — however late the tag loaded, and whether or not the page's scripts can still talk.
+listenForTags((tabId, site, appIds) => void publish(tabId, site, { kind: "beacon", appIds }));
+
+/**
+ * A page that has finished loading is read once more, and given its moment to load a tag —
+ * whether or not a bridge could run in it. The bridge's own `settled` usually comes first; the
+ * owner ignores what it already knows.
+ */
+chrome.tabs.onUpdated.addListener((tabId, change, tab) => {
+  if (change.status !== "complete") return;
+  const site = siteOf(tab.url ?? "");
+  if (!site) return;
+  void readScripts(tabId, site);
+  setTimeout(() => void publish(tabId, site, { kind: "settled" }), 2_000);
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => void forgetTab(tabId));
 
 subscribeJobs((site, session) => {
   const tabId = panelSites.get(site);
@@ -157,7 +194,9 @@ chrome.runtime.onConnect.addListener((port) => {
       if (relays.get(tabId) === port) relays.delete(tabId);
     });
     port.onMessage.addListener((message: BridgeUp) => {
-      void openJob(site).then(() => handleUp(tabId, site, message));
+      // Evidence about the page needs no job of its own; the recording and the proof do.
+      const needsJob = ["ready", "event", "page", "verify-capture", "verify-result"].includes(message.type);
+      void (needsJob ? openJob(site) : Promise.resolve()).then(() => handleUp(tabId, site, message));
     });
     return;
   }

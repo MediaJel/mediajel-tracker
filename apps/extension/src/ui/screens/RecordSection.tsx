@@ -1,4 +1,4 @@
-import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
+import { TrackerStatus } from "@mediajel/assistant-core/tags";
 import { TimelineEventKind, WidgetGoal, WidgetSession } from "@mediajel/assistant-core/types";
 import { Fragment, ReactNode } from "react";
 

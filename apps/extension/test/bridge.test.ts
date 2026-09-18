@@ -1,11 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
-import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
-
 import { ask, onSignedOut } from "~/bridge/api";
 import { BridgeUp, unwrap, wrap } from "~/bridge/protocol";
 import { siteOf } from "~/lib/site";
-import { tagsOf } from "~/lib/status";
 
 /**
  * The wire between the page and the extension, and the one value that decides which job a
@@ -64,60 +61,6 @@ describe("siteOf", () => {
     ]) {
       expect(siteOf(url)).toBeNull();
     }
-  });
-});
-
-describe("tagsOf", () => {
-  /** What a page bridge built before `tags` existed sends: the rest of a status, and no `tags` key. */
-  const older = (fields: Partial<TrackerStatus>): TrackerStatus =>
-    ({ appId: "", environment: "", version: "", ...fields }) as TrackerStatus;
-
-  test("reads the tags a current page bridge reports", () => {
-    const tags = [
-      { appId: "pageviews", environment: "weave", version: "2", delayed: true },
-      { appId: "transactions", environment: "weave", version: "2", delayed: false },
-    ];
-    expect(tagsOf(older({ appId: "pageviews", tags }))).toEqual(tags);
-  });
-
-  test("a page bridge older than the panel reports one appId and no tags — that is still one tag, not a crash", () => {
-    expect(tagsOf(older({ appId: "acme", environment: "production", version: "2" }))).toEqual([
-      { appId: "acme", environment: "production", version: "2", delayed: false },
-    ]);
-  });
-
-  test("an older page bridge with no tag on its page has no tags", () => {
-    expect(tagsOf(older({}))).toEqual([]);
-  });
-
-  test("a tag heard sending events is known even when no script on the page names it", () => {
-    expect(tagsOf(older({ tags: [] }), ["proxied-app"])).toEqual([
-      { appId: "proxied-app", environment: "", version: "", delayed: false },
-    ]);
-  });
-
-  test("a tag the background read from the page counts while the page's bridge has said nothing", () => {
-    const found = [{ appId: "Eaze", environment: "production", version: "2", delayed: false }];
-    expect(tagsOf(older({ tags: [] }), [], found)).toEqual(found);
-  });
-
-  test("a tag both reads found is one tag, and running if either read saw it run", () => {
-    const reported = [{ appId: "7bc01df0", environment: "weave", version: "2", delayed: true }];
-    const found = [
-      { appId: "7bc01df0", environment: "weave", version: "2", delayed: false },
-      { appId: "second", environment: "production", version: "2", delayed: true },
-    ];
-    expect(tagsOf(older({ appId: "7bc01df0", tags: reported }), [], found)).toEqual([
-      { appId: "7bc01df0", environment: "weave", version: "2", delayed: false },
-      { appId: "second", environment: "production", version: "2", delayed: true },
-    ]);
-  });
-
-  test("a delayed tag that has since been heard sending is one tag, and not delayed", () => {
-    const tags = [{ appId: "7bc01df0", environment: "weave", version: "2", delayed: true }];
-    expect(tagsOf(older({ appId: "7bc01df0", tags }), ["7bc01df0"])).toEqual([
-      { appId: "7bc01df0", environment: "weave", version: "2", delayed: false },
-    ]);
   });
 });
 

@@ -9,7 +9,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
 import { ReactNode } from "react";
 
-import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
+import { TrackerStatus } from "@mediajel/assistant-core/tags";
 import { WidgetGoal, WidgetSession, WidgetStep } from "@mediajel/assistant-core/types";
 import { InterceptedCall } from "@mediajel/assistant-core/verify/interceptor";
 import { checkPayload } from "@mediajel/assistant-core/verify/payload-check";

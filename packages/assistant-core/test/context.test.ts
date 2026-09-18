@@ -1,7 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
 import { TAG_URL_ATTRIBUTES, TagSearch, readPageContext, tagsAmong } from "@mediajel/assistant-core/context";
-import { snapshotTracker } from "@mediajel/assistant-core/recorder/context";
 
 /**
  * Which MediaJel tags a page carries decides what the panel can look up and what it warns about,
@@ -85,9 +84,15 @@ describe("finding tags in copies of a page's scripts", () => {
 
   test("reads a Next.js-injected tag — as www.eaze.com serves it — from a copy of its script", () => {
     // next/script's afterInteractive inserts this after hydration, long after the document loaded.
-    const nextScript = copyOf({ src: "https://tags.cnna.io/?appId=Eaze&version=2", id: "mediajel", "data-nscript": "afterInteractive" });
+    const nextScript = copyOf({
+      src: "https://tags.cnna.io/?appId=Eaze&version=2",
+      id: "mediajel",
+      "data-nscript": "afterInteractive",
+    });
 
-    expect(tagsAmong([nextScript])).toEqual([{ appId: "Eaze", environment: "production", version: "2", delayed: false }]);
+    expect(tagsAmong([nextScript])).toEqual([
+      { appId: "Eaze", environment: "production", version: "2", delayed: false },
+    ]);
   });
 
   test("resolves a URL against the page it came from, and knows a held-back tag", () => {
@@ -104,31 +109,5 @@ describe("finding tags in copies of a page's scripts", () => {
     );
 
     expect(tagsAmong(copies)).toEqual(readPageContext(pageWith(markup)).tags);
-  });
-});
-
-describe("the tracker status", () => {
-  test("says a delayed tag is delayed, rather than missing", () => {
-    const status = snapshotTracker(readPageContext(pageWith(WP_ROCKET_TAG)));
-
-    expect(status.appId).toBe("7bc01df0-c859-4392-b90d-a949e95dfe6f");
-    expect(status.tags).toHaveLength(1);
-    expect(status.warnings.join(" ")).toContain("delayed by a page-speed plugin");
-    expect(status.warnings.join(" ")).not.toContain("No MediaJel tag");
-  });
-
-  test("still says so when there is no tag at all", () => {
-    const status = snapshotTracker(readPageContext(pageWith("")));
-
-    expect(status.tags).toEqual([]);
-    expect(status.warnings[0]).toContain("No MediaJel tag on this page");
-  });
-
-  test("keeps the loading warning for a tag that is not held back", () => {
-    const status = snapshotTracker(
-      readPageContext(pageWith(`<script src="https://tags.cnna.io/?appId=acme"></script>`)),
-    );
-
-    expect(status.warnings.join(" ")).toContain("window.trackTrans is not on the page (yet)");
   });
 });

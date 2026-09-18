@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
 import type { TagActivity } from "~/service/client";
-import { ago, amount, pageLabel, pageListing, shortAppId, tallyNumber, tallySentence } from "~/ui/activity";
+import { ago, amount, pageLabel, pageListing, shortAppId, stateLabel, tallyNumber, tallySentence } from "~/ui/activity";
 
 /**
  * The words the panel uses about a client's traffic. A tally that says "nothing was recorded"
@@ -61,6 +61,16 @@ describe("the tally's sentence", () => {
 
   test("stays quiet when no tag could be read — a failure is not a quiet week", () => {
     expect(tallySentence([{ appId: "a", status: "unavailable", message: "timed out" }], "transaction", NOW)).toBe("");
+  });
+});
+
+describe("a tag's state, in words", () => {
+  test("every state has a label, and none asks for a reload", () => {
+    for (const state of ["installed", "held-back", "running", "sending", "opted-out", "disabled", "failed"] as const) {
+      expect(stateLabel(state)).not.toMatch(/reload/i);
+    }
+    expect(stateLabel("held-back")).toContain("page-speed plugin");
+    expect(stateLabel("sending")).toBe("sending events");
   });
 });
 

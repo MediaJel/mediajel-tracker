@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { TagSummary } from "@mediajel/assistant-core/context";
+import { TagRecord } from "@mediajel/assistant-core/tags";
 import { deployTargets } from "@mediajel/assistant-core/deploy/targets";
-import { TrackerStatus } from "@mediajel/assistant-core/recorder/context";
+import { TrackerStatus } from "@mediajel/assistant-core/tags";
 import { canDeploy, canGenerate } from "@mediajel/assistant-core/state/machine";
 import { WidgetGoal, WidgetSession } from "@mediajel/assistant-core/types";
 
@@ -100,17 +100,6 @@ const EMPTY_STATUS: TrackerStatus = {
 
 const DEFAULT_TAG_URL = (process.env.PLASMO_PUBLIC_TAG_URL ?? "").trim();
 
-/**
- * What the panel should believe about the page once a job has (re)opened, or null to keep what it
- * has. A status describes one page: across a site change the previous one named somebody else's
- * tags — and would have looked up somebody else's activity — so it goes, and the panel waits for
- * this page to report. On the same site, a missing status just means the worker was recycled.
- */
-const adoptStatus = (previousSite: string, view: JobView): { status: TrackerStatus; known: boolean } | null => {
-  if (view.site !== previousSite) return { status: view.status ?? EMPTY_STATUS, known: view.status !== null };
-  return view.status ? { status: view.status, known: true } : null;
-};
-
 const message = (err: unknown): string => (err instanceof Error ? err.message : String(err));
 
 export const usePanel = (): PanelState => {
@@ -123,12 +112,10 @@ export const usePanel = (): PanelState => {
   const [site, setSite] = useState("");
   const [session, setSession] = useState<WidgetSession | null>(null);
   const [status, setStatus] = useState<TrackerStatus>(EMPTY_STATUS);
-  /** Whether `status` came from this site's page, rather than being the empty placeholder. */
-  const [statusKnown, setStatusKnown] = useState(false);
-  /** App IDs this tab's page has been heard sending events from — known even when the page is silent. */
-  const [heard, setHeard] = useState<string[]>([]);
-  /** The tags the background read from the page itself when the job opened; null until it has read them. */
-  const [found, setFound] = useState<TagSummary[] | null>(null);
+  /** Every MediaJel tag known on the bound tab's page, in the order first seen. */
+  const [tags, setTags] = useState<TagRecord[]>([]);
+  /** Whether the page has had its moment to load a tag — "no tag" means nothing before this. */
+  const [settled, setSettled] = useState(false);
   const siteRef = useRef("");
   /** Why this service could not deploy even if the operator is signed in. Empty when it can. */
   const [deployUnavailable, setDeployUnavailable] = useState("");
@@ -176,17 +163,10 @@ export const usePanel = (): PanelState => {
       setScreen("no-site");
       return;
     }
-    const adopted = adoptStatus(siteRef.current, view);
-    const sameSite = view.site === siteRef.current;
     siteRef.current = view.site;
-    if (adopted) {
-      setStatus(adopted.status);
-      setStatusKnown(adopted.known);
-    }
-    // An older background sends no `heard`; nothing heard is exactly what that means.
-    setHeard(view.heard ?? []);
-    // A page that could not be read this time keeps what was read from it before; another site's never carries over.
-    setFound((previous) => view.found ?? (sameSite ? previous : null));
+    setStatus(view.status);
+    setTags(view.tags);
+    setSettled(view.settled);
     setSite(view.site);
     setSession(view.session);
     setScreen("job");
@@ -198,8 +178,15 @@ export const usePanel = (): PanelState => {
   useEffect(() => {
     let cancelled = false;
 
+    // `sidepanel.html?tab=<id>` pins the panel to that tab — an extension page can only be opened
+    // that way by the extension itself or a test driving it, and it is what lets an end-to-end run
+    // look at the real panel bound to a real page.
+    const pinned = Number(new URLSearchParams(window.location.search).get("tab"));
+
     const bind = async (): Promise<void> => {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const tab = pinned
+        ? await chrome.tabs.get(pinned)
+        : (await chrome.tabs.query({ active: true, currentWindow: true }))[0];
       if (cancelled || !tab?.id) return;
       tabIdRef.current = tab.id;
 
@@ -215,13 +202,13 @@ export const usePanel = (): PanelState => {
     };
 
     void bind();
-    const onActivated = (): void => void bind();
+    const onActivated = (): void => (pinned ? undefined : void bind());
     // Activation is not enough. Opening the client's site in a NEW tab activates it while it is
     // still the new-tab page, so the bind above resolves to no site and nothing re-runs once the
     // real URL arrives — the operator gets "this tab is not on a website yet" on a loaded page.
     // Re-bind when the tab this panel follows finishes navigating.
     const onUpdated = (tabId: number, change: chrome.tabs.OnUpdatedInfo, tab: chrome.tabs.Tab): void => {
-      if (!tab.active || !change.url) return;
+      if (!change.url || (pinned ? tabId !== pinned : !tab.active)) return;
       void bind();
     };
     chrome.tabs.onActivated.addListener(onActivated);
@@ -246,17 +233,17 @@ export const usePanel = (): PanelState => {
       switch (push.type) {
         case "session":
           return setSession(push.session);
-        case "status":
-          setStatusKnown(true);
-          return setStatus(push.status);
         case "verify-result":
           return setVerifyRunErrors(push.errors);
         case "generation-error":
           return setDeployError("");
         case "signed-out":
           return signedOut(push.message);
-        case "tags-heard":
-          return push.site === siteRef.current ? setHeard(push.appIds) : undefined;
+        case "tags":
+          if (push.site !== siteRef.current) return undefined;
+          setTags(push.tags);
+          setSettled(push.settled);
+          return setStatus(push.status);
         default:
           return undefined;
       }
@@ -486,7 +473,7 @@ export const usePanel = (): PanelState => {
 
   const fallbackTargets = useMemo(() => deployTargets(site, status.appId), [site, status.appId]);
 
-  const activity = useTagActivity({ active: screen === "job", site, status, statusKnown, heard, found });
+  const activity = useTagActivity({ active: screen === "job", site, tags, settled });
 
   const flow: AppFlowState = {
     verifyRunErrors,

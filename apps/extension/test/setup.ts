@@ -47,12 +47,13 @@ const area = (): {
 };
 
 const local = area();
+const session = area();
 
 (globalThis as unknown as { chrome: unknown }).chrome = {
   storage: {
     local,
     sync: area(),
-    session: area(),
+    session,
     onChanged: { addListener: () => undefined, removeListener: () => undefined },
   },
   runtime: {
@@ -64,7 +65,7 @@ const local = area();
       onDisconnect: { addListener: () => undefined },
     }),
     sendMessage: async () => ({ ok: true, value: null }),
-    onMessage: { addListener: () => undefined },
+    onMessage: { addListener: () => undefined, removeListener: () => undefined },
     onConnect: { addListener: () => undefined },
     lastError: undefined,
   },
@@ -73,10 +74,16 @@ const local = area();
     get: async () => ({ id: 1, url: "https://shop.example.com/checkout", windowId: 1 }),
     update: async () => undefined,
     onActivated: { addListener: () => undefined, removeListener: () => undefined },
+    onUpdated: { addListener: () => undefined, removeListener: () => undefined },
+    onRemoved: { addListener: () => undefined, removeListener: () => undefined },
   },
+  webRequest: { onBeforeRequest: { addListener: () => undefined } },
   scripting: { registerContentScripts: async () => undefined },
   sidePanel: { setPanelBehavior: async () => undefined, open: async () => undefined },
 };
 
 /** Lets a test start from a known store rather than from whatever ran before it. */
-export const clearExtensionStorage = (): void => local.store.clear();
+export const clearExtensionStorage = (): void => {
+  local.store.clear();
+  session.store.clear();
+};
