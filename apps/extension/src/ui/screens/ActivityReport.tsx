@@ -1,48 +1,70 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 
-import { TagRecord } from "@mediajel/assistant-core/tags";
-
 import { cn } from "~/lib/utils";
 import type { TagActivity } from "~/service/client";
 import type { TagActivityState } from "~/sidepanel/useTagActivity";
-import { amount, fullNumber, pageLabel, pageListing, stateLabel, when } from "~/ui/activity";
-import { Definitions } from "~/ui/components/Definitions";
+import { amount, describeTag, fullNumber, pageLabel, pageListing, when } from "~/ui/activity";
 import InfoTip from "~/ui/components/InfoTip";
-import { Empty, Fine } from "~/ui/components/Section";
+import { Empty, Fine, SheetGroup } from "~/ui/components/Section";
 import { Alert } from "~/ui/components/ui/alert";
 import { Button } from "~/ui/components/ui/button";
 import { Input } from "~/ui/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/ui/components/ui/table";
 import { DaysSection } from "~/ui/screens/ActivityDays";
+import { TagCounts, TagHeading } from "~/ui/screens/ActivityReading";
 import { ACTIVITY_DETAILS_ID, ACTIVITY_REPORT_ID, ACTIVITY_RETRY_ID } from "~/ui/screens/ActivityTally";
 
 /**
  * Details: the whole of each tag's last 7 days, one sheet per tag, in the place the job's steps
  * usually are — the same way Settings takes it — so a long page list gets the panel's full height
- * and the job is untouched underneath.
+ * and the job is untouched underneath. The tally's readings step aside while it is open: every one
+ * of them is here in full.
  *
- * This is where the machine facts live that the tally keeps off the heading: the full app ID, the
- * tag's environment and version, the transaction total, and the pages the conversions happened on.
+ * A sheet reads top to bottom in one order: which tag, its counts in the tally's form but in full,
+ * the money and the last events, then the days, then the pages the conversions happened on.
  */
 
 type Answered = Extract<TagActivity, { status: "ok" }>;
 type Page = NonNullable<Answered["pages"]>[number];
 
-const conversions = (page: Page): string =>
-  `${fullNumber(page.conversions)} ${page.conversions === 1 ? "conversion" : "conversions"}${
-    page.transactionTotal ? ` · ${amount(page.transactionTotal)} total` : ""
-  }`;
-
-/** A page: its path in mono, its count, and — an off-site checkout — its host under the path. */
+/** A page: its path in mono with an off-site host under it, then how many conversions and how much. */
 const PageRow = ({ page, site }: { page: Page; site: string }): ReactNode => {
   const { path, host } = pageLabel(page.pageUrl, site);
   return (
-    <li className="flex flex-wrap items-baseline gap-x-2.5 py-1.5">
-      <span className="min-w-0 flex-1 font-mono text-sm text-foreground wrap-anywhere">{path}</span>
-      {host && <span className="order-3 flex-[1_0_100%] text-xs text-muted-foreground">{host}</span>}
-      <span className="flex-none text-sm text-muted-foreground tabular-nums">{conversions(page)}</span>
-    </li>
+    <TableRow>
+      <TableCell>
+        <span className="block font-mono text-sm text-foreground wrap-anywhere">{path}</span>
+        {host && <span className="block text-xs text-muted-foreground">{host}</span>}
+      </TableCell>
+      <TableCell className="w-[1%] text-right text-sm whitespace-nowrap text-foreground tabular-nums">
+        {fullNumber(page.conversions)}
+      </TableCell>
+      <TableCell className="w-[1%] text-right text-sm whitespace-nowrap text-muted-foreground tabular-nums">
+        {page.transactionTotal ? amount(page.transactionTotal) : "—"}
+      </TableCell>
+    </TableRow>
   );
 };
+
+const HEAD = "text-xs text-muted-foreground";
+
+/** The pages as a ruled table: the header names the columns once, and the numbers line up. */
+const PagesTable = ({ pages, site }: { pages: Page[]; site: string }): ReactNode => (
+  <Table className="mt-1">
+    <TableHeader className="[&_th]:border-b [&_th]:border-border">
+      <TableRow>
+        <TableHead className={HEAD}>Page</TableHead>
+        <TableHead className={cn(HEAD, "text-right")}>Conversions</TableHead>
+        <TableHead className={cn(HEAD, "text-right")}>Total</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      {pages.map((page) => (
+        <PageRow key={page.pageUrl} page={page} site={site} />
+      ))}
+    </TableBody>
+  </Table>
+);
 
 const PagesNote = ({ truncated, grouped }: { truncated: boolean; grouped: boolean }): ReactNode => (
   <Fine className="mt-2.5">
@@ -73,14 +95,10 @@ const Pages = ({ pages, truncated, site }: { pages: Page[]; truncated: boolean; 
       {shown.length === 0 ? (
         <Empty>No page matches “{filter.trim()}”.</Empty>
       ) : (
-        <ul className="m-0 list-none p-0">
-          {shown.map((page) => (
-            <PageRow key={page.pageUrl} page={page} site={site} />
-          ))}
-        </ul>
+        <PagesTable pages={shown} site={site} />
       )}
       {canShowAll && (
-        <Button type="button" variant="link" size="none" className="mt-1 text-md" onClick={() => setAll(true)}>
+        <Button type="button" variant="link" size="none" className="mt-2 text-md" onClick={() => setAll(true)}>
           Show all {pages.length} pages
         </Button>
       )}
@@ -98,46 +116,44 @@ const pagesBody = (result: Answered, site: string): ReactNode => {
 };
 
 const PagesSection = ({ result, site }: { result: Answered; site: string }): ReactNode => (
-  <div className="mt-[18px]">
-    <h4 className="mt-0 mb-1 font-display text-base font-semibold text-foreground">Conversions by page</h4>
-    {pagesBody(result, site)}
-  </div>
+  <SheetGroup title="Conversions by page">{pagesBody(result, site)}</SheetGroup>
 );
 
 const lastSeen = (label: string, at: string | null): string =>
   at ? `Last ${label}: ${when(at)}.` : `No ${label} in the last 7 days.`;
 
-/** The counts, and the two that only exist once there is money or ad traffic to count. */
-const factEntries = (totals: Answered["totals"]): [string, string][] => {
-  const entries: [string, string][] = [
-    ["Page views", fullNumber(totals.pageviews)],
-    ["Transactions", fullNumber(totals.transactions)],
-    ["Sign-ups", fullNumber(totals.signups)],
-    ["Sessions", fullNumber(totals.sessions)],
-  ];
+/** The two figures that only exist once there is money or ad traffic to count. */
+const moneyEntries = (totals: Answered["totals"]): [string, string][] => {
+  const entries: [string, string][] = [];
   if (totals.transactionTotal > 0) entries.push(["Transaction total", amount(totals.transactionTotal)]);
   if (totals.impressions > 0) entries.push(["Ad impressions", fullNumber(totals.impressions)]);
   return entries;
 };
 
-const LAST = "mt-2 mb-0 text-base leading-[1.5] text-muted-foreground [&+&]:mt-0.5";
+/** Each figure beside its name on one line, the way the counts above are read. */
+const Money = ({ entries }: { entries: [string, string][] }): ReactNode =>
+  entries.length > 0 ? (
+    <dl className="mt-2.5 mb-0 flex flex-wrap gap-x-4 gap-y-0.5 text-sm tabular-nums">
+      {entries.map(([label, value]) => (
+        <div key={label} className="flex gap-1.5">
+          <dt className="text-muted-foreground">{label}</dt>
+          <dd className="m-0 text-foreground">{value}</dd>
+        </div>
+      ))}
+    </dl>
+  ) : null;
 
+const LAST = "mb-0 text-sm leading-[1.5] text-muted-foreground";
+
+/** The counts in full, then what only exists once there is money, then when the last events were. */
 const Facts = ({ result }: { result: Answered }): ReactNode => (
   <>
-    <Definitions entries={factEntries(result.totals)} />
-    <p className={LAST}>{lastSeen("transaction", result.lastTransactionAt)}</p>
-    <p className={LAST}>{lastSeen("sign-up", result.lastSignUpAt)}</p>
+    <TagCounts totals={result.totals} format={fullNumber} />
+    <Money entries={moneyEntries(result.totals)} />
+    <p className={cn(LAST, "mt-2.5")}>{lastSeen("transaction", result.lastTransactionAt)}</p>
+    <p className={cn(LAST, "mt-0.5")}>{lastSeen("sign-up", result.lastSignUpAt)}</p>
   </>
 );
-
-const describeTag = (tag: TagRecord | undefined): string => {
-  if (!tag) return "";
-  // Known only from the events it sends, or from Snowplow: nothing on the page names its configuration.
-  const configuration = tag.environment
-    ? `Environment ${tag.environment} · version ${tag.version}`
-    : "Nothing on the page names this tag’s configuration";
-  return `${configuration} · ${stateLabel(tag.state)}`;
-};
 
 /** A tag that could not be read gets a notice, with the service's own words behind its ⓘ. */
 const Unread = ({ message, onRetry }: { message: string; onRetry(): void }): ReactNode => (
@@ -154,25 +170,22 @@ const Unread = ({ message, onRetry }: { message: string; onRetry(): void }): Rea
 
 interface SheetProps {
   result: TagActivity;
-  tag?: TagRecord;
+  description: string;
   site: string;
   /** The last sheet tears off at the bottom, the way the stack's last sheet does. */
   last: boolean;
   onRetry(): void;
 }
 
-/** One tag's sheet: the full app id in mono, its configuration and state, then the record. */
-const Sheet = ({ result, tag, site, last, onRetry }: SheetProps): ReactNode => {
+/** One tag's sheet: which tag, then its record in reading order. */
+const Sheet = ({ result, description, site, last, onRetry }: SheetProps): ReactNode => {
   const headingId = `mj-activity-tag-${result.appId}`;
   return (
     <section
       className={cn("mb-2 bg-sheet px-5 pt-4 pb-[18px] shadow-press", last && "tear-bottom")}
       aria-labelledby={headingId}
     >
-      <h3 id={headingId} className="m-0 font-mono text-sm leading-[1.45] font-normal text-foreground wrap-anywhere">
-        {result.appId}
-      </h3>
-      <p className="mt-0.5 mb-3 text-sm leading-[1.45] text-muted-foreground">{describeTag(tag)}</p>
+      <TagHeading id={headingId} appId={result.appId} description={description} />
       {result.status === "ok" ? (
         <>
           <Facts result={result} />
@@ -210,7 +223,7 @@ export const ActivityReport = ({ activity, site }: { activity: TagActivityState;
 
   return (
     <section id={ACTIVITY_REPORT_ID} className="pb-5" aria-labelledby="mj-report-title" aria-busy={activity.refreshing}>
-      <div className="px-5 pt-[18px] pb-3.5">
+      <div className="flex items-baseline justify-between gap-3 px-5 pt-[18px] pb-3">
         <h2
           id="mj-report-title"
           ref={heading}
@@ -219,18 +232,15 @@ export const ActivityReport = ({ activity, site }: { activity: TagActivityState;
         >
           Tag activity
         </h2>
-        <p className="mt-1 mb-0 text-md leading-[1.5] text-muted-foreground">
-          The last 7 days of every MediaJel tag on this page. Counts trail the site by up to an hour.{" "}
-          <Button type="button" variant="link" size="none" onClick={activity.refresh}>
-            Refresh
-          </Button>
-        </p>
+        <Button type="button" variant="link" size="none" className="text-md" onClick={activity.refresh}>
+          Refresh
+        </Button>
       </div>
       {activity.results.map((result, index) => (
         <Sheet
           key={result.appId}
           result={result}
-          tag={activity.tags.find((tag) => tag.appId === result.appId)}
+          description={describeTag(activity.tags.find((tag) => tag.appId === result.appId))}
           site={site}
           last={index === activity.results.length - 1}
           onRetry={activity.refresh}

@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
 import { BandChart, DayReadout, DaysTable, useChosenDay } from "~/ui/components/DayBands";
-import { Empty, Fine } from "~/ui/components/Section";
+import { Empty, Fine, SheetGroup } from "~/ui/components/Section";
 import { Day, bandsFor, daysToDraw, todayOf } from "~/ui/days";
 
 /**
@@ -32,8 +32,7 @@ const figureFor = (days: Day[] | null): ReactNode => {
 
 /** A tag's week, or why there is none to draw. Null days are a read that failed, not a quiet week. */
 export const DaysSection = ({ daily }: { daily: Day[] | null | undefined }): ReactNode => (
-  <div data-slot="days" className="mt-[18px]">
-    <h4 className="mt-0 mb-1 font-display text-base font-semibold text-foreground">By day</h4>
+  <SheetGroup title="By day" data-slot="days">
     {figureFor(daily ? daysToDraw(daily) : null)}
-  </div>
+  </SheetGroup>
 );

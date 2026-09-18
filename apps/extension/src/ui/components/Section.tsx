@@ -70,3 +70,11 @@ export const Machine = ({ className, ...props }: ComponentProps<"pre">) => (
     {...props}
   />
 );
+
+/** A titled group of a report sheet: its heading behind a hairline, with room above it, so the sheet reads in parts. */
+export const SheetGroup = ({ title, className, children, ...props }: ComponentProps<"div"> & { title: string }) => (
+  <div className={cn("mt-5 border-t border-border pt-3.5", className)} {...props}>
+    <h4 className="mt-0 mb-2 font-display text-base font-semibold text-foreground">{title}</h4>
+    {children}
+  </div>
+);

@@ -137,34 +137,39 @@ MediaJel tag on the page over the last 7 days — Page views, Transactions, Sign
 in the heading, not the stack, because it is a fact about the site: true before the job starts, and
 where the first real conversions show up after Deploy. It is a reading, not a dashboard — never the
 big-number-small-label hero row: `TAG ACTIVITY` in the letterhead's caps with the range beside it,
-the column names printed once, one row per app ID, zeros in soft ink, and one sentence in carbon ink
-only when it says something about the job in hand ("Page views are arriving, but no transactions
-were recorded."). With several tags a short mono app ID leads each row — the one place an app id
-reaches the heading, because two rows cannot otherwise be told apart. Every state is its own
-sentence (listening for the page's tags, no tag, failed, not configured); zeros never stand in for
-an answer, and no sentence ever asks for a page to be reloaded — detection attaches, listens and
+then one reading per tag, each headed by the app ID it is about in mono with the tag's environment,
+version and state under it in soft ink — a number never appears without the tag it belongs to —
+the four counts under that with their names printed small above them, zeros in soft ink, a hairline
+between one tag's reading and the next (past three, the rest are in Details), and one sentence in
+carbon ink only when it says something about the job in hand ("Page views are arriving, but no
+transactions were recorded."). While Details is open the readings step aside — the report has every
+one of them in full — and only the heading line with its Details control stays. Every state is its
+own sentence (listening for the page's tags, no tag, failed, not configured); zeros never stand in
+for an answer, and no sentence ever asks for a page to be reloaded — detection attaches, listens and
 re-reads on its own. A problem is set in ink, not partner orange: the orange is under 4.5:1 as text
 on the light sheet, so it stays a border colour.
 
-**The week** sits under the tally's rows, on the main panel: two bands — page views, and the job's
-own measure — for the tag the tally's sentence singles out, at 40px plots under a one-line caption
-naming the day being read ("By day · Today so far · Wed, Sep 16", following the pointer or the
-arrow keys, the latest day at rest; the day's counts follow it for a screen reader only). With
-several tags the caption leads with the short app ID. It dims with the readings while a refresh is in flight, and says nothing at all
-when the tag has no days; Details draws every band of every tag.
+**The week** sits inside the reading of the tag the tally's sentence singles out, under its counts:
+two bands — page views, and the job's own measure — at 40px plots under a one-line caption naming
+the day being read ("By day · Today so far · Wed, Sep 16", following the pointer or the arrow keys,
+the latest day at rest; the day's counts follow it for a screen reader only). It dims with the
+readings while a refresh is in flight, and says nothing at all when the tag has no days; Details
+draws every band of every tag.
 
 **The activity report** is what Details opens. It takes the stack's place the way Settings does,
 with the action bar hidden and "Back to the job" at its foot, and prints one sheet per tag on the
-stock, the last of them torn off like the stack's: the full app id in mono and the tag's
-environment, version and state, the counts and the transaction total, the last transaction and
-sign-up as sentences, and conversions by page — path in mono, an off-site host under it, ten rows
-then all of them with a filter. Pages are printed, never linked: every listed page is one where a
-conversion fired, and opening it runs the client's tag, so a click from here could add to the
-counts or record a test purchase in production. The total carries no currency symbol, because the
-data carries no currency and "USD" is only a tag's default. A tag that could not be read gets a
-warning notice, with the service's own words behind its ⓘ; Details closes if a refresh leaves no
-readings, and focus goes back to the tally. When an endpoint can read further back than the 7-day
-table, the range control belongs at the top of the report, not in the heading.
+stock, the last of them torn off like the stack's. A sheet reads top to bottom in one order: the
+full app id in mono and the tag's environment, version and state; the four counts in the tally's
+form, in full; the transaction total and ad impressions once there are any; the last transaction
+and sign-up as sentences; then, each under its own heading behind a hairline, the days and the
+conversions by page — a ruled table of path in mono (an off-site host under it), conversions and
+total, ten rows then all of them with a filter. Pages are printed, never linked: every listed page
+is one where a conversion fired, and opening it runs the client's tag, so a click from here could
+add to the counts or record a test purchase in production. The total carries no currency symbol,
+because the data carries no currency and "USD" is only a tag's default. A tag that could not be
+read gets a warning notice, with the service's own words behind its ⓘ; Details closes if a refresh
+leaves no readings, and focus goes back to the tally. When an endpoint can read further back than
+the 7-day table, the range control belongs at the top of the report, not in the heading.
 
 **By day** is the figure on each report sheet, and the week on the main panel: the tag's last days
 as columns, one band per measure — Page views, Transactions, Sign-ups, Sessions, and the

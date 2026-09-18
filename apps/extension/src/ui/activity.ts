@@ -46,15 +46,17 @@ export const stateLabel = (state: TagState): string => STATE_LABELS[state];
 export const shortAppId = (appId: string): string => appId.split("-")[0].slice(0, 8) || appId;
 
 /**
- * One line under the readings on what the page's tags are doing — only when it adds to the numbers.
- * A tag sending events needs no sentence; one that is installed, held back, opted out, disabled or
- * failed is the reason the numbers may not move, and is named.
+ * A tag's configuration and state on one line under its app ID — "Environment dutchie · version 2
+ * · sending events" — so a reading always says which tag it is about and what that tag is doing. A
+ * tag known only from the events it sends, or from Snowplow, has nothing on the page naming its
+ * configuration, and says so rather than printing blanks.
  */
-export const stateSentence = (tags: TagRecord[]): string => {
-  const notable = tags.filter((tag) => tag.state !== "sending");
-  if (notable.length === 0) return "";
-  if (tags.length === 1) return `This tag is ${stateLabel(notable[0].state)}.`;
-  return `${notable.map((tag) => `${shortAppId(tag.appId)} is ${stateLabel(tag.state)}`).join("; ")}.`;
+export const describeTag = (tag: TagRecord | undefined): string => {
+  if (!tag) return "";
+  const configuration = tag.environment
+    ? `Environment ${tag.environment} · version ${tag.version}`
+    : "Nothing on the page names this tag’s configuration";
+  return `${configuration} · ${stateLabel(tag.state)}`;
 };
 
 const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [

@@ -4,11 +4,11 @@ import type { TagActivity } from "~/service/client";
 import {
   ago,
   amount,
+  describeTag,
   pageLabel,
   pageListing,
   shortAppId,
   stateLabel,
-  stateSentence,
   stripTag,
   tallyNumber,
   tallySentence,
@@ -100,12 +100,13 @@ describe("a tag's state, in words", () => {
     firstSeenAt: 0,
   });
 
-  test("a page whose tags are all sending needs no sentence; one that is not is named", () => {
-    expect(stateSentence([])).toBe("");
-    expect(stateSentence([record("a", "sending")])).toBe("");
-    expect(stateSentence([record("a", "installed")])).toBe("This tag is installed, not running yet.");
-    expect(stateSentence([record("7bc01df0-c859", "held-back"), record("b", "sending")])).toBe(
-      "7bc01df0 is held back by a page-speed plugin until the visitor interacts.",
+  test("a tag's line names its configuration and its state, or says that the page names none", () => {
+    expect(describeTag(undefined)).toBe("");
+    expect(describeTag({ ...record("a", "sending"), environment: "dutchie", version: "2" })).toBe(
+      "Environment dutchie · version 2 · sending events",
+    );
+    expect(describeTag(record("a", "held-back"))).toBe(
+      "Nothing on the page names this tag’s configuration · held back by a page-speed plugin until the visitor interacts",
     );
   });
 

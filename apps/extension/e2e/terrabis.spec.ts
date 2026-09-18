@@ -82,10 +82,10 @@ test("detection: the tag is found, then heard sending, and job/open names it", a
 
 /** Which screen the panel settled on: the tally, or the plain frame saying the tab has no site. */
 const panelOutcome = async (panel: Page): Promise<"bound" | "no-site" | "other"> => {
-  await panel.locator(".mj-tally-grid, .mj-tally-note, .mj-panel--plain .mj-lede").first().waitFor({ timeout: 30_000 });
-  if ((await panel.locator(".mj-tally-grid, .mj-tally-note").count()) > 0) return "bound";
-  const lede = await panel.locator(".mj-panel--plain .mj-lede").first().textContent();
-  return /not on a website/.test(lede ?? "") ? "no-site" : "other";
+  const noSite = "p:has-text('not on a website')";
+  await panel.locator(`[data-slot=tally], [data-slot=tally-note], ${noSite}`).first().waitFor({ timeout: 30_000 });
+  if ((await panel.locator("[data-slot=tally], [data-slot=tally-note]").count()) > 0) return "bound";
+  return (await panel.locator(noSite).count()) > 0 ? "no-site" : "other";
 };
 
 const screenshotBothThemes = async (panel: Page): Promise<void> => {
