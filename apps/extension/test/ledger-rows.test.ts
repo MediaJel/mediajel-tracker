@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { CollectorEvent, WireEvent } from "@mediajel/assistant-core/wire/types";
 
-import { matches, padCount, pageLabel, rowOf, schemaShort, typeOf } from "~/ui/ledger";
+import { matches, padCount, pageLabel, rowDomId, rowOf, schemaShort, stepTo, typeOf } from "~/ui/ledger";
 
 /**
  * The words the ledger uses for a row. A transaction has to read as its order and total, a
@@ -221,5 +221,30 @@ describe("the other sources' rows", () => {
       "surf",
       "js-3.24.2",
     ]);
+  });
+});
+
+describe("walking the ledger by keyboard", () => {
+  test("Down and Up step one row, and stop at the ends", () => {
+    expect(stepTo("ArrowDown", 0, 3)).toBe(1);
+    expect(stepTo("ArrowUp", 2, 3)).toBe(1);
+    expect(stepTo("ArrowDown", 2, 3)).toBeNull();
+    expect(stepTo("ArrowUp", 0, 3)).toBeNull();
+  });
+
+  test("Home and End jump to the ends; from outside the rows, Down lands on the first", () => {
+    expect(stepTo("Home", 2, 3)).toBe(0);
+    expect(stepTo("End", 0, 3)).toBe(2);
+    expect(stepTo("ArrowDown", -1, 3)).toBe(0);
+    expect(stepTo("ArrowUp", -1, 3)).toBeNull();
+  });
+
+  test("any other key, or no rows at all, is not a step", () => {
+    expect(stepTo("Enter", 0, 3)).toBeNull();
+    expect(stepTo("ArrowDown", -1, 0)).toBeNull();
+  });
+
+  test("a row's DOM id is the event's id with the panel's prefix", () => {
+    expect(rowDomId("r1:0")).toBe("mj-event-r1:0");
   });
 });

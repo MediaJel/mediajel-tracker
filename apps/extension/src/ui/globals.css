@@ -197,6 +197,11 @@
   --text-title: 27px;
   --text-title--line-height: 1.14;
 
+  /* The one breakpoint. The panel is drawn at 400px and stays one column; from 40rem — a side panel
+     dragged wide, a devtools-sized window — the ledger's receipt prints beside its rows instead of
+     under them. Nothing else changes with width. */
+  --breakpoint-wide: 40rem;
+
   --tracking-caps: 0.14em;
   --tracking-stamp: 0.12em;
   --tracking-label: 0.08em;

@@ -180,6 +180,28 @@ export const rowOf = (event: WireEvent): Row => ({
   at: event.at,
 });
 
+const STEPS: Record<string, (index: number, count: number) => number> = {
+  ArrowDown: (index) => index + 1,
+  ArrowUp: (index) => index - 1,
+  Home: () => 0,
+  End: (_, count) => count - 1,
+};
+
+/**
+ * Where an arrow key takes the focus along the ledger: the row a key names from `index` among
+ * `count` rows, or null when the key is not one of the four or would step off either end. From
+ * outside the rows (index −1), Down and Home land on the first.
+ */
+export const stepTo = (key: string, index: number, count: number): number | null => {
+  const step = STEPS[key];
+  if (!step || count === 0) return null;
+  const next = step(index, count);
+  return next >= 0 && next < count ? next : null;
+};
+
+/** The id a row's button carries, so the receipt can hand focus back to the row it came from. */
+export const rowDomId = (id: string): string => `mj-event-${id}`;
+
 /** Whether a row answers a filter typed in the search box. */
 export const matches = (row: Row, query: string): boolean => {
   const needle = query.trim().toLowerCase();

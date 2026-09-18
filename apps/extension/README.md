@@ -54,7 +54,9 @@ panel is bound to; a new site opens on Overview.
 - **Analytics** — every reading in full, one sheet per tag: the counts, the money, the last events,
   the days, and conversions by page. What Details used to open.
 - **Events** — the ledger: everything this tab's page was heard sending, newest first under the
-  page that sent it, each row opening into its decoded receipt. Read from the tab's own traffic
+  page that sent it, with the chosen row's decoded receipt beside the rows (from 40rem — a side
+  panel dragged wide) or in a drawer under them (narrower); Up and Down walk the rows and the
+  receipt follows. Read from the tab's own traffic
   through `chrome.webRequest` and the page bridge; nothing here leaves the browser, nothing is
   fetched to read it, and no schema is validated (no Iglu Central request). Sources, in the order
   they arrive on a tagged page: the tag's collector events (`payload_data` batches to `*.cnna.io`,

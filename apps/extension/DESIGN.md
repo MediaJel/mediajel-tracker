@@ -42,6 +42,7 @@ both directions. Nothing has a second definition inside a media or `[data-theme]
 | `--mj-platform-text` / `--mj-warning-text` | `#087a5a` / `#ab3d14` | `#4fd6ac` / `#fcac86` | platform and partner **as text**: the inks above measured 3.8:1 and 3.96:1 on the light sheet, under the 4.5 floor |
 | `--mj-on-ink` / `--mj-stamp-fill` | `#ffffff` / `#0a7f5f` | `#14120f` / `#4fd6ac` | text on a filled ground, and the one filled stamp's ground (white on platform was 4.3:1) |
 | geometry | radius 3px (`--radius-sm/md/lg`), 4px for the suggestion card · pad 20px | | paper, not pill |
+| `wide:` | `@media (width >= 40rem)` | | the one breakpoint: the ledger's receipt beside its rows instead of under them; nothing else changes with width |
 | `--mj-press` | `inset 0 1px 0 rgba(26,23,19,.07), inset 0 2px 0 rgba(255,255,255,.55)` | | a rule impressed into stock, not drawn on it |
 
 `@theme inline` maps these onto shadcn's vocabulary — `bg-primary` is the identity ink,
@@ -174,31 +175,39 @@ anywhere because a Nexxen segment is ninety opaque characters, and the script's 
 machine text. A tag heard only on the wire has no slip: the line under its app ID already says the
 page names nothing about it.
 
-**The ledger** is the Events view: every event this tab's page was heard sending — and, as their
-decoders land, every partner beacon, custom-tag fetch and third-party tag it fired — newest first
-under the page that made it, on one sheet with the tear. A page's band sits on carbon with its
-count as a mono pill, two digits at least, and the page's label (the host at the root, else the
-path, an off-site host under it). One row per event: a family mark drawn at 1.5px like the zigzag
-(a collector's tray, a beacon's pixel, the platform and network kinds for custom and other tags),
-a plain name ("Page view", "Page ping", "record", "Transaction", "Item"), the clock in mono at the
-right, and a second line in soft ink — the tag it belongs to, then a fact worth reading (an order
-and its total, a schema's name and version) and a status word only when something went wrong
-("sending…" in soft ink; "failed (503)" and "blocked" in warning ink — a word, never a colour
-alone). A row is a `Collapsible` that opens in place into its receipt, the sealed slip's own idiom:
-the transport as a chip and the status, three facts, then the payload in parts behind hairlines
-(Event, Transaction and Item open; User, Session, Page, Browser, Device and Ping closed), each a
-ruled table of key in mono, value, and a monochrome chip naming the value's type; entities and
-self-describing events as blocks headed by `name/version` with the vendor in fine print and a
-Data | JSON toggle; the tag's own `record` event opens into its configuration, printed by the
-slip's own groups. Above the list: the heading with the count on this tab and "Clear"; a search
-and four families (All · Collector · Partners · Custom tags · Other); and one line in soft ink,
-deliberately not privacy purple, saying all of it is read from the tab's own traffic and none of
-it leaves the browser. Other vendors' trackers keep to their own closed group at the foot, "Other
-trackers on this page", so an engineer can tell ours from theirs without confusing the two; a
-partner beacon's receipt says which tag it was attributed to and by which parameter. Empty, it listens; filtered to nothing, it says what nothing matched; past
-the memory cap, one line says how many of the oldest were let go. New rows announce themselves
-politely, at most once every four seconds. Schema and Errors are what the Data | JSON toggle grows
-when Iglu validation arrives; nothing is drawn for them until it does.
+**The ledger** is the Events view: every event this tab's page was heard sending — collector
+events, partner beacons, custom-tag fetches and the third-party tags they register — newest first
+under the page that made it, in a rail of rows with the receipt of the chosen row beside it. From
+40rem (`wide:`, the panel's one breakpoint — a side panel dragged wide) the rail is a 16rem column
+on the left and the receipt prints in the pane on its right, so the next event is one click, never
+an open and a close; under 40rem the rows keep the width and the receipt is a drawer beneath them,
+put away with its × or Escape. A page's band sits on carbon with its count as a mono pill, two
+digits at least, and the page's label (the host at the root, else the path, an off-site host under
+it). One row per event: a family mark drawn at 1.5px like the zigzag (a collector's tray, a
+beacon's pixel, the platform and network kinds for custom and other tags), a plain name ("Page
+view", "Page ping", "record", "Transaction", "Item"), and a second line in soft ink that opens with
+the clock in mono, then the tag it belongs to, a fact worth reading (an order and its total, a
+schema's name and version) and a status word only when something went wrong ("sending…" in soft
+ink; "failed (503)" and "blocked" in warning ink — a word, never a colour alone). The rows are one
+Tab stop: Up and Down walk them, Home and End jump, and the receipt follows; the chosen row sits on
+carbon with `aria-current` and, beside the pane, a chevron pointing at it. The receipt is a slip of
+its own on the stock: a head that stays put while the rest scrolls — the mark, the name in the
+display face, the transport as a chip, the status word — then three facts and the payload in parts
+behind hairlines, every part open with a chevron to fold it (Event, App, User, Session, Page,
+Browser, Device, Ping, Transaction, Item, Entities), each a ruled table of key in mono, value, and a
+monochrome chip naming the value's type; entities and self-describing events as blocks headed by
+`name/version` with the vendor in fine print and a Data | JSON toggle; the tag's own `record` event
+prints its configuration by the slip's own groups. Before a row is chosen the pane says so in a
+margin note. Above both, pinned so the filter stays at hand while the rail scrolls: the heading with
+the count on this tab and "Clear"; a search and five families (All · Collector · Partners · Custom ·
+Other), side by side from 40rem; and one line in soft ink, deliberately not privacy purple, saying
+all of it is read from the tab's own traffic and none of it leaves the browser. Other vendors'
+trackers keep to their own closed group at the foot of the rail, "Other trackers on this page", so
+an engineer can tell ours from theirs without confusing the two; a partner beacon's receipt says
+which tag it was attributed to and by which parameter. Empty, it listens; filtered to nothing, it
+says what nothing matched; past the memory cap, one line says how many of the oldest were let go.
+New rows announce themselves politely, at most once every four seconds. Schema and Errors are what
+the Data | JSON toggle grows when Iglu validation arrives; nothing is drawn for them until it does.
 
 **The week** sits inside the reading of the tag the tally's sentence singles out, under its counts:
 two bands — page views, and the job's own measure — at 40px plots under a one-line caption naming

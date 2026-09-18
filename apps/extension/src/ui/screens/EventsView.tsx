@@ -1,4 +1,4 @@
-import { Fragment, KeyboardEvent, ReactNode, useEffect, useRef, useState } from "react";
+import { Fragment, KeyboardEvent, ReactNode, useEffect, useState } from "react";
 
 import { TagRecord } from "@mediajel/assistant-core/tags";
 import { attributePartner } from "@mediajel/assistant-core/wire/partners";
@@ -18,7 +18,6 @@ import { attributed, byPage } from "@mediajel/assistant-core/wire/view";
 import { cn } from "~/lib/utils";
 import type { WireEventsState } from "~/sidepanel/useWireEvents";
 import { Definitions } from "~/ui/components/Definitions";
-import { Stack } from "~/ui/components/Panel";
 import { Empty, Fine, Machine } from "~/ui/components/Section";
 import { Chevron } from "~/ui/components/Chevron";
 import { Badge } from "~/ui/components/ui/badge";
@@ -27,7 +26,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/ui/compon
 import { Input } from "~/ui/components/ui/input";
 import { Table, TableBody, TableCell, TableRow } from "~/ui/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "~/ui/components/ui/toggle-group";
-import { Beacon, Collector, KindIcon } from "~/ui/icons";
+import { Beacon, Close, Collector, KindIcon } from "~/ui/icons";
 import { shortAppId } from "~/ui/activity";
 import {
   Family,
@@ -39,8 +38,10 @@ import {
   pageLabel,
   partnerName,
   recordAsTag,
+  rowDomId,
   rowOf,
   schemaShort,
+  stepTo,
   typeOf,
 } from "~/ui/ledger";
 import { ConfigurationGroups } from "~/ui/screens/ConfigurationSlip";
@@ -48,15 +49,21 @@ import { configurationOf } from "~/ui/tag-config";
 
 /**
  * Events: the ledger — every event this tab's page was heard sending, newest first under the
- * page that made it, each row opening in place into its receipt.
+ * page that made it — with the receipt of the chosen row beside it.
  *
- * A ledger, not a console: one row per event with a family mark, a plain name, the time in mono,
- * who it belongs to, and a status word only when something went wrong. The receipt is the
- * payload in groups behind hairlines, entities named by schema and version, every value with a
- * monochrome type chip; the tag's own record event opens into its configuration, the way the slip
- * prints it. All of it is read from this tab's own traffic; none of it leaves the browser, and
- * the line under the filter says so in soft ink — privacy purple marks bytes that leave, which is
- * the opposite of this.
+ * Two panes from 40rem: the rows in a rail on the left, the chosen row's receipt on the right, so
+ * reading the next event is one click, never an open and a close. Under 40rem the rows keep the
+ * width and the receipt prints in a drawer under them, put away with its × or Escape. The rows are
+ * one Tab stop — Up and Down walk them and the receipt follows — so a keyboard reads the ledger the
+ * way a pointer does.
+ *
+ * A ledger, not a console: one row per event with a family mark, a plain name, and a second line in
+ * soft ink that opens with the clock in mono, then who it belongs to, a fact, and a status word only
+ * when something went wrong. The receipt is the payload in parts behind hairlines, every one open,
+ * entities named by schema and version, every value with a monochrome type chip; the tag's own
+ * record event prints its configuration the way the slip does. All of it is read from this tab's
+ * own traffic; none of it leaves the browser, and the line under the filter says so in soft ink —
+ * privacy purple marks bytes that leave, which is the opposite of this.
  */
 
 type Filter = "all" | Family;
@@ -79,8 +86,7 @@ const MARKS: Record<Family, ReactNode> = {
   foreign: <KindIcon kind="network" />,
 };
 
-/** A group of a receipt worth opening at once; the rest wait behind their hairline. */
-const OPEN_GROUPS = new Set(["event", "structured", "transaction", "item"]);
+type Pages = ReturnType<typeof byPage>;
 
 /** A value in a receipt: its text, and the chip naming its type. */
 const Value = ({ value }: { value: unknown }): ReactNode => (
@@ -106,17 +112,18 @@ const FieldsTable = ({ rows }: { rows: [string, unknown][] }): ReactNode => (
   </Table>
 );
 
-/** A titled part of a receipt, behind a hairline, opened or closed as its group deserves. */
-const Part = ({ title, open, children }: { title: string; open: boolean; children: ReactNode }): ReactNode => (
-  <Collapsible defaultOpen={open} className="mt-2.5 border-t border-border pt-2">
+/** A titled part of a receipt behind a hairline: open, since the pane has the room, until it is folded away. */
+const Part = ({ title, children }: { title: string; children: ReactNode }): ReactNode => (
+  <Collapsible defaultOpen className="mt-2.5 border-t border-border pt-1.5">
     <CollapsibleTrigger asChild>
       <Button
         type="button"
         variant="ghost"
         size="none"
-        className="-ml-1 py-[3px] pl-1 font-display text-sm font-semibold text-foreground hover:bg-transparent"
+        className="group flex w-full justify-between py-[3px] font-display text-sm font-semibold text-foreground hover:bg-transparent"
       >
         {title}
+        <Chevron className="group-aria-expanded:rotate-180" />
       </Button>
     </CollapsibleTrigger>
     <CollapsibleContent>{children}</CollapsibleContent>
@@ -169,7 +176,7 @@ const EntityBlock = ({ entity }: { entity: Entity }): ReactNode => {
 };
 
 const GroupPart = ({ group }: { group: FieldGroup }): ReactNode => (
-  <Part title={group.label} open={OPEN_GROUPS.has(group.group)}>
+  <Part title={group.label}>
     <FieldsTable rows={group.fields.map((field) => [field.label, field.value])} />
   </Part>
 );
@@ -178,7 +185,7 @@ const GroupPart = ({ group }: { group: FieldGroup }): ReactNode => (
 const RecordPart = ({ event }: { event: CollectorEvent }): ReactNode => {
   const view = event.record ? configurationOf(recordAsTag(event.record)) : null;
   return view ? (
-    <Part title="Tag configuration" open>
+    <Part title="Tag configuration">
       <ConfigurationGroups view={view} />
     </Part>
   ) : null;
@@ -187,7 +194,7 @@ const RecordPart = ({ event }: { event: CollectorEvent }): ReactNode => {
 /** Any other self-describing event: its inner schema and data. */
 const PayloadPart = ({ event }: { event: CollectorEvent }): ReactNode =>
   event.schema && event.payload && !event.record ? (
-    <Part title="Self-describing event" open>
+    <Part title="Self-describing event">
       <EntityBlock
         entity={{ schema: event.schema, vendor: "", name: "", version: "", data: event.payload, truncated: false }}
       />
@@ -203,7 +210,7 @@ const CollectorReceipt = ({ event }: { event: CollectorEvent }): ReactNode => (
       <GroupPart key={group.group} group={group} />
     ))}
     {event.entities.length > 0 && (
-      <Part title="Entities" open>
+      <Part title="Entities">
         {event.entities.map((entity) => (
           <EntityBlock key={entity.schema} entity={entity} />
         ))}
@@ -326,7 +333,7 @@ const CollectorBody = ({ event }: { event: CollectorEvent }): ReactNode => (
 
 type BodyOf<K extends WireEvent["source"]> = (event: Extract<WireEvent, { source: K }>, tags: TagRecord[]) => ReactNode;
 
-/** What a receipt holds under its transport — the facts and the payload — by source. */
+/** What a receipt holds under its head — the facts and the payload — by source. */
 const BODIES: { [K in WireEvent["source"]]: BodyOf<K> } = {
   collector: (event) => <CollectorBody event={event} />,
   partner: (event, tags) => <PartnerReceipt event={event} tags={tags} />,
@@ -338,77 +345,144 @@ const BODIES: { [K in WireEvent["source"]]: BodyOf<K> } = {
 const Body = ({ event, tags }: { event: WireEvent; tags: TagRecord[] }): ReactNode =>
   (BODIES[event.source] as (event: WireEvent, tags: TagRecord[]) => ReactNode)(event, tags);
 
-/** The receipt a row opens into: the transport as a chip and the status word, then its facts and payload. */
-const Receipt = ({ event, row, tags }: { event: WireEvent; row: Row; tags: TagRecord[] }): ReactNode => (
-  <div data-slot="ledger-detail" className="px-5 pt-1 pb-4">
-    <div className="flex items-center gap-2">
-      <Badge variant="chip">{method(event)}</Badge>
-      {row.status && (
-        <span className={cn("text-xs", row.problem ? "text-warning-text" : "text-muted-foreground")}>{row.status}</span>
-      )}
-    </div>
-    <Body event={event} tags={tags} />
-  </div>
-);
-
-interface RowProps {
+interface ReceiptProps {
   event: WireEvent;
   row: Row;
   tags: TagRecord[];
-  open: boolean;
-  onToggle(id: string | null): void;
+  onClose(): void;
 }
 
-/** One event's row: the trigger is the row, its content the receipt; Escape closes it and comes back to the row. */
-const LedgerRow = ({ event, row, tags, open, onToggle }: RowProps): ReactNode => {
-  const trigger = useRef<HTMLButtonElement>(null);
+/** A receipt's head, staying put while the rest scrolls: the mark, the name, the transport as a chip, the status word, and — in the drawer — its ×. */
+const ReceiptHead = ({ event, row, onClose }: Omit<ReceiptProps, "tags">): ReactNode => (
+  <header className="sticky top-0 z-10 flex items-center gap-2 border-b border-border bg-sheet px-4 py-2.5">
+    <span className="flex-none text-muted-foreground">{MARKS[row.family]}</span>
+    <h3
+      id="mj-receipt-title"
+      className="m-0 min-w-0 flex-auto truncate font-display text-lg font-semibold text-foreground"
+    >
+      {row.name}
+    </h3>
+    <Badge variant="chip">{method(event)}</Badge>
+    {row.status && (
+      <span className={cn("flex-none text-xs", row.problem ? "text-warning-text" : "text-muted-foreground")}>
+        {row.status}
+      </span>
+    )}
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon-xs"
+      className="-mr-1 wide:hidden"
+      aria-label="Close the receipt"
+      onClick={onClose}
+    >
+      <Close />
+    </Button>
+  </header>
+);
+
+/** The chosen row's receipt, a slip of its own: the head, then the facts and the payload in parts. */
+const Receipt = ({ event, row, tags, onClose }: ReceiptProps): ReactNode => (
+  <article
+    data-slot="ledger-detail"
+    aria-labelledby="mj-receipt-title"
+    className="m-2 bg-sheet shadow-press tear-bottom wide:m-3"
+  >
+    <ReceiptHead event={event} row={row} onClose={onClose} />
+    <div className="px-4 pt-1 pb-3">
+      <Body event={event} tags={tags} />
+    </div>
+  </article>
+);
+
+/** The pane before a row is chosen — seen only from 40rem, where the pane is always there. */
+const Unchosen = (): ReactNode => (
+  <div className="p-5">
+    <Empty data-slot="ledger-unchosen" className="mt-0">
+      Choose an event and its receipt prints here.
+    </Empty>
+    <Fine className="mt-2 ml-px pl-3">Up and Down walk the ledger; Escape puts a receipt away.</Fine>
+  </div>
+);
+
+interface PaneProps {
+  chosen: WireEvent | null;
+  rows: Map<string, Row>;
+  tags: TagRecord[];
+  onClose(): void;
+}
+
+/** The receipt's pane: beside the rail from 40rem, a drawer under it below. Escape anywhere in it puts the receipt away. */
+const Pane = ({ chosen, rows, tags, onClose }: PaneProps): ReactNode => {
   const onKeyDown = (keyboard: KeyboardEvent): void => {
-    if (keyboard.key !== "Escape" || !open) return;
-    onToggle(null);
-    trigger.current?.focus();
+    if (keyboard.key === "Escape" && chosen) onClose();
   };
   return (
-    <Collapsible asChild open={open} onOpenChange={(next) => onToggle(next ? row.id : null)}>
-      <li
-        data-slot="ledger-row"
-        data-kind={row.family}
-        className="bg-sheet shadow-press data-open:bg-carbon"
-        onKeyDown={onKeyDown}
-      >
-        <CollapsibleTrigger asChild>
-          <button
-            ref={trigger}
-            type="button"
-            className="group flex w-full cursor-pointer items-start gap-2.5 border-0 bg-transparent px-5 py-2.5 text-left hover:bg-stock motion-safe:transition-colors motion-safe:duration-150"
-          >
-            <span className="mt-0.5 flex-none text-muted-foreground">{MARKS[row.family]}</span>
-            <span className="min-w-0 flex-auto">
-              <span className="flex items-baseline gap-2">
-                <span className="min-w-0 flex-auto truncate text-base text-foreground">{row.name}</span>
-                <span className="flex-none font-mono text-2xs text-muted-foreground">{row.clock}</span>
-              </span>
-              <span className="flex flex-wrap gap-x-2 text-xs text-muted-foreground">
-                <span>{row.who}</span>
-                {row.facts && <span className="text-foreground tabular-nums">{row.facts}</span>}
-                {row.status && <span className={cn(row.problem && "text-warning-text")}>{row.status}</span>}
-              </span>
-            </span>
-            <Chevron className="mt-1 flex-none group-aria-expanded:rotate-180" />
-          </button>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <Receipt event={event} row={row} tags={tags} />
-        </CollapsibleContent>
-      </li>
-    </Collapsible>
+    <section
+      data-slot="ledger-pane"
+      aria-label="Receipt"
+      onKeyDown={onKeyDown}
+      className={cn(
+        "min-h-0 flex-col overflow-y-auto border-border wide:flex wide:flex-auto wide:border-t-0 wide:border-l",
+        chosen ? "flex flex-[3_1_0%] border-t" : "hidden",
+      )}
+    >
+      {chosen ? (
+        <Receipt key={chosen.id} event={chosen} row={rows.get(chosen.id)!} tags={tags} onClose={onClose} />
+      ) : (
+        <Unchosen />
+      )}
+    </section>
   );
 };
+
+interface RowProps {
+  row: Row;
+  chosen: boolean;
+  /** Whether Tab lands on this row: the rows are one stop, and the arrow keys do the rest. */
+  tabStop: boolean;
+  onChoose(id: string): void;
+}
+
+/** What marks the chosen row, for assistive tech and for the stylesheet alike. */
+const CHOSEN = { "aria-current": "true", "data-chosen": true } as const;
+
+/** A row's second line: the clock first, then who it belongs to, a fact, and the status word. */
+const SecondLine = ({ row }: { row: Row }): ReactNode => (
+  <span className="flex gap-x-2 text-xs whitespace-nowrap text-muted-foreground">
+    <span className="flex-none font-mono tabular-nums">{row.clock}</span>
+    <span className="flex-none">{row.who}</span>
+    {row.facts && <span className="min-w-0 truncate text-foreground">{row.facts}</span>}
+    {row.status && <span className={cn("flex-none", row.problem && "text-warning-text")}>{row.status}</span>}
+  </span>
+);
+
+/** One event's row: the button that chooses it. Its receipt prints in the pane, and the chevron says where. */
+const LedgerRow = ({ row, chosen, tabStop, onChoose }: RowProps): ReactNode => (
+  <li data-slot="ledger-row" data-kind={row.family} className="bg-sheet shadow-press">
+    <button
+      id={rowDomId(row.id)}
+      type="button"
+      {...(chosen ? CHOSEN : {})}
+      tabIndex={tabStop ? 0 : -1}
+      onClick={() => onChoose(row.id)}
+      className="group flex w-full cursor-pointer items-start gap-2.5 border-0 bg-transparent px-5 py-2 text-left hover:bg-stock data-chosen:bg-carbon motion-safe:transition-colors motion-safe:duration-150 wide:px-3.5"
+    >
+      <span className="mt-0.5 flex-none text-muted-foreground">{MARKS[row.family]}</span>
+      <span className="min-w-0 flex-auto">
+        <span className="block truncate text-base text-foreground">{row.name}</span>
+        <SecondLine row={row} />
+      </span>
+      <Chevron className="mt-1 hidden -rotate-90 wide:group-data-chosen:block" />
+    </button>
+  </li>
+);
 
 /** The band a page's rows sit under: the count, two digits at least, and the page's label. */
 const PageBand = ({ count, url, site }: { count: number; url: string; site: string }): ReactNode => {
   const label = pageLabel(url, site);
   return (
-    <li data-slot="ledger-page" className="flex items-baseline gap-2.5 bg-carbon px-5 py-2">
+    <li data-slot="ledger-page" className="flex items-baseline gap-2.5 bg-carbon px-5 py-2 wide:px-3.5">
       <Badge variant="pill" className="font-mono">
         {padCount(count)}
       </Badge>
@@ -424,21 +498,25 @@ const PageBand = ({ count, url, site }: { count: number; url: string; site: stri
 const keep = (row: Row, family: Filter, query: string): boolean =>
   (family === "all" || row.family === family) && matches(row, query);
 
-interface LedgerProps {
-  events: WireEvent[];
+interface Choosing {
+  rows: Map<string, Row>;
+  chosenId: string | null;
+  onChoose(id: string): void;
+}
+
+interface LedgerProps extends Choosing {
+  pages: Pages;
+  /** How many rows the filter kept, so the list knows when to offer the rest. */
+  count: number;
   family: Filter;
   site: string;
-  tags: TagRecord[];
-  rows: Map<string, Row>;
-  kept: Set<string>;
-  openId: string | null;
-  onToggle(id: string | null): void;
+  /** The one row Tab lands on. */
+  tabStop: string | null;
 }
 
 /** The pages and their rows, newest first, the newest two hundred of them until the rest are asked for. */
-const Ledger = ({ events, family, site, tags, rows, kept, openId, onToggle }: LedgerProps): ReactNode => {
+const Ledger = ({ pages, count, family, site, rows, chosenId, tabStop, onChoose }: LedgerProps): ReactNode => {
   const [all, setAll] = useState(false);
-  const pages = byPage({ site, events: events.filter((event) => kept.has(event.id)), pages: [], dropped: 0, seq: 0 });
   let drawn = 0;
   return (
     <>
@@ -455,19 +533,24 @@ const Ledger = ({ events, family, site, tags, rows, kept, openId, onToggle }: Le
               all || drawn++ < PAGE ? (
                 <LedgerRow
                   key={event.id}
-                  event={event}
                   row={rows.get(event.id)!}
-                  tags={tags}
-                  open={openId === event.id}
-                  onToggle={onToggle}
+                  chosen={chosenId === event.id}
+                  tabStop={tabStop === event.id}
+                  onChoose={onChoose}
                 />
               ) : null,
             )}
           </Fragment>
         ))}
       </ol>
-      {!all && kept.size > PAGE && (
-        <Button type="button" variant="link" size="none" className="mt-2 ml-5 text-md" onClick={() => setAll(true)}>
+      {!all && count > PAGE && (
+        <Button
+          type="button"
+          variant="link"
+          size="none"
+          className="mt-2 ml-5 text-md wide:ml-3.5"
+          onClick={() => setAll(true)}
+        >
           Show older events
         </Button>
       )}
@@ -507,7 +590,7 @@ const LiveNote = ({ count }: { count: number }): ReactNode => {
 };
 
 const Head = ({ ledger }: { ledger: WireEventsState }): ReactNode => (
-  <div className="flex items-baseline gap-3 px-5 pt-[18px] pb-2">
+  <div className="flex flex-none items-baseline gap-3 px-5 pt-[18px] pb-2">
     <h2 id="mj-events-title" tabIndex={-1} className="m-0 font-display text-xl font-semibold text-foreground">
       Events
     </h2>
@@ -527,8 +610,12 @@ interface FilterProps {
   onFamily(family: Filter): void;
 }
 
+/** The search and the families, one under the other; side by side once the panel is wide. */
 const LedgerFilter = ({ query, family, onQuery, onFamily }: FilterProps): ReactNode => (
-  <div data-slot="ledger-filter" className="grid gap-2 px-5 pb-2">
+  <div
+    data-slot="ledger-filter"
+    className="grid flex-none gap-2 px-5 pb-2 wide:grid-cols-[minmax(0,1fr)_auto] wide:items-center"
+  >
     <Input
       type="search"
       placeholder="Filter events"
@@ -548,20 +635,16 @@ const LedgerFilter = ({ query, family, onQuery, onFamily }: FilterProps): ReactN
         </ToggleGroupItem>
       ))}
     </ToggleGroup>
-    <Fine className="mb-0">Read from this tab’s own traffic, in this browser. Nothing here leaves it.</Fine>
+    <Fine className="mb-0 wide:col-span-2">
+      Read from this tab’s own traffic, in this browser. Nothing here leaves it.
+    </Fine>
   </div>
 );
 
 /** Other vendors' trackers, apart and closed: an engineer can tell ours from theirs without confusing the two. */
-const OtherTrackers = ({
-  events,
-  rows,
-  tags,
-  openId,
-  onToggle,
-}: Pick<LedgerProps, "events" | "rows" | "tags" | "openId" | "onToggle">): ReactNode =>
+const OtherTrackers = ({ events, rows, chosenId, onChoose }: Choosing & { events: WireEvent[] }): ReactNode =>
   events.length > 0 ? (
-    <Collapsible className="mt-3 px-5">
+    <Collapsible className="mt-3 px-5 wide:px-3.5">
       <CollapsibleTrigger asChild>
         <Button
           type="button"
@@ -577,16 +660,15 @@ const OtherTrackers = ({
         <ol
           data-slot="ledger-foreign"
           aria-label="Other trackers on this page"
-          className="m-0 -mx-5 mt-2 list-none p-0"
+          className="m-0 -mx-5 mt-2 list-none p-0 wide:-mx-3.5"
         >
           {events.map((event) => (
             <LedgerRow
               key={event.id}
-              event={event}
               row={rows.get(event.id)!}
-              tags={tags}
-              open={openId === event.id}
-              onToggle={onToggle}
+              chosen={chosenId === event.id}
+              tabStop
+              onChoose={onChoose}
             />
           ))}
         </ol>
@@ -594,9 +676,60 @@ const OtherTrackers = ({
     </Collapsible>
   ) : null;
 
+/** Up and Down walk the rows, Home and End jump to the ends, and the receipt follows the focus. */
+const walk = (keyboard: KeyboardEvent<HTMLDivElement>): void => {
+  const buttons = Array.from(
+    keyboard.currentTarget.querySelectorAll<HTMLButtonElement>("[data-slot=ledger-row] > button"),
+  );
+  const next = stepTo(keyboard.key, buttons.indexOf(document.activeElement as HTMLButtonElement), buttons.length);
+  if (next === null) return;
+  keyboard.preventDefault();
+  buttons[next].focus();
+  buttons[next].click();
+};
+
+interface RailProps extends LedgerProps {
+  ledger: WireEventsState;
+  query: string;
+  kept: Set<string>;
+  foreign: WireEvent[];
+  /** Whether a receipt is showing: under 40rem the drawer takes its share of the height from the rail. */
+  open: boolean;
+}
+
+/** The rows' column: the ledger or the reason it is empty, the other trackers, the dropped line. It scrolls on its own. */
+const Rail = ({ ledger, query, kept, foreign, open, ...list }: RailProps): ReactNode => (
+  <div
+    data-slot="ledger-rail"
+    onKeyDown={walk}
+    className={cn("min-h-0 overflow-y-auto pb-4 wide:w-64 wide:flex-none", open ? "flex-[2_1_0%]" : "flex-auto")}
+  >
+    {kept.size > 0 ? (
+      <Ledger {...list} />
+    ) : (
+      <div className="px-5">
+        <Nothing ledger={ledger} query={query} family={list.family} />
+      </div>
+    )}
+    <OtherTrackers events={foreign} rows={list.rows} chosenId={list.chosenId} onChoose={list.onChoose} />
+    {ledger.dropped > 0 && (
+      <Fine data-slot="ledger-dropped" className="mt-2 px-5">
+        The oldest {ledger.dropped} events were let go to stay within the browser’s memory.
+      </Fine>
+    )}
+    <LiveNote count={ledger.unseen} />
+  </div>
+);
+
 /** The rows the list draws: with every family, other vendors' trackers keep to their own group at the foot. */
 const listed = (events: WireEvent[], family: Filter): WireEvent[] =>
   family === "all" ? events.filter((event) => event.source !== "foreign") : events;
+
+const newestRow = (pages: Pages): string | null => pages[0]?.events[0]?.id ?? null;
+
+/** The one row Tab lands on: the chosen row while it is listed, else the newest. */
+const tabStopOf = (chosen: WireEvent | null, kept: Set<string>, pages: Pages): string | null =>
+  chosen && kept.has(chosen.id) ? chosen.id : newestRow(pages);
 
 export const EventsView = ({
   ledger,
@@ -610,46 +743,49 @@ export const EventsView = ({
 }): ReactNode => {
   const [query, setQuery] = useState("");
   const [family, setFamily] = useState<Filter>("all");
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [chosenId, setChosenId] = useState<string | null>(null);
   const { openLedger, closeLedger } = ledger;
   useEffect(() => {
     openLedger();
     return closeLedger;
   }, [openLedger, closeLedger]);
+  // The drawer opening under the rows can push the chosen one out of sight; keep it in view.
+  useEffect(() => {
+    if (chosenId) document.getElementById(rowDomId(chosenId))?.scrollIntoView({ block: "nearest" });
+  }, [chosenId]);
   const events = attributed(ledger.events, tags);
   const rows = new Map(events.map((event) => [event.id, rowOf(event)]));
   const own = listed(events, family);
   const kept = new Set(own.filter((event) => keep(rows.get(event.id)!, family, query)).map((event) => event.id));
+  const pages = byPage({ site, events: own.filter((event) => kept.has(event.id)), pages: [], dropped: 0, seq: 0 });
   const foreign = family === "all" ? events.filter((event) => event.source === "foreign") : [];
+  const chosen = events.find((event) => event.id === chosenId) ?? null;
+  const putAway = (): void => {
+    setChosenId(null);
+    if (chosenId) document.getElementById(rowDomId(chosenId))?.focus();
+  };
   return (
-    <Stack>
-      <section data-slot="events" aria-labelledby="mj-events-title" className="pb-5">
-        <Head ledger={ledger} />
-        <LedgerFilter query={query} family={family} onQuery={setQuery} onFamily={setFamily} />
-        {kept.size > 0 ? (
-          <Ledger
-            events={own}
-            family={family}
-            site={site}
-            tags={tags}
-            rows={rows}
-            kept={kept}
-            openId={openId}
-            onToggle={setOpenId}
-          />
-        ) : (
-          <div className="px-5">
-            <Nothing ledger={ledger} query={query} family={family} />
-          </div>
-        )}
-        <OtherTrackers events={foreign} rows={rows} tags={tags} openId={openId} onToggle={setOpenId} />
-        {ledger.dropped > 0 && (
-          <Fine data-slot="ledger-dropped" className="mt-2 px-5">
-            The oldest {ledger.dropped} events were let go to stay within the browser’s memory.
-          </Fine>
-        )}
-        <LiveNote count={ledger.unseen} />
-      </section>
-    </Stack>
+    <section data-slot="events" aria-labelledby="mj-events-title" className="flex min-h-0 flex-auto flex-col bg-stock">
+      <Head ledger={ledger} />
+      <LedgerFilter query={query} family={family} onQuery={setQuery} onFamily={setFamily} />
+      <div data-slot="ledger-split" className="flex min-h-0 flex-auto flex-col wide:flex-row">
+        <Rail
+          ledger={ledger}
+          query={query}
+          kept={kept}
+          foreign={foreign}
+          open={chosen !== null}
+          pages={pages}
+          count={kept.size}
+          family={family}
+          site={site}
+          rows={rows}
+          chosenId={chosenId}
+          tabStop={tabStopOf(chosen, kept, pages)}
+          onChoose={setChosenId}
+        />
+        <Pane chosen={chosen} rows={rows} tags={tags} onClose={putAway} />
+      </div>
+    </section>
   );
 };

@@ -85,8 +85,8 @@ real background would), and `tabs`, `storage` and `sidePanel` are in-memory stan
 is what `settings/read` answers.
 
 `panel.spec.ts` serves that directory at a root (the built pages use absolute asset paths), opens
-`/sidepanel.html?scenario=<name>&theme=<light|dark>` at 400×1000 for every scenario, waits for the
-scenario's ready selector, checks nothing is `disabled`, and asserts `toHaveScreenshot`. The clock
+`/sidepanel.html?scenario=<name>&theme=<light|dark>` at 400×1000 for every scenario (800×1000 for the
+two `events-wide-*` scenarios, a side panel dragged wide), waits for the scenario's ready selector, checks nothing is `disabled`, and asserts `toHaveScreenshot`. The clock
 is pinned to one instant so elapsed times, "2h ago" and the day axis never move. A separate run
 renders the recording screen under `prefers-reduced-motion: reduce` and requires two captures two
 seconds apart to be identical.

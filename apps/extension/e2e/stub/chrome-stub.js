@@ -806,6 +806,8 @@
     "events-empty": { step: "home", events: "empty" },
     "events-live": { step: "home", events: "live" },
     "events-detail": { step: "home", events: "live" },
+    "events-wide": { step: "home", events: "live" },
+    "events-wide-detail": { step: "home", events: "live" },
     "events-dropped": { step: "home", events: "dropped" },
     "events-error": { step: "home", events: "error" },
     "events-partners": { step: "home", events: "live" },

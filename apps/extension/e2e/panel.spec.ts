@@ -23,6 +23,8 @@ interface Scenario {
   name: string;
   /** Which page to open; the side panel unless said otherwise. */
   page?: "sidepanel" | "popup";
+  /** The viewport's width: the side panel's 400px unless said otherwise — a panel dragged wide is 800. */
+  width?: number;
   /** Selectors that must all be on screen before the picture is taken. */
   ready: string[];
   /** What to do after the page loads to reach the screen — a click, a sign-in. */
@@ -108,6 +110,8 @@ const SCENARIOS: Scenario[] = [
   { name: "events-empty", ready: ["[data-slot=ledger-empty]"], act: openView("events") },
   { name: "events-live", ready: ["[data-slot=ledger-page] ~ [data-slot=ledger-page]"], act: openView("events") },
   { name: "events-detail", ready: ["[data-slot=ledger-detail] [data-slot=badge]"], act: openRecord },
+  { name: "events-wide", width: 800, ready: ["[data-slot=ledger-unchosen]"], act: openView("events") },
+  { name: "events-wide-detail", width: 800, ready: ["[data-slot=ledger-detail] [data-slot=badge]"], act: openRecord },
   { name: "events-dropped", ready: ["[data-slot=ledger-dropped]"], act: openView("events") },
   { name: "events-error", ready: ["[data-slot=ledger-empty]"], act: openView("events") },
   { name: "events-partners", ready: ["[data-slot=ledger][data-family=partner]"], act: filterEvents("Partners") },
@@ -157,6 +161,7 @@ interface Media {
 const open = async (page: Page, scenario: Scenario, media: Media): Promise<void> => {
   await page.emulateMedia(media);
   await page.clock.setFixedTime(FIXED_TIME);
+  if (scenario.width) await page.setViewportSize({ width: scenario.width, height: 1000 });
   const file = scenario.page ?? "sidepanel";
   await page.goto(`${site.url}/${file}.html?scenario=${scenario.name}&theme=${media.colorScheme}`);
   await scenario.act?.(page);
