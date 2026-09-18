@@ -442,9 +442,9 @@ interface RowProps {
 /** What marks the chosen row, for assistive tech and for the stylesheet alike. */
 const CHOSEN = { "aria-current": "true", "data-chosen": true } as const;
 
-/** Who a row belongs to: whole up to half the line, then cut with an ellipsis; in mono when it is machine text. */
+/** Who a row belongs to: whole up to six tenths of the line (half, in the rail beside the pane), then cut with an ellipsis; in mono when it is machine text. */
 const Who = ({ row }: { row: Row }): ReactNode => (
-  <span className={cn("max-w-[45%] flex-none truncate", row.mono && "font-mono")}>{row.who}</span>
+  <span className={cn("max-w-[60%] flex-none truncate wide:max-w-[45%]", row.mono && "font-mono")}>{row.who}</span>
 );
 
 /** A row's second line: the clock first, then who it belongs to, a fact that yields, and a status word that never does. */

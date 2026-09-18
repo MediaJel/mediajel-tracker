@@ -190,7 +190,8 @@ the clock in mono, then the tag it belongs to (in mono when it is machine text �
 host, a tracker's name), a fact worth reading (an order and its total, a schema's name and version)
 and a status word only when something went wrong ("sending…" in soft ink; "failed (503)" and
 "blocked" in warning ink — a word, never a colour alone); when the line is short of room the fact
-yields first, who is cut at half the line, and the status word never yields. The rows are one Tab
+yields first, who is cut at six tenths of the line (half, in the rail beside the pane), and the
+status word never yields. The rows are one Tab
 stop: Up and Down walk them, Home and End jump, the receipt follows, and Escape puts it away from
 either side; the chosen row sits on carbon with `aria-current` and a chevron in soft ink pointing
 at its receipt — right, beside the pane; down, at the drawer. Every scroll container's bar is thin
