@@ -1,7 +1,9 @@
 import { FormEvent, ReactNode, useState } from "react";
 
 import type { AuthChallenge } from "~/auth/cognito";
-import { Mark } from "~/ui/icons";
+import { Button } from "~/ui/components/ui/button";
+import { Alert } from "~/ui/components/ui/alert";
+import { Letterhead } from "~/ui/components/Letterhead";
 
 /**
  * The gate. One MediaJel account, the same one the dashboard uses.
@@ -34,12 +36,7 @@ export const SignIn = ({ challenge, busy, error, onSignIn, onAnswer }: SignInPro
 
   return (
     <form className="mj-signin" onSubmit={submit}>
-      <div className="mj-letterhead">
-        <Mark className="mj-mark" />
-        <span className="mj-wordmark">MediaJel</span>
-        <span className="mj-letterhead-rule" />
-        <span className="mj-doc-title">Integrations Assistant</span>
-      </div>
+      <Letterhead title="Integrations Assistant" />
 
       {challenge ? (
         <>
@@ -87,14 +84,14 @@ export const SignIn = ({ challenge, busy, error, onSignIn, onAnswer }: SignInPro
       )}
 
       {error && (
-        <div className="mj-notice mj-notice--warn" role="alert">
+        <Alert tone="warn" role="alert" className="mb-3">
           <p>{error}</p>
-        </div>
+        </Alert>
       )}
 
-      <button type="submit" className="mj-btn mj-btn--primary mj-btn--wide" aria-disabled={busy}>
+      <Button type="submit" className="w-full" aria-disabled={busy}>
         {busy ? "Signing in…" : challenge ? "Continue" : "Sign in"}
-      </button>
+      </Button>
 
       <p className="mj-fine">
         Your password is never sent — it proves itself to AWS Cognito and stays in this browser. The assistant keeps

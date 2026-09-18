@@ -7,10 +7,11 @@
  * and the point of moving screen by screen is that a screen that has not moved looks exactly as it
  * did. `styles.css` is imported unlayered on purpose: unlayered rules beat layered ones, so the
  * legacy sheet keeps the last word over anything a utility class would say. The layers are ordered
- * by first appearance — theme, then utilities — which is the order Tailwind's own entry declares.
+ * by first appearance — theme, base, utilities — which is the order Tailwind's own entry declares.
  */
 
 @import "tailwindcss/theme.css" layer(theme);
+@import "./base.css" layer(base);
 @import "tailwindcss/utilities.css" layer(utilities);
 @import "./styles.css";
 
@@ -203,11 +204,63 @@
   --tracking-caps: 0.14em;
   --tracking-stamp: 0.12em;
   --tracking-label: 0.08em;
+
+  /* The panel's motion, all of it: a stamp landing, and the wash across a working button. Each is
+     used behind a reduced-motion guard, so nothing moves for someone who asked it not to. */
+  --animate-stamp-land: stamp-land 240ms ease-out;
+  --animate-wash: wash 1400ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
+
+  @keyframes stamp-land {
+    0% {
+      transform: rotate(-8deg) scale(1.12);
+      opacity: 0.4;
+    }
+    100% {
+      transform: rotate(-4deg) scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes wash {
+    to {
+      transform: translateX(100%);
+    }
+  }
 }
 
-/* The last sheet tears off at the bottom: the ground below reads as the desk it is lying on. */
+/* The pinned action, working. It keeps its ink so the bar does not go grey and dead under the
+   operator's eyes; the press is inverted, which is what a key held down looks like; and a slow
+   wash crosses the label, left to right — it reads as "still going", not as decoration. Reduced
+   motion leaves the wash parked off the button's edge. */
+@utility btn-working {
+  position: relative;
+  overflow: hidden;
+  cursor: progress;
+  box-shadow: var(--mj-press);
+  opacity: 0.92;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 22%) 50%, transparent 100%);
+    transform: translateX(-100%);
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    &::after {
+      animation: var(--animate-wash);
+    }
+  }
+}
+
+/* The bottom of the ticket. The zigzag tears the stack open at the top; without a matching edge
+   the last sheet just stops, and the ground below it reads as something missing rather than as
+   the desk the ticket is lying on. The padding is the room the teeth are cut from. */
 @utility tear-bottom {
-  mask-image:
+  padding-bottom: 10px;
+  mask:
     linear-gradient(#000 0 0) top / 100% calc(100% - 6px) no-repeat,
-    conic-gradient(from -45deg at 50% 0, #000 90deg, transparent 90deg) bottom / 12px 6px repeat-x;
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 11px 6px repeat-x;
 }

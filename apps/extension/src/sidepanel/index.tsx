@@ -3,11 +3,13 @@ import { ReactNode } from "react";
 import App from "~/ui/App";
 import SignIn from "~/ui/SignIn";
 import JobsList from "~/ui/screens/JobsList";
-import { Mark } from "~/ui/icons";
 import { useTheme } from "~/ui/useTheme";
 import { usePanel } from "~/sidepanel/usePanel";
 
 import "~/ui/globals.built.css";
+import { Button } from "~/ui/components/ui/button";
+import { Letterhead } from "~/ui/components/Letterhead";
+import { Panel } from "~/ui/components/Panel";
 
 /**
  * The side panel: the assistant, whole.
@@ -39,15 +41,10 @@ const Skeleton = (): ReactNode => (
 );
 
 const Frame = ({ children }: { children: ReactNode }): ReactNode => (
-  <div className="mj-panel mj-panel--plain">
-    <div className="mj-letterhead">
-      <Mark className="mj-mark" />
-      <span className="mj-wordmark">MediaJel</span>
-      <span className="mj-letterhead-rule" />
-      <span className="mj-doc-title">Integrations Assistant</span>
-    </div>
+  <Panel plain>
+    <Letterhead title="Integrations Assistant" />
     {children}
-  </div>
+  </Panel>
 );
 
 export const SidePanel = (): ReactNode => {
@@ -64,7 +61,7 @@ export const SidePanel = (): ReactNode => {
 
   if (panel.screen === "sign-in") {
     return (
-      <div className="mj-panel mj-panel--plain">
+      <Panel plain>
         <SignIn
           challenge={panel.challenge}
           busy={panel.authBusy}
@@ -72,7 +69,7 @@ export const SidePanel = (): ReactNode => {
           onSignIn={panel.signIn}
           onAnswer={panel.answerChallenge}
         />
-      </div>
+      </Panel>
     );
   }
 
@@ -85,9 +82,9 @@ export const SidePanel = (): ReactNode => {
           all happen against the real page, so there is nothing useful to show until there is one.
         </p>
         <div className="mj-section-footer">
-          <button type="button" className="mj-btn mj-btn--ghost" onClick={panel.handlers.onOpenJobs}>
+          <Button type="button" variant="outline" onClick={panel.handlers.onOpenJobs}>
             Your jobs
-          </button>
+          </Button>
         </div>
       </Frame>
     );

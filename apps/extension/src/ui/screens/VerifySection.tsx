@@ -2,6 +2,8 @@ import { checkPayload } from "@mediajel/assistant-core/verify/payload-check";
 import { InterceptedCall } from "@mediajel/assistant-core/verify/interceptor";
 import { WidgetSession } from "@mediajel/assistant-core/types";
 import { ReactNode } from "react";
+import { Button } from "~/ui/components/ui/button";
+import { Alert } from "~/ui/components/ui/alert";
 
 /**
  * Section 04 — Verify. The generated tag is live on THIS page with the tracker entry points
@@ -72,11 +74,11 @@ export const VerifySection = ({
       </p>
 
       {errors.length > 0 && (
-        <div className="mj-notice mj-notice--warn" role="alert">
+        <Alert tone="warn" role="alert" className="mb-3">
           {errors.map((error) => (
             <p key={error}>{error}</p>
           ))}
-        </div>
+        </Alert>
       )}
 
       {captured.length === 0 && errors.length === 0 && (
@@ -103,12 +105,12 @@ export const VerifySection = ({
 
       {!readOnly && (
         <div className="mj-section-footer">
-          <button type="button" className="mj-btn mj-btn--ghost" onClick={onBackToCode}>
+          <Button type="button" variant="outline" onClick={onBackToCode}>
             Back to the code
-          </button>
-          <button type="button" className="mj-btn mj-btn--ghost" onClick={onRunAgain}>
+          </Button>
+          <Button type="button" variant="outline" onClick={onRunAgain}>
             Run again
-          </button>
+          </Button>
         </div>
       )}
     </div>

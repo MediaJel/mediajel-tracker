@@ -1,8 +1,12 @@
 import { ReactNode } from "react";
 
 import Stamp from "~/ui/components/Stamp";
-import { Close, Mark } from "~/ui/icons";
+import { Close } from "~/ui/icons";
 import { JobSummary } from "~/store/jobs";
+import { Button } from "~/ui/components/ui/button";
+import { ActionBar } from "~/ui/components/ActionBar";
+import { Letterhead } from "~/ui/components/Letterhead";
+import { Panel, Stack } from "~/ui/components/Panel";
 
 /**
  * Every site you have worked on, most recent first.
@@ -42,19 +46,14 @@ export interface JobsListProps {
 }
 
 export const JobsList = ({ jobs, currentSite, onOpen, onDelete, onBack }: JobsListProps): ReactNode => (
-  <div className="mj-panel">
-    <header className="mj-header">
-      <div className="mj-letterhead">
-        <Mark className="mj-mark" />
-        <span className="mj-wordmark">MediaJel</span>
-        <span className="mj-letterhead-rule" />
-        <span className="mj-doc-title">Your jobs</span>
-      </div>
+  <Panel>
+    <header className="flex-none px-5 pt-5 pb-4">
+      <Letterhead title="Your jobs" />
     </header>
 
-    <ol className="mj-stack mj-jobs">
+    <Stack list aria-label="Your jobs">
       {jobs.length === 0 ? (
-        <li className="mj-sheet">
+        <li className="bg-sheet shadow-press">
           <div className="mj-section-body">
             <p className="mj-lede">No jobs yet.</p>
             <p className="mj-fine">
@@ -75,28 +74,29 @@ export const JobsList = ({ jobs, currentSite, onOpen, onDelete, onBack }: JobsLi
             </button>
             <div className="mj-job-side">
               {job.deployed ? <Stamp label="Deployed" tone="platform" filled /> : null}
-              <button
+              <Button
                 type="button"
-                className="mj-icon-button mj-job-delete"
+                variant="ghost"
+                size="icon"
+                className="mj-job-delete"
                 aria-label={`Delete the job for ${job.site}`}
                 title="Delete this job"
                 onClick={() => onDelete(job.site)}
               >
                 <Close />
-              </button>
+              </Button>
             </div>
           </li>
         ))
       )}
-    </ol>
+    </Stack>
 
-    <footer className="mj-actionbar">
-      <button type="button" className="mj-btn mj-btn--primary mj-btn--wide" onClick={onBack}>
-        Back to this tab
-      </button>
-      <p className="mj-consequence">Opening a job takes this tab to that site — recording and verify both need it.</p>
-    </footer>
-  </div>
+    <ActionBar
+      label="Back to this tab"
+      consequence="Opening a job takes this tab to that site — recording and verify both need it."
+      onClick={onBack}
+    />
+  </Panel>
 );
 
 export default JobsList;

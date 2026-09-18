@@ -3,6 +3,8 @@ import { describeEvent, factsLine } from "@mediajel/assistant-core/recorder/desc
 import { TimelineEvent, WidgetSession } from "@mediajel/assistant-core/types";
 import { Check, KindIcon } from "~/ui/icons";
 import { ReactNode, useMemo, useState } from "react";
+import { Button } from "~/ui/components/ui/button";
+import { Alert } from "~/ui/components/ui/alert";
 
 /**
  * Section 02 — Evidence. Pointing at the moment is OPTIONAL. The sheet leads with its best
@@ -50,12 +52,12 @@ const Suggestion = ({
         <span className="mj-tl-time">+{seconds(candidate.event.t)}</span>
       </div>
       <div className="mj-guess-actions">
-        <button type="button" className="mj-btn mj-btn--ghost" onClick={onNo}>
+        <Button type="button" variant="outline" onClick={onNo}>
           No, not this
-        </button>
-        <button type="button" className="mj-btn mj-btn--primary" onClick={onYes}>
-          <Check className="mj-btn-icon" /> Yes, that’s it
-        </button>
+        </Button>
+        <Button type="button" onClick={onYes}>
+          <Check className="size-3.5" /> Yes, that’s it
+        </Button>
       </div>
     </div>
   );
@@ -174,9 +176,9 @@ export const EvidenceSection = ({
           ))}
           <p className="mj-fine">
             Not sure?{" "}
-            <button type="button" className="mj-link" onClick={() => onMode("pinpoint")}>
+            <Button type="button" variant="link" size="none" onClick={() => onMode("pinpoint")}>
               Show me everything that happened
-            </button>{" "}
+            </Button>{" "}
             — or just generate and the model will work it out from the whole recording.
           </p>
         </>
@@ -209,19 +211,25 @@ export const EvidenceSection = ({
             {entries.length === 0 && <li className="mj-ev-empty">Nothing was recorded yet.</li>}
           </ol>
           {hiddenCount > 0 || showAll ? (
-            <button type="button" className="mj-link mj-tl-more" onClick={() => setShowAll(!showAll)}>
+            <Button
+              type="button"
+              variant="link"
+              size="none"
+              className="mj-tl-more"
+              onClick={() => setShowAll(!showAll)}
+            >
               {showAll
                 ? "Hide the background activity"
                 : `Show ${hiddenCount} background item${hiddenCount === 1 ? "" : "s"} (tracker traffic, storage, page loads)`}
-            </button>
+            </Button>
           ) : null}
         </>
       )}
 
       {session.generationError && (
-        <div className="mj-notice mj-notice--warn" role="alert">
+        <Alert tone="warn" role="alert" className="mb-3">
           <p>{session.generationError}</p>
-        </div>
+        </Alert>
       )}
 
       {!readOnly && (
@@ -239,9 +247,9 @@ export const EvidenceSection = ({
 
       {!readOnly && (
         <div className="mj-section-footer">
-          <button type="button" className="mj-btn mj-btn--ghost" onClick={onBackToRecording}>
+          <Button type="button" variant="outline" onClick={onBackToRecording}>
             Keep recording
-          </button>
+          </Button>
         </div>
       )}
       {!readOnly && generateBlocked && <p className="mj-blocked-note">{generateBlocked}</p>}

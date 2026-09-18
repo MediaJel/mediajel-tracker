@@ -1,0 +1,42 @@
+/**
+ * The base layer: the few rules every element starts from. It sits under the utilities in the
+ * cascade (theme, base, utilities — by appearance in globals.css), which is the point of it being
+ * a layer: a `button { font: inherit }` reset here is what lets a `text-xs` on a button win, where
+ * the same rule in the unlayered legacy sheet beat every utility on the element.
+ *
+ * Not Tailwind's preflight, which would restyle everything the legacy rules never had to reset;
+ * that arrives with the last legacy rule's removal.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font: 400 14px/1.55 var(--mj-body);
+  color: var(--mj-ink);
+  background: var(--mj-sheet);
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  margin: 0;
+}
+
+/* The one focus ring, in the live ink, on everything that can take focus. */
+:focus-visible {
+  outline: 2px solid var(--mj-identity);
+  outline-offset: 3px;
+}

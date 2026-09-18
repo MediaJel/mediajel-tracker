@@ -1,5 +1,7 @@
-import { ReactNode, useState } from "react";
+import { MouseEvent, ReactNode } from "react";
 
+import { Button } from "~/ui/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "~/ui/components/ui/popover";
 import { Info } from "~/ui/icons";
 
 /**
@@ -11,7 +13,8 @@ import { Info } from "~/ui/icons";
  *
  * A disclosure, not a hover tooltip: hover excludes keyboards and touch, and this is a tool
  * people use all day, where "I could not read the thing that explains the irreversible button"
- * is not an acceptable state. It stays open until dismissed.
+ * is not an acceptable state. It stays open until dismissed — by its button, by Escape, or by
+ * a click elsewhere — and focus comes back to the button.
  */
 
 export interface InfoTipProps {
@@ -20,32 +23,27 @@ export interface InfoTipProps {
   children: ReactNode;
 }
 
-export const InfoTip = ({ label, children }: InfoTipProps): ReactNode => {
-  const [open, setOpen] = useState(false);
-  return (
-    <span className="mj-infotip">
-      <button
-        type="button"
-        className="mj-info"
-        aria-expanded={open}
+/** Target cards are buttons themselves; the info button must not choose the target. */
+const keepToItself = (event: MouseEvent): void => {
+  event.stopPropagation();
+};
+
+export const InfoTip = ({ label, children }: InfoTipProps): ReactNode => (
+  <Popover>
+    <PopoverTrigger asChild>
+      <Button
+        variant="ghost"
+        size="icon-xs"
         aria-label={label}
         title={label}
-        onClick={(event) => {
-          // Target cards are buttons themselves; the info button must not choose the target.
-          event.stopPropagation();
-          event.preventDefault();
-          setOpen(!open);
-        }}
+        className="hover:bg-transparent hover:text-primary data-open:text-primary"
+        onClick={keepToItself}
       >
         <Info />
-      </button>
-      {open && (
-        <span className="mj-info-body" role="note">
-          {children}
-        </span>
-      )}
-    </span>
-  );
-};
+      </Button>
+    </PopoverTrigger>
+    <PopoverContent role="note">{children}</PopoverContent>
+  </Popover>
+);
 
 export default InfoTip;

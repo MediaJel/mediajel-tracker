@@ -30,305 +30,6 @@
   font-display: swap;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-  font: 400 14px/1.55 var(--mj-body);
-  color: var(--mj-ink);
-  background: var(--mj-sheet);
-  text-align: left;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-
-body button {
-  font: inherit;
-  color: inherit;
-  margin: 0;
-}
-
-body :focus-visible {
-  outline: 2px solid var(--mj-identity);
-  outline-offset: 3px;
-}
-
-/* --- the panel ---------------------------------------------------------------------------- */
-
-.mj-panel {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background: var(--mj-sheet);
-}
-
-/* --- letterhead ----------------------------------------------------------------------------- */
-
-.mj-header {
-  flex: none;
-  padding: var(--mj-pad) var(--mj-pad) 16px;
-}
-
-.mj-letterhead {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-}
-
-.mj-mark {
-  display: block;
-  flex: none;
-  width: 18px;
-  height: 18px;
-  filter: var(--mj-mark-filter);
-}
-
-.mj-wordmark {
-  font-family: var(--mj-display);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--mj-ink-soft);
-}
-
-.mj-letterhead-rule {
-  flex: none;
-  width: 1px;
-  height: 11px;
-  background: var(--mj-rule);
-}
-
-.mj-doc-title {
-  font-family: var(--mj-display);
-  font-size: var(--text-xs);
-  font-weight: 400;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--mj-ink-faint);
-}
-
-.mj-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  margin-left: auto;
-}
-
-/* The job's own name, set as a headline rather than as a field in a form. This is the one place
-   the panel raises its voice, and it is the answer to "what am I looking at". */
-.mj-title {
-  margin: 18px 0 0;
-  font-family: var(--mj-display);
-  font-size: var(--text-title);
-  font-weight: 400;
-  line-height: 1.14;
-  letter-spacing: -0.015em;
-  color: var(--mj-ink);
-  overflow-wrap: anywhere;
-}
-
-.mj-subtitle {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px;
-  margin: 7px 0 0;
-  font-size: var(--text-base);
-  color: var(--mj-ink-soft);
-}
-
-.mj-subtitle-dot {
-  color: var(--mj-ink-faint);
-}
-
-/* Who is signed in, and the way back to the job list — the question you ask right after it. */
-.mj-who {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 9px 5px 7px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--mj-stock);
-  font-family: var(--mj-display);
-  font-size: var(--text-xs);
-  letter-spacing: 0.04em;
-  color: var(--mj-ink-soft);
-  cursor: pointer;
-  transition: color 160ms ease-out;
-}
-
-.mj-who:hover {
-  color: var(--mj-ink);
-}
-
-.mj-icon-button {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: none;
-  color: var(--mj-ink-faint);
-  cursor: pointer;
-  transition: color 160ms ease-out, background 160ms ease-out;
-}
-
-.mj-icon-button:hover {
-  background: var(--mj-stock);
-  color: var(--mj-ink);
-}
-
-/* --- zigzag rule --------------------------------------------------------------------------- */
-
-/* The MJ zigzag as the tear along the top of the stack — the edge where the job ticket begins. */
-.mj-zigzag {
-  display: block;
-  flex: none;
-  width: 100%;
-  height: 7px;
-  color: var(--mj-rule);
-}
-
-.mj-zigzag--live {
-  color: var(--mj-identity);
-}
-
-/* --- the carbon stack ------------------------------------------------------------------------ */
-
-.mj-stack {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  margin: 0;
-  padding: 0 0 10px;
-  list-style: none;
-  background: var(--mj-stock);
-}
-
-.mj-slip,
-.mj-sheet,
-.mj-ahead {
-  list-style: none;
-}
-
-/* A sealed step: a carbon copy of the sheet, on darker stock, its line pressed rather than
-   drawn. No border — a change of paper is what separates one from the next. */
-.mj-slip {
-  background: var(--mj-carbon);
-  box-shadow: var(--mj-press);
-}
-
-.mj-sheet {
-  background: var(--mj-sheet);
-  box-shadow: var(--mj-press);
-}
-
-.mj-slip-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 3px 12px;
-  width: 100%;
-  padding: 14px var(--mj-pad);
-  border: 0;
-  background: none;
-  text-align: left;
-  cursor: pointer;
-}
-
-.mj-slip-row[aria-disabled="true"] {
-  cursor: default;
-}
-
-.mj-section-label {
-  flex: none;
-  font-family: var(--mj-display);
-  font-size: var(--text-xl);
-  font-weight: 600;
-  letter-spacing: 0.005em;
-  color: var(--mj-ink);
-}
-
-/* The sentence a finished step leaves behind. Five of these read top to bottom are the whole job,
-   which is the entire argument for stacking them — so it is set to be read, not parsed. */
-.mj-receipt {
-  order: 1;
-  flex: 1 0 100%;
-  font-size: var(--text-base);
-  line-height: 1.5;
-  color: var(--mj-carbon-ink);
-}
-
-.mj-sheet .mj-receipt {
-  color: var(--mj-ink-soft);
-}
-
-.mj-section-state {
-  margin-left: auto;
-}
-
-/* Steps the job has not reached: named and present, because a work order shows its whole shape,
-   and deliberately given no slip — there is no record to put on one yet. */
-.mj-ahead {
-  padding: 11px var(--mj-pad);
-}
-
-.mj-ahead .mj-section-label {
-  font-weight: 400;
-  color: var(--mj-ink-faint);
-}
-
-.mj-chevron {
-  flex: none;
-  color: var(--mj-ink-faint);
-  transition: transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1);
-}
-
-.mj-slip-row[aria-expanded="true"] .mj-chevron {
-  transform: rotate(180deg);
-}
-
-/* --- the action bar --------------------------------------------------------------------------- */
-
-/* The one next action, in the same place all day, saying what it will do. A primary button that
-   lives inside the open section moves every time that section changes size. */
-.mj-actionbar {
-  flex: none;
-  padding: 16px var(--mj-pad) var(--mj-pad);
-  background: var(--mj-sheet);
-  box-shadow: var(--mj-shadow);
-}
-
-.mj-btn--wide {
-  width: 100%;
-  justify-content: center;
-}
-
-.mj-consequence {
-  margin: 10px 0 0;
-  font-size: var(--text-md);
-  line-height: 1.5;
-  color: var(--mj-ink-soft);
-}
-
-.mj-consequence--blocked {
-  color: var(--mj-partner);
-}
 
 /* --- theme choice ------------------------------------------------------------------------------- */
 
@@ -371,69 +72,9 @@ body :focus-visible {
   color: var(--mj-ink-soft);
 }
 
-/* Notices are paper slips with a full hairline in the role colour — a work order carries
-   ruled boxes, not accent bars. */
-.mj-notice {
-  display: grid;
-  gap: 6px;
-  margin: 0 0 12px;
-  padding: 8px 10px;
-  border: 1px solid var(--mj-identity);
-  border-radius: var(--radius-sm);
-  background: var(--mj-stock);
-  font-size: var(--text-sm);
-}
-
-.mj-notice p {
-  margin: 0;
-}
-
-.mj-notice--warn {
-  border-color: var(--mj-partner);
-}
-
 .mj-goals {
   display: grid;
   gap: 8px;
-}
-
-.mj-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 32px;
-  padding: 0 14px;
-  border: 1px solid var(--mj-ink);
-  border-radius: var(--radius-sm);
-  background: none;
-  font-size: var(--text-base);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.mj-btn--primary {
-  border-color: var(--mj-identity);
-  background: var(--mj-identity);
-  color: #fff;
-}
-
-.mj-btn--primary:hover {
-  background: #1a45c4;
-}
-
-.mj-btn--ghost {
-  border-color: var(--mj-rule);
-  color: var(--mj-ink-soft);
-}
-
-.mj-btn--ghost:hover {
-  border-color: var(--mj-ink-soft);
-  color: var(--mj-ink);
-}
-
-.mj-btn--danger {
-  border-color: var(--mj-partner);
-  color: var(--mj-partner);
 }
 
 .mj-section-footer {
@@ -443,7 +84,8 @@ body :focus-visible {
   margin-top: 14px;
 }
 
-.mj-section-footer > .mj-btn:only-child {
+/* A footer with one button keeps it at the right, where the footer's actions end. */
+.mj-section-footer > :only-child {
   margin-left: auto;
 }
 
@@ -502,50 +144,6 @@ body :focus-visible {
   margin: 0;
   font-variant-numeric: tabular-nums;
   text-align: right;
-}
-
-/* --- stamps ------------------------------------------------------------------------------- */
-
-.mj-stamp {
-  display: inline-block;
-  padding: 1px 6px;
-  border: 2px solid var(--mj-identity);
-  border-radius: var(--radius-sm);
-  color: var(--mj-identity);
-  font-family: var(--mj-display);
-  font-size: var(--text-2xs);
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  transform: rotate(-4deg);
-  /* Ink soaking into paper. It only reads that way ON paper — over the dark ground the same
-     blend subtracts the stamp into the background, so the token restores normal compositing. */
-  mix-blend-mode: var(--mj-stamp-blend);
-  animation: mj-stamp-land 240ms ease-out;
-}
-
-
-
-.mj-stamp--platform {
-  border-color: var(--mj-platform);
-  color: var(--mj-platform);
-}
-
-.mj-stamp--partner {
-  border-color: var(--mj-partner);
-  color: var(--mj-partner);
-}
-
-.mj-stamp--filled {
-  background: var(--mj-platform);
-  border-color: var(--mj-platform);
-  color: #fff;
-  mix-blend-mode: normal;
-}
-
-@keyframes mj-stamp-land {
-  0% { transform: rotate(-8deg) scale(1.12); opacity: 0.4; }
-  100% { transform: rotate(-4deg) scale(1); opacity: 1; }
 }
 
 /* --- evidence ---------------------------------------------------------------------------- */
@@ -862,27 +460,6 @@ body :focus-visible {
 .mj-links a {
   color: var(--mj-identity);
 }
-
-/* --- start-over confirmation -------------------------------------------------------------- */
-
-.mj-confirm {
-  flex: none;
-  padding: 10px var(--mj-pad);
-  border-bottom: 1px solid var(--mj-partner);
-  background: var(--mj-stock);
-  font-size: var(--text-sm);
-}
-
-.mj-confirm p {
-  margin: 0 0 8px;
-}
-
-.mj-confirm-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
 /* --- the suggestion card --------------------------------------------------------------------- */
 
 .mj-guess {
@@ -938,24 +515,6 @@ body :focus-visible {
   justify-content: flex-end;
   gap: 8px;
   margin-top: 12px;
-}
-
-.mj-btn-icon {
-  width: 14px;
-  height: 14px;
-  margin-right: 6px;
-}
-
-.mj-link {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--mj-identity);
-  font: inherit;
-  font-size: inherit;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  cursor: pointer;
 }
 
 /* --- the timeline ------------------------------------------------------------------------------ */
@@ -1154,52 +713,6 @@ body :focus-visible {
    spin, so nothing here spins — a sheet being worked on is a sheet with ink still wet.
    ───────────────────────────────────────────────────────────────────────────────────────── */
 
-/* The pinned action, working. It keeps its ink so the bar does not go grey and dead under the
-   operator's eyes; the press is inverted, which is what a key held down looks like. */
-.mj-btn--working {
-  /* Both are for the wash below: it positions against this box and must not escape the 3px
-     corners. Scoped to the working state so no other button's stacking changes. */
-  position: relative;
-  overflow: hidden;
-  cursor: progress;
-  box-shadow: var(--mj-press);
-  opacity: 0.92;
-}
-
-/* A slow wash across the label, left to right — the only motion, and it reads as "still going"
-   rather than as decoration. */
-.mj-btn--working::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgb(255 255 255 / 22%) 50%, transparent 100%);
-  transform: translateX(-100%);
-  animation: mj-wash 1400ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  pointer-events: none;
-}
-
-@keyframes mj-wash {
-  to {
-    transform: translateX(100%);
-  }
-}
-
-/* A failure from the flow, at the action that raised it. Partner ink is the warning voice; it
-   sits above the button because the operator's eye is already on the button. */
-.mj-actionbar-error {
-  margin: 0 0 10px;
-  padding: 8px 10px;
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--mj-partner) 9%, transparent);
-  /* Partner at full strength is the brand's warning ink and stays the signal — but as TEXT on
-     its own 9% wash it measures 3.5:1 in light mode, under the 4.5 floor. Tinting 25% toward
-     the page's ink keeps the hue (the craft rule is to tint from the hue, never to fall back to
-     grey) and lands at 5.2:1 light / 7.6:1 dark, because `--mj-ink` inverts with the theme. */
-  color: color-mix(in srgb, var(--mj-partner) 75%, var(--mj-ink));
-  font-size: var(--text-md);
-  line-height: 1.45;
-}
-
 /* An empty state that teaches rather than shrugs. Indented against the sheet's own rule so it
    reads as a note in the margin, which is what it is. */
 .mj-empty {
@@ -1261,27 +774,16 @@ body :focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   /* Everything that moves is named here, later in the sheet than where it was given its motion. */
-  .mj-who,
-  .mj-icon-button,
-  .mj-chevron,
   .mj-choice,
   .mj-tl-pin,
   .mj-target,
-  .mj-info,
   .mj-tally-details,
   .mj-tally-grid {
     transition: none;
   }
 
-  .mj-rec-dot,
-  .mj-stamp {
+  .mj-rec-dot {
     animation: none;
-  }
-
-  /* Zeroing an infinite sweep leaves it parked over the label. Remove it instead: the button
-     still says what it is doing, and the skeleton still holds the layout. */
-  .mj-btn--working::after {
-    display: none;
   }
 
   .mj-skeleton-bar,
@@ -1292,14 +794,6 @@ body :focus-visible {
 }
 
 /* --- the plain surfaces: popup, sign-in, the states that are not a work order ---------------- */
-
-/* A panel with no stack and no action bar — it pads its own content instead of relying on the
-   sections to do it. */
-.mj-panel--plain {
-  gap: 12px;
-  padding: var(--mj-pad);
-  overflow-y: auto;
-}
 
 .mj-popup {
   display: flex;
@@ -1322,10 +816,6 @@ body :focus-visible {
 }
 
 /* --- the job list ------------------------------------------------------------------------------ */
-
-.mj-jobs {
-  padding-top: 0;
-}
 
 .mj-job {
   display: flex;
@@ -1465,54 +955,6 @@ body :focus-visible {
 
 /* --- info disclosures ---------------------------------------------------------------------------- */
 
-/* The answer to "what does this mean?", parked one click away so the surface can stay a work
-   order rather than becoming its own manual. */
-.mj-infotip {
-  display: contents;
-}
-
-.mj-info {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: none;
-  color: var(--mj-ink-faint);
-  cursor: pointer;
-  transition: color 160ms ease-out;
-}
-
-.mj-info svg {
-  width: 14px;
-  height: 14px;
-}
-
-.mj-info:hover,
-.mj-info[aria-expanded="true"] {
-  color: var(--mj-identity);
-}
-
-.mj-info-body {
-  display: block;
-  flex: 1 0 100%;
-  margin-top: 8px;
-  padding: 10px 12px;
-  border-radius: var(--mj-radius);
-  background: var(--mj-stock);
-  box-shadow: var(--mj-press);
-  font-family: var(--mj-body);
-  font-size: var(--text-xs);
-  font-weight: 400;
-  line-height: 1.45;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--mj-ink-soft);
-}
-
 .mj-target-head {
   display: flex;
   flex-wrap: wrap;
@@ -1528,14 +970,6 @@ body :focus-visible {
   font-size: var(--text-sm);
   font-style: normal;
   font-weight: 600;
-}
-
-/* A field label that carries a disclosure needs to breathe around it; the label rules elsewhere
-   assume a bare word. */
-.mj-field-label:has(.mj-info) {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
 
 /* The commit, said as a sentence. The exact message is inside the disclosure beside it — it is
@@ -1558,16 +992,9 @@ body :focus-visible {
   color: var(--mj-ink);
 }
 
-/* A little more air between one carbon copy and the next. */
-.mj-slip-row {
-  padding-top: 16px;
-  padding-bottom: 16px;
-}
-
 /* The bottom of the ticket. The zigzag tears the stack open at the top; without a matching edge
    the last sheet just stops, and the ground below it reads as something missing rather than as
    the desk the ticket is lying on. */
-.mj-stack > li:last-child,
 .mj-report-sheet--last {
   padding-bottom: 10px;
   -webkit-mask:
@@ -1799,10 +1226,6 @@ body :focus-visible {
 .mj-tally-details:hover,
 .mj-tally-details[aria-expanded="true"] {
   color: var(--mj-ink);
-}
-
-.mj-chevron--up {
-  transform: rotate(180deg);
 }
 
 .mj-tally-grid {

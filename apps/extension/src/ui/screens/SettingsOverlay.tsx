@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 
 import type { Identity } from "~/auth/cognito";
 import { Settings, ThemeChoice } from "~/store/settings";
+import { Button } from "~/ui/components/ui/button";
 
 /**
  * Settings — reachable from anywhere, leaves the step untouched.
@@ -69,14 +70,14 @@ export const SettingsOverlay = ({
       )}
 
       <div className="mj-connection">
-        <button
+        <Button
           type="button"
-          className="mj-btn mj-btn--ghost"
+          variant="outline"
           aria-disabled={!identity || access.status === "checking" ? "true" : "false"}
           onClick={identity && access.status !== "checking" ? onCheckAccess : undefined}
         >
           {access.status === "checking" ? "Checking…" : "Check access"}
-        </button>
+        </Button>
         {access.status === "ok" && (
           <span className="mj-connection-ok" role="status">
             {access.message}
@@ -133,22 +134,22 @@ export const SettingsOverlay = ({
           : "There is no MediaJel tag on this page. Load one to record and verify before the client installs it."}
       </p>
       <div className="mj-settings-actions">
-        <button
+        <Button
           type="button"
-          className="mj-btn mj-btn--ghost"
+          variant="outline"
           aria-disabled={tagUrl ? "false" : "true"}
           onClick={tagUrl ? () => onInjectTag(tagUrl) : undefined}
         >
           Load the tag on this page
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
-          className="mj-btn mj-btn--ghost"
+          variant="outline"
           aria-disabled={appId ? "false" : "true"}
           onClick={appId ? onClearDedup : undefined}
         >
           Clear tracker dedup state
-        </button>
+        </Button>
       </div>
       {appId ? (
         <p className="mj-fine">Dedup clear removes localStorage “{appId}_*”, so repeated test orders fire again.</p>
@@ -158,12 +159,12 @@ export const SettingsOverlay = ({
     <fieldset className="mj-fieldset">
       <legend className="mj-field-label">This browser</legend>
       <div className="mj-settings-actions">
-        <button type="button" className="mj-btn mj-btn--danger" onClick={onClearAllJobs}>
+        <Button type="button" variant="destructive" onClick={onClearAllJobs}>
           Delete every saved job
-        </button>
-        <button type="button" className="mj-btn mj-btn--danger" onClick={onSignOut}>
+        </Button>
+        <Button type="button" variant="destructive" onClick={onSignOut}>
           Sign out
-        </button>
+        </Button>
       </div>
       <p className="mj-fine">
         Saved jobs hold recordings of the sites you worked on. Deleting them cannot be undone; signing out leaves them
@@ -172,9 +173,9 @@ export const SettingsOverlay = ({
     </fieldset>
 
     <div className="mj-section-footer">
-      <button type="button" className="mj-btn mj-btn--primary" onClick={onClose}>
+      <Button type="button" onClick={onClose}>
         Done
-      </button>
+      </Button>
     </div>
   </div>
 );

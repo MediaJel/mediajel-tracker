@@ -61,7 +61,7 @@ export const Person = ({ className }: { className?: string } = {}): ReactNode =>
   </svg>
 );
 
-/** Points down at rest; `.mj-chevron` rotates it when its section row is expanded. */
+/** Points down at rest; `components/Chevron` turns it over when what it opens is open. */
 export const ChevronDown = ({ className }: { className?: string } = {}): ReactNode => (
   <svg className={className} viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" {...STROKE}>
     <path d="M4 6.25 8 10.25 12 6.25" />
@@ -78,7 +78,7 @@ const ZIGZAG_POINTS = Array.from({ length: TEETH * 2 + 1 }, (_, i) => `${i},${i 
  */
 export const Zigzag = ({ live = false }: { live?: boolean }): ReactNode => (
   <svg
-    className={`mj-zigzag${live ? " mj-zigzag--live" : ""}`}
+    className={`block h-[7px] w-full flex-none ${live ? "text-primary" : "text-border"}`}
     viewBox={`0 0 ${TEETH * 2} 8`}
     preserveAspectRatio="none"
     aria-hidden="true"

@@ -6,7 +6,8 @@ import type { TagActivity } from "~/service/client";
 import type { TagActivityState } from "~/sidepanel/useTagActivity";
 import { shortAppId, stateSentence, tallyNumber, tallySentence } from "~/ui/activity";
 import InfoTip from "~/ui/components/InfoTip";
-import { ChevronDown } from "~/ui/icons";
+import { Chevron } from "~/ui/components/Chevron";
+import { Button } from "~/ui/components/ui/button";
 
 /**
  * The tally: what MediaJel has recorded from this site's tags over the last 7 days, printed on the
@@ -44,9 +45,9 @@ const Values = ({ result }: { result: Extract<TagActivity, { status: "ok" }> }):
 const Unread = ({ onRetry }: { onRetry(): void }): ReactNode => (
   <td colSpan={COLUMNS.length} className="mj-tally-unread">
     Couldn’t load.{" "}
-    <button type="button" className="mj-link" onClick={onRetry}>
+    <Button type="button" variant="link" size="none" onClick={onRetry}>
       Try again
-    </button>
+    </Button>
   </td>
 );
 
@@ -122,9 +123,9 @@ const Note = ({ children, problem = false }: { children: ReactNode; problem?: bo
 const Failure = ({ activity }: { activity: TagActivityState }): ReactNode => (
   <Note problem>
     {activity.error || "Tag activity couldn’t load."} That says nothing about whether the tags are firing.{" "}
-    <button id={ACTIVITY_RETRY_ID} type="button" className="mj-link" onClick={activity.refresh}>
+    <Button id={ACTIVITY_RETRY_ID} type="button" variant="link" size="none" onClick={activity.refresh}>
       Try again
-    </button>
+    </Button>
   </Note>
 );
 
@@ -158,7 +159,7 @@ const DetailsToggle = ({ activity }: { activity: TagActivityState }): ReactNode 
       onClick={open ? activity.closeReport : activity.openReport}
     >
       Details
-      <ChevronDown className={open ? "mj-chevron mj-chevron--up" : "mj-chevron"} />
+      <Chevron up={open} />
     </button>
   );
 };

@@ -42,7 +42,7 @@ const answerSignIn = async (page: Page): Promise<void> => {
 };
 
 const openDetails = click("#mj-activity-details");
-const openJobs = click(".mj-who");
+const openJobs = click("button[title='Your jobs']");
 
 /** A job screen is ready when its section is drawn and the tally has settled on a reading. */
 const job = (selector: string): string[] => [selector, ".mj-tally-grid"];
@@ -51,9 +51,9 @@ const SCENARIOS: Scenario[] = [
   { name: "loading", ready: [".mj-skeleton"] },
   { name: "sign-in", ready: ["form.mj-signin input[autocomplete=username]"] },
   { name: "sign-in-challenge", ready: ["form.mj-signin .mj-input--mono"], act: answerSignIn },
-  { name: "no-site", ready: [".mj-panel--plain .mj-section-footer"] },
-  { name: "jobs-empty", ready: [".mj-jobs .mj-lede"], act: openJobs },
-  { name: "jobs-3", ready: [".mj-jobs .mj-job:nth-child(3)"], act: openJobs },
+  { name: "no-site", ready: [".mj-section-footer"] },
+  { name: "jobs-empty", ready: ["ol[aria-label='Your jobs'] .mj-lede"], act: openJobs },
+  { name: "jobs-3", ready: ["ol[aria-label='Your jobs'] .mj-job:nth-child(3)"], act: openJobs },
   { name: "job-home", ready: job(".mj-goals") },
   { name: "job-recording", ready: job(".mj-rec-row") },
   { name: "job-review-suggest", ready: job(".mj-guess") },
@@ -66,7 +66,7 @@ const SCENARIOS: Scenario[] = [
   { name: "job-deploy", ready: job(".mj-target-grid") },
   { name: "job-done", ready: job(".mj-links") },
   { name: "settings", ready: [".mj-settings"], act: click("button[aria-label=Settings]") },
-  { name: "confirm-reset", ready: job(".mj-confirm"), act: click("button[aria-label='Start over']") },
+  { name: "confirm-reset", ready: ["[data-slot=alert-dialog-content]"], act: click("button[aria-label='Start over']") },
   { name: "report-1", ready: ["#mj-activity-report .mj-days-plot svg"], act: openDetails },
   {
     name: "report-3",
@@ -79,7 +79,7 @@ const SCENARIOS: Scenario[] = [
   { name: "tally-error", ready: [".mj-goals", ".mj-tally-note--problem"] },
   { name: "tally-not-configured", ready: [".mj-goals", ".mj-tally-note"] },
   { name: "tally-4-tags", ready: job(".mj-tally-grid--many") },
-  { name: "tally-refreshing", ready: job(".mj-tally-grid--stale"), act: click(".mj-tally-unread .mj-link") },
+  { name: "tally-refreshing", ready: job(".mj-tally-grid--stale"), act: click(".mj-tally-unread button") },
   { name: "tally-daily-null", ready: ["#mj-activity-report .mj-days-section .mj-empty"], act: openDetails },
   { name: "tally-quiet-week", ready: job(".mj-tally-sentence") },
   { name: "popup-out", page: "popup", ready: [".mj-popup form.mj-signin"] },

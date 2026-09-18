@@ -18,8 +18,23 @@ import type { Identity } from "~/auth/cognito";
 import type { Pending } from "~/sidepanel/usePanel";
 import type { TagActivityState } from "~/sidepanel/useTagActivity";
 import { Settings } from "~/store/settings";
+import { ActionBar } from "~/ui/components/ActionBar";
+import { Chevron } from "~/ui/components/Chevron";
+import { Letterhead } from "~/ui/components/Letterhead";
+import { Panel, Stack } from "~/ui/components/Panel";
 import Stamp from "~/ui/components/Stamp";
-import { ChevronDown, Gear, Mark, Person, Restart, Zigzag } from "~/ui/icons";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from "~/ui/components/ui/alert-dialog";
+import { Button } from "~/ui/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/ui/components/ui/collapsible";
+import { Gear, Person, Restart, Zigzag } from "~/ui/icons";
 import { ActivityReport } from "~/ui/screens/ActivityReport";
 import { ActivityTally } from "~/ui/screens/ActivityTally";
 import CodeSection from "~/ui/screens/CodeSection";
@@ -28,6 +43,7 @@ import EvidenceSection from "~/ui/screens/EvidenceSection";
 import RecordSection from "~/ui/screens/RecordSection";
 import SettingsOverlay from "~/ui/screens/SettingsOverlay";
 import VerifySection from "~/ui/screens/VerifySection";
+import { cn } from "~/lib/utils";
 
 /**
  * The panel.
@@ -191,6 +207,10 @@ const receiptFor = (id: string, session: WidgetSession): string => {
   }
 };
 
+/** A step's row in the stack: its name, and — sealed — its receipt and its stamp. */
+const ROW = "flex w-full flex-wrap items-baseline gap-x-3 gap-y-[3px] border-0 bg-transparent px-5 py-4 text-left";
+const LABEL = "flex-none font-display text-xl font-semibold tracking-[0.005em] text-foreground";
+
 /** The stamp a sealed step carries. */
 const stampFor = (id: string): ReactNode => {
   switch (id) {
@@ -340,269 +360,323 @@ const actionFor = (props: AppProps): Action | null => {
   }
 };
 
-export const App = (props: AppProps): ReactNode => {
-  const {
-    site,
-    session,
-    status,
-    activity,
-    identity,
-    settings,
-    handlers,
-    flow,
-    generateBlocked,
-    expanded,
-    onToggleSlip,
-    confirmingReset,
-    access,
-    settingsOpen,
-    onOpenSettings,
-    onCloseSettings,
-    tagUrl,
-  } = props;
+type Section = (typeof SECTIONS)[number];
 
-  const activeId = SECTIONS.find((section) => section.steps.includes(session.step))?.id ?? "record";
-  const activeOrder = SECTIONS.findIndex((section) => section.id === activeId);
+/** The body a section shows: its controls while it is the live step, its record once sealed. */
+const bodyFor = (props: AppProps, section: Section, active: boolean): ReactNode => {
+  const { session, status, handlers, flow, generateBlocked, identity, onOpenSettings } = props;
+  switch (section.id) {
+    case "record":
+      return active ? (
+        <RecordSection
+          session={session}
+          status={status}
+          onStart={handlers.onStartRecording}
+          onDiscard={handlers.onDiscard}
+        />
+      ) : (
+        <RecordSummary session={session} />
+      );
+    case "evidence":
+      return (
+        <EvidenceSection
+          session={session}
+          onToggleMark={handlers.onToggleMark}
+          onNotes={handlers.onNotes}
+          onBackToRecording={handlers.onBackToRecording}
+          onMode={handlers.onEvidenceMode}
+          generateBlocked={generateBlocked}
+          readOnly={!active}
+        />
+      );
+    case "code":
+      return session.generation || active ? (
+        <CodeSection
+          session={session}
+          providerLabel="MediaJel's assistant"
+          onCancel={handlers.onCancelGenerate}
+          onRegenerate={handlers.onRegenerate}
+          onCodeEdit={handlers.onCodeEdit}
+          onRechoose={handlers.onRechoose}
+          readOnly={!active}
+        />
+      ) : null;
+    case "verify":
+      return (
+        <VerifySection
+          session={session}
+          runErrors={flow.verifyRunErrors}
+          onRunAgain={handlers.onVerifyRunAgain}
+          onBackToCode={handlers.onBackToCode}
+          readOnly={!active}
+        />
+      );
+    case "deploy":
+      return (
+        <DeploySection
+          session={session}
+          identity={identity}
+          targets={flow.deploy.targets}
+          selected={flow.deploy.selected}
+          deployError={flow.deploy.deployError}
+          cdnState={flow.deploy.cdnState}
+          onSelectTarget={handlers.onSelectTarget}
+          onOpenSettings={onOpenSettings}
+          onExit={handlers.onOpenJobs}
+        />
+      );
+    default:
+      return null;
+  }
+};
 
-  const bodyFor = (section: (typeof SECTIONS)[number], active: boolean): ReactNode => {
-    switch (section.id) {
-      case "record":
-        return active ? (
-          <RecordSection
-            session={session}
-            status={status}
-            onStart={handlers.onStartRecording}
-            onDiscard={handlers.onDiscard}
-          />
-        ) : (
-          <RecordSummary session={session} />
-        );
-      case "evidence":
-        return (
-          <EvidenceSection
-            session={session}
-            onToggleMark={handlers.onToggleMark}
-            onNotes={handlers.onNotes}
-            onBackToRecording={handlers.onBackToRecording}
-            onMode={handlers.onEvidenceMode}
-            generateBlocked={generateBlocked}
-            readOnly={!active}
-          />
-        );
-      case "code":
-        return session.generation || active ? (
-          <CodeSection
-            session={session}
-            providerLabel="MediaJel's assistant"
-            onCancel={handlers.onCancelGenerate}
-            onRegenerate={handlers.onRegenerate}
-            onCodeEdit={handlers.onCodeEdit}
-            onRechoose={handlers.onRechoose}
-            readOnly={!active}
-          />
-        ) : null;
-      case "verify":
-        return (
-          <VerifySection
-            session={session}
-            runErrors={flow.verifyRunErrors}
-            onRunAgain={handlers.onVerifyRunAgain}
-            onBackToCode={handlers.onBackToCode}
-            readOnly={!active}
-          />
-        );
-      case "deploy":
-        return (
-          <DeploySection
-            session={session}
-            identity={identity}
-            targets={flow.deploy.targets}
-            selected={flow.deploy.selected}
-            deployError={flow.deploy.deployError}
-            cdnState={flow.deploy.cdnState}
-            onSelectTarget={handlers.onSelectTarget}
-            onOpenSettings={onOpenSettings}
-            onExit={handlers.onOpenJobs}
-          />
-        );
-      default:
-        return null;
+type HeadingProps = Pick<
+  AppProps,
+  "site" | "session" | "identity" | "activity" | "handlers" | "settingsOpen" | "onOpenSettings" | "onCloseSettings"
+>;
+
+/** The letterhead's two controls: start over (once there is something to throw away) and Settings. */
+const HeaderControls = ({ session, handlers, settingsOpen, onOpenSettings, onCloseSettings }: HeadingProps) => (
+  <>
+    {session.step !== "home" && (
+      <Button variant="ghost" size="icon" aria-label="Start over" title="Start over" onClick={handlers.onRequestReset}>
+        <Restart />
+      </Button>
+    )}
+    <Button
+      variant="ghost"
+      size="icon"
+      aria-label={settingsOpen ? "Close settings" : "Settings"}
+      onClick={settingsOpen ? onCloseSettings : onOpenSettings}
+    >
+      <Gear />
+    </Button>
+  </>
+);
+
+/** Who is signed in, and the way back to the job list — the question you ask right after it. */
+const Who = ({ identity, onOpenJobs }: { identity: Identity | null; onOpenJobs(): void }): ReactNode => (
+  <Button variant="secondary" size="pill" onClick={onOpenJobs} title="Your jobs">
+    <Person />
+    {identity ? identity.name || identity.username : "Signed out"}
+  </Button>
+);
+
+/** Everything above the zigzag: the letterhead and its controls, the job's name, who is signed in, the tally. */
+const Heading = (props: HeadingProps): ReactNode => (
+  <header className="flex-none px-5 pt-5 pb-4">
+    <Letterhead title="Work order">
+      <HeaderControls {...props} />
+    </Letterhead>
+
+    {/* The job's own name, said once and properly. The app id and the file it will become are
+        machine facts, and they wait in Settings and in the Deploy step where they matter. */}
+    <h1 className="mt-[18px] mb-0 font-display text-title font-normal tracking-[-0.015em] text-foreground wrap-anywhere">
+      {props.site}
+    </h1>
+    <p className="mt-[7px] mb-0 flex flex-wrap items-baseline gap-1.5 text-base text-muted-foreground">
+      <span>{JOB_TITLES[props.session.goal]}</span>
+      <span className="text-ink-faint" aria-hidden="true">
+        ·
+      </span>
+      <Who identity={props.identity} onOpenJobs={props.handlers.onOpenJobs} />
+    </p>
+
+    <ActivityTally activity={props.activity} goal={props.session.goal} />
+  </header>
+);
+
+/** The one irreversible thing the panel offers, asked as a slip laid across the top of the sheet. */
+const ConfirmReset = ({
+  open,
+  hasCode,
+  onCancel,
+  onConfirm,
+}: {
+  open: boolean;
+  hasCode: boolean;
+  onCancel(): void;
+  onConfirm(): void;
+}): ReactNode => (
+  <AlertDialog open={open} onOpenChange={(next) => (next ? undefined : onCancel())}>
+    <AlertDialogContent>
+      <AlertDialogTitle>Start over?</AlertDialogTitle>
+      <AlertDialogDescription>
+        Throw away this recording{hasCode ? ", the generated code" : ""} and start over? Your other jobs are kept.
+      </AlertDialogDescription>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Keep working</AlertDialogCancel>
+        <AlertDialogAction onClick={onConfirm}>Start over</AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
+interface StepProps {
+  section: Section;
+  /** The bottom of the ticket tears off like the top of it. */
+  last: boolean;
+}
+
+/**
+ * Ahead of the work: present, named, and deliberately not a slip — there is no record to show
+ * yet, and inventing one would be the first lie in a product whose whole argument is that it
+ * does not.
+ */
+const AheadStep = ({ section, last }: StepProps): ReactNode => (
+  <li className={cn("px-5 py-[11px]", last && "tear-bottom")}>
+    <span className={cn(LABEL, "font-normal text-ink-faint")}>{section.label}</span>
+  </li>
+);
+
+/**
+ * A sealed step: a carbon copy of the sheet, on darker stock, its line pressed rather than drawn.
+ * No border — a change of paper is what separates one from the next. Its row opens it back up.
+ */
+const SealedStep = ({
+  section,
+  last,
+  open,
+  session,
+  onToggle,
+  children,
+}: StepProps & { open: boolean; session: WidgetSession; onToggle(): void; children: ReactNode }): ReactNode => (
+  <Collapsible asChild open={open} onOpenChange={onToggle}>
+    <li className={cn("bg-carbon shadow-press", last && "tear-bottom")}>
+      <CollapsibleTrigger asChild>
+        <button type="button" className={cn(ROW, "group cursor-pointer")}>
+          <span className={LABEL}>{section.label}</span>
+          <span className="order-1 flex-[1_0_100%] text-base leading-[1.5] text-carbon-ink">
+            {receiptFor(section.id, session)}
+          </span>
+          <span className="ml-auto">{stampFor(section.id)}</span>
+          <Chevron className="group-aria-expanded:rotate-180" />
+        </button>
+      </CollapsibleTrigger>
+      <CollapsibleContent>{children}</CollapsibleContent>
+    </li>
+  </Collapsible>
+);
+
+/** The live step: the full sheet, at the bottom of the stack, nearest the action bar. */
+const LiveStep = ({
+  section,
+  last,
+  session,
+  children,
+}: StepProps & { session: WidgetSession; children: ReactNode }) => (
+  <li className={cn("bg-sheet shadow-press", last && "tear-bottom")}>
+    <div className={ROW}>
+      <span className={LABEL}>{section.label}</span>
+      <span className="ml-auto">
+        {session.step === "recording" ? `${session.timeline.length} events` : null}
+        {session.step === "done" ? stampFor("deploy") : null}
+      </span>
+    </div>
+    {children}
+  </li>
+);
+
+/** The stack: every step in order, each in the state the job has left it. */
+const Steps = (props: AppProps): ReactNode => {
+  const { session, expanded, onToggleSlip } = props;
+  const activeOrder = SECTIONS.findIndex((section) => section.steps.includes(session.step));
+  return SECTIONS.map((section, order) => {
+    const last = order === SECTIONS.length - 1;
+    if (order > activeOrder) return <AheadStep key={section.id} section={section} last={last} />;
+    if (order < activeOrder) {
+      return (
+        <SealedStep
+          key={section.id}
+          section={section}
+          last={last}
+          open={expanded.includes(section.id)}
+          session={session}
+          onToggle={() => onToggleSlip(section.id)}
+        >
+          {bodyFor(props, section, false)}
+        </SealedStep>
+      );
     }
-  };
+    return (
+      <LiveStep key={section.id} section={section} last={last} session={session}>
+        {bodyFor(props, section, true)}
+      </LiveStep>
+    );
+  });
+};
 
+const Actions = (props: AppProps): ReactNode => {
   const action = actionFor(props);
+  if (!action) return null;
   // Only the pinned action reflects flight. A background read (Settings' access check) has its
   // own affordance and must not make the primary button look busy.
   const working = props.pending ? WORKING_LABEL[props.pending] : undefined;
-
   return (
-    <div className="mj-panel">
-      <header className="mj-header">
-        <div className="mj-letterhead">
-          <Mark className="mj-mark" />
-          <span className="mj-wordmark">MediaJel</span>
-          <span className="mj-letterhead-rule" />
-          <span className="mj-doc-title">Work order</span>
-
-          <div className="mj-header-actions">
-            {session.step !== "home" && (
-              <button
-                type="button"
-                className="mj-icon-button"
-                aria-label="Start over"
-                title="Start over"
-                onClick={handlers.onRequestReset}
-              >
-                <Restart />
-              </button>
-            )}
-            <button
-              type="button"
-              className="mj-icon-button"
-              aria-label={settingsOpen ? "Close settings" : "Settings"}
-              onClick={settingsOpen ? onCloseSettings : onOpenSettings}
-            >
-              <Gear />
-            </button>
-          </div>
-        </div>
-
-        {/* The job's own name, said once and properly. The app id and the file it will become are
-            machine facts, and they wait in Settings and in the Deploy step where they matter. */}
-        <h1 className="mj-title">{site}</h1>
-        <p className="mj-subtitle">
-          <span>{JOB_TITLES[session.goal]}</span>
-          <span className="mj-subtitle-dot" aria-hidden="true">
-            ·
-          </span>
-          <button type="button" className="mj-who" onClick={handlers.onOpenJobs} title="Your jobs">
-            <Person />
-            {identity ? identity.name || identity.username : "Signed out"}
-          </button>
-        </p>
-
-        <ActivityTally activity={activity} goal={session.goal} />
-      </header>
-
-      <Zigzag live={session.step === "recording"} />
-
-      {confirmingReset && (
-        <div className="mj-confirm" role="alertdialog" aria-label="Start over?">
-          <p>
-            Throw away this recording{session.generation ? ", the generated code" : ""} and start over? Your other jobs
-            are kept.
-          </p>
-          <div className="mj-confirm-actions">
-            <button type="button" className="mj-btn mj-btn--ghost" onClick={handlers.onCancelReset}>
-              Keep working
-            </button>
-            <button type="button" className="mj-btn mj-btn--danger" onClick={handlers.onConfirmReset}>
-              Start over
-            </button>
-          </div>
-        </div>
-      )}
-
-      {activity.reportOpen && activity.phase === "ready" ? (
-        <div className="mj-stack">
-          <ActivityReport activity={activity} site={site} />
-        </div>
-      ) : settingsOpen ? (
-        <div className="mj-stack">
-          <SettingsOverlay
-            identity={identity}
-            settings={settings}
-            appId={status.appId}
-            access={access}
-            tagUrl={tagUrl}
-            onCheckAccess={handlers.onCheckAccess}
-            onPatch={handlers.onSettingsPatch}
-            onSignOut={handlers.onSignOut}
-            onClearDedup={handlers.onClearDedup}
-            onInjectTag={handlers.onInjectTag}
-            onClearAllJobs={handlers.onClearAllJobs}
-            onClose={onCloseSettings}
-          />
-        </div>
-      ) : (
-        <>
-          <ol className="mj-stack">
-            {SECTIONS.map((section, order) => {
-              const active = section.id === activeId;
-              const sealed = order < activeOrder;
-              const ahead = order > activeOrder;
-              const open = active || expanded.includes(section.id);
-
-              // Ahead of the work: present, named, and deliberately not a slip — there is no
-              // record to show yet, and inventing one would be the first lie in a product whose
-              // whole argument is that it does not.
-              if (ahead) {
-                return (
-                  <li key={section.id} className="mj-ahead">
-                    <span className="mj-section-label">{section.label}</span>
-                  </li>
-                );
-              }
-
-              return (
-                <li key={section.id} className={sealed ? "mj-slip" : "mj-sheet"}>
-                  <button
-                    type="button"
-                    className="mj-slip-row"
-                    aria-expanded={open}
-                    onClick={active ? undefined : () => onToggleSlip(section.id)}
-                    aria-disabled={active}
-                  >
-                    <span className="mj-section-label">{section.label}</span>
-                    {sealed ? (
-                      <>
-                        <span className="mj-receipt">{receiptFor(section.id, session)}</span>
-                        <span className="mj-section-state">{stampFor(section.id)}</span>
-                        <ChevronDown className="mj-chevron" />
-                      </>
-                    ) : (
-                      <span className="mj-section-state">
-                        {session.step === "recording" ? `${session.timeline.length} events` : null}
-                        {session.step === "done" ? stampFor("deploy") : null}
-                      </span>
-                    )}
-                  </button>
-                  {open && bodyFor(section, active)}
-                </li>
-              );
-            })}
-          </ol>
-
-          {action && (
-            <footer className="mj-actionbar">
-              {props.flowError && (
-                <p className="mj-actionbar-error" role="alert">
-                  {props.flowError}
-                </p>
-              )}
-              <button
-                type="button"
-                className={`mj-btn ${action.tone === "danger" ? "mj-btn--danger" : "mj-btn--primary"} mj-btn--wide${
-                  working ? " mj-btn--working" : ""
-                }`}
-                aria-disabled={!action.onClick || !!working}
-                aria-busy={!!working}
-                onClick={working ? undefined : action.onClick}
-              >
-                {working ?? action.label}
-              </button>
-              <p
-                className={action.blocked && !working ? "mj-consequence mj-consequence--blocked" : "mj-consequence"}
-                aria-live="polite"
-              >
-                {working ? "Leave this panel open — it is still working." : action.blocked || action.consequence}
-              </p>
-            </footer>
-          )}
-        </>
-      )}
-    </div>
+    <ActionBar
+      label={action.label}
+      consequence={action.consequence}
+      onClick={action.onClick}
+      tone={action.tone}
+      blocked={action.blocked}
+      working={working}
+      error={props.flowError}
+    />
   );
 };
+
+/** What fills the panel under the zigzag: the report, Settings, or the stack and its action. */
+const Body = (props: AppProps): ReactNode => {
+  const { activity, settingsOpen, site } = props;
+  if (activity.reportOpen && activity.phase === "ready") {
+    return (
+      <Stack>
+        <ActivityReport activity={activity} site={site} />
+      </Stack>
+    );
+  }
+  if (settingsOpen) {
+    return (
+      <Stack>
+        <SettingsOverlay
+          identity={props.identity}
+          settings={props.settings}
+          appId={props.status.appId}
+          access={props.access}
+          tagUrl={props.tagUrl}
+          onCheckAccess={props.handlers.onCheckAccess}
+          onPatch={props.handlers.onSettingsPatch}
+          onSignOut={props.handlers.onSignOut}
+          onClearDedup={props.handlers.onClearDedup}
+          onInjectTag={props.handlers.onInjectTag}
+          onClearAllJobs={props.handlers.onClearAllJobs}
+          onClose={props.onCloseSettings}
+        />
+      </Stack>
+    );
+  }
+  return (
+    <>
+      <Stack list>
+        <Steps {...props} />
+      </Stack>
+      <Actions {...props} />
+    </>
+  );
+};
+
+export const App = (props: AppProps): ReactNode => (
+  <Panel>
+    <Heading {...props} />
+    <Zigzag live={props.session.step === "recording"} />
+    <ConfirmReset
+      open={props.confirmingReset}
+      hasCode={Boolean(props.session.generation)}
+      onCancel={props.handlers.onCancelReset}
+      onConfirm={props.handlers.onConfirmReset}
+    />
+    <Body {...props} />
+  </Panel>
+);
 
 export default App;

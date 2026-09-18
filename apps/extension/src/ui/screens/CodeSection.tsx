@@ -1,5 +1,7 @@
 import { WidgetGeneration, WidgetSession } from "@mediajel/assistant-core/types";
 import { ReactNode, useState } from "react";
+import { Button } from "~/ui/components/ui/button";
+import { Alert } from "~/ui/components/ui/alert";
 
 /**
  * Section 03 — Code. Two states: the run in flight (cancelable) and the result: the tag
@@ -62,9 +64,9 @@ export const CodeSection = ({
           <span>{providerLabel} is writing the tag… the evidence left this browser for the first time.</span>
         </div>
         <div className="mj-section-footer">
-          <button type="button" className="mj-btn mj-btn--ghost" onClick={onCancel}>
+          <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -90,9 +92,9 @@ export const CodeSection = ({
         <span className="mj-field-label">Built from</span>
         <span className="mj-built-from-what">{generation.trigger.description}</span>
         {!readOnly && (
-          <button type="button" className="mj-link" onClick={onRechoose}>
+          <Button type="button" variant="link" size="none" onClick={onRechoose}>
             Not the right moment? Point at it
-          </button>
+          </Button>
         )}
       </div>
       <p className="mj-fine">
@@ -101,24 +103,24 @@ export const CodeSection = ({
       </p>
 
       {generation.violations.length > 0 && (
-        <div className="mj-notice mj-notice--warn" role="alert">
+        <Alert tone="warn" role="alert" className="mb-3">
           {generation.violations.map((violation) => (
             <p key={violation}>{violation}</p>
           ))}
-        </div>
+        </Alert>
       )}
       {generation.warnings.map((warning) => (
-        <div key={warning} className="mj-notice mj-notice--warn" role="note">
+        <Alert key={warning} tone="warn" role="note" className="mb-3">
           <p>{warning}</p>
-        </div>
+        </Alert>
       ))}
       {!generation.items.trackable && (
-        <div className="mj-notice mj-notice--warn" role="note">
+        <Alert tone="warn" role="note" className="mb-3">
           <p>
             Items are not trackable here: {generation.items.reason ?? "no item data in the evidence"} — the tag sends
             items: [].
           </p>
-        </div>
+        </Alert>
       )}
 
       <label className="mj-field">
@@ -146,9 +148,9 @@ export const CodeSection = ({
 
       {!readOnly && (
         <div className="mj-section-footer">
-          <button type="button" className="mj-btn mj-btn--ghost" onClick={onRegenerate}>
+          <Button type="button" variant="outline" onClick={onRegenerate}>
             Regenerate
-          </button>
+          </Button>
         </div>
       )}
     </div>

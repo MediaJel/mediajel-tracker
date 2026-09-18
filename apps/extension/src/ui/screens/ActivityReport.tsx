@@ -8,6 +8,8 @@ import { amount, fullNumber, pageLabel, pageListing, stateLabel, when } from "~/
 import InfoTip from "~/ui/components/InfoTip";
 import { DaysSection } from "~/ui/screens/ActivityDays";
 import { ACTIVITY_DETAILS_ID, ACTIVITY_REPORT_ID, ACTIVITY_RETRY_ID } from "~/ui/screens/ActivityTally";
+import { Button } from "~/ui/components/ui/button";
+import { Alert } from "~/ui/components/ui/alert";
 
 /**
  * Details: the whole of each tag's last 7 days, one sheet per tag, in the place the job's steps
@@ -73,9 +75,9 @@ const Pages = ({ pages, truncated, site }: { pages: Page[]; truncated: boolean; 
         </ul>
       )}
       {canShowAll && (
-        <button type="button" className="mj-link mj-pages-more" onClick={() => setAll(true)}>
+        <Button type="button" variant="link" size="none" className="mj-pages-more" onClick={() => setAll(true)}>
           Show all {pages.length} pages
-        </button>
+        </Button>
       )}
       <PagesNote truncated={truncated} grouped={grouped} />
     </>
@@ -163,15 +165,15 @@ const Sheet = ({ result, tag, site, last, onRetry }: SheetProps): ReactNode => {
           <PagesSection result={result} site={site} />
         </>
       ) : (
-        <div className="mj-notice mj-notice--warn mj-report-unread" role="note">
+        <Alert tone="warn" role="note" className="mb-3 mj-report-unread">
           <p className="mj-inline-disclosure">
             This tag’s activity couldn’t be read just now.{" "}
-            <button type="button" className="mj-link" onClick={onRetry}>
+            <Button type="button" variant="link" size="none" onClick={onRetry}>
               Try again
-            </button>
+            </Button>
             <InfoTip label="What the service said">{result.message}</InfoTip>
           </p>
-        </div>
+        </Alert>
       )}
     </section>
   );
@@ -212,9 +214,9 @@ export const ActivityReport = ({ activity, site }: { activity: TagActivityState;
         </h2>
         <p className="mj-report-lede">
           The last 7 days of every MediaJel tag on this page. Counts trail the site by up to an hour.{" "}
-          <button type="button" className="mj-link" onClick={activity.refresh}>
+          <Button type="button" variant="link" size="none" onClick={activity.refresh}>
             Refresh
-          </button>
+          </Button>
         </p>
       </div>
       {activity.results.map((result, index) => (
@@ -228,9 +230,9 @@ export const ActivityReport = ({ activity, site }: { activity: TagActivityState;
         />
       ))}
       <div className="mj-report-footer">
-        <button type="button" className="mj-btn mj-btn--ghost" onClick={close}>
+        <Button type="button" variant="outline" onClick={close}>
           Back to the job
-        </button>
+        </Button>
       </div>
     </section>
   );

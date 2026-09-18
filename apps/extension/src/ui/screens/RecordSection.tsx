@@ -1,6 +1,8 @@
 import { TrackerStatus } from "@mediajel/assistant-core/tags";
 import { TimelineEventKind, WidgetGoal, WidgetSession } from "@mediajel/assistant-core/types";
 import { Fragment, ReactNode } from "react";
+import { Button } from "~/ui/components/ui/button";
+import { Alert } from "~/ui/components/ui/alert";
 
 /**
  * Section 01 — Record. Two states share the body: choosing the job (step `home`) and the live
@@ -42,11 +44,11 @@ const elapsed = (session: WidgetSession): string => {
 
 const Warnings = ({ status }: { status: TrackerStatus }): ReactNode | null =>
   status.warnings.length === 0 ? null : (
-    <div className="mj-notice mj-notice--warn" role="note">
+    <Alert tone="warn" role="note" className="mb-3">
       {status.warnings.map((warning) => (
         <p key={warning}>{warning}</p>
       ))}
-    </div>
+    </Alert>
   );
 
 export const RecordSection = ({ session, status, onStart, onDiscard }: RecordSectionProps): ReactNode => {
@@ -58,12 +60,12 @@ export const RecordSection = ({ session, status, onStart, onDiscard }: RecordSec
         </p>
         <Warnings status={status} />
         <div className="mj-goals">
-          <button type="button" className="mj-btn mj-btn--primary" onClick={() => onStart("transaction")}>
+          <Button type="button" onClick={() => onStart("transaction")}>
             Track transactions
-          </button>
-          <button type="button" className="mj-btn mj-btn--primary" onClick={() => onStart("signup")}>
+          </Button>
+          <Button type="button" onClick={() => onStart("signup")}>
             Track sign-ups
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -108,9 +110,9 @@ export const RecordSection = ({ session, status, onStart, onDiscard }: RecordSec
         </p>
       )}
       <div className="mj-section-footer">
-        <button type="button" className="mj-btn mj-btn--ghost" onClick={onDiscard}>
+        <Button type="button" variant="outline" onClick={onDiscard}>
           Discard
-        </button>
+        </Button>
       </div>
     </div>
   );

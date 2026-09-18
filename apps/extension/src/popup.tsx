@@ -4,10 +4,11 @@ import { ask } from "~/bridge/api";
 import type { AuthChallenge, Identity } from "~/auth/cognito";
 import { DEFAULT_SETTINGS, Settings } from "~/store/settings";
 import SignIn from "~/ui/SignIn";
-import { Mark } from "~/ui/icons";
 import { useTheme } from "~/ui/useTheme";
 
 import "~/ui/globals.built.css";
+import { Button } from "~/ui/components/ui/button";
+import { Letterhead } from "~/ui/components/Letterhead";
 
 /**
  * The toolbar popup: sign in, or open the panel.
@@ -85,12 +86,7 @@ export const Popup = (): ReactNode => {
 
   return (
     <div className="mj-popup">
-      <div className="mj-letterhead">
-        <Mark className="mj-mark" />
-        <span className="mj-wordmark">MediaJel</span>
-        <span className="mj-letterhead-rule" />
-        <span className="mj-doc-title">Integrations Assistant</span>
-      </div>
+      <Letterhead title="Integrations Assistant" />
 
       <dl className="mj-defs">
         <div className="mj-def">
@@ -99,9 +95,9 @@ export const Popup = (): ReactNode => {
         </div>
       </dl>
 
-      <button type="button" className="mj-btn mj-btn--primary mj-btn--wide" onClick={openPanel}>
+      <Button type="button" className="w-full" onClick={openPanel}>
         Open the assistant
-      </button>
+      </Button>
       <p className="mj-fine">
         It opens beside the page you are on. Whatever you record, generate and deploy belongs to that site.
       </p>

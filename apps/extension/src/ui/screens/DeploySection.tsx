@@ -4,6 +4,8 @@ import type { Identity } from "~/auth/cognito";
 import InfoTip from "~/ui/components/InfoTip";
 import Stamp from "~/ui/components/Stamp";
 import { ReactNode } from "react";
+import { Button } from "~/ui/components/ui/button";
+import { Alert } from "~/ui/components/ui/alert";
 
 /**
  * Section 05 — Deploy, then the receipt. The choice is WHERE the tag runs: the domain file
@@ -123,9 +125,9 @@ export const DeploySection = (props: DeploySectionProps): ReactNode => {
           ) : null}
         </ul>
         <div className="mj-section-footer">
-          <button type="button" className="mj-btn mj-btn--ghost" onClick={props.onExit}>
+          <Button type="button" variant="outline" onClick={props.onExit}>
             Exit assistant
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -163,13 +165,13 @@ export const DeploySection = (props: DeploySectionProps): ReactNode => {
       </div>
 
       {current.existing !== null && typeof current.existing === "object" ? (
-        <div className="mj-notice mj-notice--warn" role="note">
+        <Alert tone="warn" role="note" className="mb-3">
           <p>
             {current.info.path} already exists. Deploying replaces it (the commit reads “Update … tag”). Current file
             begins:
           </p>
           <pre className="mj-ev-detail">{current.existing.preview}</pre>
-        </div>
+        </Alert>
       ) : null}
 
       <p className="mj-fine mj-commit-line">
@@ -191,9 +193,9 @@ export const DeploySection = (props: DeploySectionProps): ReactNode => {
       </p>
 
       {deployError && (
-        <div className="mj-notice mj-notice--warn" role="alert">
+        <Alert tone="warn" role="alert" className="mb-3">
           <p>{deployError}</p>
-        </div>
+        </Alert>
       )}
     </div>
   );
