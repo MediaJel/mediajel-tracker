@@ -134,18 +134,22 @@ export const TRIGGERS: Record<ThirdPartyTriggerName, string> = {
   onSignup: "sign-up",
 };
 
+/** "1 tag", "3 tags" — a count that reads. */
+const tagsCount = (n: number): string => `${n} ${n === 1 ? "tag" : "tags"}`;
+
 const registeredRow = (event: ThirdPartyRegistration): Bones => ({
   family: "custom",
   name: "Third-party tags registered",
-  who: `${event.triggers.reduce((sum, trigger) => sum + trigger.count, 0)} tags`,
+  who: tagsCount(event.triggers.reduce((sum, trigger) => sum + trigger.count, 0)),
   facts: event.triggers.map((trigger) => TRIGGERS[trigger.trigger]).join(" · "),
 });
 
+/** The host goes on the second line, where it can wrap whole; the name stays the name. */
 const firedRow = (event: ThirdPartyFire): Bones => ({
   family: "custom",
-  name: `Third-party tag · ${event.host}`,
-  who: TRIGGERS[event.trigger],
-  facts: event.element,
+  name: "Third-party tag",
+  who: event.host,
+  facts: `${TRIGGERS[event.trigger]} · ${event.element}`,
 });
 
 const thirdPartyRow = (event: ThirdPartyRegistration | ThirdPartyFire): Bones =>

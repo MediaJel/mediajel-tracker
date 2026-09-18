@@ -89,15 +89,18 @@
 
   /** `settled` is whether the page has had its moment to load a tag; a page still loading is not a page without tags. */
   /** A tag read off the page's script only — before it sent anything, so no collector and no record. */
+  /** An older site's tag URL: the legacy names for every segment, and nothing else. */
+  const legacySrc = (appId) =>
+    `https://tags.cnna.io/?appId=${appId}&segmentId=e-oqTEY2SNGlRzvmH9esjw&s2=ezo6F0kqQm2p&s3=S3-legacy`;
   const scriptTag = (appId, index) => ({
     ...tagOf(appId, index),
     state: "installed",
     collector: "",
     lastHeardAt: null,
     config: {
-      params: { segmentId: "e-oqTEY2SNGlRzvmH9esjw", s3: "S3-legacy" },
-      src: tagSrc(appId),
-      element: `<script src="${tagSrc(appId)}"></script>`,
+      params: { segmentId: "e-oqTEY2SNGlRzvmH9esjw", s2: "ezo6F0kqQm2p", s3: "S3-legacy" },
+      src: legacySrc(appId),
+      element: `<script src="${legacySrc(appId)}"></script>`,
       source: "script",
     },
   });
@@ -443,16 +446,29 @@
       ...scaled(Object.fromEntries(Object.entries(BY_DAY).map(([key, values]) => [key, values[index]])), divisor),
     }));
 
+  /** A count is whole; a total keeps its cents. Scaling by the tag's index must not print fractions. */
+  const rounded = (record) =>
+    Object.fromEntries(
+      Object.entries(record).map(([key, value]) => [
+        key,
+        typeof value !== "number"
+          ? value
+          : key === "transactionTotal" || key === "total"
+            ? Math.round(value * 100) / 100
+            : Math.round(value),
+      ]),
+    );
+
   const okResult = (appId, index, spec) => ({
     appId,
     status: "ok",
-    totals: spec.quiet ? scaled(TOTALS, Infinity) : scaled(TOTALS, index + 1),
+    totals: rounded(spec.quiet ? scaled(TOTALS, Infinity) : scaled(TOTALS, index + 1)),
     lastTransactionAt: spec.quiet ? null : new Date(NOW - 2 * HOUR).toISOString(),
     lastSignUpAt: spec.quiet ? null : new Date(NOW - 26 * HOUR).toISOString(),
     pages: spec.quiet ? [] : PAGE_LIST,
     truncated: false,
     partial: false,
-    daily: dailyFor(spec, index),
+    daily: dailyFor(spec, index)?.map(rounded) ?? null,
   });
 
   const dailyFor = (spec, index) => {

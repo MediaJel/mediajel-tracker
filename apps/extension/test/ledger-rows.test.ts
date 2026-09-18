@@ -191,19 +191,19 @@ describe("the other sources' rows", () => {
     } as WireEvent);
     expect([fired.family, fired.name, fired.who, fired.facts]).toEqual([
       "custom",
-      "Third-party tag · www.googletagmanager.com",
-      "transaction",
-      "image",
+      "Third-party tag",
+      "www.googletagmanager.com",
+      "transaction · image",
     ]);
     const registered = rowOf({
       ...base,
       source: "third-party",
       phase: "registered",
-      triggers: [{ trigger: "onSignup", count: 2, hosts: ["a.example"] }],
+      triggers: [{ trigger: "onSignup", count: 1, hosts: ["a.example"] }],
     } as WireEvent);
     expect([registered.name, registered.who, registered.facts]).toEqual([
       "Third-party tags registered",
-      "2 tags",
+      "1 tag",
       "sign-up",
     ]);
     const foreign = rowOf({

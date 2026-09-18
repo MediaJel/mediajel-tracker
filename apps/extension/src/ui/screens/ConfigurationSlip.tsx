@@ -7,7 +7,7 @@ import { Definitions } from "~/ui/components/Definitions";
 import { Eyebrow, Fine, Machine } from "~/ui/components/Section";
 import { Button } from "~/ui/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/ui/components/ui/collapsible";
-import { ConfigGroup, ConfigurationView, configurationOf } from "~/ui/tag-config";
+import { ConfigEntry, ConfigGroup, ConfigurationView, configurationOf } from "~/ui/tag-config";
 
 /**
  * The configuration slip: everything a tag runs with, one disclosure under its app ID.
@@ -20,19 +20,26 @@ import { ConfigGroup, ConfigurationView, configurationOf } from "~/ui/tag-config
  * thing worth comparing.
  */
 
-/** A group's entries as a two-column list; a note follows its value in soft ink. */
+/** A value, and under it — in the body face, soft — where it was read from and what it means. */
+const EntryValue = ({ entry }: { entry: ConfigEntry }): ReactNode => (
+  <>
+    {entry.value}
+    {entry.legacy && (
+      <span className="block font-sans text-muted-foreground">
+        read from <span className="font-mono">{entry.legacy}</span>, its legacy name
+      </span>
+    )}
+    {entry.note && <span className="block font-sans text-muted-foreground">{entry.note}</span>}
+  </>
+);
+
+/** A group's entries as a two-column list; every group shares one label column, so the values line up down the slip. */
 const Group = ({ group }: { group: ConfigGroup }): ReactNode => (
   <div className="mt-2.5">
     <Eyebrow className="mb-1 block">{group.title}</Eyebrow>
     <Definitions
-      className="mb-0 grid-cols-[auto_1fr] gap-y-1 text-xs [&_dd]:text-left [&_dd]:font-mono [&_dd]:wrap-anywhere"
-      entries={group.entries.map((entry) => [
-        entry.label,
-        <>
-          {entry.value}
-          {entry.note && <span className="ml-1.5 font-sans text-muted-foreground">{entry.note}</span>}
-        </>,
-      ])}
+      className="mb-0 grid-cols-[9.5rem_1fr] gap-y-1 text-xs [&_dd]:text-left [&_dd]:font-mono [&_dd]:wrap-anywhere"
+      entries={group.entries.map((entry) => [entry.label, <EntryValue key={entry.label} entry={entry} />])}
     />
   </div>
 );

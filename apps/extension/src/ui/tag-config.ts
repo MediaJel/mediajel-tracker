@@ -9,7 +9,10 @@ import { ConfigSource, TagRecord } from "@mediajel/assistant-core/tags";
 export interface ConfigEntry {
   label: string;
   value: string;
+  /** A line under the value: what the value means when it is not what it seems. */
   note?: string;
+  /** The older parameter name the value was read from, when the tag was configured under it. */
+  legacy?: string;
 }
 
 export interface ConfigGroup {
@@ -85,17 +88,22 @@ const identity = (tag: TagRecord): ConfigGroup => ({
   ],
 });
 
-/** A note beside a segment value: which older name carried it, or that the tag defaulted it. */
-const segmentNote = (spec: ParamSpec, params: Record<string, string>, value: string): string | undefined => {
-  if (value === DSTILLERY_DEFAULT) return "not configured (tag default)";
-  return spec.key in params ? undefined : `legacy name ${spec.legacy}`;
+/** A spec's value: from its own key, else from its legacy name. */
+const valueFor = (spec: ParamSpec, params: Record<string, string>): { value?: string; viaLegacy: boolean } => {
+  if (spec.key in params) return { value: params[spec.key], viaLegacy: false };
+  return spec.legacy ? { value: params[spec.legacy], viaLegacy: true } : { value: undefined, viaLegacy: false };
 };
 
-/** The entry for a spec, from its own key or its legacy name; nothing when the tag has neither. */
+/** The entry for a spec, or nothing when the tag has neither of its names. */
 const entryFor = (spec: ParamSpec, params: Record<string, string>): ConfigEntry | null => {
-  const value = params[spec.key] ?? (spec.legacy ? params[spec.legacy] : undefined);
+  const { value, viaLegacy } = valueFor(spec, params);
   if (value === undefined) return null;
-  return { label: spec.label, value, note: segmentNote(spec, params, value) };
+  return {
+    label: spec.label,
+    value,
+    note: value === DSTILLERY_DEFAULT ? "not configured (tag default)" : undefined,
+    legacy: viaLegacy ? spec.legacy : undefined,
+  };
 };
 
 const group = (title: string, specs: ParamSpec[], params: Record<string, string>): ConfigGroup => ({

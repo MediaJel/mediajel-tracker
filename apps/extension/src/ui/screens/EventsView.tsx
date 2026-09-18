@@ -369,12 +369,17 @@ const LedgerRow = ({ event, row, tags, open, onToggle }: RowProps): ReactNode =>
   };
   return (
     <Collapsible asChild open={open} onOpenChange={(next) => onToggle(next ? row.id : null)}>
-      <li data-slot="ledger-row" data-kind={row.family} className="bg-sheet shadow-press" onKeyDown={onKeyDown}>
+      <li
+        data-slot="ledger-row"
+        data-kind={row.family}
+        className="bg-sheet shadow-press data-open:bg-carbon"
+        onKeyDown={onKeyDown}
+      >
         <CollapsibleTrigger asChild>
           <button
             ref={trigger}
             type="button"
-            className="flex w-full cursor-pointer items-start gap-2.5 border-0 bg-transparent px-5 py-2.5 text-left"
+            className="group flex w-full cursor-pointer items-start gap-2.5 border-0 bg-transparent px-5 py-2.5 text-left hover:bg-stock motion-safe:transition-colors motion-safe:duration-150"
           >
             <span className="mt-0.5 flex-none text-muted-foreground">{MARKS[row.family]}</span>
             <span className="min-w-0 flex-auto">
@@ -388,6 +393,7 @@ const LedgerRow = ({ event, row, tags, open, onToggle }: RowProps): ReactNode =>
                 {row.status && <span className={cn(row.problem && "text-warning-text")}>{row.status}</span>}
               </span>
             </span>
+            <Chevron className="mt-1 flex-none group-aria-expanded:rotate-180" />
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>

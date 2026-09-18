@@ -11,7 +11,7 @@ import type { TagActivity } from "~/service/client";
 
 type Answered = Extract<TagActivity, { status: "ok" }>;
 
-const whole = new Intl.NumberFormat("en-US");
+const whole = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 const compact = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
 const twoPlaces = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const moment = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });

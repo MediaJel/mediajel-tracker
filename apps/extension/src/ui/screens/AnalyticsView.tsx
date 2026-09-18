@@ -251,16 +251,13 @@ export const AnalyticsView = ({ activity, site }: { activity: TagActivityState; 
       aria-labelledby="mj-analytics-title"
       aria-busy={activity.refreshing}
     >
-      <div className="flex items-baseline justify-between gap-3 px-5 pt-[18px] pb-3">
-        <h2
-          id="mj-analytics-title"
-          tabIndex={-1}
-          className="m-0 w-fit font-display text-xl font-semibold text-foreground"
-        >
-          Tag activity
+      <div className="flex items-baseline gap-3 px-5 pt-[18px] pb-3">
+        <h2 id="mj-analytics-title" tabIndex={-1} className="m-0 font-display text-xl font-semibold text-foreground">
+          Analytics
         </h2>
+        <span className="text-sm text-muted-foreground">Last 7 days</span>
         {activity.phase === "ready" && (
-          <Button type="button" variant="link" size="none" className="text-md" onClick={activity.refresh}>
+          <Button type="button" variant="link" size="none" className="ml-auto text-md" onClick={activity.refresh}>
             Refresh
           </Button>
         )}

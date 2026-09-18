@@ -88,7 +88,7 @@ describe("the configuration slip", () => {
     expect(entry(tag, "LiquidM segment")).toEqual({
       label: "LiquidM segment",
       value: "e-oqTEY2SNGlRzvmH9esjw",
-      note: "legacy name segmentId",
+      legacy: "segmentId",
     });
     expect(entry(tag, "Dstillery page-view")?.note).toBe("not configured (tag default)");
     expect(configurationOf(tag)!.source).toBe("From the script on the page.");
