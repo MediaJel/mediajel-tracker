@@ -13,7 +13,7 @@ bun run build            # the harness loads dist/chrome-mv3-prod
 bun x playwright install chromium   # once per machine
 bun run e2e              # every spec
 bun run e2e -- e2e/fixtures.spec.ts # one spec
-bun run e2e -- --update-snapshots   # regenerate the panel's reference screenshots
+bun run e2e -- e2e/panel.spec.ts --update-snapshots=all   # regenerate every reference (=all: a diff inside the tolerance is not rewritten otherwise)
 ```
 
 Everything the harness generates lands under `e2e/out/` (gitignored). The reference screenshots
