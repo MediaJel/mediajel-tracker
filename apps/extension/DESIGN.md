@@ -1,10 +1,11 @@
 # DESIGN — the Integrations Assistant panel ("The Carbon Stack")
 
-> Rendition revised 2026-08-24 on the brief "more beautiful, less tech". The structure below is
-> unchanged; the material is now warm letterpress rather than console printout, and machine
-> detail sits behind disclosures instead of on the surface. What that meant in practice:
-> mono only where there is literally machine text, no hairline boxes, no `01`/`02` numerals, the
-> two brand faces self-hosted rather than hoped for, and receipts written as sentences.
+> Rendition revised 2026-08-24 on the brief "more beautiful, less tech", and rebuilt on shadcn and
+> Tailwind on 2026-09-18 with the identity unchanged. The structure below is the same one; what
+> changed is how it is written: every colour is a `light-dark()` token, every control is one of
+> shadcn's components re-cut for the sheet, and every screen's look is said in its component's
+> classes. There is no second stylesheet. The rebuild also brought the tag's week onto the main
+> panel, under the tally, and made detection something that never asks for a reload.
 
 The panel is **one integration job sheet per site, kept as carbon copies**. Every finished step
 seals into a stamped slip that stays readable above the live work, and the one next action is
@@ -19,7 +20,11 @@ makes possible. The 380px card could only afford one open section, so finished w
 row and everything else went away. A panel has the height to keep the whole record, and the
 structure uses it.
 
-## Tokens (`:root` in `src/ui/styles.css` — the single source of truth)
+## Tokens (`:root` in `src/ui/globals.css` — the single source of truth)
+
+Each token is one `light-dark(light, dark)` pair, and `color-scheme` is the single switch: the OS
+decides by default, and Settings' explicit choice, stamped as `data-theme` on the root, wins in
+both directions. Nothing has a second definition inside a media or `[data-theme]` block.
 
 | Token | Light | Dark | Role |
 |---|---|---|---|
@@ -27,29 +32,37 @@ structure uses it.
 | `--mj-sheet` | `#fbf8f2` | `#1d1a16` | the live sheet |
 | `--mj-carbon` | `#e6e0d3` | `#171512` | a sealed step's carbon copy |
 | `--mj-carbon-ink` | `#33406b` | `#93a6dd` | the impression a carbon copy leaves |
+| `--mj-days-ink` / `-wash` | `#495da7` / 7% carbon-ink | `#6a81ce` / 10% | the by-day columns, and the wash under the day being read |
 | `--mj-ink` / `-soft` / `-faint` | `#1a1713` / `#5b5348` / `#948b7c` | `#f2ede4` / `#a89f92` / `#6f675c` | text tiers (`-faint` is disabled/decorative only) |
 | `--mj-rule` | `#d8d0c0` | `#38332c` | the few remaining hairlines, zigzag at rest |
 | `--mj-identity` | `#1f4fe0` | `#7fa0ff` | the live ink: REC, primary, focus, links, in-progress stamps |
 | `--mj-platform` | `#0b8f6b` | `#4fd6ac` | VERIFIED (outline), DEPLOYED (filled — the only filled stamp) |
 | `--mj-partner` | `#db4a15` | `#ff9666` | warnings, problems, destructive |
 | `--mj-privacy` | `#6c34e8` | `#c0a6ff` | anything that leaves the browser |
-| geometry | radius 3px · pad 20px | | paper, not pill |
+| `--mj-platform-text` / `--mj-warning-text` | `#087a5a` / `#ab3d14` | `#4fd6ac` / `#fcac86` | platform and partner **as text**: the inks above measured 3.8:1 and 3.96:1 on the light sheet, under the 4.5 floor |
+| `--mj-on-ink` / `--mj-stamp-fill` | `#ffffff` / `#0a7f5f` | `#14120f` / `#4fd6ac` | text on a filled ground, and the one filled stamp's ground (white on platform was 4.3:1) |
+| geometry | radius 3px (`--radius-sm/md/lg`), 4px for the suggestion card · pad 20px | | paper, not pill |
 | `--mj-press` | `inset 0 1px 0 rgba(26,23,19,.07), inset 0 2px 0 rgba(255,255,255,.55)` | | a rule impressed into stock, not drawn on it |
 
-**The neutrals are warm now.** The brand recorded cool `#E6E9EB` paper and `#FFFFFF` card, which is
+`@theme inline` maps these onto shadcn's vocabulary — `bg-primary` is the identity ink,
+`text-muted-foreground` is soft ink, `border-border` is a rule, `chart-1` is the days ink — and
+adds the panel's own names as utilities (`text-carbon-ink`, `border-privacy`, `bg-stock`…), the
+two faces (`font-display`, `font-sans`, `font-mono`), the pixel type scale (`text-3xs` 9 …
+`text-title` 27) and the tracking steps (`tracking-caps`, `-stamp`, `-label`). Motion is a token
+too: `--animate-stamp-land`, `--animate-wash`, `--animate-settling`, `--animate-rec`, each used
+only behind a reduced-motion guard.
+
+**The neutrals are warm.** The brand recorded cool `#E6E9EB` paper and `#FFFFFF` card, which is
 screen paper. Pulp is never `#FFFFFF`, and the cool greys were half of why the panel read as a
 console. The four brand inks — identity, platform, partner, privacy — are **untouched**; they are
 the part anyone would recognise, and they do all the work they did before.
 
-**The sheet inverts now.** The old rule — a paper document floating over someone's dark checkout
-must stay paper — was right, and has nothing to say about a panel docked in the browser's own
-chrome for eight hours. `prefers-color-scheme` decides by default; Settings carries an explicit
-Light / Dark / System control that stamps `data-theme` and wins in both directions.
-
-Two things do not survive the inversion on their own and are handled: the stamp's
-`mix-blend-mode: multiply` (ink soaking into paper only reads that way *on* paper; over the ink
-ground the same blend subtracts the stamp into the background) and the MJ mark, a single raster
-drawn as dark ink, which is inverted rather than shipped twice.
+**The sheet inverts.** `prefers-color-scheme` decides by default; Settings carries an explicit
+Light / Dark / System control. Two things do not survive the inversion on their own and are tokens
+of their own (`--mj-stamp-blend`, `--mj-mark-filter`): the stamp's `mix-blend-mode: multiply` (ink
+soaking into paper only reads that way *on* paper; over the ink ground the same blend subtracts
+the stamp into the background) and the MJ mark, a single raster drawn as dark ink, which is
+inverted rather than shipped twice.
 
 ## Type (two faces, self-hosted)
 
@@ -63,16 +76,42 @@ drawn as dark ink, which is inverted rather than shipped twice.
 The stacks were replaced because a stack could not deliver either face: on a machine without
 Futura the panel fell through to Century Gothic, or to the platform sans, and looked like a
 different product on every desk. Both files are variable across the weight axis, latin subset,
-56 KB together — see `src/ui/fonts/README.md`.
+56 KB together — see `src/ui/fonts/README.md`. The `@font-face` rules live in `src/ui/base.css`.
+
+## Components (`src/ui/components`)
+
+The controls are shadcn's (style `radix-nova`, Radix primitives imported per package — never the
+unified barrel, which Plasmo's build would ship whole) under `components/ui`, owned here: pruned to
+the exports the panel uses, with no `disabled:` styles (the panel marks a control `aria-disabled`
+and says why), no focus ring of their own (the base layer draws the 2px identity ring on
+everything), and no zoom or fade on open (stamps are the single authored motion). `cn` comes from
+`src/lib/utils.ts`, configured with the panel's scale.
+
+| Piece | What it is here |
+|---|---|
+| `Button` | a rule in the role colour on a 3px corner, body face, semibold. `default` is the one identity-filled control; `outline` the ghost; `destructive` a partner rule with warning-text ink; `secondary` + `size="pill"` the who-pill; `ghost` + `size="icon"` the round icon buttons; `link` the inline links. `working` keeps the ink, presses in and washes the label. |
+| `Alert` | the notice: a slip on stock with a full 1px rule in identity, partner or privacy ink — never a coloured left edge |
+| `Popover` (via `InfoTip`) | the ⓘ disclosure: click, Escape, focus return, portalled out of whatever card it sits in |
+| `Collapsible` | a sealed slip: its row is the trigger, its record the content |
+| `AlertDialog` | "Start over?": a modal slip laid across the top of the sheet in partner ink, not a centred card |
+| `Input`, `Textarea`, `Field`/`FieldLabel`/`FieldSet`/`FieldLegend` | fields on the sheet, labelled by id; machine text in mono |
+| `Checkbox`, `RadioGroup`, `ToggleGroup` | the acknowledgement; the deploy target cards (the item is the whole card, its look from `has-data-checked:`); the theme track |
+| `Table` | ruled rows inside one rule: the field coverage. The tally is a plain table — nothing boxed |
+| `Card` | the suggestion — the one softer corner and cast shadow, ruled in identity ink |
+| `Badge` | `pill` numbers a capture, `chip` names "replayed"; labels, never signals |
+| `Skeleton` | the sheet settling: carbon stock with a wash passing across it |
+| `Chart` (`ChartContainer`, `ChartTooltip`) | recharts with its chrome taken away, for the by-day bands |
+| `Stamp` | custom, on cva: caps, 2px rule in the role colour, −4°, the one landing animation; `filled` for DEPLOYED |
+| `Letterhead`, `Panel`/`Stack`, `ActionBar`, `Chevron`, `Section` pieces, `Definitions`, `DayBands` | the sheet's own vocabulary, written once |
 
 ## Vocabulary
 
 **Letterhead** (mark 18px · MEDIAJEL · hairline · WORK ORDER, with Start-over and gear at the
 right) → **the job title**: the site set as a 27px headline, with the job type and the signed-in
 person beneath it. The app id and the file the tag will become are machine facts and wait in the
-Deploy step and in Settings, where they are actionable → **the tally** (below) → **zigzag rule** (48-tooth inline SVG,
-`vector-effect: non-scaling-stroke`; identity-coloured while recording) → **the carbon stack** →
-**the action bar**.
+Deploy step and in Settings, where they are actionable → **the tally** (below) → **zigzag rule**
+(48-tooth inline SVG, `vector-effect: non-scaling-stroke`; identity-coloured while recording) →
+**the carbon stack** → **the action bar**.
 
 **No section numerals.** The order still carries meaning, and the stack's own order carries it;
 `01`–`05` beside the names was what made a work order read as a specification. The steps are named
@@ -80,13 +119,13 @@ for what they produce — Record, The event, The tag, Proof, Deploy.
 
 **The carbon stack** is the structure. A step behaves one of three ways:
 
-- **Sealed** (`.mj-slip`) — tinted like a carbon copy of the sheet, its receipt on its own line in
-  carbon blue, its stamp landed, still openable in place. Five receipts read top to bottom are a
-  complete account of the job.
-- **Live** (`.mj-sheet`) — the full sheet, at the bottom of the stack, nearest the thumb.
-- **Ahead** (`.mj-ahead`) — named and present, deliberately *not* given a slip: there is no record
-  to put on one yet, and inventing one would be the first lie in a product whose whole argument is
-  that it does not.
+- **Sealed** — tinted like a carbon copy of the sheet, its receipt on its own line in carbon
+  blue, its stamp landed, still openable in place (a `Collapsible`). Five receipts read top to
+  bottom are a complete account of the job.
+- **Live** — the full sheet, at the bottom of the stack, nearest the thumb.
+- **Ahead** — named and present, deliberately *not* given a slip: there is no record to put on
+  one yet, and inventing one would be the first lie in a product whose whole argument is that it
+  does not.
 
 **The action bar** is pinned to the bottom: one primary button and one line saying what it will do,
 or why it cannot. It exists because in a document that scrolls, a primary action living inside the
@@ -102,68 +141,85 @@ the column names printed once, one row per app ID, zeros in soft ink, and one se
 only when it says something about the job in hand ("Page views are arriving, but no transactions
 were recorded."). With several tags a short mono app ID leads each row — the one place an app id
 reaches the heading, because two rows cannot otherwise be told apart. Every state is its own
-sentence (waiting for the page, no tag, failed, not configured); zeros never stand in for an answer.
-A problem is set in ink, not partner orange: the orange is under 4.5:1 as text on the light sheet,
-so it stays a border colour.
+sentence (listening for the page's tags, no tag, failed, not configured); zeros never stand in for
+an answer, and no sentence ever asks for a page to be reloaded — detection attaches, listens and
+re-reads on its own. A problem is set in ink, not partner orange: the orange is under 4.5:1 as text
+on the light sheet, so it stays a border colour.
+
+**The week** sits under the tally's rows, on the main panel: two bands — page views, and the job's
+own measure — for the tag the tally's sentence singles out, at 28px plots under a caption in the
+tally's form ("By day · Today so far · Wed, Sep 16 — 580 page views · 5 transactions", following
+the pointer or the arrow keys, the latest day at rest). With several tags the caption leads with
+the short app ID. It dims with the readings while a refresh is in flight, and says nothing at all
+when the tag has no days; Details draws every band of every tag.
 
 **The activity report** is what Details opens. It takes the stack's place the way Settings does,
 with the action bar hidden and "Back to the job" at its foot, and prints one sheet per tag on the
 stock, the last of them torn off like the stack's: the full app id in mono and the tag's
-environment, the counts and the transaction total, the last transaction and sign-up as sentences,
-and conversions by page — path in mono, an off-site host under it, ten rows then all of them with a
-filter. Pages are printed, never linked: every listed page is one where a conversion fired, and
-opening it runs the client's tag, so a click from here could add to the counts or record a test
-purchase in production. The total carries no currency symbol, because the data carries no currency
-and "USD" is only a tag's default. A tag that could not be read gets a warning notice, with the
-service's own words behind its ⓘ; Details closes if a refresh leaves no readings, and focus goes back
-to the tally. When an endpoint can read further back than the 7-day table, the range control belongs
-at the top of the report, not in the heading.
+environment, version and state, the counts and the transaction total, the last transaction and
+sign-up as sentences, and conversions by page — path in mono, an off-site host under it, ten rows
+then all of them with a filter. Pages are printed, never linked: every listed page is one where a
+conversion fired, and opening it runs the client's tag, so a click from here could add to the
+counts or record a test purchase in production. The total carries no currency symbol, because the
+data carries no currency and "USD" is only a tag's default. A tag that could not be read gets a
+warning notice, with the service's own words behind its ⓘ; Details closes if a refresh leaves no
+readings, and focus goes back to the tally. When an endpoint can read further back than the 7-day
+table, the range control belongs at the top of the report, not in the heading.
 
-**By day** is the figure on each report sheet: the tag's last week as columns, one band per measure —
-Page views, Transactions, Sign-ups, Sessions, and the transaction total once there is any — each on
-its own scale, because page views run hundreds of times the conversions and one axis would flatten
-them onto the baseline. The columns are carbon ink one step deeper (`--mj-days-ink`, so a 22px column
-clears 3:1 on the sheet); today's is at half strength because it is still filling. One day is read at
-a time — the latest at rest, whichever the pointer or the arrow keys choose — and printed above the
-bands in the tally's form (names once, a row of values), never as a tooltip over the marks. A band's
-only figure is its top, rounded to the next clean tick; a flat band is the answer "none". The oldest of
-internal-service's eight days is not drawn: the 7-day table has already let its early events expire,
-and it would read as a slump that never happened. Days are UTC, and say so; a screen reader gets the
-same numbers as a table. Built on visx alone, in the panel's own CSS — no chart library's chrome.
+**By day** is the figure on each report sheet, and the week on the main panel: the tag's last days
+as columns, one band per measure — Page views, Transactions, Sign-ups, Sessions, and the
+transaction total once there is any — each on its own scale, because page views run hundreds of
+times the conversions and one axis would flatten them onto the baseline. Each band is a small
+multiple on shadcn's Chart (recharts): the columns are carbon ink one step deeper (`--mj-days-ink`,
+so a 22px column clears 3:1 on the sheet); today's is at half strength because it is still
+filling; the wash under the day being read is the only colour that moves, and it spans every band
+of the figure. One day is read at a time — the latest at rest, whichever the pointer or the arrow
+keys choose — and printed above the bands in the tally's form (names once, a row of values), never
+as a tooltip over the marks. A band's only figure is its top, rounded to the next clean tick; a
+flat band is the answer "none". The oldest of the eight days is not drawn: the 7-day table has
+already let its early events expire, and it would read as a slump that never happened. Days are
+UTC, and say so; a screen reader gets the same numbers as a table.
 
 **The tear.** The zigzag opens the stack at the top; the last sheet closes it with a matching
-perforated edge (a conic-gradient mask), so the ground below reads as the desk the ticket is lying
-on rather than as something missing.
+perforated edge (the `tear-bottom` utility, a conic-gradient mask), so the ground below reads as
+the desk the ticket is lying on rather than as something missing.
 
 **Stamps**: caps, 2px border in the role colour, −4°, one 240ms landing animation. This is the
 panel's single authored moment of motion.
 **Info disclosures** (`ⓘ`): the answer to "what does this mean?", one click away, so the surface
 stays a work order rather than becoming its own manual. A disclosure, not a hover tooltip — hover
-excludes keyboards and touch, and this is a tool people use all day.
+excludes keyboards and touch, and this is a tool people use all day. It never sits inside another
+button: the deploy target's ⓘ is beside the card's text, not inside the card that chooses it.
 **Notices**: ruled paper slips with a full 1px border in the role colour — never side accent bars.
 Nothing anywhere is marked with a coloured left edge: what is chosen is printed on the sheet while
 what is not stays on the ground, which is what the material can already say.
 
 **Icons** are drawn in `icons.tsx` at 1.5px on a 16px grid, sharing the zigzag's stroke. No unicode
 glyph stands in for one — a `✕` or an `ⓘ` inherits the text face's weight and never matches.
-**Timeline rows**: kind badge (a pill on stock, display face), `+s` in mono, summary, signal dot ≥5.
-**Coverage rows**: `field · STATUS · source/value` (platform green from the page, soft = default,
-partner = missing). **Code**: mono 11px on a paper inset, editable.
+**Timeline rows**: kind dot on a rail, `+s` in mono, summary, the pin pill that shows itself under
+the pointer or focus. **Coverage rows**: `field · STATUS · source/value` (platform-text from the
+page, soft = default, warning-text = missing). **Code**: mono 11px on a paper inset, editable.
 
 ## Rules
 
 - Every colour is a token; nothing has its only definition inside a media or `[data-theme]` block.
 - Keyboard reachable everywhere (`aria-disabled`, never `disabled`, on rows); 2px identity focus
-  ring; stamps carry text, never colour alone; `prefers-reduced-motion` kills all motion.
+  ring from the base layer; stamps carry text, never colour alone; every animation sits behind a
+  reduced-motion guard (`motion-safe:` or the utility's own media query).
+- Text is never set in an ink under 4.5:1 on its ground: platform and partner as text take
+  `platform-text` and `warning-text`; the filled stamp takes `stamp-fill`.
 - Copy is plain and client-readable; buttons say what happens; warnings state cause and
-  consequence; privacy purple marks every byte that leaves the browser before it does.
+  consequence; privacy purple marks every byte that leaves the browser before it does; nothing
+  ever asks for a page to be reloaded.
 - The panel is ~400px and full height. Nothing may assume more width: at this size a receipt and a
   stamp cannot share a line, which is why the receipt takes its own.
+- A screen's picture of record is its reference in `e2e/__screenshots__`, in both themes; a change
+  that moves a pixel regenerates them and says so.
 
 ## Other surfaces
 
 **Popup** — sign in, or open the panel. It exists for the one thing the panel cannot do for a
 first-time user: get them signed in before there is anything to show.
-**Jobs list** — every site worked on, most recent first, the current one marked with the identity
-edge. This screen is the reason the extension exists.
+**Jobs list** — every site worked on, most recent first, the current one marked the way a work
+order marks its live section. This screen is the reason the extension exists.
 Both inherit the letterhead and the tokens; neither gets a stack or an action bar it has no use for.

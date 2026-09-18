@@ -89,7 +89,16 @@ Run the assistant service beside it with `yarn dev:widget-api` in `../../../medi
 It needs `OPENAI_API_KEY` and, to deploy, `GITHUB_TOKEN` in that repo's `.env.staging`.
 
 Checks: `bun run check` (types) · `bun run lint` · `bun run test` (bun test + happy-dom) ·
-`bun run build` (writes `dist/chrome-mv3-prod` and a zip beside it).
+`bun run build` (writes `dist/chrome-mv3-prod` and a zip beside it) · `bun run e2e` (Playwright:
+the production build in a real Chromium against local fixtures, terrabis.co and the visual
+matrix — see `e2e/README.md`; a UI change has to regenerate the matrix's references with
+`bun run e2e -- e2e/panel.spec.ts --update-snapshots=all`).
+
+The stylesheet is Tailwind 4, compiled by its own CLI ahead of Plasmo: `bun run css` turns
+`src/ui/globals.css` into the gitignored `src/ui/globals.built.css` the pages import, and `bun run
+dev` keeps it compiling beside `plasmo dev`. It runs outside Parcel because Parcel 2.9 cannot
+load Tailwind's PostCSS plugin (its loader imports `node:` builtins Parcel's plugin resolver
+refuses) — the same failure with `.postcssrc` and `postcss.config.js`.
 
 ## Things that will bite
 
@@ -105,6 +114,16 @@ Checks: `bun run check` (types) · `bun run lint` · `bun run test` (bun test + 
 - **Verify still injects into the client's page**, so the `securitypolicyviolation` listener in
   `verify/runner.ts` is still load-bearing. The CSP handling around the *service* call is gone;
   that call is made from our own origin now.
+- **`cn` is configured, not stock.** `src/lib/utils.ts` builds shadcn's merge helper with the
+  panel's own scale (`text-title`, `tracking-stamp`, `shadow-press`…); with the stock config a
+  later `text-foreground` would drop `text-title` as a colour it thought it replaced. Import `cn`
+  from there, never from `"cn"`. And wrap a cva's output in `cn()` — without it a later colour
+  class loses to alphabetical CSS order (the filled stamp went blank that way).
+- **No preflight.** The base layer (`src/ui/base.css`) resets box-sizing, the body's type and the
+  controls' fonts, and nothing else; a headline or paragraph a component authors resets its own
+  browser margins (`mt-0`, `mb-0`), and a `<figure>` keeps a 40px side margin until told `mx-0`.
+- **Two things every `bun run e2e` run has needed once:** `bun x playwright install chromium`, and
+  for the signed-in terrabis run a gitignored `.env.e2e` with `MJ_E2E_USERNAME`/`MJ_E2E_PASSWORD`.
 
 ## Design
 
@@ -120,3 +139,10 @@ written in sentences a person can act on; nothing is hidden, it is one click awa
 
 The two faces are self-hosted (`src/ui/fonts/`) because a stack could not deliver them — see the
 README in that folder before changing them.
+
+How it is built: the tokens are `light-dark()` pairs in `src/ui/globals.css`, mapped onto shadcn's
+names in `@theme inline`; the components under `src/ui/components/ui` are shadcn's (radix-nova,
+Radix primitives imported per package) re-cut for the sheet and owned here — pruned to the
+exports the panel uses, with no `disabled:` styles, since the panel marks a control
+`aria-disabled` and says why. The visual matrix in `e2e/__screenshots__` is the picture of record
+for every screen in both themes.

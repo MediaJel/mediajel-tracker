@@ -1,19 +1,14 @@
 /**
- * The panel's stylesheet entry: Tailwind, the design tokens, and — while the screens move over
- * one by one — the legacy sheet.
- *
- * Tailwind's theme and utilities come in; its preflight resets do not, until the last legacy rule
- * is gone. Preflight would restyle every element the legacy rules never had to reset themselves,
- * and the point of moving screen by screen is that a screen that has not moved looks exactly as it
- * did. `styles.css` is imported unlayered on purpose: unlayered rules beat layered ones, so the
- * legacy sheet keeps the last word over anything a utility class would say. The layers are ordered
- * by first appearance — theme, base, utilities — which is the order Tailwind's own entry declares.
+ * The panel's stylesheet entry: Tailwind's theme and utilities, the base layer (the two faces and
+ * the element resets), and the design tokens — every colour a `light-dark()` pair, mapped onto
+ * shadcn's vocabulary in `@theme inline`. The layers are ordered by first appearance — theme,
+ * base, utilities — which is the order Tailwind's own entry declares. Everything a screen looks
+ * like is said in its component's classes; there is no second sheet.
  */
 
 @import "tailwindcss/theme.css" layer(theme);
 @import "./base.css" layer(base);
 @import "tailwindcss/utilities.css" layer(utilities);
-@import "./styles.css";
 
 /**
  * Tokens (see DESIGN.md), defined once. Each is a `light-dark()` pair and `color-scheme` is the

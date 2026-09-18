@@ -1,12 +1,32 @@
 /**
- * The base layer: the few rules every element starts from. It sits under the utilities in the
- * cascade (theme, base, utilities — by appearance in globals.css), which is the point of it being
- * a layer: a `button { font: inherit }` reset here is what lets a `text-xs` on a button win, where
- * the same rule in the unlayered legacy sheet beat every utility on the element.
+ * The base layer: the two faces, and the few rules every element starts from. It sits under the
+ * utilities in the cascade (theme, base, utilities — by appearance in globals.css), which is the
+ * point of it being a layer: a `button { font: inherit }` reset here is what lets a `text-xs` on
+ * a button win.
  *
- * Not Tailwind's preflight, which would restyle everything the legacy rules never had to reset;
- * that arrives with the last legacy rule's removal.
+ * Not Tailwind's preflight. The panel's components reset the browser's own margins where they
+ * meet them (a headline, a paragraph, a list), and nothing else in preflight is missed; loading
+ * it would restyle every element for the sake of the few that are already handled.
  */
+
+/* The two faces the brand pins, actually delivered rather than hoped for. See fonts/README.md:
+   a stack fell through to Century Gothic or the platform sans and the product looked different
+   on every desk. Both are variable across the weight axis, hence one file each. */
+@font-face {
+  font-family: "Jost";
+  src: url("./fonts/jost-variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Mulish";
+  src: url("./fonts/mulish-variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 *,
 *::before,
