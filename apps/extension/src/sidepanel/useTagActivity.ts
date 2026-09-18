@@ -38,10 +38,7 @@ interface Lookup {
 export interface TagActivityState extends Lookup {
   /** The page's tags this is about, in the order first seen, each with its state. */
   tags: TagRecord[];
-  reportOpen: boolean;
   refresh(): void;
-  openReport(): void;
-  closeReport(): void;
 }
 
 const NOTHING: Lookup = { phase: "listening", results: [], refreshing: false, error: "" };
@@ -70,16 +67,14 @@ const answer = async (appIds: string): Promise<Lookup> => {
 interface Inputs {
   /** Whether a job is on screen at all. Nothing is asked for otherwise. */
   active: boolean;
-  site: string;
   /** Every tag known on the page, from every source, in the order first seen. */
   tags: TagRecord[];
   /** Whether the page has had its moment to load a tag. */
   settled: boolean;
 }
 
-export const useTagActivity = ({ active, site, tags, settled }: Inputs): TagActivityState => {
+export const useTagActivity = ({ active, tags, settled }: Inputs): TagActivityState => {
   const [lookup, setLookup] = useState<Lookup>(NOTHING);
-  const [reportOpen, setReportOpen] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
   /** Which request is current, so a slow answer for a page we have left can never land. */
@@ -91,32 +86,22 @@ export const useTagActivity = ({ active, site, tags, settled }: Inputs): TagActi
   const wanted = tags.length > 0 ? key : settled ? "" : null;
 
   useEffect(() => {
-    setReportOpen(false);
-  }, [site]);
-
-  useEffect(() => {
     if (!active) return;
     const request = ++requestRef.current;
     if (!wanted) {
       setLookup(idle(wanted));
-      setReportOpen(false);
       return;
     }
     setLookup(pending);
     void answer(wanted).then((next) => {
       if (request !== requestRef.current) return;
       setLookup(next);
-      // Details has nothing to show without readings; left open, it would come back uninvited later.
-      setReportOpen((open) => open && next.phase === "ready");
     });
   }, [active, wanted, attempt]);
 
   return {
     ...lookup,
     tags,
-    reportOpen,
     refresh: () => setAttempt((value) => value + 1),
-    openReport: () => setReportOpen(true),
-    closeReport: () => setReportOpen(false),
   };
 };

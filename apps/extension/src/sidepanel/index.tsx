@@ -27,7 +27,7 @@ import { Skeleton } from "~/ui/components/ui/skeleton";
  * A skeleton of the real layout rather than a line of text, because the alternative is the
  * panel appearing to be empty and then jumping — and because opening the side panel on a slow
  * tab is the operator's first impression of the product. The shapes are the ones that will be
- * there: a job title, the goal line, the tag activity reading, and the first two carbon slips.
+ * there: a job title, the goal line, the strip of view tabs, and the tag activity reading.
  *
  * `aria-busy` and one polite label; the bars themselves are decorative and hidden, because a
  * screen reader announcing six empty boxes is worse than silence.
@@ -36,8 +36,8 @@ const Settling = (): ReactNode => (
   <div className="flex flex-col gap-3.5 pt-5" aria-busy="true" aria-live="polite" aria-label="Opening this job">
     <Skeleton className="h-[26px] w-[62%]" />
     <Skeleton className="h-[13px] w-[84%]" />
-    <Skeleton className="h-[50px]" />
-    <Skeleton className="h-[52px] shadow-press" />
+    <Skeleton className="h-[34px]" />
+    <Skeleton className="h-[50px] shadow-press" />
     <Skeleton className="h-[52px] shadow-press" />
   </div>
 );
@@ -133,6 +133,8 @@ export const SidePanel = (): ReactNode => {
       onOpenSettings={panel.onOpenSettings}
       onCloseSettings={panel.onCloseSettings}
       tagUrl={panel.tagUrl}
+      view={panel.view}
+      onView={panel.onView}
     />
   );
 };

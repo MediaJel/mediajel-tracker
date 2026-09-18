@@ -41,11 +41,14 @@ const answerSignIn = async (page: Page): Promise<void> => {
   await page.locator("button[type=submit]").click();
 };
 
-const openDetails = click("#mj-activity-details");
 const openJobs = click("button[title='Your jobs']");
+/** Choose a view by its tab. */
+const openView = (view: "analytics" | "setup") => click(`[data-view=${view}]`);
 
-/** A job screen is ready when its section is drawn and the tally has settled on a reading. */
-const job = (selector: string): string[] => [selector, "[data-slot=tally]"];
+/** A job screen is ready when its section is drawn under the strip. */
+const job = (selector: string): string[] => [selector, "[data-slot=view-tabs]"];
+/** A job scenario lives on the setup view; the stub opens on Overview. */
+const setup = (name: string, ready: string): Scenario => ({ name, ready: job(ready), act: openView("setup") });
 
 const SCENARIOS: Scenario[] = [
   { name: "loading", ready: ["[data-slot=skeleton]"] },
@@ -54,38 +57,50 @@ const SCENARIOS: Scenario[] = [
   { name: "no-site", ready: ["[data-slot=section-footer]"] },
   { name: "jobs-empty", ready: ["ol[aria-label='Your jobs'] p"], act: openJobs },
   { name: "jobs-3", ready: ["ol[aria-label='Your jobs'] li:nth-child(3)"], act: openJobs },
-  { name: "job-home", ready: job("[data-slot=goals]") },
-  { name: "job-recording", ready: job("[data-slot=rec]") },
-  { name: "job-review-suggest", ready: job("[data-slot=card]") },
-  { name: "job-review-pinpoint", ready: job("li[data-pinned]") },
-  { name: "job-generating", ready: job("[data-slot=working]") },
-  { name: "job-result", ready: job("table[aria-label='Field coverage']") },
-  { name: "job-verify-waiting", ready: job("[data-slot=working]") },
-  { name: "job-verify-ok", ready: job("[data-verdict=ok]") },
-  { name: "job-verify-problems", ready: job("li[data-bad]") },
-  { name: "job-deploy", ready: job("[data-slot=radio-group]") },
-  { name: "job-done", ready: job("[data-slot=links]") },
+  setup("job-home", "[data-slot=goals]"),
+  setup("job-recording", "[data-slot=rec]"),
+  setup("job-review-suggest", "[data-slot=card]"),
+  setup("job-review-pinpoint", "li[data-pinned]"),
+  setup("job-generating", "[data-slot=working]"),
+  setup("job-result", "table[aria-label='Field coverage']"),
+  setup("job-verify-waiting", "[data-slot=working]"),
+  setup("job-verify-ok", "[data-verdict=ok]"),
+  setup("job-verify-problems", "li[data-bad]"),
+  setup("job-deploy", "[data-slot=radio-group]"),
+  setup("job-done", "[data-slot=links]"),
   { name: "settings", ready: ["[aria-label='Assistant settings']"], act: click("button[aria-label=Settings]") },
   { name: "confirm-reset", ready: ["[data-slot=alert-dialog-content]"], act: click("button[aria-label='Start over']") },
-  { name: "report-1", ready: ["#mj-activity-report [data-slot=chart] svg"], act: openDetails },
+  { name: "overview-listening", ready: ["[data-slot=overview] [data-slot=tally-note]"] },
+  { name: "overview-no-tags", ready: ["[data-slot=overview] [data-slot=tally-note]"] },
+  { name: "overview-loading", ready: ["[data-slot=overview][aria-busy=true] [data-slot=skeleton]"] },
+  { name: "overview-error", ready: ["[data-slot=overview] [data-slot=tally-note][data-problem]"] },
+  { name: "overview-not-configured", ready: ["[data-slot=overview] [data-slot=tally-note]"] },
+  { name: "overview-4-tags", ready: ["[data-slot=tally][data-many]"] },
   {
-    name: "report-3",
-    ready: ["#mj-activity-report [data-slot=alert]", "#mj-activity-report [data-slot=chart] svg"],
-    act: openDetails,
-  },
-  { name: "tally-listening", ready: ["[data-slot=goals]", "[data-slot=tally-note]"] },
-  { name: "tally-no-tags", ready: ["[data-slot=goals]", "[data-slot=tally-note]"] },
-  { name: "tally-loading", ready: ["[data-slot=goals]", "section[aria-busy=true] [data-slot=skeleton]"] },
-  { name: "tally-error", ready: ["[data-slot=goals]", "[data-slot=tally-note][data-problem]"] },
-  { name: "tally-not-configured", ready: ["[data-slot=goals]", "[data-slot=tally-note]"] },
-  { name: "tally-4-tags", ready: job("[data-slot=tally][data-many]") },
-  {
-    name: "tally-refreshing",
-    ready: job("[data-slot=tally][data-stale]"),
+    name: "overview-refreshing",
+    ready: ["[data-slot=tally][data-stale]"],
     act: click("[data-slot=tally-unread] button"),
   },
-  { name: "tally-daily-null", ready: ["#mj-activity-report [data-slot=days] p"], act: openDetails },
-  { name: "tally-quiet-week", ready: job("[data-slot=tally-sentence]") },
+  { name: "overview-quiet-week", ready: ["[data-slot=tally-sentence]"] },
+  { name: "analytics-1", ready: ["[data-slot=analytics] [data-slot=chart] svg"], act: openView("analytics") },
+  {
+    name: "analytics-3",
+    ready: ["[data-slot=analytics] [data-slot=alert]", "[data-slot=analytics] [data-slot=chart] svg"],
+    act: openView("analytics"),
+  },
+  { name: "analytics-daily-null", ready: ["[data-slot=analytics] [data-slot=days] p"], act: openView("analytics") },
+  { name: "analytics-listening", ready: ["[data-slot=analytics] [data-slot=tally-note]"], act: openView("analytics") },
+  { name: "analytics-no-tags", ready: ["[data-slot=analytics] [data-slot=tally-note]"], act: openView("analytics") },
+  {
+    name: "analytics-error",
+    ready: ["[data-slot=analytics] [data-slot=tally-note][data-problem]"],
+    act: openView("analytics"),
+  },
+  {
+    name: "analytics-not-configured",
+    ready: ["[data-slot=analytics] [data-slot=tally-note]"],
+    act: openView("analytics"),
+  },
   { name: "popup-out", page: "popup", ready: ["form input[autocomplete=username]"] },
   { name: "popup-in", page: "popup", ready: ["dl"] },
 ];

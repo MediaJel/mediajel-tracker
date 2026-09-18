@@ -14,6 +14,7 @@ import { apiUrl } from "~/service/client";
 import { JobSummary } from "~/store/jobs";
 import { DEFAULT_SETTINGS, Settings } from "~/store/settings";
 import { TargetState } from "~/ui/screens/DeploySection";
+import { View } from "~/ui/views";
 
 import { TagActivityState, useTagActivity } from "./useTagActivity";
 import { normalizeView } from "~/sidepanel/view";
@@ -75,6 +76,9 @@ export interface PanelState {
   settingsOpen: boolean;
   access: { status: "idle" | "checking" | "ok" | "error"; message: string };
   tagUrl: string;
+  /** Which of the work order's views is showing. */
+  view: View;
+  onView(view: View): void;
   handlers: AppHandlers;
   onToggleSlip(number: string): void;
   onOpenSettings(): void;
@@ -125,6 +129,7 @@ export const usePanel = (): PanelState => {
   const [confirmingReset, setConfirmingReset] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [access, setAccess] = useState<PanelState["access"]>({ status: "idle", message: "" });
+  const [view, setView] = useState<View>("overview");
 
   const [verifyRunErrors, setVerifyRunErrors] = useState<string[]>([]);
   const [targetStates, setTargetStates] = useState<AppFlowState["deploy"]["targets"] | null>(null);
@@ -157,6 +162,9 @@ export const usePanel = (): PanelState => {
   }, []);
 
   useEffect(() => onSignedOut(signedOut), [signedOut]);
+
+  // A new site opens on its Overview: the view is a look at a page, not a preference.
+  useEffect(() => setView("overview"), [site]);
 
   const loadJob = useCallback(async (id: number) => {
     const answer = (await ask({ type: "job/open", tabId: id })) as JobView | null;
@@ -478,7 +486,7 @@ export const usePanel = (): PanelState => {
 
   const fallbackTargets = useMemo(() => deployTargets(site, status.appId), [site, status.appId]);
 
-  const activity = useTagActivity({ active: screen === "job", site, tags, settled });
+  const activity = useTagActivity({ active: screen === "job", tags, settled });
 
   const flow: AppFlowState = {
     verifyRunErrors,
@@ -509,14 +517,7 @@ export const usePanel = (): PanelState => {
     site,
     session,
     status,
-    // The report and Settings take the same place in the panel, so opening one closes the other.
-    activity: {
-      ...activity,
-      openReport: () => {
-        setSettingsOpen(false);
-        activity.openReport();
-      },
-    },
+    activity,
     jobs,
     flow,
     generateBlocked,
@@ -525,15 +526,14 @@ export const usePanel = (): PanelState => {
     settingsOpen,
     access,
     tagUrl: settings.lastInjectedTagUrl || DEFAULT_TAG_URL,
+    view,
+    onView: setView,
     handlers,
     onToggleSlip: (number) =>
       setExpanded((current) =>
         current.includes(number) ? current.filter((entry) => entry !== number) : [...current, number],
       ),
-    onOpenSettings: () => {
-      activity.closeReport();
-      setSettingsOpen(true);
-    },
+    onOpenSettings: () => setSettingsOpen(true),
     onCloseSettings: () => setSettingsOpen(false),
     onOpenJob: (next) =>
       void (async () => {

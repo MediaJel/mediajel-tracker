@@ -1,10 +1,11 @@
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useState } from "react";
 
 import { cn } from "~/lib/utils";
 import type { TagActivity } from "~/service/client";
 import type { TagActivityState } from "~/sidepanel/useTagActivity";
 import { amount, describeTag, fullNumber, pageLabel, pageListing, when } from "~/ui/activity";
 import InfoTip from "~/ui/components/InfoTip";
+import { Stack } from "~/ui/components/Panel";
 import { Empty, Fine, SheetGroup } from "~/ui/components/Section";
 import { Alert } from "~/ui/components/ui/alert";
 import { Button } from "~/ui/components/ui/button";
@@ -12,16 +13,16 @@ import { Input } from "~/ui/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/ui/components/ui/table";
 import { DaysSection } from "~/ui/screens/ActivityDays";
 import { TagCounts, TagHeading } from "~/ui/screens/ActivityReading";
-import { ACTIVITY_DETAILS_ID, ACTIVITY_REPORT_ID, ACTIVITY_RETRY_ID } from "~/ui/screens/ActivityTally";
+import { Failure, Note, TallySettling, quietNote, settlingRows } from "~/ui/screens/ActivityNotes";
 
 /**
- * Details: the whole of each tag's last 7 days, one sheet per tag, in the place the job's steps
- * usually are — the same way Settings takes it — so a long page list gets the panel's full height
- * and the job is untouched underneath. The tally's readings step aside while it is open: every one
- * of them is here in full.
+ * Analytics: the whole of each tag's last 7 days, one sheet per tag — the second view of the
+ * work order, where Overview's readings are printed in full.
  *
  * A sheet reads top to bottom in one order: which tag, its counts in the tally's form but in full,
- * the money and the last events, then the days, then the pages the conversions happened on.
+ * the money and the last events, then the days, then the pages the conversions happened on. When
+ * there are no readings yet the view says exactly what Overview says, so the tab never opens on
+ * nothing.
  */
 
 type Answered = Extract<TagActivity, { status: "ok" }>;
@@ -199,58 +200,69 @@ const Sheet = ({ result, description, site, last, onRetry }: SheetProps): ReactN
   );
 };
 
-/**
- * When Details closes without the reader asking — a refresh that failed takes its readings away —
- * focus must not fall to the page body: it goes to the tally's Try again, or its Details button.
- */
-const keepFocusOnTheTally = (): void => {
-  if (document.activeElement && document.activeElement !== document.body) return;
-  (document.getElementById(ACTIVITY_RETRY_ID) ?? document.getElementById(ACTIVITY_DETAILS_ID))?.focus();
+/** Every tag's sheet, the last torn off like the stack's. */
+const sheetsFor = (activity: TagActivityState, site: string): ReactNode =>
+  activity.results.map((result, index) => (
+    <Sheet
+      key={result.appId}
+      result={result}
+      description={describeTag(activity.tags.find((tag) => tag.appId === result.appId))}
+      site={site}
+      last={index === activity.results.length - 1}
+      onRetry={activity.refresh}
+    />
+  ));
+
+/** One sheet for a sentence: what the view says while there is nothing to print in full. */
+const Quiet = ({ children }: { children: ReactNode }): ReactNode => (
+  <div className="bg-sheet px-5 pt-3 pb-[18px] shadow-press tear-bottom">{children}</div>
+);
+
+const bodyFor = (activity: TagActivityState, site: string): ReactNode => {
+  if (activity.phase === "ready") return sheetsFor(activity, site);
+  if (activity.phase === "error")
+    return (
+      <Quiet>
+        <Failure activity={activity} />
+      </Quiet>
+    );
+  const note = quietNote(activity);
+  if (note)
+    return (
+      <Quiet>
+        <Note>{note}</Note>
+      </Quiet>
+    );
+  return (
+    <Quiet>
+      <TallySettling readings={settlingRows(activity)} />
+    </Quiet>
+  );
 };
 
-export const ActivityReport = ({ activity, site }: { activity: TagActivityState; site: string }): ReactNode => {
-  const heading = useRef<HTMLHeadingElement>(null);
-
-  // Opening Details moves the reader to it; closing it hands focus back to the tally.
-  useEffect(() => {
-    heading.current?.focus();
-    return keepFocusOnTheTally;
-  }, []);
-  const close = (): void => {
-    activity.closeReport();
-    document.getElementById(ACTIVITY_DETAILS_ID)?.focus();
-  };
-
-  return (
-    <section id={ACTIVITY_REPORT_ID} className="pb-5" aria-labelledby="mj-report-title" aria-busy={activity.refreshing}>
+export const AnalyticsView = ({ activity, site }: { activity: TagActivityState; site: string }): ReactNode => (
+  <Stack>
+    <section
+      data-slot="analytics"
+      className="pb-5"
+      aria-labelledby="mj-analytics-title"
+      aria-busy={activity.refreshing}
+    >
       <div className="flex items-baseline justify-between gap-3 px-5 pt-[18px] pb-3">
         <h2
-          id="mj-report-title"
-          ref={heading}
+          id="mj-analytics-title"
           tabIndex={-1}
           className="m-0 w-fit font-display text-xl font-semibold text-foreground"
         >
           Tag activity
         </h2>
-        <Button type="button" variant="link" size="none" className="text-md" onClick={activity.refresh}>
-          Refresh
-        </Button>
+        {activity.phase === "ready" && (
+          <Button type="button" variant="link" size="none" className="text-md" onClick={activity.refresh}>
+            Refresh
+          </Button>
+        )}
       </div>
-      {activity.results.map((result, index) => (
-        <Sheet
-          key={result.appId}
-          result={result}
-          description={describeTag(activity.tags.find((tag) => tag.appId === result.appId))}
-          site={site}
-          last={index === activity.results.length - 1}
-          onRetry={activity.refresh}
-        />
-      ))}
-      <div className="flex justify-end px-5 pt-2">
-        <Button type="button" variant="outline" onClick={close}>
-          Back to the job
-        </Button>
-      </div>
+      {bodyFor(activity, site)}
     </section>
-  );
-};
+  </Stack>
+);

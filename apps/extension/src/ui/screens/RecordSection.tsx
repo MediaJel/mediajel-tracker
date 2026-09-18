@@ -89,7 +89,10 @@ export const RecordSection = ({ session, status, onStart, onDiscard }: RecordSec
   if (session.step === "home") {
     return (
       <SectionBody>
-        <Lede>Choose the job. The assistant records this page while you simulate it, then writes the tag.</Lede>
+        <Lede>
+          Choose the job. The assistant records this page while you simulate it, then writes the tag, proves it here,
+          and deploys it.
+        </Lede>
         <Warnings status={status} />
         <div data-slot="goals" className="grid gap-2">
           <Button type="button" onClick={() => onStart("transaction")}>
