@@ -40,12 +40,44 @@ export interface TagSummary {
   appId: string;
   environment: string;
   version: string;
+  /** The URL's `event` param; "" when the tag runs with the default. */
+  event: string;
   /**
    * The script is in the page, but a page-speed plugin is holding it back until the visitor
    * interacts — so the tag is installed and has not run.
    */
   delayed: boolean;
+  /** Every other parameter on the URL, keyed as the tag reads it (`s2.pv`, `conversionId`, …). */
+  params: Record<string, string>;
+  /** The script's URL, resolved against the page. */
+  src: string;
+  /** The `<script>` element's markup, capped at `ELEMENT_CHAR_CAP`; "" for a copy that carried none. */
+  element: string;
 }
+
+/** As much of a script element's markup as a record keeps — enough to read every attribute, never a page's inline code. */
+export const ELEMENT_CHAR_CAP = 2_048;
+
+/**
+ * The parameters a record names on its own — read off the URL by `tagParams`, or off the tag's
+ * record event — so they never appear twice, once lifted and once under "other parameters".
+ */
+const LIFTED = new Set(["appId", "mediajelAppId", "version", "environment", "event", "collector", "tag"]);
+
+/** The parameters of a tag's configuration that are not lifted onto the record itself. */
+export const paramsOf = (entries: Record<string, string>): Record<string, string> =>
+  Object.fromEntries(Object.entries(entries).filter(([key]) => !LIFTED.has(key)));
+
+/** The parameters a tag's URL carries besides the ones a record names on its own; {} for a URL that cannot be read. */
+export const tagParams = (url: string): Record<string, string> => {
+  try {
+    return paramsOf(Object.fromEntries(new URL(url).searchParams.entries()));
+  } catch {
+    return {};
+  }
+};
+
+const text = (value: unknown): string => String(value ?? "");
 
 /** Where else a tag may be served from. The extension passes its own build's tag origin. */
 export interface TagSearch {
@@ -102,8 +134,8 @@ const hostnamesOf = (origins: string[] = []): string[] =>
     }
   });
 
-/** A tag as it was found: its parsed configuration, and whether a plugin is holding it back. */
-type FoundTag = { context: QueryStringContext; delayed: boolean };
+/** A tag as it was found: its parsed configuration, its URL, and whether a plugin is holding it back. */
+type FoundTag = { context: QueryStringContext; src: string; delayed: boolean };
 
 const scriptUrl = (script: ScriptSource): { url: URL; delayed: boolean } | null => {
   const held = script.getAttribute("src") ? undefined : DELAYED_SRC.find((name) => script.getAttribute(name));
@@ -141,7 +173,7 @@ const contextOf = (url: URL, script: ScriptSource): QueryStringContext => {
 const readTag = (script: ScriptSource, hosts: string[]): FoundTag | null => {
   const found = scriptUrl(script);
   if (!found || !isOurs(found.url, hosts)) return null;
-  return { context: contextOf(found.url, script), delayed: found.delayed };
+  return { context: contextOf(found.url, script), src: found.url.href, delayed: found.delayed };
 };
 
 /** Every MediaJel tag among these scripts, one per app ID, in the order given. */
@@ -158,11 +190,15 @@ const findTags = (scripts: ScriptSource[], search: TagSearch): FoundTag[] => {
   return tags;
 };
 
-const summaryOf = ({ context, delayed }: FoundTag): TagSummary => ({
-  appId: String(context.appId ?? ""),
-  environment: String(context.environment ?? ""),
-  version: String(context.version ?? ""),
+const summaryOf = ({ context, src, delayed }: FoundTag): TagSummary => ({
+  appId: text(context.appId),
+  environment: text(context.environment),
+  version: text(context.version),
+  event: text(context.event),
   delayed,
+  params: tagParams(src),
+  src,
+  element: text(context.tag).slice(0, ELEMENT_CHAR_CAP),
 });
 
 /** The MediaJel tags among a page's scripts — live elements, or copies read out of the page elsewhere. */

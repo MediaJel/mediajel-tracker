@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { TAG_URL_ATTRIBUTES, TagSearch, readPageContext, tagsAmong } from "@mediajel/assistant-core/context";
+import { TAG_URL_ATTRIBUTES, TagSearch, readPageContext, tagParams, tagsAmong } from "@mediajel/assistant-core/context";
 
 /**
  * Which MediaJel tags a page carries decides what the panel can look up and what it warns about,
@@ -30,13 +30,44 @@ describe("finding MediaJel tags", () => {
 
     expect(page.tagPresent).toBe(true);
     expect(String(page.tag.appId)).toBe("acme");
-    expect(page.tags).toEqual([{ appId: "acme", environment: "weave", version: "2", delayed: false }]);
+    expect(page.tags).toEqual([
+      {
+        appId: "acme",
+        environment: "weave",
+        version: "2",
+        event: "",
+        delayed: false,
+        params: {},
+        src: "https://tags.cnna.io/?appId=acme&environment=weave&version=2",
+        element: `<script src="https://tags.cnna.io/?appId=acme&environment=weave&version=2"></script>`,
+      },
+    ]);
+  });
+
+  test("keeps every parameter the tag runs with, keyed as the tag reads it, beside what it lifts out", () => {
+    const [tag] = tagsOn(
+      `<script src="https://tags.cnna.io/?appId=acme&event=impression&s2.pv=ezo6F0&plugin=googleAds&conversionId=AW-1&enable=false"></script>`,
+    );
+    expect(tag).toMatchObject({
+      appId: "acme",
+      event: "impression",
+      params: { "s2.pv": "ezo6F0", plugin: "googleAds", conversionId: "AW-1", enable: "false" },
+    });
+    expect(Object.keys(tag.params)).not.toContain("appId");
+    expect(Object.keys(tag.params)).not.toContain("event");
   });
 
   test("a tag a page-speed plugin is holding back is still a tag — it just has not run", () => {
-    expect(tagsOn(WP_ROCKET_TAG)).toEqual([
-      { appId: "7bc01df0-c859-4392-b90d-a949e95dfe6f", environment: "weave", version: "2", delayed: true },
-    ]);
+    const [held] = tagsOn(WP_ROCKET_TAG);
+    expect(held).toMatchObject({
+      appId: "7bc01df0-c859-4392-b90d-a949e95dfe6f",
+      environment: "weave",
+      version: "2",
+      delayed: true,
+      params: { segmentId: "JWdonBJ-xqVx13qmvHGm8g" },
+      src: "https://tags.cnna.io/?appId=7bc01df0-c859-4392-b90d-a949e95dfe6f&environment=weave&segmentId=JWdonBJ-xqVx13qmvHGm8g&version=2",
+    });
+    expect(held.element).toContain("data-rocket-src=");
     expect(tagsOn(`<script data-src="https://tags.cnna.io/?appId=lite"></script>`)[0]?.delayed).toBe(true);
     expect(tagsOn(`<script data-pmdelayedscript="https://tags.cnna.io/?appId=perf"></script>`)[0]?.appId).toBe("perf");
   });
@@ -76,9 +107,10 @@ describe("finding MediaJel tags", () => {
 });
 
 describe("finding tags in copies of a page's scripts", () => {
-  /** What reading a script out of a page in another realm yields: its URL attributes and its base. */
-  const copyOf = (attributes: Record<string, string>, baseURI = "https://www.eaze.com/") => ({
+  /** What reading a script out of a page in another realm yields: its URL attributes, its base, and its markup when copied. */
+  const copyOf = (attributes: Record<string, string>, outerHTML?: string, baseURI = "https://www.eaze.com/") => ({
     baseURI,
+    outerHTML,
     getAttribute: (name: string) => attributes[name] ?? null,
   });
 
@@ -91,13 +123,31 @@ describe("finding tags in copies of a page's scripts", () => {
     });
 
     expect(tagsAmong([nextScript])).toEqual([
-      { appId: "Eaze", environment: "production", version: "2", delayed: false },
+      {
+        appId: "Eaze",
+        environment: "production",
+        version: "2",
+        event: "",
+        delayed: false,
+        params: {},
+        src: "https://tags.cnna.io/?appId=Eaze&version=2",
+        element: "",
+      },
     ]);
   });
 
   test("resolves a URL against the page it came from, and knows a held-back tag", () => {
     expect(tagsAmong([copyOf({ "data-rocket-src": "//tags.cnna.io?appId=held" })])).toEqual([
-      { appId: "held", environment: "production", version: "1", delayed: true },
+      {
+        appId: "held",
+        environment: "production",
+        version: "1",
+        event: "",
+        delayed: true,
+        params: {},
+        src: "https://tags.cnna.io/?appId=held",
+        element: "",
+      },
     ]);
   });
 
@@ -105,9 +155,39 @@ describe("finding tags in copies of a page's scripts", () => {
     const markup = `${WP_ROCKET_TAG}<script src="https://tags.cnna.io/?appId=acme&environment=weave"></script>`;
     const live = Array.from(pageWith(markup).document.getElementsByTagName("script"));
     const copies = live.map((script) =>
-      copyOf(Object.fromEntries(TAG_URL_ATTRIBUTES.map((name) => [name, script.getAttribute(name) ?? ""]))),
+      copyOf(
+        Object.fromEntries(TAG_URL_ATTRIBUTES.map((name) => [name, script.getAttribute(name) ?? ""])),
+        script.outerHTML,
+      ),
     );
 
     expect(tagsAmong(copies)).toEqual(readPageContext(pageWith(markup)).tags);
+  });
+});
+
+describe("reading a tag's parameters off its URL", () => {
+  // terrabis.co's tag, as observed 2026-09-19; the segment values are shortened.
+  const TERRABIS =
+    "https://tags.cnna.io/?appId=5f976cbb-7d29-46ce-bf07-0f701478d800&environment=dutchie&s1=bLeKCx2V&s2.pv=ezo6F0kq&s2.tr=bVey-3fR&s3.pv=TerrabisMundelein-S3.PV&s3.tr=TerrabisMundelein-S3.TR&version=2&plugin=googleAds&conversionId=AW-17979043318&conversionLabel=w-syCLbq";
+
+  test("every parameter but the ones a record names on its own, keyed as the tag reads it", () => {
+    expect(tagParams(TERRABIS)).toEqual({
+      s1: "bLeKCx2V",
+      "s2.pv": "ezo6F0kq",
+      "s2.tr": "bVey-3fR",
+      "s3.pv": "TerrabisMundelein-S3.PV",
+      "s3.tr": "TerrabisMundelein-S3.TR",
+      plugin: "googleAds",
+      conversionId: "AW-17979043318",
+      conversionLabel: "w-syCLbq",
+    });
+    expect(tagParams("https://tags.cnna.io/?mediajelAppId=x&collector=//c&tag=t&logs=false")).toEqual({
+      logs: "false",
+    });
+  });
+
+  test("a URL that cannot be read has no parameters", () => {
+    expect(tagParams("")).toEqual({});
+    expect(tagParams("not a url")).toEqual({});
   });
 });

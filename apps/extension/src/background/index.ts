@@ -2,16 +2,19 @@ import { Request, Response } from "~/bridge/api";
 import { BridgeDown, BridgeUp } from "~/bridge/protocol";
 import { PANEL_PORT, RELAY_PORT } from "~/lib/ports";
 import { Evidence, trackerStatus } from "@mediajel/assistant-core/tags";
+import { Outcome } from "@mediajel/assistant-core/wire/types";
 
 import { failureAnswer } from "~/background/answer";
 import { attachAll } from "~/background/attach";
-import { listenForTags } from "~/background/beacons";
 import { handle } from "~/background/handle";
+import { forgetLedger, recordEvents, settleEvents } from "~/background/ledger";
 import { readTagsOnPage } from "~/background/page-tags";
 import { resumption } from "~/background/resume";
 import { forgetTab, learn } from "~/background/tag-state";
+import { listenForOutcomes, listenForWire } from "~/background/wire";
 import { flushAll, openJob, peekJob, subscribeJobs, updateJob } from "~/store/jobs";
 import { siteOf } from "~/lib/site";
+import { Captured, heard } from "~/lib/wire";
 
 /**
  * The service worker: the one place that knows which tab is working on which site, holds every
@@ -159,9 +162,29 @@ const handleUp = async (tabId: number, site: string, message: BridgeUp): Promise
  */
 const panelSites = new Map<string, number>();
 
-// Every tag a tab's page is heard sending events from reaches the tab's owner the moment it is
-// heard — however late the tag loaded, and whether or not the page's scripts can still talk.
-listenForTags((tabId, site, appIds) => void publish(tabId, site, { kind: "beacon", appIds }));
+/**
+ * A request the tab's page made to one of MediaJel's hosts. Every tag it named reaches the tab's
+ * owner the moment it is heard — however late the tag loaded, and whether or not the page's
+ * scripts can still talk — with what the tag's own record event said about its configuration;
+ * the events themselves go into the tab's ledger, and the bound panel hears of both.
+ */
+const onWire = (captured: Captured): void => {
+  const { events, appIds, collector, records } = heard(captured);
+  if (appIds.length > 0) void publish(captured.tabId, captured.site, { kind: "beacon", appIds, collector, records });
+  void recordEvents(captured.tabId, captured.site, events).then((delta) => {
+    if (delta) toPanel(captured.tabId, { type: "events", site: captured.site, ...delta });
+  });
+};
+
+/** How one of those requests ended. The ledger settles the events it carried; the panel hears when any were waiting. */
+const onOutcome = (tabId: number, request: string, outcome: Outcome): void => {
+  void settleEvents(tabId, request, outcome).then((settled) => {
+    if (settled) toPanel(tabId, { type: "events", site: settled.site, ...settled.delta });
+  });
+};
+
+listenForWire(onWire);
+listenForOutcomes(onOutcome);
 
 /**
  * A page that has finished loading is read once more, and given its moment to load a tag —
@@ -176,7 +199,10 @@ chrome.tabs.onUpdated.addListener((tabId, change, tab) => {
   setTimeout(() => void publish(tabId, site, { kind: "settled" }), 2_000);
 });
 
-chrome.tabs.onRemoved.addListener((tabId) => void forgetTab(tabId));
+chrome.tabs.onRemoved.addListener((tabId) => {
+  void forgetTab(tabId);
+  void forgetLedger(tabId);
+});
 
 // Installed, updated, or reloaded over open tabs: give every one of them a relay and a bridge now,
 // so nothing has to be reloaded to be seen — every dev rebuild included.

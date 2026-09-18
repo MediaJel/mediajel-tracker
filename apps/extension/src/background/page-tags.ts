@@ -2,17 +2,20 @@ import { ScriptSource, TAG_URL_ATTRIBUTES, TagSummary, tagsAmong } from "@mediaj
 
 import { TAG_SEARCH } from "~/lib/tags";
 
-/** A script element as it leaves the page: the attributes a tag's URL can be in, and its base URL. */
+/** A script element as it leaves the page: the attributes a tag's URL can be in, its base URL, and its markup. */
 interface ScriptCopy {
   attributes: Record<string, string | null>;
   baseURI: string;
+  /** Capped: enough to read every attribute, never a page's inline code. */
+  outerHTML: string;
 }
 
 /**
  * Copies of the page's scripts that carry a URL in one of `attributes`.
  *
  * This runs in the tab, not in the worker: `chrome.scripting` sends the function's source text, so it
- * may use nothing but its argument and the page's DOM — no imports and no helpers from this module.
+ * may use nothing but its argument and the page's DOM — no imports and no helpers from this module,
+ * which is why the markup cap is a literal here rather than `ELEMENT_CHAR_CAP`.
  */
 export const copyTagScripts = (attributes: string[]): ScriptCopy[] => {
   const copies: ScriptCopy[] = [];
@@ -24,13 +27,16 @@ export const copyTagScripts = (attributes: string[]): ScriptCopy[] => {
       values[name] = scripts[i].getAttribute(name);
       carriesUrl = carriesUrl || Boolean(values[name]);
     }
-    if (carriesUrl) copies.push({ attributes: values, baseURI: scripts[i].baseURI });
+    if (carriesUrl) {
+      copies.push({ attributes: values, baseURI: scripts[i].baseURI, outerHTML: scripts[i].outerHTML.slice(0, 2048) });
+    }
   }
   return copies;
 };
 
 const sourceOf = (copy: ScriptCopy): ScriptSource => ({
   baseURI: copy.baseURI,
+  outerHTML: copy.outerHTML,
   getAttribute: (name) => copy.attributes[name] ?? null,
 });
 

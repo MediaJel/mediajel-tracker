@@ -1,10 +1,21 @@
 import { describe, expect, test } from "bun:test";
 
-import { Evidence, TabTags, merge, nothingKnown, trackerStatus } from "@mediajel/assistant-core/tags";
+import {
+  Evidence,
+  RecordedTag,
+  TabTags,
+  TagRecord,
+  merge,
+  nothingKnown,
+  trackerStatus,
+  withDefaults,
+} from "@mediajel/assistant-core/tags";
+import { TagSummary } from "@mediajel/assistant-core/context";
 
 /**
  * How the evidence about a page's tags adds up. The rules that matter: rows never move, a tag is
- * never forgotten, a state never slides back, and no warning ever asks anyone to reload anything.
+ * never forgotten, a state never slides back, a source higher up wins key by key over one below
+ * it, and no warning ever asks anyone to reload anything.
  */
 
 const SITE = "shop.example.com";
@@ -14,7 +25,32 @@ const NOW = 1_000;
 const after = (...evidence: Evidence[]): TabTags =>
   evidence.reduce<TabTags | null>((tab, item) => merge(tab, SITE, item, NOW) ?? tab, null) ?? nothingKnown(SITE);
 
-const script = (appId: string, delayed = false) => ({ appId, environment: "weave", version: "2", delayed });
+const script = (appId: string, delayed = false, params: Record<string, string> = {}): TagSummary => ({
+  appId,
+  environment: "weave",
+  version: "2",
+  event: "",
+  delayed,
+  params,
+  src: `https://tags.cnna.io/?appId=${appId}&environment=weave&version=2`,
+  element: "",
+});
+
+/** What the tag's own record event says, as the wire decoder hands it over. */
+const recorded = (appId: string, params: Record<string, string>, extra: Partial<RecordedTag> = {}): RecordedTag => ({
+  appId,
+  environment: "dutchie",
+  version: "2",
+  event: "",
+  collector: "collector-azsx401.dmp.cnna.io",
+  config: {
+    params,
+    src: "",
+    element: `<script src="https://tags.cnna.io/?appId=${appId}"></script>`,
+    source: "record",
+  },
+  ...extra,
+});
 
 describe("merging evidence", () => {
   test("a tag heard from several sources is one row, in the order first seen, whatever the order of arrival", () => {
@@ -43,7 +79,7 @@ describe("merging evidence", () => {
     const tab = after(
       { kind: "beacon", appIds: ["acme"] },
       { kind: "scripts", tags: [script("acme")] },
-      { kind: "scripts", tags: [{ appId: "acme", environment: "other", version: "1", delayed: false }] },
+      { kind: "scripts", tags: [{ ...script("acme"), environment: "other", version: "1" }] },
     );
     expect(tab.tags[0]).toMatchObject({ environment: "weave", version: "2", announced: false });
   });
@@ -113,6 +149,119 @@ describe("merging evidence", () => {
     const tab = after({ kind: "beacon", appIds: ["acme"] });
     expect(merge(tab, SITE, { kind: "beacon", appIds: ["acme"] }, NOW)).toBeNull();
     expect(merge(tab, SITE, { kind: "document" }, NOW)).toBeNull();
+
+    const announcement: Evidence = { kind: "announced", tag: { appId: "acme", state: "running", environment: "jane" } };
+    const told = after(announcement, { kind: "scripts", tags: [script("acme")] });
+    expect(merge(told, SITE, announcement, NOW)).toBeNull();
+    expect(merge(told, SITE, { kind: "scripts", tags: [script("acme")] }, NOW)).toBeNull();
+  });
+});
+
+describe("what the wire and the tag's own record event say", () => {
+  test("a beacon says the tag is sending, where to — filled once — and when it was last heard", () => {
+    const heard = after({ kind: "beacon", appIds: ["acme"], collector: "collector-a.dmp.cnna.io" });
+    expect(heard.tags[0]).toMatchObject({ state: "sending", collector: "collector-a.dmp.cnna.io", lastHeardAt: NOW });
+    expect(trackerStatus(heard).collector).toBe("collector-a.dmp.cnna.io");
+
+    const again = merge(
+      heard,
+      SITE,
+      { kind: "beacon", appIds: ["acme"], collector: "collector-b.dmp.cnna.io" },
+      NOW + 1,
+    );
+    expect(again?.tags[0]).toMatchObject({ collector: "collector-a.dmp.cnna.io", lastHeardAt: NOW + 1 });
+  });
+
+  test("the record event outranks the announcement, which outranks the script — key by key, gaps filled from below", () => {
+    const tab = after(
+      { kind: "scripts", tags: [script("acme", false, { s1: "from-script", logs: "false" })] },
+      {
+        kind: "announced",
+        tag: {
+          appId: "acme",
+          state: "running",
+          environment: "jane",
+          collector: "//collector-b.dmp.cnna.io",
+          src: "https://tags.cnna.io/?appId=acme&s1=from-announcement&environment=jane",
+        },
+      },
+      { kind: "beacon", appIds: ["acme"], records: [recorded("acme", { s1: "from-record", "s3.pv": "00000" })] },
+    );
+    const [tag] = tab.tags;
+    expect(tag).toMatchObject({
+      environment: "dutchie",
+      version: "2",
+      collector: "collector-azsx401.dmp.cnna.io",
+      enabled: true,
+      config: {
+        params: { s1: "from-record", "s3.pv": "00000", logs: "false" },
+        src: "https://tags.cnna.io/?appId=acme&s1=from-announcement&environment=jane",
+        element: `<script src="https://tags.cnna.io/?appId=acme"></script>`,
+        source: "record",
+      },
+    });
+
+    // Sources below the record fill gaps only, and change nothing when there are none to fill.
+    expect(merge(tab, SITE, { kind: "scripts", tags: [script("acme", false, { s1: "read-again" })] }, NOW)).toBeNull();
+    expect(
+      merge(tab, SITE, { kind: "announced", tag: { appId: "acme", state: "running", environment: "late" } }, NOW)
+        ?.tags[0].environment,
+    ).toBeUndefined();
+  });
+
+  test("a script is the first word on a tag's configuration, and an announcement is the next", () => {
+    const fromScript = after({ kind: "scripts", tags: [script("acme", false, { s1: "from-script" })] });
+    expect(fromScript.tags[0].config).toMatchObject({ params: { s1: "from-script" }, source: "script" });
+    expect(fromScript.tags[0].config?.src).toBe("https://tags.cnna.io/?appId=acme&environment=weave&version=2");
+
+    const announced = merge(
+      fromScript,
+      SITE,
+      { kind: "announced", tag: { appId: "acme", state: "running", src: "https://tags.cnna.io/?appId=acme&s1=told" } },
+      NOW,
+    )!;
+    expect(announced.tags[0].config).toMatchObject({ params: { s1: "told" }, source: "announcement" });
+    expect(announced.tags[0].config?.src).toBe("https://tags.cnna.io/?appId=acme&s1=told");
+  });
+
+  test("enable=false disables the tag, from whichever source says so last by rank", () => {
+    expect(after({ kind: "scripts", tags: [script("acme", false, { enable: "false" })] }).tags[0].enabled).toBe(false);
+    expect(
+      after({ kind: "announced", tag: { appId: "acme", state: "disabled", enable: false } }).tags[0],
+    ).toMatchObject({
+      state: "disabled",
+      enabled: false,
+    });
+    const overridden = after(
+      { kind: "scripts", tags: [script("acme", false, { enable: "false" })] },
+      { kind: "announced", tag: { appId: "acme", state: "running", enable: true } },
+    );
+    expect(overridden.tags[0].enabled).toBe(true);
+    expect(after({ kind: "beacon", appIds: ["acme"] }).tags[0].enabled).toBe(true);
+  });
+
+  test("a tag heard only on the wire has no configuration yet", () => {
+    expect(after({ kind: "beacon", appIds: ["acme"] }).tags[0].config).toBeNull();
+  });
+
+  test("a row an older worker wrote is completed — on its own, and when new evidence arrives", () => {
+    const old = {
+      appId: "old",
+      state: "installed",
+      environment: "weave",
+      version: "2",
+      event: "",
+      announced: false,
+      firstSeenAt: 1,
+    } as TagRecord;
+    expect(withDefaults(old)).toEqual({ ...old, collector: "", enabled: true, config: null, lastHeardAt: null });
+    const complete = withDefaults(old);
+    expect(withDefaults(complete)).toBe(complete);
+
+    const tab: TabTags = { site: SITE, settled: true, facts: null, tags: [old] };
+    const upgraded = merge(tab, SITE, { kind: "document" }, NOW);
+    expect(upgraded?.tags[0]).toEqual({ ...complete, ...withDefaults(old) });
+    expect(merge(upgraded, SITE, { kind: "settled" }, NOW)?.tags).toBe(upgraded!.tags);
   });
 });
 

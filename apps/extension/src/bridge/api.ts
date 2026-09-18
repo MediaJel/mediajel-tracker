@@ -6,6 +6,7 @@ import type { Settings } from "~/store/settings";
 import type { TagRecord } from "@mediajel/assistant-core/tags";
 import type { TrackerStatus } from "@mediajel/assistant-core/tags";
 import type { WidgetGoal, WidgetSession, WidgetStep } from "@mediajel/assistant-core/types";
+import type { LedgerDelta, LedgerView } from "@mediajel/assistant-core/wire/types";
 
 /**
  * What the panel, the popup and the options page can ask the background to do.
@@ -48,7 +49,10 @@ export type Request =
   | { type: "service/cancel-generate"; tabId: number }
   | { type: "service/existing-tag"; kind: "domain" | "app-id"; name: string }
   | { type: "service/deploy"; tabId: number; kind: "domain" | "app-id"; name: string; expectedSha?: string }
-  | { type: "service/tag-activity"; appIds: string[] };
+  | { type: "service/tag-activity"; appIds: string[] }
+  // — the ledger —
+  | { type: "events/read"; tabId: number }
+  | { type: "events/clear"; tabId: number };
 
 /** The data-only edits the panel is allowed to make to a job. Steps go through `job/advance`. */
 export type JobPatch =
@@ -102,6 +106,9 @@ export interface ResultOf {
   "service/existing-tag": ExistingTag;
   "service/deploy": DeployOutcome;
   "service/tag-activity": TagActivityResponse;
+  /** The tab's ledger, newest first — empty for a tab that has moved to another site. */
+  "events/read": LedgerView;
+  "events/clear": null;
 }
 
 /** What the background pushes at a bound panel without being asked. */
@@ -109,6 +116,8 @@ export type Push =
   | { type: "session"; session: WidgetSession }
   /** What is now known about the bound tab's tags — after any source learned something new. */
   | { type: "tags"; site: string; tags: TagRecord[]; settled: boolean; status: TrackerStatus }
+  /** What just changed in the bound tab's ledger — deltas only; the panel reads the rest with `events/read`. */
+  | ({ type: "events"; site: string } & LedgerDelta)
   | { type: "verify-result"; ok: boolean; errors: string[] }
   | { type: "dedup-cleared"; count: number }
   | { type: "generation-error"; message: string }

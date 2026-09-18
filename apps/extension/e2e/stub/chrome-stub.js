@@ -30,6 +30,29 @@
 
   // ---- what the page carries ----------------------------------------------------------------
 
+  const COLLECTOR = "collector-azsx401.dmp.cnna.io";
+
+  /** The URL a tag like terrabis.co's is loaded from; the params under it are what its record event repeats. */
+  const tagSrc = (appId) =>
+    `https://tags.cnna.io/?appId=${appId}&environment=production&s1=bLeKCx2Vm0S5qAaJ7dE1fw&s2.pv=ezo6F0kqQm2p&s2.tr=bVey-3fRZmk1&s3.pv=TerrabisMundelein-S3.PV&s3.tr=TerrabisMundelein-S3.TR&version=2&plugin=googleAds&conversionId=AW-17979043318&conversionLabel=w-syCLbq3f0bEPbW8ZQB`;
+
+  /** The tag's configuration as its own record event states it, after the overrides on the page. */
+  const configOf = (appId) => ({
+    params: {
+      s1: "bLeKCx2Vm0S5qAaJ7dE1fw",
+      "s2.pv": "ezo6F0kqQm2p",
+      "s2.tr": "bVey-3fRZmk1",
+      "s3.pv": "TerrabisMundelein-S3.PV",
+      "s3.tr": "TerrabisMundelein-S3.TR",
+      plugin: "googleAds",
+      conversionId: "AW-17979043318",
+      conversionLabel: "w-syCLbq3f0bEPbW8ZQB",
+    },
+    src: tagSrc(appId),
+    element: `<script src="${tagSrc(appId)}"></script>`,
+    source: "record",
+  });
+
   /** A tag the page has been heard sending events from, as the background records it. */
   const tagOf = (appId, index) => ({
     appId,
@@ -39,19 +62,23 @@
     event: "",
     announced: false,
     firstSeenAt: NOW - 90_000 + index * 1_000,
+    collector: COLLECTOR,
+    enabled: true,
+    config: configOf(appId),
+    lastHeardAt: NOW - 30_000 + index * 1_000,
   });
   const NO_TAG =
     "No MediaJel tag has spoken up on this page. You can still record and generate; Verify needs the tag, so load it first.";
 
   /** What the background derives from a tab's tags: the first tag's configuration, and what to warn about. */
   const statusFor = (tags, settled) => {
-    const first = tags[0] || { appId: "", environment: "", version: "", event: "" };
+    const first = tags[0] || { appId: "", environment: "", version: "", event: "", collector: "" };
     return {
       appId: first.appId,
       environment: first.environment,
       version: first.version,
       event: first.event,
-      collector: "",
+      collector: first.collector,
       tagPresent: tags.length > 0,
       tags,
       trackTransPresent: tags.length > 0,
@@ -670,6 +697,9 @@
     "service/existing-tag": (request) => existingTag(request.kind),
     "service/deploy": (request) => deploy(request.kind),
     "service/tag-activity": (request) => tagActivity(request.appIds),
+    // The ledger is empty until the Events view arrives with its fixture; the stub never pushes events.
+    "events/read": () => ({ site: SITE, events: [], pages: [], dropped: 0, seq: 0 }),
+    "events/clear": () => null,
   };
 
   const settled = (value) => (value === HANG ? NEVER : { ok: true, value });
@@ -730,6 +760,6 @@
     storage: { local: area(), session: area(), sync: area(), onChanged: NOOP_EVENT },
     sidePanel: { open: async () => undefined, setPanelBehavior: async () => undefined },
     scripting: { registerContentScripts: async () => undefined, executeScript: async () => [] },
-    webRequest: { onBeforeRequest: NOOP_EVENT },
+    webRequest: { onBeforeRequest: NOOP_EVENT, onCompleted: NOOP_EVENT, onErrorOccurred: NOOP_EVENT },
   };
 })();

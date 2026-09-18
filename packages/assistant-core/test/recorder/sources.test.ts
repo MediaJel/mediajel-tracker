@@ -23,7 +23,18 @@ const makeHost = (tag: Partial<QueryStringContext> = {}): { host: SourceHost; em
   const page: PageContext = {
     tag: { appId: "test-app", collector: "//collector.test", ...tag } as QueryStringContext,
     tagPresent: true,
-    tags: [{ appId: "test-app", environment: "production", version: "2", delayed: false }],
+    tags: [
+      {
+        appId: "test-app",
+        environment: "production",
+        version: "2",
+        event: "",
+        delayed: false,
+        params: {},
+        src: "https://tags.cnna.io/?appId=test-app&version=2",
+        element: "",
+      },
+    ],
     href: window.location.href,
     hostname: window.location.hostname,
     isOwn: () => false,

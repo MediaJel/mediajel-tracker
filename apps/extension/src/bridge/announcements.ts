@@ -14,7 +14,7 @@ import { TAG_EVENT, TagAnnouncement, isRegistry } from "@mediajel/tracker-core/u
  * dispatches its events past it, so those are heard either way.
  */
 
-/** Only what the record keeps: the tag's own error text is passed along, its timestamps are not. */
+/** Only what the record keeps: the tag's own error text is passed along, its timestamp is not. */
 const announced = (tag: TagAnnouncement): AnnouncedTag => ({
   appId: tag.appId,
   environment: tag.environment,
@@ -22,6 +22,9 @@ const announced = (tag: TagAnnouncement): AnnouncedTag => ({
   event: tag.event,
   state: tag.state,
   error: tag.error,
+  collector: tag.collector,
+  enable: tag.enable,
+  src: tag.src,
 });
 
 const isAnnouncement = (detail: unknown): detail is TagAnnouncement =>

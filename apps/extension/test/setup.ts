@@ -79,7 +79,11 @@ const session = area();
     onUpdated: { addListener: () => undefined, removeListener: () => undefined },
     onRemoved: { addListener: () => undefined, removeListener: () => undefined },
   },
-  webRequest: { onBeforeRequest: { addListener: () => undefined } },
+  webRequest: {
+    onBeforeRequest: { addListener: () => undefined },
+    onCompleted: { addListener: () => undefined },
+    onErrorOccurred: { addListener: () => undefined },
+  },
   scripting: {
     registerContentScripts: async () => undefined,
     getRegisteredContentScripts: async () => [

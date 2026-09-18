@@ -36,10 +36,19 @@ describe("listening for the tag's announcements", () => {
     const heard: AnnouncedTag[] = [];
     const win = windowWith(registry(announcement("first", "running"), announcement("second")));
     listenForAnnouncements(win, (tag) => heard.push(tag));
-    expect(heard).toEqual([
-      { appId: "first", environment: "production", version: "2", event: "", state: "running", error: undefined },
-      { appId: "second", environment: "production", version: "2", event: "", state: "installed", error: undefined },
-    ]);
+    const kept = (appId: string, state: string): AnnouncedTag => ({
+      appId,
+      environment: "production",
+      version: "2",
+      event: "",
+      state,
+      error: undefined,
+      collector: "collector.example",
+      enable: true,
+      src: `https://tags.cnna.io/?appId=${appId}`,
+    });
+    expect(heard).toEqual([kept("first", "running"), kept("second", "installed")]);
+    expect(heard[0]).not.toHaveProperty("at");
   });
 
   test("hears every announcement after it, until it is stopped", () => {

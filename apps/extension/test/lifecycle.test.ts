@@ -1,8 +1,11 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 
+import { LedgerView, PendingEvent } from "@mediajel/assistant-core/wire/types";
+
 import { JobView } from "~/bridge/api";
 import { BridgeDown } from "~/bridge/protocol";
 import { handle } from "~/background/handle";
+import { recordEvents } from "~/background/ledger";
 import { learn } from "~/background/tag-state";
 import { readSession, writeSession } from "~/store/auth";
 import { failureAnswer } from "~/background/answer";
@@ -140,6 +143,43 @@ describe("what the panel is told about the page", () => {
     expect(view?.settled).toBe(true);
     expect(view?.status.warnings.join(" ")).toContain("No MediaJel tag has spoken up");
     expect(view?.status.warnings.join(" ")).not.toMatch(/reload/i);
+  });
+
+  test("answers the tab's ledger for its site only, newest first, and clears it on request", async () => {
+    const event = (id: string): PendingEvent => ({
+      id,
+      at: 1,
+      request: "r1",
+      pageKey: "doc-1",
+      pageUrl: `https://${SITE}/checkout`,
+      appId: "ours",
+      outcome: { kind: "pending" },
+      source: "collector",
+      transport: "post",
+      collector: "collector-azsx401.dmp.cnna.io",
+      kind: "page-view",
+      code: "pv",
+      name: "Page view",
+      groups: [],
+      entities: [],
+      batch: { index: 0, size: 1 },
+    });
+    const read = async (): Promise<LedgerView> =>
+      (await handle({ type: "events/read", tabId: TAB }, send, push)) as LedgerView;
+
+    await recordEvents(TAB, "previous-client.example", [event("theirs")]);
+    expect(await read()).toMatchObject({ site: SITE, events: [], pages: [], seq: 0 });
+
+    await recordEvents(TAB, SITE, [event("first"), event("second")]);
+    const view = await read();
+    expect(view.events.map((entry) => [entry.id, entry.seq])).toEqual([
+      ["second", 2],
+      ["first", 1],
+    ]);
+    expect(view.pages.map((page) => page.url)).toEqual([`https://${SITE}/checkout`]);
+
+    expect(await handle({ type: "events/clear", tabId: TAB }, send, push)).toBeNull();
+    expect(await read()).toMatchObject({ events: [], pages: [], seq: 2 });
   });
 
   test("looks tag activity up with the signed-in user's token — the panel never holds one", async () => {

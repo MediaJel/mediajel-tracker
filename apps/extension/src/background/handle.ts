@@ -1,6 +1,7 @@
 import { deployTargets } from "@mediajel/assistant-core/deploy/targets";
-import { TrackerStatus } from "@mediajel/assistant-core/tags";
+import { TagRecord, TrackerStatus } from "@mediajel/assistant-core/tags";
 import { trackerStatus } from "@mediajel/assistant-core/tags";
+import { viewOf } from "@mediajel/assistant-core/wire/view";
 
 import { AuthState, JobPatch, JobView, Request, ResultOf } from "~/bridge/api";
 import { BridgeDown } from "~/bridge/protocol";
@@ -9,6 +10,7 @@ import { SIGNED_OUT } from "~/auth/signed-out";
 import { siteOf } from "~/lib/site";
 import { failureAnswer } from "~/background/answer";
 import { attach } from "~/background/attach";
+import { clearLedger, readLedger } from "~/background/ledger";
 import { learn, tagsOfTab } from "~/background/tag-state";
 import { readTagsOnPage } from "~/background/page-tags";
 import { checkAccess, deployTag, generateTag, readExistingTag, readTagActivity } from "~/service/client";
@@ -28,6 +30,41 @@ import { readSettings, writeSettings } from "~/store/settings";
 /** What the Record step and the prompt read about a tab's page, from everything learned about it. */
 const statusOf = async (tabId: number, site: string): Promise<TrackerStatus> =>
   trackerStatus(await tagsOfTab(tabId, site));
+
+const slimTag = ({
+  appId,
+  state,
+  environment,
+  version,
+  event,
+  announced,
+  error,
+  firstSeenAt,
+}: TagRecord): TagRecord => ({
+  appId,
+  state,
+  environment,
+  version,
+  event,
+  announced,
+  ...(error === undefined ? {} : { error }),
+  firstSeenAt,
+  collector: "",
+  enabled: true,
+  config: null,
+  lastHeardAt: null,
+});
+
+/**
+ * The status as it stood before the tag record learned its collector, its configuration and when it
+ * was last heard — what the assistant service has always been sent. Nothing the panel now reads off
+ * the wire leaves the browser with a generation.
+ */
+const slimStatus = (status: TrackerStatus): TrackerStatus => ({
+  ...status,
+  collector: "",
+  tags: status.tags.map(slimTag),
+});
 
 /** In-flight generations, so Cancel has something to abort and a stale answer cannot land. */
 const generating = new Map<number, AbortController>();
@@ -103,7 +140,7 @@ const runGeneration = async (tabId: number, site: string, push: Push): Promise<v
   try {
     const { output, model, violations } = await generateTag(currentIdToken, {
       session,
-      status: await statusOf(tabId, site),
+      status: slimStatus(await statusOf(tabId, site)),
       hostname: site,
       signal: controller.signal,
     });
@@ -311,6 +348,13 @@ export const handle = async (request: Request, send: Send, push: Push): Promise<
 
     case "service/tag-activity":
       return readTagActivity(currentIdToken, request.appIds);
+
+    case "events/read":
+      return viewOf(await readLedger(request.tabId, await siteOfTab(request.tabId)));
+
+    case "events/clear":
+      await clearLedger(request.tabId, await siteOfTab(request.tabId));
+      return null;
 
     case "service/deploy": {
       const site = await siteOfTab(request.tabId);

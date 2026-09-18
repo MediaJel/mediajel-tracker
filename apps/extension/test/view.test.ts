@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
+import { TagRecord } from "@mediajel/assistant-core/tags";
 import { WidgetSession } from "@mediajel/assistant-core/types";
 
 import { normalizeView } from "~/sidepanel/view";
@@ -30,5 +31,22 @@ describe("a job view from an older background", () => {
     const status = { tagPresent: true, tags: [], warnings: ["w"] } as never;
     const view = normalizeView({ site: "shop.example.com", session, tags: [], settled: true, status });
     expect(view).toEqual({ site: "shop.example.com", session, tags: [], settled: true, status });
+  });
+
+  test("tag rows written before the record learned its collector and configuration are completed", () => {
+    const old = {
+      appId: "acme",
+      state: "sending",
+      environment: "weave",
+      version: "2",
+      event: "",
+      announced: false,
+      firstSeenAt: 1,
+    } as unknown as TagRecord;
+    const status = { tagPresent: true, tags: [old], warnings: [] } as never;
+    const view = normalizeView({ site: "shop.example.com", session, tags: [old], settled: true, status });
+    const completed = { ...old, collector: "", enabled: true, config: null, lastHeardAt: null };
+    expect(view.tags).toEqual([completed]);
+    expect(view.status.tags).toEqual([completed]);
   });
 });
