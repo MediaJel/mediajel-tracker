@@ -1,4 +1,5 @@
-import { scaleLinear } from "@visx/scale";
+import { WidgetGoal } from "@mediajel/assistant-core/types";
+import { scaleLinear } from "d3-scale";
 
 import type { TagActivity } from "~/service/client";
 import { amount, fullNumber, tallyNumber } from "~/ui/activity";
@@ -11,7 +12,7 @@ import { amount, fullNumber, tallyNumber } from "~/ui/activity";
 
 type Answered = Extract<TagActivity, { status: "ok" }>;
 export type Day = NonNullable<Answered["daily"]>[number];
-type Measure = Exclude<keyof Day, "day">;
+export type Measure = Exclude<keyof Day, "day">;
 
 export interface Band {
   measure: Measure;
@@ -53,13 +54,23 @@ export const daysToDraw = (days: Day[]): Day[] => days.slice(-DAYS_DRAWN);
 export const bandsFor = (days: Day[]): Band[] =>
   BANDS.filter((band) => band.measure !== "transactionTotal" || days.some((day) => day.transactionTotal > 0));
 
+/** The measure a job is about: what the main panel strips beside the page views. */
+const JOB_MEASURE: Record<WidgetGoal, Measure> = { transaction: "transactions", signup: "signups" };
+
+/**
+ * The two bands the main panel has room for under the tally: page views, and the job's own measure.
+ * The rest of the record — sign-ups on a transaction job, sessions, the total — is in Details.
+ */
+export const stripBands = (goal: WidgetGoal): Band[] =>
+  BANDS.filter((band) => band.measure === "pageviews" || band.measure === JOB_MEASURE[goal]);
+
 /**
  * A band's top: its largest day rounded up to the next clean tick, so the one figure on its scale reads
  * at a glance and the busiest column still nearly reaches it.
  */
 export const topOf = (days: Day[], measure: Measure): number => {
   const largest = Math.max(0, ...days.map((day) => day[measure]));
-  return largest === 0 ? 0 : scaleLinear({ domain: [0, largest], nice: true }).domain()[1];
+  return largest === 0 ? 0 : scaleLinear().domain([0, largest]).nice().domain()[1];
 };
 
 const inUtc = (day: string): Date => new Date(`${day}T00:00:00Z`);

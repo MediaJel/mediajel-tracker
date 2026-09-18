@@ -9,6 +9,7 @@ import {
   shortAppId,
   stateLabel,
   stateSentence,
+  stripTag,
   tallyNumber,
   tallySentence,
 } from "~/ui/activity";
@@ -71,6 +72,17 @@ describe("the tally's sentence", () => {
 
   test("stays quiet when no tag could be read — a failure is not a quiet week", () => {
     expect(tallySentence([{ appId: "a", status: "unavailable", message: "timed out" }], "transaction", NOW)).toBe("");
+  });
+});
+
+describe("the tag the main panel strips", () => {
+  test("the one with the most recent event of the job's kind, else the first that answered", () => {
+    const quiet = answered("a", { pageviews: 10 });
+    const recent = answered("b", { transactions: 2 }, { lastTransactionAt: "2026-09-17T11:00:00Z" });
+    const older = answered("c", { transactions: 9 }, { lastTransactionAt: "2026-09-15T11:00:00Z" });
+    expect(stripTag([quiet, older, recent], "transaction")?.appId).toBe("b");
+    expect(stripTag([quiet, older], "signup")?.appId).toBe("a");
+    expect(stripTag([{ appId: "d", status: "unavailable", message: "502" }], "transaction")).toBeUndefined();
   });
 });
 

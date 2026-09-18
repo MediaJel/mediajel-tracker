@@ -1,6 +1,17 @@
 import { describe, expect, test } from "bun:test";
 
-import { Day, axisLabel, bandsFor, dayAfterKey, dayAt, daysToDraw, readoutLabel, todayOf, topOf } from "~/ui/days";
+import {
+  Day,
+  axisLabel,
+  bandsFor,
+  dayAfterKey,
+  dayAt,
+  daysToDraw,
+  readoutLabel,
+  stripBands,
+  todayOf,
+  topOf,
+} from "~/ui/days";
 
 /**
  * Every decision the by-day figure makes before it draws anything: which days, which bands, where a
@@ -38,6 +49,11 @@ describe("which bands are drawn", () => {
   test("the transaction total only once there is any money to show", () => {
     const week = [...EIGHT.slice(0, 6), day("2026-09-16", { transactions: 1, transactionTotal: 42.5 })];
     expect(bandsFor(week).map((band) => band.measure)).toContain("transactionTotal");
+  });
+
+  test("the main panel strips page views and the job's own measure, nothing else", () => {
+    expect(stripBands("transaction").map((band) => band.measure)).toEqual(["pageviews", "transactions"]);
+    expect(stripBands("signup").map((band) => band.measure)).toEqual(["pageviews", "signups"]);
   });
 });
 

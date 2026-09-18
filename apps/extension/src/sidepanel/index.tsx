@@ -36,7 +36,7 @@ const Settling = (): ReactNode => (
   <div className="flex flex-col gap-3.5 pt-5" aria-busy="true" aria-live="polite" aria-label="Opening this job">
     <Skeleton className="h-[26px] w-[62%]" />
     <Skeleton className="h-[13px] w-[84%]" />
-    <Skeleton className="mj-skeleton-bar--tally" />
+    <Skeleton className="h-[50px]" />
     <Skeleton className="h-[52px] shadow-press" />
     <Skeleton className="h-[52px] shadow-press" />
   </div>

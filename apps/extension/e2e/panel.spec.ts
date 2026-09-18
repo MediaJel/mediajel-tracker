@@ -45,7 +45,7 @@ const openDetails = click("#mj-activity-details");
 const openJobs = click("button[title='Your jobs']");
 
 /** A job screen is ready when its section is drawn and the tally has settled on a reading. */
-const job = (selector: string): string[] => [selector, ".mj-tally-grid"];
+const job = (selector: string): string[] => [selector, "[data-slot=tally]"];
 
 const SCENARIOS: Scenario[] = [
   { name: "loading", ready: ["[data-slot=skeleton]"] },
@@ -67,21 +67,25 @@ const SCENARIOS: Scenario[] = [
   { name: "job-done", ready: job("[data-slot=links]") },
   { name: "settings", ready: ["[aria-label='Assistant settings']"], act: click("button[aria-label=Settings]") },
   { name: "confirm-reset", ready: ["[data-slot=alert-dialog-content]"], act: click("button[aria-label='Start over']") },
-  { name: "report-1", ready: ["#mj-activity-report .mj-days-plot svg"], act: openDetails },
+  { name: "report-1", ready: ["#mj-activity-report [data-slot=chart] svg"], act: openDetails },
   {
     name: "report-3",
-    ready: ["#mj-activity-report .mj-report-unread", "#mj-activity-report .mj-days-plot svg"],
+    ready: ["#mj-activity-report [data-slot=alert]", "#mj-activity-report [data-slot=chart] svg"],
     act: openDetails,
   },
-  { name: "tally-listening", ready: ["[data-slot=goals]", ".mj-tally-note"] },
-  { name: "tally-no-tags", ready: ["[data-slot=goals]", ".mj-tally-note"] },
-  { name: "tally-loading", ready: ["[data-slot=goals]", ".mj-tally[aria-busy=true] .mj-tally-skeleton"] },
-  { name: "tally-error", ready: ["[data-slot=goals]", ".mj-tally-note--problem"] },
-  { name: "tally-not-configured", ready: ["[data-slot=goals]", ".mj-tally-note"] },
-  { name: "tally-4-tags", ready: job(".mj-tally-grid--many") },
-  { name: "tally-refreshing", ready: job(".mj-tally-grid--stale"), act: click(".mj-tally-unread button") },
-  { name: "tally-daily-null", ready: ["#mj-activity-report .mj-days-section .mj-empty"], act: openDetails },
-  { name: "tally-quiet-week", ready: job(".mj-tally-sentence") },
+  { name: "tally-listening", ready: ["[data-slot=goals]", "[data-slot=tally-note]"] },
+  { name: "tally-no-tags", ready: ["[data-slot=goals]", "[data-slot=tally-note]"] },
+  { name: "tally-loading", ready: ["[data-slot=goals]", "section[aria-busy=true] [data-slot=skeleton]"] },
+  { name: "tally-error", ready: ["[data-slot=goals]", "[data-slot=tally-note][data-problem]"] },
+  { name: "tally-not-configured", ready: ["[data-slot=goals]", "[data-slot=tally-note]"] },
+  { name: "tally-4-tags", ready: job("[data-slot=tally][data-many]") },
+  {
+    name: "tally-refreshing",
+    ready: job("[data-slot=tally][data-stale]"),
+    act: click("[data-slot=tally-unread] button"),
+  },
+  { name: "tally-daily-null", ready: ["#mj-activity-report [data-slot=days] p"], act: openDetails },
+  { name: "tally-quiet-week", ready: job("[data-slot=tally-sentence]") },
   { name: "popup-out", page: "popup", ready: ["form input[autocomplete=username]"] },
   { name: "popup-in", page: "popup", ready: ["dl"] },
 ];

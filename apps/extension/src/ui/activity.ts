@@ -86,6 +86,15 @@ const latestFor = (answered: Answered[], goal: WidgetGoal): Answered | undefined
     .sort((a, b) => Date.parse(b[job.last] ?? "") - Date.parse(a[job.last] ?? ""))[0];
 };
 
+/**
+ * The tag whose week the main panel strips: the one with the most recent event of the job's kind,
+ * else the first that answered — the same tag the tally's sentence singles out.
+ */
+export const stripTag = (results: TagActivity[], goal: WidgetGoal): Answered | undefined => {
+  const answered = results.filter((result): result is Answered => result.status === "ok");
+  return latestFor(answered, goal) ?? answered[0];
+};
+
 /** When nothing of the job's kind was recorded: are pages being seen at all? */
 const quietSentence = (answered: Answered[], goal: WidgetGoal): string => {
   if (answered.some((result) => result.totals.pageviews > 0)) {
