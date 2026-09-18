@@ -26,6 +26,10 @@ against.
   the ordinary way; `held.html` the way WP Rocket leaves it, inert until the first `mousemove`.
   Both must end with the tag heard sending for app ID `e2e-old` and with the stub collector holding
   the `payload_data` batch that named it.
+- `announcing.spec.ts` — `new.html` carries this repo's tag build, which announces itself: the
+  record says `installed` from the tag's own word before anything is sent, then `running`, then
+  `sending` with the collector holding the batch, every row `announced: true`; under GPC it says
+  `opted-out` and the collector hears nothing.
 - `terrabis.spec.ts` — a real client site whose tag arrives late through Google Tag Manager. It
   checks detection, that the record outlives a stopped service worker, what a `chrome.runtime.reload()`
   does to it, and (signed in) the panel's tally. The signed-in part needs `apps/extension/.env.e2e`
@@ -51,8 +55,11 @@ beacon resolves to a closed port on this machine, which the extension hears all 
 
 `vendor-tag.mjs` fetches `https://tags.cnna.io/index.js` and every hashed chunk it names into
 `e2e/fixtures/vendor/` (gitignored) on the first run. Delete that directory to refresh the copy.
-A fixture for the tag build that announces itself (`new.html`) is reserved for when
-`apps/tracker/dist` carries the `mediajel:tag` announcement; it does not yet.
+
+`build-announcing-tag.mjs` builds this repo's own tag — the one that announces itself — from
+`apps/tracker` with `COLLECTOR_URL` pointed at the stub's host and port, into
+`e2e/fixtures/announcing/` (gitignored), once; `new.html` loads it from 127.0.0.1:3002. Delete
+that directory to rebuild after a tag change.
 
 ## The visual matrix
 

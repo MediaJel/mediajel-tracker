@@ -14,6 +14,7 @@
     "apps/extension/e2e/*.spec.ts",
     "apps/extension/e2e/stub/chrome-stub.js",
     "apps/extension/e2e/build-preview.mjs",
+    "apps/extension/e2e/build-announcing-tag.mjs",
     "apps/extension/e2e/vendor-tag.mjs"
   ]
 }

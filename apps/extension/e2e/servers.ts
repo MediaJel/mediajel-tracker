@@ -15,6 +15,8 @@ import path from "node:path";
 export const FIXTURE_PORT = 4000;
 /** Serves `e2e/fixtures/vendor`: the production tag build, fetched once by `vendor-tag.mjs`. */
 export const VENDOR_PORT = 3001;
+/** Serves `e2e/fixtures/announcing`: this repo's tag build, made once by `build-announcing-tag.mjs`. */
+export const ANNOUNCING_PORT = 3002;
 /** The stub collector. The vendored bundle's collector host carries this port; see the README. */
 export const COLLECTOR_PORT = 4443;
 /** Serves `e2e/out/site`: the preview build of the panel with the chrome stub in front of it. */

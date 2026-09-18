@@ -6,6 +6,7 @@ import { askRunningTags } from "@mediajel/assistant-core/trackers";
 import { runGenerated } from "@mediajel/assistant-core/verify/runner";
 import isUsPrivacyOptOut from "@mediajel/tracker-core/utils/privacy-opt-out";
 
+import { listenForAnnouncements } from "~/bridge/announcements";
 import { claimBridge } from "~/bridge/claim";
 import { BridgeDown, BridgeUp, WIRE_VERSION, unwrap, wrap } from "~/bridge/protocol";
 import { TAG_SEARCH } from "~/lib/tags";
@@ -189,12 +190,17 @@ const onCommand = (event: MessageEvent): void => {
   }
 };
 
+// The tag's own word about itself, whenever it has one: every announcement from here on, and
+// whatever was on record before this bridge arrived.
+const stopListeningForAnnouncements = listenForAnnouncements(window, (tag) => send({ type: "tag-announced", tag }));
+
 // A bridge injected over a live one — the extension attaching to a tab it was installed over —
 // takes the old one's place; two would record every event twice.
 claimBridge(window, WIRE_VERSION, () => {
   standingDown = true;
   window.removeEventListener("message", onCommand);
   window.removeEventListener("load", settle);
+  stopListeningForAnnouncements();
   stopWatchingQueue();
   if (settleTimer) clearTimeout(settleTimer);
   recorder?.stop();
