@@ -161,6 +161,19 @@ for an answer, and no sentence ever asks for a page to be reloaded — detection
 re-reads on its own. A problem is set in ink, not partner orange: the orange is under 4.5:1 as text
 on the light sheet, so it stays a border colour.
 
+**The configuration slip** hangs under an app ID in Overview and Analytics alike: a `Collapsible`
+closed by default, its trigger the words "Tag configuration" with the chevron, in the display face
+like the tally's own controls. Open, it is the tag's whole setup in words, from the highest-ranked
+source that has spoken — the tag's own `record` event on the wire, after any overrides on the
+page; else its announcement; else the script on the page — and a source line says which. Identity
+(app ID, environment, version with the SDK it implies, event, collector), Audience segments
+(LiquidM; Nexxen page-view and transaction beacons; Dstillery page-view and transaction, with a
+legacy name noted and `00000` printed as "not configured (tag default)"), Plugins, Controls, and
+Other parameters for whatever else the URL carried; labels in soft ink, values in mono that wrap
+anywhere because a Nexxen segment is ninety opaque characters, and the script's own markup last, as
+machine text. A tag heard only on the wire has no slip: the line under its app ID already says the
+page names nothing about it.
+
 **The week** sits inside the reading of the tag the tally's sentence singles out, under its counts:
 two bands — page views, and the job's own measure — at 40px plots under a one-line caption naming
 the day being read ("By day · Today so far · Wed, Sep 16", following the pointer or the arrow keys,

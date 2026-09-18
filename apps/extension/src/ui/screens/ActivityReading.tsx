@@ -1,7 +1,11 @@
 import { ReactNode } from "react";
 
+import { TagRecord } from "@mediajel/assistant-core/tags";
+
 import { cn } from "~/lib/utils";
 import type { TagActivity } from "~/service/client";
+import { describeTag } from "~/ui/activity";
+import { ConfigurationSlip } from "~/ui/screens/ConfigurationSlip";
 
 /**
  * The pieces a tag's reading is made of, on the main panel and on each report sheet alike, so a
@@ -9,23 +13,27 @@ import type { TagActivity } from "~/service/client";
  * their names printed small above them, read across the way the tally has always read.
  */
 
-/** Which tag a reading is about: its app ID in mono, and what the page says of its configuration and state. */
+/** Which tag a reading is about: its app ID in mono, what the page says of its state, and its configuration, one disclosure down. */
 export const TagHeading = ({
   id,
   appId,
-  description,
+  tag,
 }: {
   id?: string;
   appId: string;
-  description: string;
-}): ReactNode => (
-  <>
-    <h3 id={id} className="m-0 font-mono text-sm leading-[1.45] font-normal text-foreground wrap-anywhere">
-      {appId}
-    </h3>
-    {description && <p className="mt-0.5 mb-2.5 text-xs leading-[1.45] text-muted-foreground">{description}</p>}
-  </>
-);
+  tag: TagRecord | undefined;
+}): ReactNode => {
+  const description = describeTag(tag);
+  return (
+    <>
+      <h3 id={id} className="m-0 font-mono text-sm leading-[1.45] font-normal text-foreground wrap-anywhere">
+        {appId}
+      </h3>
+      {description && <p className="mt-0.5 mb-2 text-xs leading-[1.45] text-muted-foreground">{description}</p>}
+      {tag && <ConfigurationSlip tag={tag} />}
+    </>
+  );
+};
 
 const COLUMNS = [
   { key: "pageviews", label: "Page views" },

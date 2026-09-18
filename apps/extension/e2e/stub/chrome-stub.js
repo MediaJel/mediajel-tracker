@@ -88,8 +88,23 @@
   };
 
   /** `settled` is whether the page has had its moment to load a tag; a page still loading is not a page without tags. */
+  /** A tag read off the page's script only — before it sent anything, so no collector and no record. */
+  const scriptTag = (appId, index) => ({
+    ...tagOf(appId, index),
+    state: "installed",
+    collector: "",
+    lastHeardAt: null,
+    config: {
+      params: { segmentId: "e-oqTEY2SNGlRzvmH9esjw", s3: "S3-legacy" },
+      src: tagSrc(appId),
+      element: `<script src="${tagSrc(appId)}"></script>`,
+      source: "script",
+    },
+  });
+
   const PAGES = {
     one: { tags: APP_IDS.slice(0, 1).map(tagOf), settled: true },
+    script: { tags: APP_IDS.slice(0, 1).map(scriptTag), settled: true },
     two: { tags: APP_IDS.slice(0, 2).map(tagOf), settled: true },
     three: { tags: APP_IDS.slice(0, 3).map(tagOf), settled: true },
     four: { tags: APP_IDS.map(tagOf), settled: true },
@@ -520,6 +535,8 @@
     "overview-4-tags": { step: "home", page: "four" },
     "overview-refreshing": { step: "home", page: "two", activity: { unavailable: [1], hangAfterCalls: 1 } },
     "overview-quiet-week": { step: "home", activity: { quiet: true } },
+    "overview-config": { step: "home" },
+    "config-script-only": { step: "home", page: "script" },
     "analytics-1": { step: "home" },
     "analytics-3": { step: "home", page: "three", activity: { unavailable: [1] } },
     "analytics-daily-null": { step: "home", activity: { daily: null } },

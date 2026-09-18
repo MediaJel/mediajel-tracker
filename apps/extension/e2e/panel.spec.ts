@@ -42,6 +42,8 @@ const answerSignIn = async (page: Page): Promise<void> => {
 };
 
 const openJobs = click("button[title='Your jobs']");
+/** Open the first reading's configuration slip. */
+const openConfig = click("[data-slot=tag-config-toggle]");
 /** Choose a view by its tab. */
 const openView = (view: "analytics" | "setup") => click(`[data-view=${view}]`);
 
@@ -82,6 +84,8 @@ const SCENARIOS: Scenario[] = [
     act: click("[data-slot=tally-unread] button"),
   },
   { name: "overview-quiet-week", ready: ["[data-slot=tally-sentence]"] },
+  { name: "overview-config", ready: ["[data-slot=tag-config] pre"], act: openConfig },
+  { name: "config-script-only", ready: ["[data-slot=tag-config] pre"], act: openConfig },
   { name: "analytics-1", ready: ["[data-slot=analytics] [data-slot=chart] svg"], act: openView("analytics") },
   {
     name: "analytics-3",

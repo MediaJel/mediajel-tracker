@@ -1,9 +1,11 @@
 import { ReactNode, useState } from "react";
 
+import { TagRecord } from "@mediajel/assistant-core/tags";
+
 import { cn } from "~/lib/utils";
 import type { TagActivity } from "~/service/client";
 import type { TagActivityState } from "~/sidepanel/useTagActivity";
-import { amount, describeTag, fullNumber, pageLabel, pageListing, when } from "~/ui/activity";
+import { amount, fullNumber, pageLabel, pageListing, when } from "~/ui/activity";
 import InfoTip from "~/ui/components/InfoTip";
 import { Stack } from "~/ui/components/Panel";
 import { Empty, Fine, SheetGroup } from "~/ui/components/Section";
@@ -171,7 +173,8 @@ const Unread = ({ message, onRetry }: { message: string; onRetry(): void }): Rea
 
 interface SheetProps {
   result: TagActivity;
-  description: string;
+  /** What the page says about this tag, when it has been heard at all. */
+  tag: TagRecord | undefined;
   site: string;
   /** The last sheet tears off at the bottom, the way the stack's last sheet does. */
   last: boolean;
@@ -179,14 +182,14 @@ interface SheetProps {
 }
 
 /** One tag's sheet: which tag, then its record in reading order. */
-const Sheet = ({ result, description, site, last, onRetry }: SheetProps): ReactNode => {
+const Sheet = ({ result, tag, site, last, onRetry }: SheetProps): ReactNode => {
   const headingId = `mj-activity-tag-${result.appId}`;
   return (
     <section
       className={cn("mb-2 bg-sheet px-5 pt-4 pb-[18px] shadow-press", last && "tear-bottom")}
       aria-labelledby={headingId}
     >
-      <TagHeading id={headingId} appId={result.appId} description={description} />
+      <TagHeading id={headingId} appId={result.appId} tag={tag} />
       {result.status === "ok" ? (
         <>
           <Facts result={result} />
@@ -206,7 +209,7 @@ const sheetsFor = (activity: TagActivityState, site: string): ReactNode =>
     <Sheet
       key={result.appId}
       result={result}
-      description={describeTag(activity.tags.find((tag) => tag.appId === result.appId))}
+      tag={activity.tags.find((tag) => tag.appId === result.appId)}
       site={site}
       last={index === activity.results.length - 1}
       onRetry={activity.refresh}

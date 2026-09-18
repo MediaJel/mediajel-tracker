@@ -6,7 +6,7 @@ import { WidgetGoal } from "@mediajel/assistant-core/types";
 import { cn } from "~/lib/utils";
 import type { TagActivity } from "~/service/client";
 import type { TagActivityState } from "~/sidepanel/useTagActivity";
-import { describeTag, stripTag, tallyNumber, tallySentence } from "~/ui/activity";
+import { stripTag, tallyNumber, tallySentence } from "~/ui/activity";
 import InfoTip from "~/ui/components/InfoTip";
 import { Stack } from "~/ui/components/Panel";
 import { Button } from "~/ui/components/ui/button";
@@ -51,7 +51,7 @@ interface ReadingProps {
 /** One tag's reading: which tag, then its counts, then — for the tag the sentence is about — its week. */
 const Reading = ({ result, tag, many, week, goal, stale, onRetry }: ReadingProps): ReactNode => (
   <li data-slot="reading">
-    <TagHeading appId={result.appId} description={describeTag(tag)} />
+    <TagHeading appId={result.appId} tag={tag} />
     {result.status === "ok" ? (
       <>
         <TagCounts totals={result.totals} format={tallyNumber} big={!many} />
