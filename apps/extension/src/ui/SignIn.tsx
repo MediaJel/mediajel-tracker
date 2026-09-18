@@ -2,6 +2,7 @@ import { FormEvent, ReactNode, useId, useState } from "react";
 
 import type { AuthChallenge } from "~/auth/cognito";
 import { Letterhead } from "~/ui/components/Letterhead";
+import { Fine, Lede } from "~/ui/components/Section";
 import { Alert } from "~/ui/components/ui/alert";
 import { Button } from "~/ui/components/ui/button";
 import { Field, FieldLabel } from "~/ui/components/ui/field";
@@ -115,7 +116,7 @@ export const SignIn = ({ challenge, busy, error, onSignIn, onAnswer }: SignInPro
     <form className="flex flex-col gap-3 p-5" onSubmit={submit}>
       <Letterhead title="Integrations Assistant" />
 
-      <p className="mj-lede">{challenge ? challenge.label : INTRO}</p>
+      <Lede>{challenge ? challenge.label : INTRO}</Lede>
       {challenge ? (
         <ChallengeField challenge={challenge} answer={answer} onChange={setAnswer} />
       ) : (
@@ -132,10 +133,10 @@ export const SignIn = ({ challenge, busy, error, onSignIn, onAnswer }: SignInPro
         {buttonLabel(busy, challenge)}
       </Button>
 
-      <p className="mj-fine">
+      <Fine>
         Your password is never sent — it proves itself to AWS Cognito and stays in this browser. The assistant keeps
         only the session token, in extension storage no website can read.
-      </p>
+      </Fine>
     </form>
   );
 };

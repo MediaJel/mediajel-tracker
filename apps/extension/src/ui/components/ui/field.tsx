@@ -19,3 +19,20 @@ export const FieldLabel = ({ className, ...props }: ComponentProps<"label">) => 
     {...props}
   />
 );
+
+/** A ruled group of fields — Settings' Account, Appearance, This page, This browser. */
+export const FieldSet = ({ className, ...props }: ComponentProps<"fieldset">) => (
+  <fieldset
+    data-slot="field-set"
+    className={cn("m-0 mb-3.5 min-w-0 rounded-sm border border-border p-2.5", className)}
+    {...props}
+  />
+);
+
+export const FieldLegend = ({ className, ...props }: ComponentProps<"legend">) => (
+  <legend
+    data-slot="field-legend"
+    className={cn("mb-1 px-1 font-display text-2xs tracking-label text-muted-foreground uppercase", className)}
+    {...props}
+  />
+);

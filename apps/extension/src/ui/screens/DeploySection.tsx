@@ -1,11 +1,14 @@
 import { DeployTargetInfo, commitMessage } from "@mediajel/assistant-core/deploy/targets";
 import { WidgetSession } from "@mediajel/assistant-core/types";
+import { ReactNode } from "react";
+
 import type { Identity } from "~/auth/cognito";
 import InfoTip from "~/ui/components/InfoTip";
+import { Fine, Lede, Machine, SectionBody, SectionFooter } from "~/ui/components/Section";
 import Stamp from "~/ui/components/Stamp";
-import { ReactNode } from "react";
-import { Button } from "~/ui/components/ui/button";
 import { Alert } from "~/ui/components/ui/alert";
+import { Button } from "~/ui/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "~/ui/components/ui/radio-group";
 
 /**
  * Section 05 — Deploy, then the receipt. The choice is WHERE the tag runs: the domain file
@@ -20,23 +23,98 @@ export interface TargetState {
   existing: null | "checking" | "new" | { preview: string; sha: string };
 }
 
+type Kind = "domain" | "app-id";
+
 export interface DeploySectionProps {
   session: WidgetSession;
   /** Who the commit will be attributed to — the signed-in account, not a typed-in name. */
   identity: Identity | null;
   targets: { domain: TargetState; appId: TargetState | null };
-  selected: "domain" | "app-id";
+  selected: Kind;
   deployError: string;
   cdnState: "idle" | "waiting" | "live" | "gave-up";
-  onSelectTarget(kind: "domain" | "app-id"): void;
+  onSelectTarget(kind: Kind): void;
   onOpenSettings(): void;
   onExit(): void;
 }
 
+const CDN_LABEL: Record<DeploySectionProps["cdnState"], string> = {
+  idle: "— waiting for the build…",
+  waiting: "— waiting for the build…",
+  live: "— live ✓",
+  "gave-up": "— still building after 10 min; check the repo's Actions",
+};
+
+/** The receipt: the file is on master, with the commit, the file and the CDN to look at. */
+const Receipt = ({
+  session,
+  cdnState,
+  onExit,
+}: Pick<DeploySectionProps, "session" | "cdnState" | "onExit">): ReactNode => {
+  const deploy = session.deploy!;
+  return (
+    <SectionBody>
+      <Lede>
+        <Stamp label="Deployed" tone="platform" filled /> <strong>{deploy.path}</strong> is on master — live once the
+        repo's build finishes (usually 2–5 minutes).
+      </Lede>
+      <ul data-slot="links" className="m-0 mb-2.5 pl-[18px] text-sm [&_a]:text-primary">
+        <li>
+          <a href={deploy.commitUrl} target="_blank" rel="noreferrer">
+            The commit
+          </a>
+        </li>
+        {deploy.fileUrl ? (
+          <li>
+            <a href={deploy.fileUrl} target="_blank" rel="noreferrer">
+              The file on GitHub
+            </a>
+          </li>
+        ) : null}
+        {deploy.cdnUrl ? (
+          <li>
+            <span className="text-xs text-muted-foreground">
+              CDN: <code>{deploy.cdnUrl}</code> {CDN_LABEL[cdnState]}
+            </span>
+          </li>
+        ) : null}
+      </ul>
+      <SectionFooter>
+        <Button type="button" variant="outline" onClick={onExit}>
+          Exit assistant
+        </Button>
+      </SectionFooter>
+    </SectionBody>
+  );
+};
+
+/** The two answers, in words: what each one means, and what its disclosure says. */
+const TARGETS: Record<Kind, { head: string; tipLabel: string; explain(site: string, advertiser: string): string }> = {
+  domain: {
+    head: "Only this site",
+    tipLabel: "What “only this site” means",
+    explain: (site) => `Runs on ${site}, for every MediaJel tag loaded on it — and nowhere else.`,
+  },
+  "app-id": {
+    head: "Everywhere this advertiser runs",
+    tipLabel: "What “everywhere this advertiser runs” means",
+    explain: (_site, advertiser) => `Runs wherever ${advertiser}'s tag is installed, whatever the hostname.`,
+  },
+};
+
+/** What the repo said about the file so far: nothing yet, checking, or that one is already there. */
+const RepoNote = ({ existing }: { existing: TargetState["existing"] }): ReactNode => {
+  if (existing === "checking") return <small className="text-sm text-ink-faint">checking the repo…</small>;
+  if (existing && typeof existing === "object") {
+    return <small className="text-sm text-warning-text">A tag is already here — deploying replaces it</small>;
+  }
+  return null;
+};
+
 /**
- * The choice is not "which file" — it is which pages this tag should run on. The file name is
- * the consequence of the answer, so it waits inside the disclosure with everything else a
- * person cannot act on.
+ * One answer to "where should this tag live?", printed on its own stock. The choice is not
+ * "which file" — the file name is the consequence of the answer, so it waits inside the
+ * disclosure, which sits beside the card's text rather than inside the button that chooses it.
  */
 const TargetChoice = ({
   state,
@@ -44,161 +122,149 @@ const TargetChoice = ({
   advertiser,
   site,
   reason,
-  selected,
-  onSelect,
 }: {
   state: TargetState;
-  kind: "domain" | "app-id";
+  kind: Kind;
   advertiser: string;
   site: string;
   reason: string | null;
-  selected: boolean;
-  onSelect(): void;
 }): ReactNode => {
-  const existing = state.existing;
+  const words = TARGETS[kind];
   return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={String(selected) as "true" | "false"}
-      className={`mj-target${selected ? " mj-target--on" : ""}`}
-      onClick={onSelect}
-    >
-      <span className="mj-target-head">
-        {kind === "domain" ? "Only this site" : "Everywhere this advertiser runs"}
-        {reason ? <em className="mj-target-suggested">suggested</em> : null}
-      </span>
-      <small className="mj-target-where">
-        {kind === "domain" ? site : advertiser}
-        <InfoTip
-          label={kind === "domain" ? "What “only this site” means" : "What “everywhere this advertiser runs” means"}
-        >
-          {kind === "domain"
-            ? `Runs on ${site}, for every MediaJel tag loaded on it — and nowhere else.`
-            : `Runs wherever ${advertiser}'s tag is installed, whatever the hostname.`}
+    <div className="group flex items-start rounded-sm bg-stock transition-colors duration-150 ease-out has-data-checked:bg-sheet has-data-checked:shadow-[var(--mj-press),0_1px_3px_rgb(26_23_19/10%)] hover:bg-carbon has-data-checked:hover:bg-sheet">
+      <RadioGroupItem value={kind} className="flex-auto px-3.5 py-[13px]">
+        <span className="flex flex-wrap items-center gap-1.5 font-display text-xl font-semibold text-muted-foreground group-has-data-checked:text-foreground">
+          {words.head}
+          {reason ? <em className="ml-2 font-sans text-sm font-semibold text-primary not-italic">suggested</em> : null}
+        </span>
+        <span className="text-md leading-[1.45] text-muted-foreground wrap-anywhere">
+          {kind === "domain" ? site : advertiser}
+        </span>
+        <RepoNote existing={state.existing} />
+      </RadioGroupItem>
+      <span className="mt-2.5 mr-2">
+        <InfoTip label={words.tipLabel}>
+          {words.explain(site, advertiser)}
           {reason ? ` Suggested here because ${reason}.` : ""} The file will be <code>{state.info.path}</code>.
         </InfoTip>
-      </small>
-      {existing === "checking" && <small className="mj-target-note">checking the repo…</small>}
-      {existing && typeof existing === "object" && (
-        <small className="mj-target-note mj-target-note--warn">A tag is already here — deploying replaces it</small>
-      )}
-    </button>
+      </span>
+    </div>
   );
 };
 
-export const DeploySection = (props: DeploySectionProps): ReactNode => {
-  const { session, identity, targets, selected, deployError, cdnState } = props;
-  const deploy = session.deploy;
+/** Who the commit is attributed to: the signed-in account, or a placeholder before anyone is. */
+const actorOf = (identity: Identity | null): { name: string; email: string } => {
+  if (!identity) return { name: "you", email: "you@mediajel.com" };
+  return { name: identity.name || identity.username, email: identity.email };
+};
 
-  if (session.step === "done" && deploy) {
-    return (
-      <div className="mj-section-body">
-        <p className="mj-lede">
-          <Stamp label="Deployed" tone="platform" filled /> <strong>{deploy.path}</strong> is on master — live once the
-          repo's build finishes (usually 2–5 minutes).
-        </p>
-        <ul className="mj-links">
-          <li>
-            <a href={deploy.commitUrl} target="_blank" rel="noreferrer">
-              The commit
-            </a>
-          </li>
-          {deploy.fileUrl ? (
-            <li>
-              <a href={deploy.fileUrl} target="_blank" rel="noreferrer">
-                The file on GitHub
-              </a>
-            </li>
-          ) : null}
-          {deploy.cdnUrl ? (
-            <li>
-              <span className="mj-fine">
-                CDN: <code>{deploy.cdnUrl}</code>{" "}
-                {cdnState === "live"
-                  ? "— live ✓"
-                  : cdnState === "gave-up"
-                    ? "— still building after 10 min; check the repo's Actions"
-                    : "— waiting for the build…"}
-              </span>
-            </li>
-          ) : null}
-        </ul>
-        <div className="mj-section-footer">
-          <Button type="button" variant="outline" onClick={props.onExit}>
-            Exit assistant
-          </Button>
-        </div>
-      </div>
-    );
-  }
+/** The commit, said as a sentence; the exact message is the machine's words, one click away. */
+const CommitLine = ({
+  identity,
+  update,
+  info,
+}: {
+  identity: Identity | null;
+  update: boolean;
+  info: DeployTargetInfo;
+}) => {
+  const actor = actorOf(identity);
+  return (
+    <Fine className="mt-4 flex flex-wrap items-center gap-[5px]">
+      It will be committed by MediaJel as your work, {actor.name}.
+      <InfoTip label="The exact commit">
+        <span className="mb-2 block font-mono text-xs leading-[1.5] whitespace-pre-line text-foreground">
+          {commitMessage({ update, kind: info.kind, name: info.name, actor })}
+        </span>
+        <br />
+        Committed as the Frictionless Tags Factory, straight to master — live after CI, with no review in between.
+      </InfoTip>
+    </Fine>
+  );
+};
 
-  const current = selected === "domain" ? targets.domain : (targets.appId ?? targets.domain);
-  const update = !!current.existing && typeof current.existing === "object";
+/** The file the deploy would overwrite, shown so the choice reads new-vs-update honestly. */
+const ExistingFile = ({ current }: { current: TargetState }): ReactNode =>
+  current.existing !== null && typeof current.existing === "object" ? (
+    <Alert tone="warn" role="note" className="mb-3">
+      <p>
+        {current.info.path} already exists. Deploying replaces it (the commit reads “Update … tag”). Current file
+        begins:
+      </p>
+      <Machine>{current.existing.preview}</Machine>
+    </Alert>
+  ) : null;
+
+type ChoiceProps = Pick<
+  DeploySectionProps,
+  "session" | "identity" | "targets" | "selected" | "deployError" | "onSelectTarget"
+>;
+
+/** The assistant's reason for suggesting this target, when it suggested this one. */
+const reasonFor = (session: WidgetSession, kind: Kind): string | null => {
   const suggested = session.generation?.suggestedTarget;
+  return suggested?.kind === kind ? suggested.reason : null;
+};
+
+/** The two cards, or one when the tag has no advertiser file to offer. */
+const Targets = ({ session, targets, selected, onSelectTarget }: Omit<ChoiceProps, "identity" | "deployError">) => (
+  <RadioGroup
+    value={selected}
+    onValueChange={(value) => onSelectTarget(value as Kind)}
+    aria-label="Deploy target"
+    className="mt-2.5 mb-3.5"
+  >
+    <TargetChoice
+      state={targets.domain}
+      kind="domain"
+      site={targets.domain.info.name}
+      advertiser={targets.appId?.info.name ?? ""}
+      reason={reasonFor(session, "domain")}
+    />
+    {targets.appId ? (
+      <TargetChoice
+        state={targets.appId}
+        kind="app-id"
+        site={targets.domain.info.name}
+        advertiser={targets.appId.info.name}
+        reason={reasonFor(session, "app-id")}
+      />
+    ) : null}
+  </RadioGroup>
+);
+
+/** The target the choice currently names — the domain file until an advertiser file exists to choose. */
+const currentTarget = (targets: DeploySectionProps["targets"], selected: Kind): TargetState =>
+  selected === "domain" ? targets.domain : (targets.appId ?? targets.domain);
+
+const Choice = (props: ChoiceProps): ReactNode => {
+  const { identity, targets, selected, deployError } = props;
+  const current = currentTarget(targets, selected);
+  const update = Boolean(current.existing) && typeof current.existing === "object";
 
   return (
-    <div className="mj-section-body">
-      <p className="mj-lede">Where should this tag live?</p>
+    <SectionBody>
+      <Lede>Where should this tag live?</Lede>
 
-      <div className="mj-target-grid" role="radiogroup" aria-label="Deploy target">
-        <TargetChoice
-          state={targets.domain}
-          kind="domain"
-          site={targets.domain.info.name}
-          advertiser={targets.appId?.info.name ?? ""}
-          reason={suggested?.kind === "domain" ? suggested.reason : null}
-          selected={selected === "domain"}
-          onSelect={() => props.onSelectTarget("domain")}
-        />
-        {targets.appId ? (
-          <TargetChoice
-            state={targets.appId}
-            kind="app-id"
-            site={targets.domain.info.name}
-            advertiser={targets.appId.info.name}
-            reason={suggested?.kind === "app-id" ? suggested.reason : null}
-            selected={selected === "app-id"}
-            onSelect={() => props.onSelectTarget("app-id")}
-          />
-        ) : null}
-      </div>
+      <Targets session={props.session} targets={targets} selected={selected} onSelectTarget={props.onSelectTarget} />
 
-      {current.existing !== null && typeof current.existing === "object" ? (
-        <Alert tone="warn" role="note" className="mb-3">
-          <p>
-            {current.info.path} already exists. Deploying replaces it (the commit reads “Update … tag”). Current file
-            begins:
-          </p>
-          <pre className="mj-ev-detail">{current.existing.preview}</pre>
-        </Alert>
-      ) : null}
-
-      <p className="mj-fine mj-commit-line">
-        It will be committed by MediaJel as your work, {identity ? identity.name || identity.username : "you"}.
-        <InfoTip label="The exact commit">
-          <span className="mj-commit-exact">
-            {commitMessage({
-              update,
-              kind: current.info.kind,
-              name: current.info.name,
-              actor: identity
-                ? { name: identity.name || identity.username, email: identity.email }
-                : { name: "you", email: "you@mediajel.com" },
-            })}
-          </span>
-          <br />
-          Committed as the Frictionless Tags Factory, straight to master — live after CI, with no review in between.
-        </InfoTip>
-      </p>
+      <ExistingFile current={current} />
+      <CommitLine identity={identity} update={update} info={current.info} />
 
       {deployError && (
         <Alert tone="warn" role="alert" className="mb-3">
           <p>{deployError}</p>
         </Alert>
       )}
-    </div>
+    </SectionBody>
   );
 };
+
+export const DeploySection = (props: DeploySectionProps): ReactNode =>
+  props.session.step === "done" && props.session.deploy ? (
+    <Receipt session={props.session} cdnState={props.cdnState} onExit={props.onExit} />
+  ) : (
+    <Choice {...props} />
+  );
 
 export default DeploySection;

@@ -9,6 +9,7 @@ import { useTheme } from "~/ui/useTheme";
 import "~/ui/globals.built.css";
 import { Button } from "~/ui/components/ui/button";
 import { Letterhead } from "~/ui/components/Letterhead";
+import { Fine } from "~/ui/components/Section";
 
 /**
  * The toolbar popup: sign in, or open the panel.
@@ -99,9 +100,7 @@ export const Popup = (): ReactNode => {
       <Button type="button" className="w-full" onClick={openPanel}>
         Open the assistant
       </Button>
-      <p className="mj-fine">
-        It opens beside the page you are on. Whatever you record, generate and deploy belongs to that site.
-      </p>
+      <Fine>It opens beside the page you are on. Whatever you record, generate and deploy belongs to that site.</Fine>
     </div>
   );
 };
