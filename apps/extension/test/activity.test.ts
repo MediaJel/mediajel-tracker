@@ -101,7 +101,6 @@ describe("a tag's state, in words", () => {
     collector: "",
     enabled: true,
     config: null,
-    lastHeardAt: null,
   });
 
   test("a tag's line names its configuration and its state, or says that the page names none", () => {

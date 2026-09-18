@@ -50,8 +50,6 @@ export interface TagRecord {
   enabled: boolean;
   /** The tag's configuration, from the highest-ranked source that has spoken; null until one has. */
   config: TagConfiguration | null;
-  /** When the wire last carried one of this tag's events; null until it has. */
-  lastHeardAt: number | null;
 }
 
 /** What the tag's own record event says about it: the configuration it runs with, after any overrides. */
@@ -158,11 +156,10 @@ const CONFIG_RANK: Record<ConfigSource, number> = { none: 0, script: 1, announce
 const NO_CONFIG: TagConfiguration = { params: {}, src: "", element: "", source: "none" };
 
 /** What a record holds before any source has spoken — and what an older worker's rows never wrote. */
-const DEFAULTS: Pick<TagRecord, "collector" | "enabled" | "config" | "lastHeardAt"> = {
+const DEFAULTS: Pick<TagRecord, "collector" | "enabled" | "config"> = {
   collector: "",
   enabled: true,
   config: null,
-  lastHeardAt: null,
 };
 
 const text = (value: string | undefined): string => value ?? "";
@@ -324,9 +321,12 @@ const fromScript = (record: TagRecord, script: TagSummary): TagRecord => {
 const scripts = (tags: TagRecord[], found: TagSummary[], now: number): TagRecord[] =>
   found.reduce((acc, script) => upsert(acc, script.appId, now, (record) => fromScript(record, script)), tags);
 
-/** A tag heard on the wire is sending; the wire also says where to, and when. */
-const heardFrom = (record: TagRecord, collector: string, now: number): TagRecord => {
-  const next = { ...raise(record, "sending"), collector: first(record.collector, collector), lastHeardAt: now };
+/**
+ * A tag heard on the wire is sending; the wire also says where to, filled once. Heard again — every
+ * page ping — it is the same record, so nothing is written or pushed for it.
+ */
+const heardFrom = (record: TagRecord, collector: string): TagRecord => {
+  const next = { ...raise(record, "sending"), collector: first(record.collector, collector) };
   return sameRecord(record, next) ? record : next;
 };
 
@@ -335,7 +335,7 @@ type Beacon = Extract<Evidence, { kind: "beacon" }>;
 /** Every tag the wire named is sending; a record event among the beacons is the tag's own word on its configuration. */
 const heard = (tags: TagRecord[], beacon: Beacon, now: number): TagRecord[] => {
   const sending = beacon.appIds.reduce(
-    (acc, appId) => upsert(acc, appId, now, (record) => heardFrom(record, text(beacon.collector), now)),
+    (acc, appId) => upsert(acc, appId, now, (record) => heardFrom(record, text(beacon.collector))),
     tags,
   );
   return (beacon.records ?? []).reduce(

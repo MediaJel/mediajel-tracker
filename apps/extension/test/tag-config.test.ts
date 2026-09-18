@@ -21,7 +21,6 @@ const record = (overrides: Partial<TagRecord> = {}): TagRecord => ({
   collector: "collector-azsx401.dmp.cnna.io",
   enabled: true,
   config: null,
-  lastHeardAt: null,
   ...overrides,
 });
 

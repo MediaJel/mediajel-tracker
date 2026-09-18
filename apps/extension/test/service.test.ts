@@ -75,7 +75,6 @@ const STATUS: TrackerStatus = {
       collector: "",
       enabled: true,
       config: null,
-      lastHeardAt: null,
     },
   ],
   trackTransPresent: true,

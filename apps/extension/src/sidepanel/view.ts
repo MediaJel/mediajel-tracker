@@ -10,7 +10,7 @@ import type { JobView } from "~/bridge/api";
  * running the old code until the extension is reloaded. An older worker answers without `tags`
  * and `settled`, and with no status at all for a page it has not read. That is a page nothing is
  * known about yet — the listening state — not a reason to render nothing. Its tag records, when
- * it has them, predate the collector, the configuration and `lastHeardAt`, and are completed here.
+ * it has them, predate the collector and the configuration, and are completed here.
  */
 
 const tagsOf = (tags: TagRecord[] | undefined): TagRecord[] => (tags ?? []).map(withDefaults);

@@ -128,7 +128,6 @@ describe("which tag a partner signal belongs to", () => {
     collector: "",
     enabled: true,
     config: { params, src: "", element: "", source: "script" },
-    lastHeardAt: null,
   });
   const signal = (partner: PartnerSignal["partner"], segment: string): PartnerSignal => ({
     id: "p1",

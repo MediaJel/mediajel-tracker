@@ -45,7 +45,7 @@ describe("a job view from an older background", () => {
     } as unknown as TagRecord;
     const status = { tagPresent: true, tags: [old], warnings: [] } as never;
     const view = normalizeView({ site: "shop.example.com", session, tags: [old], settled: true, status });
-    const completed = { ...old, collector: "", enabled: true, config: null, lastHeardAt: null };
+    const completed = { ...old, collector: "", enabled: true, config: null };
     expect(view.tags).toEqual([completed]);
     expect(view.status.tags).toEqual([completed]);
   });

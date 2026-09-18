@@ -253,5 +253,4 @@ export const recordAsTag = (record: RecordedTag): TagRecord => ({
   collector: record.collector,
   enabled: record.config.params.enable !== "false",
   config: record.config,
-  lastHeardAt: null,
 });

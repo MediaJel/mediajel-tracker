@@ -65,7 +65,6 @@
     collector: COLLECTOR,
     enabled: true,
     config: configOf(appId),
-    lastHeardAt: NOW - 30_000 + index * 1_000,
   });
   const NO_TAG =
     "No MediaJel tag has spoken up on this page. You can still record and generate; Verify needs the tag, so load it first.";
@@ -96,7 +95,6 @@
     ...tagOf(appId, index),
     state: "installed",
     collector: "",
-    lastHeardAt: null,
     config: {
       params: { segmentId: "e-oqTEY2SNGlRzvmH9esjw", s2: "ezo6F0kqQm2p", s3: "S3-legacy" },
       src: legacySrc(appId),

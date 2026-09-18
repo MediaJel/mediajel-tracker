@@ -158,18 +158,14 @@ describe("merging evidence", () => {
 });
 
 describe("what the wire and the tag's own record event say", () => {
-  test("a beacon says the tag is sending, where to — filled once — and when it was last heard", () => {
+  test("a beacon says the tag is sending and where to, filled once; heard again a millisecond later, it is not news", () => {
     const heard = after({ kind: "beacon", appIds: ["acme"], collector: "collector-a.dmp.cnna.io" });
-    expect(heard.tags[0]).toMatchObject({ state: "sending", collector: "collector-a.dmp.cnna.io", lastHeardAt: NOW });
+    expect(heard.tags[0]).toMatchObject({ state: "sending", collector: "collector-a.dmp.cnna.io" });
     expect(trackerStatus(heard).collector).toBe("collector-a.dmp.cnna.io");
 
-    const again = merge(
-      heard,
-      SITE,
-      { kind: "beacon", appIds: ["acme"], collector: "collector-b.dmp.cnna.io" },
-      NOW + 1,
-    );
-    expect(again?.tags[0]).toMatchObject({ collector: "collector-a.dmp.cnna.io", lastHeardAt: NOW + 1 });
+    const again: Evidence = { kind: "beacon", appIds: ["acme"], collector: "collector-b.dmp.cnna.io" };
+    expect(merge(heard, SITE, again, NOW + 1)).toBeNull();
+    expect(merge(heard, SITE, again, NOW + 30_000)).toBeNull();
   });
 
   test("the record event outranks the announcement, which outranks the script — key by key, gaps filled from below", () => {
@@ -254,7 +250,7 @@ describe("what the wire and the tag's own record event say", () => {
       announced: false,
       firstSeenAt: 1,
     } as TagRecord;
-    expect(withDefaults(old)).toEqual({ ...old, collector: "", enabled: true, config: null, lastHeardAt: null });
+    expect(withDefaults(old)).toEqual({ ...old, collector: "", enabled: true, config: null });
     const complete = withDefaults(old);
     expect(withDefaults(complete)).toBe(complete);
 

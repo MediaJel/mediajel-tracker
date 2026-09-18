@@ -52,7 +52,6 @@ const slimTag = ({
   collector: "",
   enabled: true,
   config: null,
-  lastHeardAt: null,
 });
 
 /**

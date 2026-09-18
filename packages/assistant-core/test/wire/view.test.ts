@@ -89,7 +89,6 @@ describe("partner signals with their tags", () => {
       collector: "",
       enabled: true,
       config: { params: { "s3.pv": "SEG" }, src: "", element: "", source: "record" },
-      lastHeardAt: null,
     };
     const pixel: PartnerSignal = {
       ...event(9, "a"),
