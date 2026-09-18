@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { decodeCollectorRequest } from "@mediajel/assistant-core/wire/decode";
+import { decodeCollectorRequest, decodeForeignRequest } from "@mediajel/assistant-core/wire/decode";
 
 import { APP_ID, COLLECTOR_URL, PAGE_VIEW, RECORD, RECORD_SCHEMA, b64url, batch, contexts, unstruct } from "./fixtures";
 
@@ -184,5 +184,61 @@ describe("which requests carry events", () => {
     expect(event).toMatchObject({ kind: "unknown", code: "xx", name: "Event" });
     const [nameless] = decode(batch({ aid: "x" }));
     expect(nameless).toMatchObject({ kind: "unknown", code: "", appId: "x", pageUrl: "" });
+  });
+});
+
+describe("another vendor's tracker", () => {
+  const SURFSIDE = `https://col.surfside.io/i?tna=surf&p=mob&e=ue&tv=js-3.1.0&aid=surf-app&url=${encodeURIComponent(
+    "https://unity-rd.com/",
+  )}&ue_px=${b64url(unstruct(LINK_CLICK, { targetUrl: "https://unity-rd.com/menu" }))}`;
+
+  test("Surfside's pixel on unity-rd.com: the collector, the event's kind, the tracker's name and version — nothing of its payload", () => {
+    expect(decodeForeignRequest({ url: SURFSIDE })).toEqual([
+      {
+        source: "foreign",
+        collector: "col.surfside.io",
+        kind: "self-describing",
+        code: "ue",
+        tracker: "surf",
+        version: "js-3.1.0",
+        appId: "",
+        pageUrl: "https://unity-rd.com/",
+      },
+    ]);
+  });
+
+  test("a POSTed batch to Snowplow's own path: one row per event; a body that cannot be read is still one row", () => {
+    const body = batch({ e: "pv", tna: "sp", tv: "js-3.24.0" }, { e: "pp", tna: "sp", tv: "js-3.24.0" });
+    const rows = decodeForeignRequest({ url: "https://sp.example.com/com.snowplowanalytics.snowplow/tp2", body });
+    expect(rows.map((row) => [row.kind, row.tracker, row.version])).toEqual([
+      ["page-view", "sp", "js-3.24.0"],
+      ["page-ping", "sp", "js-3.24.0"],
+    ]);
+    const unread = decodeForeignRequest({ url: "https://sp.example.com/com.snowplowanalytics.snowplow/tp2" });
+    expect(unread).toEqual([
+      {
+        source: "foreign",
+        collector: "sp.example.com",
+        kind: "unknown",
+        code: "",
+        tracker: "",
+        version: "",
+        appId: "",
+        pageUrl: "",
+      },
+    ]);
+  });
+
+  test("a MediaJel host is never foreign; neither is a request that is not Snowplow-shaped", () => {
+    expect(decodeForeignRequest({ url: COLLECTOR_URL, body: batch(PAGE_VIEW) })).toEqual([]);
+    expect(decodeForeignRequest({ url: "https://collector.dmp.cnna.io/i?tv=js-2.14.0&e=pv&aid=legacy-tag" })).toEqual(
+      [],
+    );
+    expect(
+      decodeForeignRequest({ url: "https://www.google-analytics.com/g/collect?v=2&tid=G-1&en=page_view" }),
+    ).toEqual([]);
+    expect(decodeForeignRequest({ url: "https://match.adsrvr.org/track/cmf/generic?ttd_pid=x" })).toEqual([]);
+    expect(decodeForeignRequest({ url: "https://sp.example.com/i?e=pv" })).toEqual([]);
+    expect(decodeForeignRequest({ url: "not a url" })).toEqual([]);
   });
 });

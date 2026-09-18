@@ -108,11 +108,106 @@ export interface CollectorEvent extends WireBase {
   record?: RecordedTag;
 }
 
-/** Every kind of row the ledger holds. Partner beacons, custom tags and third-party fires arrive with their decoders. */
-export type WireEvent = CollectorEvent;
+/** The partners the tag fires pixels at from its segment parameters, and the one whose loader it installs. */
+export type Partner = "nexxen" | "dstillery" | "liquidm" | "bing";
+
+/**
+ * What a partner request is for: an audience pixel on a page view, a conversion pixel on a
+ * purchase, a cookie sync, or the partner's own loader script.
+ */
+export type PartnerPurpose = "audience" | "conversion" | "sync" | "loader";
+
+/** A request to a partner, heard on the partner's own host and decoded from the tag's template for it. */
+export interface PartnerSignal extends WireBase {
+  source: "partner";
+  partner: Partner;
+  purpose: PartnerPurpose;
+  /** The segment as sent — `b2`, `nc`, `seg` or `ti`; "" for a loader. */
+  segment: string;
+  /** A Dstillery `nc` of 00000: the tag's own default when the page configured no segment. */
+  unconfigured: boolean;
+  /** The same pixel on the partner's companion host — media6degrees for Dstillery. */
+  companion: boolean;
+  /** A conversion's order, as the pixel carried it. */
+  order?: { id: string; amount: string };
+  /** The request's URL, its query values masked, bounded. */
+  url: string;
+}
+
+/** Which of the tag's custom-tag files a fetch loads: the domain's, or the app ID's. */
+export type CustomTagScope = "domain" | "app-id";
+
+/** A fetch of one of the tag's custom-tag files, named for what it loads. */
+export interface CustomTagFetch extends WireBase {
+  source: "custom-tag";
+  scope: CustomTagScope;
+  /** Decoded from the file's name: the hostname, or the app ID. */
+  name: string;
+  url: string;
+}
+
+/** The moments a third-party tag can be registered for: the keys of the tag's `registerThirdPartyTags` input. */
+export type ThirdPartyTriggerName = "onTransaction" | "onAddToCart" | "onRemoveFromCart" | "onSignup";
+
+/** What was registered for one trigger — how many tags, and the hosts they go to; never the templates. */
+export interface ThirdPartyTrigger {
+  trigger: ThirdPartyTriggerName;
+  count: number;
+  hosts: string[];
+}
+
+/** The element a third-party tag fires as, in the tag's own words. */
+export type ThirdPartyElement = "image" | "script";
+
+/** The page registered third-party tags with the tag. */
+export interface ThirdPartyRegistration extends WireBase {
+  source: "third-party";
+  phase: "registered";
+  triggers: ThirdPartyTrigger[];
+}
+
+/** The tag fired one of the registered third-party tags. */
+export interface ThirdPartyFire extends WireBase {
+  source: "third-party";
+  phase: "fired";
+  trigger: ThirdPartyTriggerName;
+  element: ThirdPartyElement;
+  host: string;
+  /** The element's URL, its query values masked, bounded. */
+  url: string;
+}
+
+/** Another vendor's Snowplow tracker on the page: enough to say it is there and what it sent, nothing of its payload. */
+export interface ForeignEvent extends WireBase {
+  source: "foreign";
+  /** Host only. */
+  collector: string;
+  kind: EventKind;
+  /** The raw `e` the tracker sent. */
+  code: string;
+  /** The tracker's name (`tna`). */
+  tracker: string;
+  /** The tracker's version (`tv`). */
+  version: string;
+}
+
+/** Every kind of row the ledger holds. */
+export type WireEvent =
+  | CollectorEvent
+  | PartnerSignal
+  | CustomTagFetch
+  | ThirdPartyRegistration
+  | ThirdPartyFire
+  | ForeignEvent;
+
+/** `Omit` applied to each member of a union, so every kind of row keeps its own fields. */
+type Each<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
 
 /** An event as it is heard, before the ledger gives it its place. */
-export type PendingEvent = Omit<WireEvent, "seq">;
+export type PendingEvent = Each<WireEvent, "seq">;
+
+/** An event as its decoder reads it: everything but where and when it was heard, and how it ended. */
+export type Decoded<T extends WireEvent> = Each<T, "id" | "seq" | "at" | "request" | "pageKey" | "outcome">;
 
 export interface LedgerPage {
   key: string;

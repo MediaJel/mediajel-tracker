@@ -9,6 +9,7 @@ import isUsPrivacyOptOut from "@mediajel/tracker-core/utils/privacy-opt-out";
 import { listenForAnnouncements } from "~/bridge/announcements";
 import { claimBridge } from "~/bridge/claim";
 import { BridgeDown, BridgeUp, WIRE_VERSION, unwrap, wrap } from "~/bridge/protocol";
+import { watchThirdPartyTags } from "~/bridge/third-party";
 import { TAG_SEARCH } from "~/lib/tags";
 
 /**
@@ -145,15 +146,21 @@ const injectTag = (url: string): void => {
   (document.head ?? document.documentElement).appendChild(script);
 };
 
+/** The keys the tag's dedup keeps for an app ID in local storage. */
+const dedupKeys = (appId: string): string[] => {
+  const keys: string[] = [];
+  for (let i = 0; i < localStorage.length; i += 1) {
+    const key = localStorage.key(i);
+    if (key?.startsWith(`${appId}_`)) keys.push(key);
+  }
+  return keys;
+};
+
 /** The tag's dedup silently swallows repeated test fires; clearing it is a test-run reset. */
 const clearDedup = (appId: string): void => {
   let count = 0;
   try {
-    const doomed: string[] = [];
-    for (let i = 0; i < localStorage.length; i += 1) {
-      const key = localStorage.key(i);
-      if (key?.startsWith(`${appId}_`)) doomed.push(key);
-    }
+    const doomed = dedupKeys(appId);
     for (const key of doomed) localStorage.removeItem(key);
     count = doomed.length;
   } catch {
@@ -194,6 +201,11 @@ const onCommand = (event: MessageEvent): void => {
 // whatever was on record before this bridge arrived.
 const stopListeningForAnnouncements = listenForAnnouncements(window, (tag) => send({ type: "tag-announced", tag }));
 
+// The third-party tags the page registers with the tag, and each one the tag fires. Started only
+// after the claim below: a copy being stood down gives `window.registerThirdPartyTags` back to the
+// tag first, so this copy takes it from the tag and never from the old copy's wrapper.
+let stopWatchingThirdParty = (): void => undefined;
+
 // A bridge injected over a live one — the extension attaching to a tab it was installed over —
 // takes the old one's place; two would record every event twice.
 claimBridge(window, WIRE_VERSION, () => {
@@ -202,8 +214,15 @@ claimBridge(window, WIRE_VERSION, () => {
   window.removeEventListener("load", settle);
   stopListeningForAnnouncements();
   stopWatchingQueue();
+  stopWatchingThirdParty();
   if (settleTimer) clearTimeout(settleTimer);
   recorder?.stop();
+});
+
+stopWatchingThirdParty = watchThirdPartyTags(window, {
+  registered: (key, triggers) => send({ type: "third-party-registered", key, pageUrl: window.location.href, triggers }),
+  fired: (key, fire) => send({ type: "third-party-fired", key, pageUrl: window.location.href, ...fire }),
+  settled: (key, outcome) => send({ type: "third-party-settled", key, outcome }),
 });
 
 window.addEventListener("message", onCommand);

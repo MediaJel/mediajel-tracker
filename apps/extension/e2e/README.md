@@ -25,15 +25,18 @@ against.
 - `fixtures.spec.ts` — two local pages carrying the production tag build. `old.html` installs it
   the ordinary way; `held.html` the way WP Rocket leaves it, inert until the first `mousemove`.
   Both must end with the tag heard sending for app ID `e2e-old` and with the stub collector holding
-  the `payload_data` batch that named it.
+  the `payload_data` batch that named it. `old.html` also carries a segment for every partner
+  (`s1`, `s2.pv`, `s2.tr`, `s3.pv`, `s3.tr`), so the tag fires the partners' page-view pixels; the
+  ledger must hold one row per partner (see "What the ledger assertions check").
 - `announcing.spec.ts` — `new.html` carries this repo's tag build, which announces itself: the
   record says `installed` from the tag's own word before anything is sent, then `running`, then
   `sending` with the collector holding the batch, every row `announced: true`; under GPC it says
   `opted-out` and the collector hears nothing.
 - `terrabis.spec.ts` — a real client site whose tag arrives late through Google Tag Manager. It
-  checks detection, that the record outlives a stopped service worker, what a `chrome.runtime.reload()`
-  does to it, and (signed in) the panel's tally. The signed-in part needs `apps/extension/.env.e2e`
-  with `MJ_E2E_USERNAME` and `MJ_E2E_PASSWORD` (gitignored; never printed) and is skipped without it.
+  checks detection, that the ledger holds what the tag did as it booted, that the record outlives a
+  stopped service worker, what a `chrome.runtime.reload()` does to it, and (signed in) the panel's
+  tally. The signed-in part needs `apps/extension/.env.e2e` with `MJ_E2E_USERNAME` and
+  `MJ_E2E_PASSWORD` (gitignored; never printed) and is skipped without it.
 - `panel.spec.ts` — the visual matrix: every screen of the side panel and the popup, in both
   themes, rendered against a stubbed `chrome` (see below) and compared pixel-for-pixel.
 
@@ -52,6 +55,15 @@ The fixtures need the beacon to actually arrive somewhere, so a stub collector l
 collector URL is protocol-relative, so the beacon goes to `http://collector-azsx401.dmp.cnna.io:4443`
 and lands on the stub with no TLS anywhere. The production tag on terrabis.co is not rewritten; its
 beacon resolves to a closed port on this machine, which the extension hears all the same.
+
+The partner hosts the tag fires pixels at from its segment parameters — `r.turn.com` (Nexxen),
+`action.dstillery.com` and its companion `action.media6degrees.com` (Dstillery), `tracking.lqm.io`
+(LiquidM) and `bat.bing.com` (Bing) — are in the same host rule (`PARTNER_HOSTS` in `extension.ts`,
+the list the extension listens on), so they resolve to this machine too. Nothing listens on their
+ports, so each pixel lands on a closed port: the page is unaffected, the extension still hears the
+request go out, and the ledger records it as never sent. No page view a spec causes reaches a
+partner. The tag's custom-tag host (`test-custom-tags.cnna.io` in the production bundle) is not
+mapped: it is MediaJel's own, and the fetch is what the custom-tag rows are read from.
 
 `vendor-tag.mjs` fetches `https://tags.cnna.io/index.js` and every hashed chunk it names into
 `e2e/fixtures/vendor/` (gitignored) on the first run. Delete that directory to refresh the copy.
@@ -79,9 +91,32 @@ is pinned to one instant so elapsed times, "2h ago" and the day axis never move.
 renders the recording screen under `prefers-reduced-motion: reduce` and requires two captures two
 seconds apart to be identical.
 
+## What the ledger assertions check
+
+The background's ledger of a tab is `events/<tabId>` in its session storage: one row per request
+the tab's page made that the extension keeps, oldest first, each settled with how it ended (`ok`,
+`failed`, `blocked`, or still `pending`). `readTabLedger` and `pollTabLedger` in `extension.ts`
+read it the way `readTabRecord` and `pollTabRecord` read the tag record.
+
+- `fixtures.spec.ts` (`old.html`): after the tag is heard sending, the ledger holds a `partner`
+  row for each of Nexxen (`purpose: audience`, `segment: e2e-nexxen-pv`), Dstillery
+  (`audience`, `e2e-dstillery-pv`, not `unconfigured`) and LiquidM (`sync`, `e2e-liquidm`), every one
+  with an outcome of `blocked` or `failed` — the hosts resolve to this machine, so none was sent;
+  the tag's own `record` event for `e2e-old`, whose `record.config.params` carry `s1`, `s2.pv` and
+  `s3.pv` as the tag URL set them — it follows the page view because the stub collector answers;
+  and any `custom-tag` row the vendored bundle produced, named for what it asked for: the domain
+  file for `127.0.0.1`, the app-id file for `e2e-old`.
+- `terrabis.spec.ts` (detection, signed out): within 20 s of the page view the ledger holds a
+  collector page view for `5f976cbb-7d29-46ce-bf07-0f701478d800`; a custom-tag fetch named
+  `terrabis.co`; and a Dstillery signal and a LiquidM sync whose segments equal the `s3.pv` and `s1`
+  of the tab's tag record — the wire matches the configuration. The `record` event is not asserted
+  here and cannot be: the collector resolves to this machine so the page view's POST is refused,
+  and the tracker's outbound queue holds the record event behind it until a collector answers.
+
 ## What a run prints
 
 The background's record of a tab is `tags/<tabId>` in its session storage: a state per tag
 (`installed`, `held-back`, `running`, `sending`, `opted-out`, `disabled`, `failed`) that only ever
-moves forward. Each spec prints the state it saw the app ID in, and what `job/open` named, so a
-failed expectation reads as expected-versus-observed rather than as a bare assertion.
+moves forward. Each spec prints the state it saw the app ID in, what `job/open` named, and — where
+it reads the ledger — one entry per row it found, so a failed expectation reads as
+expected-versus-observed rather than as a bare assertion.

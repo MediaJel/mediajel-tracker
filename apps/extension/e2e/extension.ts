@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 
 import type { TabTags, TagState } from "@mediajel/assistant-core/tags";
+import type { TabLedger } from "@mediajel/assistant-core/wire/types";
 
 import type { JobView, Request, ResultOf } from "../src/bridge/api";
 
@@ -20,12 +21,27 @@ import type { JobView, Request, ResultOf } from "../src/bridge/api";
 export const DIST = path.resolve(__dirname, "../dist/chrome-mv3-prod");
 
 /**
- * Every MediaJel collector resolves to this machine while the harness runs, so no test page view
- * reaches production and the beacon's URL stays a `*.cnna.io` one for `chrome.webRequest`. The
- * fixtures' stub collector listens where the vendored bundle points; a production tag's beacon
- * lands on a closed port, which the extension hears all the same.
+ * The partners the tag fires pixels at from its segment parameters — the hosts the extension
+ * listens on (`PARTNER_HOSTS` in assistant-core's `wire/partners.ts`). They resolve to this
+ * machine as well, so a fixture's segment parameters never reach a partner: each pixel lands on a
+ * closed port, and the ledger records it `blocked`.
  */
-export const HOST_RULES = "MAP *.dmp.cnna.io 127.0.0.1";
+export const PARTNER_HOSTS = [
+  "r.turn.com",
+  "action.dstillery.com",
+  "action.media6degrees.com",
+  "tracking.lqm.io",
+  "bat.bing.com",
+];
+
+/**
+ * Every MediaJel collector, and every partner host, resolves to this machine while the harness
+ * runs, so no test page view reaches production or a partner and the beacon's URL stays a
+ * `*.cnna.io` one for `chrome.webRequest`. The fixtures' stub collector listens where the
+ * vendored bundle points; a production tag's beacon lands on a closed port, which the extension
+ * hears all the same.
+ */
+export const HOST_RULES = ["*.dmp.cnna.io", ...PARTNER_HOSTS].map((host) => `MAP ${host} 127.0.0.1`).join(", ");
 
 export interface Launched {
   context: BrowserContext;
@@ -51,6 +67,11 @@ export const launchWithExtension = async (extraArgs: string[] = []): Promise<Lau
     ],
   });
   const worker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));
+  // The worker exists before its script has finished evaluating, and a page opened in that gap can
+  // make its first requests before the worker's `webRequest` listeners are registered — a race no
+  // real browser has (a stopped worker is woken by the request, after its listeners are in place).
+  // An evaluation runs only once the worker's own script has run to completion.
+  await worker.evaluate(() => undefined);
   return {
     context,
     worker,
@@ -124,26 +145,46 @@ export const readTabRecord = (all: Record<string, unknown>, tabId: number): TabT
   return isTabRecord(record) ? record : null;
 };
 
+const isTabLedger = (value: unknown): value is TabLedger =>
+  !!value && typeof value === "object" && Array.isArray((value as TabLedger).events);
+
+/** The background's ledger of one tab — `events/<tabId>` in its session storage, oldest first — or null when it has none. */
+export const readTabLedger = (all: Record<string, unknown>, tabId: number): TabLedger | null => {
+  const ledger = stored(all[`events/${tabId}`]);
+  return isTabLedger(ledger) ? ledger : null;
+};
+
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Reads the tab's record until `until` accepts it or the time is up, and hands back the last read
+ * Reads until `until` accepts what was read or the time is up, and hands back the last read
  * either way — the assertion belongs to the spec.
  */
-export const pollTabRecord = async (
+const poll = async <T>(read: () => Promise<T>, until: (value: T) => boolean, timeoutMs: number): Promise<T> => {
+  const deadline = Date.now() + timeoutMs;
+  let value = await read();
+  while (!until(value) && Date.now() < deadline) {
+    await sleep(500);
+    value = await read();
+  }
+  return value;
+};
+
+/** The tab's record, read until `until` accepts it or the time is up. */
+export const pollTabRecord = (
   worker: Worker,
   tabId: number,
   until: (record: TabTags | null) => boolean,
   timeoutMs: number,
-): Promise<TabTags | null> => {
-  const deadline = Date.now() + timeoutMs;
-  let record = readTabRecord(await sessionStorage(worker), tabId);
-  while (!until(record) && Date.now() < deadline) {
-    await sleep(500);
-    record = readTabRecord(await sessionStorage(worker), tabId);
-  }
-  return record;
-};
+): Promise<TabTags | null> => poll(async () => readTabRecord(await sessionStorage(worker), tabId), until, timeoutMs);
+
+/** The tab's ledger, read until `until` accepts it or the time is up. */
+export const pollTabLedger = (
+  worker: Worker,
+  tabId: number,
+  until: (ledger: TabLedger | null) => boolean,
+  timeoutMs: number,
+): Promise<TabLedger | null> => poll(async () => readTabLedger(await sessionStorage(worker), tabId), until, timeoutMs);
 
 /** The state of one app ID in a record, or null when the record does not name it. */
 export const stateOf = (record: TabTags | null, appId: string): TagState | null =>

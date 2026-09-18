@@ -1,4 +1,5 @@
 import { maskObject } from "@mediajel/assistant-core/session/masking";
+import { base64ToText } from "@mediajel/assistant-core/wire/base64";
 import {
   CONSUMED,
   EVENT_KINDS,
@@ -10,13 +11,16 @@ import {
 import { recordedTagOf } from "@mediajel/assistant-core/wire/record";
 import type {
   CollectorEvent,
+  Decoded,
   Entity,
   Field,
   FieldGroup,
+  ForeignEvent,
   ProtocolGroup,
   SelfDescribing,
   Transport,
 } from "@mediajel/assistant-core/wire/types";
+import { parseUrl } from "@mediajel/assistant-core/wire/url";
 
 /**
  * What a request to a collector says, decoded the way the tracker encoded it.
@@ -27,19 +31,25 @@ import type {
  * an `unstruct_event` wrapper; the entities travel inside `co`/`cx` under a `contexts` wrapper.
  * Both are unwrapped here and never validated — reading them needs no schema registry and sends
  * nothing anywhere.
+ *
+ * Another vendor's Snowplow tracker sends the same shapes to a host that is not ours. Those are
+ * read only far enough to say the tracker is on the page and what kind of event it sent.
  */
 
 /** One event as the tracker sent it: a GET pixel's query, or one entry of a POSTed batch's `data`. */
 type Element = Record<string, unknown>;
 
-/** A decoded event before the ledger gives it its place: everything but where and when it was heard. */
-type DecodedEvent = Omit<CollectorEvent, "id" | "seq" | "at" | "request" | "pageKey" | "outcome">;
+type DecodedEvent = Decoded<CollectorEvent>;
 
 const UNKNOWN_KIND = { kind: "unknown", label: "Event" } as const;
 const SCHEMA_RE = /^iglu:([^/]+)\/([^/]+)\/jsonschema\/([^/]+)$/;
 const UNSTRUCT_RE = /\/unstruct_event\//;
 const CONTEXTS_RE = /\/contexts\//;
 const SIGN_UP_RE = /\/sign_up\//;
+/** Snowplow's POST path, as the JavaScript trackers default to it. */
+const TP2_RE = /\/tp2$/;
+/** MediaJel's own hosts: a tracker heard on one of these is never another vendor's. */
+const OUR_HOST_RE = /(^|\.)cnna\.io$/;
 
 const isElement = (value: unknown): value is Element =>
   value !== null && typeof value === "object" && !Array.isArray(value);
@@ -58,21 +68,9 @@ const parseJson = (text: string): unknown => {
   }
 };
 
-/** Text from base64url — the `-`/`_` alphabet, padding optional, malformed UTF-8 repaired — or null for anything else. */
-const base64UrlToText = (value: string): string | null => {
-  const standard = value.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = standard.padEnd(standard.length + ((4 - (standard.length % 4)) % 4), "=");
-  try {
-    const bytes = Uint8Array.from(atob(padded), (char) => char.charCodeAt(0));
-    return new TextDecoder("utf-8").decode(bytes);
-  } catch {
-    return null;
-  }
-};
-
 const decodedText = (value: unknown): string | null => {
   const text = textOf(value);
-  return text === null ? null : base64UrlToText(text);
+  return text === null ? null : base64ToText(text);
 };
 
 /** `{ schema, data }` with a string schema, or null. */
@@ -202,13 +200,9 @@ const batchElements = (body: string): Element[] => {
 const pixelElements = (url: URL): Element[] =>
   /\/i$/.test(url.pathname) && url.searchParams.has("tv") ? [Object.fromEntries(url.searchParams.entries())] : [];
 
-const parseUrl = (url: string): URL | null => {
-  try {
-    return new URL(url);
-  } catch {
-    return null;
-  }
-};
+/** A POSTed batch's elements, or a GET pixel's. */
+const elementsOf = (url: URL, body: string | undefined): Element[] =>
+  body === undefined ? pixelElements(url) : batchElements(body);
 
 /**
  * Every event a request to a collector carries — a POSTed batch's elements, or a GET pixel's
@@ -217,8 +211,39 @@ const parseUrl = (url: string): URL | null => {
 export const decodeCollectorRequest = ({ url, body }: { url: string; body?: string }): DecodedEvent[] => {
   const parsed = parseUrl(url);
   if (parsed === null) return [];
-  const elements = body === undefined ? pixelElements(parsed) : batchElements(body);
+  const elements = elementsOf(parsed, body);
   const transport: Transport = body === undefined ? "get" : "post";
   const carriage: Carriage = { collector: parsed.hostname, transport, size: elements.length };
   return elements.map((element, index) => decodeElement(element, index, carriage));
+};
+
+/** A POST to Snowplow's own path whose body could not be read is still a tracker on the page: one nameless element. */
+const foreignElements = (url: URL, body: string | undefined): Element[] => {
+  const elements = elementsOf(url, body);
+  return elements.length === 0 && TP2_RE.test(url.pathname) ? [{}] : elements;
+};
+
+const foreignOf = (element: Element, collector: string): Decoded<ForeignEvent> => {
+  const code = stringOf(element.e);
+  return {
+    source: "foreign",
+    collector,
+    kind: (EVENT_KINDS[code] ?? UNKNOWN_KIND).kind,
+    code,
+    tracker: stringOf(element.tna),
+    version: stringOf(element.tv),
+    appId: "",
+    pageUrl: stringOf(element.url),
+  };
+};
+
+/**
+ * Another vendor's Snowplow tracker, heard on a host that is not ours: the collector, each
+ * event's kind, and the tracker's name and version — nothing of what it carried. [] for a
+ * request that is not Snowplow-shaped, and always for one of MediaJel's own hosts.
+ */
+export const decodeForeignRequest = ({ url, body }: { url: string; body?: string }): Decoded<ForeignEvent>[] => {
+  const parsed = parseUrl(url);
+  if (parsed === null || OUR_HOST_RE.test(parsed.hostname)) return [];
+  return foreignElements(parsed, body).map((element) => foreignOf(element, parsed.hostname));
 };

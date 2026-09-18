@@ -1,6 +1,9 @@
 import { Page, expect, test } from "@playwright/test";
 import path from "node:path";
 
+import type { TabTags } from "@mediajel/assistant-core/tags";
+import type { TabLedger, WireEvent } from "@mediajel/assistant-core/wire/types";
+
 import type { TagActivity, TagActivityResponse } from "../src/service/client";
 import {
   Launched,
@@ -8,6 +11,7 @@ import {
   askBackground,
   currentWorker,
   launchWithExtension,
+  pollTabLedger,
   pollTabRecord,
   readEnvFile,
   readTabRecord,
@@ -22,8 +26,9 @@ import {
  * behind an age gate: everything the fixtures cannot stand in for.
  *
  * Every test launches its own browser, so a reload or a stopped worker in one can never be the
- * reason another saw what it saw. The collector host resolves to this machine for the whole run
- * (see `HOST_RULES`), so the page views these tests cause never reach MediaJel's pipeline.
+ * reason another saw what it saw. The collector host and every partner host resolve to this
+ * machine for the whole run (see `HOST_RULES`), so the page views these tests cause never reach
+ * MediaJel's pipeline or a partner.
  */
 
 const SITE = "https://terrabis.co/";
@@ -65,7 +70,68 @@ const openJob = async (launched: Launched, extensionId: string, tabId: number): 
   return appIds;
 };
 
-test("detection: the tag is found, then heard sending, and job/open names it", async () => {
+/** One line per row, for the run's account of what the ledger held. */
+const describeRow = (event: WireEvent): string => {
+  switch (event.source) {
+    case "collector":
+      return `collector ${event.name} (${event.appId || "no app id"})`;
+    case "partner":
+      return `partner ${event.partner}/${event.purpose} ${event.segment}`;
+    case "custom-tag":
+      return `custom-tag ${event.scope} ${event.name}`;
+    case "third-party":
+      return `third-party ${event.phase}`;
+    case "foreign":
+      return `foreign ${event.collector} ${event.kind}`;
+  }
+};
+
+/** The rows the tag's boot on terrabis.co puts on the ledger, from the custom-tag fetch to the page view. */
+const isPageView = (event: WireEvent): boolean =>
+  event.source === "collector" && event.kind === "page-view" && event.appId === APP_ID;
+const isDstillery = (event: WireEvent): boolean =>
+  event.source === "partner" && event.partner === "dstillery" && event.segment === "TerrabisMundelein-S3.PV";
+const isLiquidm = (event: WireEvent): boolean => event.source === "partner" && event.partner === "liquidm";
+const isCustomTag = (event: WireEvent): boolean =>
+  event.source === "custom-tag" && event.scope === "domain" && event.name === "terrabis.co";
+
+const READINGS = [isPageView, isDstillery, isLiquidm, isCustomTag];
+
+const holdsEveryReading = (ledger: TabLedger | null): boolean =>
+  READINGS.every((reading) => (ledger?.events ?? []).some(reading));
+
+/** A partner row's segment, as the ledger decoded it from the pixel's own URL. */
+const segmentOf = (events: WireEvent[], matches: (event: WireEvent) => boolean): string | undefined => {
+  const row = events.find(matches);
+  return row?.source === "partner" ? row.segment : undefined;
+};
+
+/**
+ * After the page view, the tab's ledger holds what the tag did as it booted: the custom-tag fetch
+ * named for the site, the LiquidM sync and the Dstillery page-view pixel — each naming the segment
+ * the tag's own configuration carries — and the collector's page view.
+ *
+ * The tag's `record` event is not on this ledger, and cannot be: the harness resolves the collector
+ * to this machine so no test page view reaches MediaJel, the page view's POST is refused, and the
+ * tracker's outbound queue holds the record event behind it. Where the collector answers — the
+ * fixtures' stub — `fixtures.spec.ts` asserts the record event and its configuration.
+ */
+const expectBootOnLedger = async (launched: Launched, tabId: number, record: TabTags | null): Promise<void> => {
+  const ledger = await pollTabLedger(launched.worker, tabId, holdsEveryReading, 20_000);
+  const events = ledger?.events ?? [];
+  console.log(`[terrabis] ledger: ${events.map(describeRow).join(" · ") || "empty"}`);
+  const pageView = events.find(isPageView);
+  console.log(`[terrabis] the page view's POST ended: ${pageView?.outcome.kind ?? "not heard"}`);
+  expect(pageView, "a collector page view").toBeDefined();
+  expect(events.some(isCustomTag), "the custom-tag fetch named for terrabis.co").toBe(true);
+
+  // The wire matches the configuration: each pixel names the segment the tag runs with.
+  const params = record?.tags.find((tag) => tag.appId === APP_ID)?.config?.params ?? {};
+  expect(segmentOf(events, isDstillery), "the Dstillery pixel names the tag's s3.pv").toBe(params["s3.pv"]);
+  expect(segmentOf(events, isLiquidm), "the LiquidM sync names the tag's s1").toBe(params.s1);
+};
+
+test("detection: the tag is found, then heard sending, job/open names it, and the ledger holds its boot", async () => {
   const launched = await launchWithExtension();
   try {
     const { tabId } = await openTerrabis(launched);
@@ -75,6 +141,7 @@ test("detection: the tag is found, then heard sending, and job/open names it", a
     expect(stateOf(sending, APP_ID), "the page view was heard").toBe("sending");
 
     expect(await openJob(launched, launched.extensionId, tabId)).toContain(APP_ID);
+    await expectBootOnLedger(launched, tabId, sending);
   } finally {
     await launched.close();
   }

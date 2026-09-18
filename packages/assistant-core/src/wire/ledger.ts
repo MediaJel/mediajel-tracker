@@ -6,8 +6,10 @@ import type {
   Outcome,
   PendingEvent,
   TabLedger,
+  ThirdPartyTrigger,
   WireEvent,
 } from "@mediajel/assistant-core/wire/types";
+import { URL_CHAR_CAP } from "@mediajel/assistant-core/wire/url";
 
 /**
  * A tab's ledger: the events its page sent, in order, within a budget.
@@ -23,7 +25,10 @@ const EVENT_CAP = 300;
 const BYTE_CAP = 400_000;
 
 /** Per-event caps, in characters. The record event's script markup is capped where it is decoded. */
-const CAPS = { payload: 6_000, entity: 2_000, field: 512, url: 1_024 };
+const CAPS = { payload: 6_000, entity: 2_000, field: 512, url: URL_CHAR_CAP };
+
+/** How many hosts a third-party registration may name per trigger. */
+const HOST_CAP = 32;
 
 export const emptyLedger = (site: string): TabLedger => ({
   v: 1,
@@ -43,14 +48,41 @@ const boundedEntity = (entity: Entity): Entity =>
 const boundedField = (field: Field): Field =>
   field.value.length > CAPS.field ? { ...field, value: clipped(field.value, CAPS.field) } : field;
 
-/** An event cut to the caps: its page URL, its payload, every field value, every entity's data. */
-const bounded = (event: PendingEvent): PendingEvent => ({
+type Of<S extends WireEvent["source"]> = Extract<PendingEvent, { source: S }>;
+
+/** A collector event cut to the caps: its payload, every field value, every entity's data. */
+const boundedCollector = (event: Of<"collector">): PendingEvent => ({
   ...event,
-  pageUrl: clipped(event.pageUrl, CAPS.url),
   ...(event.payload === undefined ? {} : { payload: clipped(event.payload, CAPS.payload) }),
   groups: event.groups.map((group) => ({ ...group, fields: group.fields.map(boundedField) })),
   entities: event.entities.map(boundedEntity),
 });
+
+/** A row that keeps a request's URL keeps at most the cap of it; the decoders mask it before it gets here. */
+const boundedUrl = <T extends { url: string }>(event: T): T => ({ ...event, url: clipped(event.url, CAPS.url) });
+
+const boundedTrigger = (trigger: ThirdPartyTrigger): ThirdPartyTrigger => ({
+  ...trigger,
+  hosts: trigger.hosts.slice(0, HOST_CAP).map((host) => clipped(host, CAPS.field)),
+});
+
+const boundedThirdParty = (event: Of<"third-party">): PendingEvent =>
+  event.phase === "fired" ? boundedUrl(event) : { ...event, triggers: event.triggers.map(boundedTrigger) };
+
+type Bound = (event: PendingEvent) => PendingEvent;
+
+/** What each kind of row has that can be arbitrarily large, and how it is cut. */
+const BOUNDS: { [S in WireEvent["source"]]: (event: Of<S>) => PendingEvent } = {
+  collector: boundedCollector,
+  partner: boundedUrl,
+  "custom-tag": boundedUrl,
+  "third-party": boundedThirdParty,
+  foreign: (event) => event,
+};
+
+/** An event cut to the caps: its page URL, and whatever its kind of row carries that can grow. */
+const bounded = (event: PendingEvent): PendingEvent =>
+  (BOUNDS[event.source] as Bound)({ ...event, pageUrl: clipped(event.pageUrl, CAPS.url) });
 
 const size = (event: WireEvent): number => JSON.stringify(event).length;
 

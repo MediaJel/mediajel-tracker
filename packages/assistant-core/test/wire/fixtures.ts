@@ -78,8 +78,11 @@ export const RECORD: Record<string, unknown> = {
   dtm: "1758294000210",
 };
 
+/** A collector event as the ledger receives it, before it has a `seq`. */
+export type PendingCollector = Extract<PendingEvent, { source: "collector" }>;
+
 /** A decoded page view as the ledger receives it, before it has a `seq`. */
-export const pendingEvent = (overrides: Partial<PendingEvent> = {}): PendingEvent => ({
+export const pendingEvent = (overrides: Partial<PendingCollector> = {}): PendingCollector => ({
   id: "r1:0",
   at: 1_758_294_000_000,
   request: "r1",

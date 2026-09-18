@@ -1,5 +1,11 @@
 import type { AnnouncedTag, PageFacts } from "@mediajel/assistant-core/tags";
 import type { TimelineEvent, VerifyCapture, WidgetPage } from "@mediajel/assistant-core/types";
+import type {
+  Outcome,
+  ThirdPartyElement,
+  ThirdPartyTrigger,
+  ThirdPartyTriggerName,
+} from "@mediajel/assistant-core/wire/types";
 
 /**
  * The wire between three realms.
@@ -22,7 +28,7 @@ import type { TimelineEvent, VerifyCapture, WidgetPage } from "@mediajel/assista
  * `__mj`-keyed messages, so the bridge never records its own chatter.
  */
 
-export const ENVELOPE = "__mj" as const;
+const ENVELOPE = "__mj" as const;
 
 /**
  * Which build of this wire a message was written for. Bump it whenever a message's shape changes.
@@ -35,8 +41,20 @@ export const ENVELOPE = "__mj" as const;
  *
  * Version 3: the bridge no longer reports a status of its own; it says what it saw — the
  * trackers Snowplow holds, the tag announcing itself, the page's facts, and when the page settled.
+ *
+ * Version 4: the bridge also reports the third-party tags the page registers with the tag, each
+ * one the tag fires, and how each fire ended.
  */
-export const WIRE_VERSION = 3;
+export const WIRE_VERSION = 4;
+
+/** A third-party tag the tag fired, as the bridge saw the element it appended. */
+export interface ThirdPartyFired {
+  trigger: ThirdPartyTriggerName;
+  element: ThirdPartyElement;
+  host: string;
+  /** Masked before it leaves the page, and bounded again by the ledger. */
+  url: string;
+}
 
 /** What the page-bridge sends up. */
 export type BridgeUp =
@@ -52,7 +70,12 @@ export type BridgeUp =
   | { type: "settled" }
   | { type: "verify-result"; ok: boolean; errors: string[] }
   | { type: "verify-capture"; capture: VerifyCapture }
-  | { type: "dedup-cleared"; count: number };
+  | { type: "dedup-cleared"; count: number }
+  /** The page registered third-party tags with the tag: what each trigger holds, never the templates. */
+  | { type: "third-party-registered"; key: string; pageUrl: string; triggers: ThirdPartyTrigger[] }
+  /** The tag fired one of them; `key` is what its outcome settles. */
+  | ({ type: "third-party-fired"; key: string; pageUrl: string } & ThirdPartyFired)
+  | { type: "third-party-settled"; key: string; outcome: Outcome };
 
 /** What the background sends down. */
 export type BridgeDown =
