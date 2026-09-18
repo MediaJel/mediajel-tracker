@@ -1,9 +1,11 @@
-import { FormEvent, ReactNode, useState } from "react";
+import { FormEvent, ReactNode, useId, useState } from "react";
 
 import type { AuthChallenge } from "~/auth/cognito";
-import { Button } from "~/ui/components/ui/button";
-import { Alert } from "~/ui/components/ui/alert";
 import { Letterhead } from "~/ui/components/Letterhead";
+import { Alert } from "~/ui/components/ui/alert";
+import { Button } from "~/ui/components/ui/button";
+import { Field, FieldLabel } from "~/ui/components/ui/field";
+import { Input } from "~/ui/components/ui/input";
 
 /**
  * The gate. One MediaJel account, the same one the dashboard uses.
@@ -22,6 +24,81 @@ export interface SignInProps {
   onAnswer(kind: AuthChallenge["kind"], answer: string): void;
 }
 
+const INTRO = "Sign in with your MediaJel account — the username you use for the dashboard, not your email address.";
+
+const NEW_PASSWORD = { label: "New password", type: "password", autoComplete: "new-password" } as const;
+const CODE = {
+  label: "Code",
+  type: "text",
+  inputMode: "numeric",
+  autoComplete: "one-time-code",
+  className: "font-mono",
+} as const;
+
+/** The challenge's one field: the code from an authenticator, or the new password the account owes. */
+const ChallengeField = ({
+  challenge,
+  answer,
+  onChange,
+}: {
+  challenge: AuthChallenge;
+  answer: string;
+  onChange(value: string): void;
+}): ReactNode => {
+  const id = useId();
+  const { label, ...input } = challenge.kind === "new-password" ? NEW_PASSWORD : CODE;
+  return (
+    <Field>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Input id={id} {...input} value={answer} autoFocus onChange={(event) => onChange(event.currentTarget.value)} />
+    </Field>
+  );
+};
+
+const Credentials = ({
+  username,
+  password,
+  onUsername,
+  onPassword,
+}: {
+  username: string;
+  password: string;
+  onUsername(value: string): void;
+  onPassword(value: string): void;
+}): ReactNode => {
+  const ids = { username: useId(), password: useId() };
+  return (
+    <>
+      <Field>
+        <FieldLabel htmlFor={ids.username}>Username</FieldLabel>
+        <Input
+          id={ids.username}
+          type="text"
+          autoComplete="username"
+          value={username}
+          autoFocus
+          onChange={(event) => onUsername(event.currentTarget.value)}
+        />
+      </Field>
+      <Field>
+        <FieldLabel htmlFor={ids.password}>Password</FieldLabel>
+        <Input
+          id={ids.password}
+          type="password"
+          autoComplete="current-password"
+          value={password}
+          onChange={(event) => onPassword(event.currentTarget.value)}
+        />
+      </Field>
+    </>
+  );
+};
+
+const buttonLabel = (busy: boolean, challenge: AuthChallenge | null): string => {
+  if (busy) return "Signing in…";
+  return challenge ? "Continue" : "Sign in";
+};
+
 export const SignIn = ({ challenge, busy, error, onSignIn, onAnswer }: SignInProps): ReactNode => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -35,52 +112,14 @@ export const SignIn = ({ challenge, busy, error, onSignIn, onAnswer }: SignInPro
   };
 
   return (
-    <form className="mj-signin" onSubmit={submit}>
+    <form className="flex flex-col gap-3 p-5" onSubmit={submit}>
       <Letterhead title="Integrations Assistant" />
 
+      <p className="mj-lede">{challenge ? challenge.label : INTRO}</p>
       {challenge ? (
-        <>
-          <p className="mj-lede">{challenge.label}</p>
-          <label className="mj-field">
-            <span className="mj-field-label">{challenge.kind === "new-password" ? "New password" : "Code"}</span>
-            <input
-              className={challenge.kind === "new-password" ? "mj-input" : "mj-input mj-input--mono"}
-              type={challenge.kind === "new-password" ? "password" : "text"}
-              inputMode={challenge.kind === "new-password" ? undefined : "numeric"}
-              autoComplete={challenge.kind === "new-password" ? "new-password" : "one-time-code"}
-              value={answer}
-              autoFocus
-              onChange={(event) => setAnswer(event.currentTarget.value)}
-            />
-          </label>
-        </>
+        <ChallengeField challenge={challenge} answer={answer} onChange={setAnswer} />
       ) : (
-        <>
-          <p className="mj-lede">
-            Sign in with your MediaJel account — the username you use for the dashboard, not your email address.
-          </p>
-          <label className="mj-field">
-            <span className="mj-field-label">Username</span>
-            <input
-              className="mj-input"
-              type="text"
-              autoComplete="username"
-              value={username}
-              autoFocus
-              onChange={(event) => setUsername(event.currentTarget.value)}
-            />
-          </label>
-          <label className="mj-field">
-            <span className="mj-field-label">Password</span>
-            <input
-              className="mj-input"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(event) => setPassword(event.currentTarget.value)}
-            />
-          </label>
-        </>
+        <Credentials username={username} password={password} onUsername={setUsername} onPassword={setPassword} />
       )}
 
       {error && (
@@ -90,7 +129,7 @@ export const SignIn = ({ challenge, busy, error, onSignIn, onAnswer }: SignInPro
       )}
 
       <Button type="submit" className="w-full" aria-disabled={busy}>
-        {busy ? "Signing in…" : challenge ? "Continue" : "Sign in"}
+        {buttonLabel(busy, challenge)}
       </Button>
 
       <p className="mj-fine">

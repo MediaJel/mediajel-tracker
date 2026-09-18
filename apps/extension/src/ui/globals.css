@@ -209,6 +209,7 @@
      used behind a reduced-motion guard, so nothing moves for someone who asked it not to. */
   --animate-stamp-land: stamp-land 240ms ease-out;
   --animate-wash: wash 1400ms cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  --animate-settling: settling 1600ms ease-in-out infinite;
 
   @keyframes stamp-land {
     0% {
@@ -224,6 +225,15 @@
   @keyframes wash {
     to {
       transform: translateX(100%);
+    }
+  }
+
+  @keyframes settling {
+    from {
+      background-position: 140% 0;
+    }
+    to {
+      background-position: -40% 0;
     }
   }
 }

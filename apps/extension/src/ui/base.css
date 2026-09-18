@@ -29,7 +29,11 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-button {
+/* Controls take the sheet's type instead of the browser's; a component sets its own on top. */
+button,
+input,
+textarea,
+select {
   font: inherit;
   color: inherit;
   margin: 0;

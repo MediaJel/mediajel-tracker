@@ -6,6 +6,7 @@ import type { TagActivity } from "~/service/client";
 import type { TagActivityState } from "~/sidepanel/useTagActivity";
 import { shortAppId, stateSentence, tallyNumber, tallySentence } from "~/ui/activity";
 import InfoTip from "~/ui/components/InfoTip";
+import { Skeleton } from "~/ui/components/ui/skeleton";
 import { Chevron } from "~/ui/components/Chevron";
 import { Button } from "~/ui/components/ui/button";
 
@@ -108,10 +109,10 @@ const Readings = ({ activity, goal }: Props): ReactNode => {
   );
 };
 
-const Skeleton = ({ rows }: { rows: number }): ReactNode => (
+const TallySettling = ({ rows }: { rows: number }): ReactNode => (
   <div className="mj-tally-skeleton" aria-hidden="true">
     {Array.from({ length: rows }, (_, index) => (
-      <span key={index} className="mj-skeleton-bar mj-tally-skeleton-row" />
+      <Skeleton key={index} className="mj-tally-skeleton-row" />
     ))}
   </div>
 );
@@ -144,7 +145,7 @@ const Body = ({ activity, goal }: Props): ReactNode => {
   if (activity.phase === "ready") return <Readings activity={activity} goal={goal} />;
   if (activity.phase === "error") return <Failure activity={activity} />;
   const note = quietNote(activity);
-  return note ? <Note>{note}</Note> : <Skeleton rows={Math.min(Math.max(activity.tags.length, 1), MAX_ROWS)} />;
+  return note ? <Note>{note}</Note> : <TallySettling rows={Math.min(Math.max(activity.tags.length, 1), MAX_ROWS)} />;
 };
 
 const DetailsToggle = ({ activity }: { activity: TagActivityState }): ReactNode => {

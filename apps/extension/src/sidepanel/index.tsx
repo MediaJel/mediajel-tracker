@@ -10,6 +10,7 @@ import "~/ui/globals.built.css";
 import { Button } from "~/ui/components/ui/button";
 import { Letterhead } from "~/ui/components/Letterhead";
 import { Panel } from "~/ui/components/Panel";
+import { Skeleton } from "~/ui/components/ui/skeleton";
 
 /**
  * The side panel: the assistant, whole.
@@ -30,13 +31,13 @@ import { Panel } from "~/ui/components/Panel";
  * `aria-busy` and one polite label; the bars themselves are decorative and hidden, because a
  * screen reader announcing six empty boxes is worse than silence.
  */
-const Skeleton = (): ReactNode => (
-  <div className="mj-skeleton" aria-busy="true" aria-live="polite" aria-label="Opening this job">
-    <span className="mj-skeleton-bar mj-skeleton-bar--title" aria-hidden="true" />
-    <span className="mj-skeleton-bar mj-skeleton-bar--lede" aria-hidden="true" />
-    <span className="mj-skeleton-bar mj-skeleton-bar--tally" aria-hidden="true" />
-    <span className="mj-skeleton-slip" aria-hidden="true" />
-    <span className="mj-skeleton-slip" aria-hidden="true" />
+const Settling = (): ReactNode => (
+  <div className="flex flex-col gap-3.5 pt-5" aria-busy="true" aria-live="polite" aria-label="Opening this job">
+    <Skeleton className="h-[26px] w-[62%]" />
+    <Skeleton className="h-[13px] w-[84%]" />
+    <Skeleton className="mj-skeleton-bar--tally" />
+    <Skeleton className="h-[52px] shadow-press" />
+    <Skeleton className="h-[52px] shadow-press" />
   </div>
 );
 
@@ -54,7 +55,7 @@ export const SidePanel = (): ReactNode => {
   if (panel.screen === "loading") {
     return (
       <Frame>
-        <Skeleton />
+        <Settling />
       </Frame>
     );
   }
@@ -105,7 +106,7 @@ export const SidePanel = (): ReactNode => {
   if (!panel.session) {
     return (
       <Frame>
-        <Skeleton />
+        <Settling />
       </Frame>
     );
   }

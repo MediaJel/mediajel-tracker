@@ -231,7 +231,6 @@
   font-size: var(--text-sm);
 }
 
-.mj-input--mono,
 .mj-textarea {
   font-family: var(--mj-mono);
 }
@@ -727,51 +726,6 @@
 /* ── The panel, opening ──────────────────────────────────────────────────────────────────────
    The shapes that are about to be there, so nothing jumps when they arrive. */
 
-.mj-skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 20px 0 0;
-}
-
-.mj-skeleton-bar,
-.mj-skeleton-slip {
-  display: block;
-  border-radius: var(--radius-sm);
-  background: linear-gradient(
-    90deg,
-    var(--mj-carbon) 0%,
-    color-mix(in srgb, var(--mj-carbon) 55%, var(--mj-sheet)) 50%,
-    var(--mj-carbon) 100%
-  );
-  background-size: 220% 100%;
-  animation: mj-settling 1600ms ease-in-out infinite;
-}
-
-.mj-skeleton-bar--title {
-  width: 62%;
-  height: 26px;
-}
-
-.mj-skeleton-bar--lede {
-  width: 84%;
-  height: 13px;
-}
-
-.mj-skeleton-slip {
-  height: 52px;
-  box-shadow: var(--mj-press);
-}
-
-@keyframes mj-settling {
-  from {
-    background-position: 140% 0;
-  }
-  to {
-    background-position: -40% 0;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   /* Everything that moves is named here, later in the sheet than where it was given its motion. */
   .mj-choice,
@@ -785,100 +739,6 @@
   .mj-rec-dot {
     animation: none;
   }
-
-  .mj-skeleton-bar,
-  .mj-skeleton-slip {
-    animation: none;
-    background: var(--mj-carbon);
-  }
-}
-
-/* --- the plain surfaces: popup, sign-in, the states that are not a work order ---------------- */
-
-.mj-popup {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 320px;
-  padding: var(--mj-pad);
-  background: var(--mj-sheet);
-}
-
-.mj-signin {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: var(--mj-pad);
-}
-
-.mj-signin .mj-field {
-  margin: 0;
-}
-
-/* --- the job list ------------------------------------------------------------------------------ */
-
-.mj-job {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-right: var(--mj-pad);
-  border-top: 1px solid var(--mj-rule);
-  list-style: none;
-}
-
-/* The site you are standing on, marked the way a work order marks its live section. */
-.mj-job--current {
-  background: var(--mj-sheet);
-  box-shadow: var(--mj-press);
-}
-
-.mj-job-row {
-  display: flex;
-  flex: 1 1 auto;
-  min-width: 0;
-  flex-direction: column;
-  gap: 3px;
-  padding: 10px var(--mj-pad);
-  border: 0;
-  background: none;
-  text-align: left;
-  cursor: pointer;
-}
-
-.mj-job-site {
-  overflow: hidden;
-  font-family: var(--mj-display);
-  font-size: var(--text-2xl);
-  color: var(--mj-ink);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.mj-job-meta {
-  font-size: var(--text-xs);
-  color: var(--mj-ink-soft);
-}
-
-.mj-job-side {
-  display: flex;
-  flex: none;
-  align-items: center;
-  gap: 4px;
-}
-
-.mj-job-delete {
-  width: 26px;
-  height: 26px;
-  color: var(--mj-ink-faint);
-}
-
-.mj-job-delete svg {
-  width: 13px;
-  height: 13px;
-}
-
-.mj-job-delete:hover {
-  color: var(--mj-partner);
 }
 
 /* --- the deploy target choice ------------------------------------------------------------------ */

@@ -20,6 +20,9 @@ import { Letterhead } from "~/ui/components/Letterhead";
 
 const message = (err: unknown): string => (err instanceof Error ? err.message : String(err));
 
+/** The popup's one surface: the sheet, 320px wide, padded like a plain panel. */
+const POPUP = "flex w-80 flex-col gap-3 bg-sheet p-5";
+
 export const Popup = (): ReactNode => {
   const [identity, setIdentity] = useState<Identity | null>(null);
   const [challenge, setChallenge] = useState<AuthChallenge | null>(null);
@@ -68,11 +71,11 @@ export const Popup = (): ReactNode => {
     })();
   };
 
-  if (!ready) return <div className="mj-popup" />;
+  if (!ready) return <div className={POPUP} />;
 
   if (!identity) {
     return (
-      <div className="mj-popup">
+      <div className={POPUP}>
         <SignIn
           challenge={challenge}
           busy={busy}
@@ -85,14 +88,12 @@ export const Popup = (): ReactNode => {
   }
 
   return (
-    <div className="mj-popup">
+    <div className={POPUP}>
       <Letterhead title="Integrations Assistant" />
 
-      <dl className="mj-defs">
-        <div className="mj-def">
-          <dt className="mj-def-label">Signed in</dt>
-          <dd className="mj-def-value">{identity.name || identity.username}</dd>
-        </div>
+      <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-base">
+        <dt className="text-muted-foreground">Signed in</dt>
+        <dd className="m-0">{identity.name || identity.username}</dd>
       </dl>
 
       <Button type="button" className="w-full" onClick={openPanel}>

@@ -48,12 +48,12 @@ const openJobs = click("button[title='Your jobs']");
 const job = (selector: string): string[] => [selector, ".mj-tally-grid"];
 
 const SCENARIOS: Scenario[] = [
-  { name: "loading", ready: [".mj-skeleton"] },
-  { name: "sign-in", ready: ["form.mj-signin input[autocomplete=username]"] },
-  { name: "sign-in-challenge", ready: ["form.mj-signin .mj-input--mono"], act: answerSignIn },
+  { name: "loading", ready: ["[data-slot=skeleton]"] },
+  { name: "sign-in", ready: ["form input[autocomplete=username]"] },
+  { name: "sign-in-challenge", ready: ["form input[inputmode=numeric]"], act: answerSignIn },
   { name: "no-site", ready: [".mj-section-footer"] },
   { name: "jobs-empty", ready: ["ol[aria-label='Your jobs'] .mj-lede"], act: openJobs },
-  { name: "jobs-3", ready: ["ol[aria-label='Your jobs'] .mj-job:nth-child(3)"], act: openJobs },
+  { name: "jobs-3", ready: ["ol[aria-label='Your jobs'] li:nth-child(3)"], act: openJobs },
   { name: "job-home", ready: job(".mj-goals") },
   { name: "job-recording", ready: job(".mj-rec-row") },
   { name: "job-review-suggest", ready: job(".mj-guess") },
@@ -82,8 +82,8 @@ const SCENARIOS: Scenario[] = [
   { name: "tally-refreshing", ready: job(".mj-tally-grid--stale"), act: click(".mj-tally-unread button") },
   { name: "tally-daily-null", ready: ["#mj-activity-report .mj-days-section .mj-empty"], act: openDetails },
   { name: "tally-quiet-week", ready: job(".mj-tally-sentence") },
-  { name: "popup-out", page: "popup", ready: [".mj-popup form.mj-signin"] },
-  { name: "popup-in", page: "popup", ready: [".mj-popup .mj-defs"] },
+  { name: "popup-out", page: "popup", ready: ["form input[autocomplete=username]"] },
+  { name: "popup-in", page: "popup", ready: ["dl"] },
 ];
 
 let site: Server;
