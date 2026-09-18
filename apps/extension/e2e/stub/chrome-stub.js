@@ -747,7 +747,9 @@
   const LEDGERS = {
     empty: { site: SITE, events: [], pages: [], dropped: 0, seq: 0 },
     live: { site: SITE, events: WIRE, pages: LEDGER_PAGES, dropped: 0, seq: 16 },
-    dropped: { site: SITE, events: WIRE, pages: LEDGER_PAGES, dropped: 312, seq: 328 },
+    // Past the cap the newest few remain and the line under them says how many were let go — short
+    // enough that the line is in the picture.
+    dropped: { site: SITE, events: WIRE.slice(0, 3), pages: [LEDGER_PAGES[0]], dropped: 312, seq: 328 },
   };
   const readLedger = () => {
     if (scenario.events === "error")
