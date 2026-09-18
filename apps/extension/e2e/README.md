@@ -1,0 +1,80 @@
+# The Playwright harness
+
+End-to-end checks of the Integrations Assistant as Chrome actually runs it: the production build
+loaded as an unpacked extension into Playwright's Chromium, shown real pages, and read from the
+outside. The unit tests in `../test` stand a fake `chrome` in front of the code; these stand
+outside the real one.
+
+## Running it
+
+```sh
+cd apps/extension
+bun run build            # the harness loads dist/chrome-mv3-prod
+bun x playwright install chromium   # once per machine
+bun run e2e              # every spec
+bun run e2e -- e2e/fixtures.spec.ts # one spec
+bun run e2e -- --update-snapshots   # regenerate the panel's reference screenshots
+```
+
+Everything the harness generates lands under `e2e/out/` (gitignored). The reference screenshots
+under `e2e/__screenshots__/` are committed on purpose: they are the pictures a UI change is compared
+against.
+
+## The specs
+
+- `fixtures.spec.ts` — two local pages carrying the production tag build. `old.html` installs it
+  the ordinary way; `held.html` the way WP Rocket leaves it, inert until the first `mousemove`.
+  Both must end with the tag heard sending for app ID `e2e-old` and with the stub collector holding
+  the `payload_data` batch that named it.
+- `terrabis.spec.ts` — a real client site whose tag arrives late through Google Tag Manager. It
+  checks detection, that the record outlives a stopped service worker, what a `chrome.runtime.reload()`
+  does to it, and (signed in) the panel's tally. The signed-in part needs `apps/extension/.env.e2e`
+  with `MJ_E2E_USERNAME` and `MJ_E2E_PASSWORD` (gitignored; never printed) and is skipped without it.
+- `panel.spec.ts` — the visual matrix: every screen of the side panel and the popup, in both
+  themes, rendered against a stubbed `chrome` (see below) and compared pixel-for-pixel.
+
+## How the tag's traffic is kept local
+
+The production bundle posts its events to `//collector-azsx401.dmp.cnna.io/analytics/track`.
+Chrome is launched with `--host-resolver-rules="MAP *.dmp.cnna.io 127.0.0.1"`, so every MediaJel
+collector resolves to this machine for the whole run and no test page view reaches the pipeline.
+The URL stays a `*.cnna.io` one, which is what the extension's `chrome.webRequest` filter listens for.
+
+The fixtures need the beacon to actually arrive somewhere, so a stub collector listens on
+127.0.0.1:4443 and answers 200 to anything (with the CORS headers the tag's preflight needs). Port
+443 cannot be bound without privileges on this machine, and a TLS stub would need a certificate, so
+`vendor-tag.mjs` makes one edit to the vendored copy of the bundle: the collector host becomes
+`collector-azsx401.dmp.cnna.io:4443`. The fixture pages are served over plain HTTP, the bundle's
+collector URL is protocol-relative, so the beacon goes to `http://collector-azsx401.dmp.cnna.io:4443`
+and lands on the stub with no TLS anywhere. The production tag on terrabis.co is not rewritten; its
+beacon resolves to a closed port on this machine, which the extension hears all the same.
+
+`vendor-tag.mjs` fetches `https://tags.cnna.io/index.js` and every hashed chunk it names into
+`e2e/fixtures/vendor/` (gitignored) on the first run. Delete that directory to refresh the copy.
+A fixture for the tag build that announces itself (`new.html`) is reserved for when
+`apps/tracker/dist` carries the `mediajel:tag` announcement; it does not yet.
+
+## The visual matrix
+
+`build-preview.mjs` copies `dist/chrome-mv3-prod` to `e2e/out/site`, inserts
+`<meta name="darkreader-lock">` and `<script src="/chrome-stub.js">` at the start of `<head>` in
+`sidepanel.html` and `popup.html`, and copies the stub in. `stub/chrome-stub.js` installs a
+`window.chrome` before the bundle runs: `runtime.sendMessage` answers every request type in
+`src/bridge/api.ts` according to `?scenario=` in the page's query string, `runtime.connect` gives
+the panel a port the stub pushes session changes through (so clicks advance the job the way the
+real background would), and `tabs`, `storage` and `sidePanel` are in-memory stand-ins. `?theme=`
+is what `settings/read` answers.
+
+`panel.spec.ts` serves that directory at a root (the built pages use absolute asset paths), opens
+`/sidepanel.html?scenario=<name>&theme=<light|dark>` at 400×1000 for every scenario, waits for the
+scenario's ready selector, checks nothing is `disabled`, and asserts `toHaveScreenshot`. The clock
+is pinned to one instant so elapsed times, "2h ago" and the day axis never move. A separate run
+renders the recording screen under `prefers-reduced-motion: reduce` and requires two captures two
+seconds apart to be identical.
+
+## What a run prints
+
+The background's record of a tab is `tags/<tabId>` in its session storage: a state per tag
+(`installed`, `held-back`, `running`, `sending`, `opted-out`, `disabled`, `failed`) that only ever
+moves forward. Each spec prints the state it saw the app ID in, and what `job/open` named, so a
+failed expectation reads as expected-versus-observed rather than as a bare assertion.

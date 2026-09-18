@@ -13,8 +13,10 @@
     "package": "plasmo package --build-path=./dist",
     "check": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "bun test --preload ./test/setup.ts"
+    "test": "bun test --preload ./test/setup.ts test/",
+    "e2e": "playwright test"
   },
+  "//test": "The `test/` filter keeps `bun test` to the unit tests: Playwright's specs in e2e/ match bun's *.spec.ts convention too, and bun would try to run them without a browser. `e2e` needs a production build in dist/ first (`bun run build`); see e2e/README.md.",
   "//zod": "zod stays a direct dependency even though nothing here imports it by name: the `alias` below resolves a PATH into node_modules/zod, and this entry is what guarantees it is installed and hoisted where that path can find it. @mediajel/assistant-core imports zod for real.",
   "dependencies": {
     "@mediajel/assistant-core": "*",
@@ -33,6 +35,7 @@
     "@happy-dom/global-registrator": "^20.11.6",
     "@mediajel/eslint-config": "*",
     "@mediajel/tsconfig": "*",
+    "@playwright/test": "1.63.0",
     "@types/chrome": "^0.2.7",
     "@types/node": "^22.9.0",
     "@types/react": "^18.3.12",

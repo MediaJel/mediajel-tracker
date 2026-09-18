@@ -18,11 +18,13 @@
       ]
     }
   },
-  "//include": "interface.ts carries tracker-core's shared `declare global { Window }` augmentation — the main-world bridge reads window.trackTrans through it.",
+  "//include": "interface.ts carries tracker-core's shared `declare global { Window }` augmentation — the main-world bridge reads window.trackTrans through it. e2e/ is the Playwright harness, checked with the same strictness; its .mjs scripts and the browser stub are plain JavaScript and are linted, not type-checked.",
   "include": [
     ".plasmo/index.d.ts",
     "src/**/*",
     "test/**/*",
+    "e2e/**/*",
+    "playwright.config.ts",
     "../../packages/tracker-core/src/interface.ts"
   ],
   "exclude": [

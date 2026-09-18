@@ -34,3 +34,6 @@ todo.txt
 
 # superpowers SDD scratch workspace
 .superpowers/
+
+# A worktree-local bun install (the root pins bun 1.3.8; a machine's global bun may be newer)
+.bun/

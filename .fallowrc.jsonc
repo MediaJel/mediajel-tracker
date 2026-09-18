@@ -8,6 +8,10 @@
     "apps/extension/src/popup.tsx",
     "apps/extension/src/sidepanel/index.tsx",
     "apps/extension/src/background/index.ts",
-    "apps/extension/src/contents/*.ts"
+    "apps/extension/src/contents/*.ts",
+    // The Playwright harness: specs are loaded by convention and the vendoring script by node —
+    // nothing imports them.
+    "apps/extension/e2e/*.spec.ts",
+    "apps/extension/e2e/vendor-tag.mjs"
   ]
 }
