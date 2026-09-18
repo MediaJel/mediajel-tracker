@@ -269,6 +269,7 @@ export const usePanel = (): PanelState => {
       }
       port.onMessage.addListener(receive);
       port.onDisconnect.addListener(() => {
+        void chrome.runtime.lastError;
         port = null;
         if (closed) return;
         connect();

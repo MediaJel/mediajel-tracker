@@ -196,6 +196,9 @@ chrome.runtime.onConnect.addListener((port) => {
 
     relays.set(tabId, port);
     port.onDisconnect.addListener(() => {
+      // Read, or Chrome logs "Unchecked runtime.lastError" when the page went into the
+      // back/forward cache and took the port with it — expected, not an error of ours.
+      void chrome.runtime.lastError;
       if (relays.get(tabId) === port) relays.delete(tabId);
     });
     port.onMessage.addListener((message: BridgeUp) => {
@@ -218,6 +221,7 @@ chrome.runtime.onConnect.addListener((port) => {
       })
       .catch(() => undefined);
     port.onDisconnect.addListener(() => {
+      void chrome.runtime.lastError;
       if (panels.get(tabId) === port) panels.delete(tabId);
       for (const [site, bound] of panelSites) if (bound === tabId) panelSites.delete(site);
     });

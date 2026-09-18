@@ -32,6 +32,8 @@ const connect = (): chrome.runtime.Port | null => {
       window.postMessage(wrap("down", message), "*");
     });
     opened.onDisconnect.addListener(() => {
+      // The worker was recycled, or this page is being cached; either way the next message reopens it.
+      void chrome.runtime.lastError;
       port = null;
     });
     return opened;
