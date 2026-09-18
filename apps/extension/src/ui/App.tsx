@@ -2,7 +2,7 @@
 THESIS: One integration job sheet per site, kept as carbon copies — every finished step seals into a stamped slip that stays readable above the live work, and the next action is always in the same place at the bottom; it refuses the wizard-with-progress-dots and the chat transcript.
 OWN-WORLD: MediaJel paper (#E6E9EB ground, white sheet; ink ground in dark), Avenir Next ink, SF Mono figures; identity blue is the live ink and the carbon impression, platform green the VERIFIED/DEPLOYED stamp, partner orange warnings, privacy purple anything that leaves the browser; the MJ zigzag as the rule; numbered sections 01–05; hairlines #C7CDD3; stamps tilted 4°.
 STORY: I see which site I am on and who I am, watch evidence accumulate, get code with an honest field checklist, prove it on this page, ship it — and the receipt for every step stays stacked above me.
-FIRST VIEWPORT: a full-height side panel: letterhead (mark, MEDIAJEL, signed-in name, jobs, gear), the site as the job's name, the zigzag rule, then the strip of index tabs — Overview, Analytics, Tracking setup — and the chosen view: the tally on its sheet by default, or the carbon stack — finished steps as tinted stamped slips, the live step as the full sheet at the bottom — under a pinned action bar naming the one next action and what it will do.
+FIRST VIEWPORT: a full-height side panel: letterhead (mark, MEDIAJEL, signed-in name, jobs, gear), the site as the job's name, the zigzag rule, then the strip of index tabs — Overview, Analytics, Events, Tracking setup — and the chosen view: the tally on its sheet by default, or the carbon stack — finished steps as tinted stamped slips, the live step as the full sheet at the bottom — under a pinned action bar naming the one next action and what it will do.
 FORM: Carbon-copy stack, #3 of 7 ordered structures, seed ea35aae4 (surface/operate).
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
 */
@@ -11,6 +11,7 @@ import { ReactNode } from "react";
 
 import type { Identity } from "~/auth/cognito";
 import type { TagActivityState } from "~/sidepanel/useTagActivity";
+import type { WireEventsState } from "~/sidepanel/useWireEvents";
 import { Settings } from "~/store/settings";
 import { Letterhead } from "~/ui/components/Letterhead";
 import { Panel, Stack } from "~/ui/components/Panel";
@@ -29,6 +30,7 @@ import { ViewTabs } from "~/ui/components/ViewTabs";
 import { Tabs, TabsContent } from "~/ui/components/ui/tabs";
 import { Gear, Person, Restart, Zigzag } from "~/ui/icons";
 import { AnalyticsView } from "~/ui/screens/AnalyticsView";
+import { EventsView } from "~/ui/screens/EventsView";
 import { OverviewView } from "~/ui/screens/OverviewView";
 import SettingsOverlay from "~/ui/screens/SettingsOverlay";
 import { SetupView, SetupViewProps } from "~/ui/screens/SetupView";
@@ -39,8 +41,8 @@ import { View } from "~/ui/views";
  *
  * Everything above the zigzag is the work order's heading: the letterhead, the job's name, who
  * is signed in. Under it, the strip of index tabs and the chosen view — Overview (the tally),
- * Analytics (every reading in full) or Tracking setup (the job's carbon stack with its pinned
- * action) — or Settings, which takes the strip and the view's place rather than covering them,
+ * Analytics (every reading in full), Events (the ledger) or Tracking setup (the job's carbon
+ * stack with its pinned action) — or Settings, which takes the strip and the view's place rather than covering them,
  * so the panel is always one sheet.
  */
 
@@ -49,6 +51,8 @@ export interface AppProps extends SetupViewProps {
   site: string;
   /** The last 7 days of every MediaJel tag on the page. */
   activity: TagActivityState;
+  /** What the page's tags have sent from this tab. */
+  ledger: WireEventsState;
   settings: Settings;
   confirmingReset: boolean;
   access: { status: "idle" | "checking" | "ok" | "error"; message: string };
@@ -156,6 +160,9 @@ const Views = (props: AppProps): ReactNode => (
     </TabsContent>
     <TabsContent value="analytics">
       <AnalyticsView activity={props.activity} site={props.site} />
+    </TabsContent>
+    <TabsContent value="events">
+      <EventsView ledger={props.ledger} site={props.site} />
     </TabsContent>
     <TabsContent value="setup">
       <SetupView {...props} />

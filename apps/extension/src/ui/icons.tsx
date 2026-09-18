@@ -131,3 +131,18 @@ export const Check = ({ className }: { className?: string } = {}): ReactNode => 
     <path d="M3 8.5l3.2 3L13 4.5" />
   </svg>
 );
+
+/** A collector: an arrow into a tray — a request that lands somewhere and is kept. */
+export const Collector = ({ className }: { className?: string } = {}): ReactNode => (
+  <svg className={className} viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" {...STROKE}>
+    <path d="M8 2v7M5 6l3 3 3-3M2.5 10.5v2a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-2" />
+  </svg>
+);
+
+/** A beacon: one pixel with its corner ticks — an image nobody sees, sent to be counted. */
+export const Beacon = ({ className }: { className?: string } = {}): ReactNode => (
+  <svg className={className} viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" {...STROKE}>
+    <rect x="5.5" y="5.5" width="5" height="5" rx="0.5" />
+    <path d="M2.5 5.5v-3h3M10.5 2.5h3v3M13.5 10.5v3h-3M5.5 13.5h-3v-3" />
+  </svg>
+);

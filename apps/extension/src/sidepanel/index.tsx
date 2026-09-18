@@ -118,6 +118,7 @@ export const SidePanel = (): ReactNode => {
       session={panel.session}
       status={panel.status}
       activity={panel.activity}
+      ledger={panel.ledger}
       identity={panel.identity}
       settings={panel.settings}
       handlers={panel.handlers}

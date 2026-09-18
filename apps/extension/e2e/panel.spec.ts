@@ -45,7 +45,13 @@ const openJobs = click("button[title='Your jobs']");
 /** Open the first reading's configuration slip. */
 const openConfig = click("[data-slot=tag-config-toggle]");
 /** Choose a view by its tab. */
-const openView = (view: "analytics" | "setup") => click(`[data-view=${view}]`);
+const openView = (view: "analytics" | "events" | "setup") => click(`[data-view=${view}]`);
+
+/** The ledger with the tag's own record event opened into its receipt. */
+const openRecord = async (page: Page): Promise<void> => {
+  await openView("events")(page);
+  await page.locator("[data-slot=ledger-row]", { hasText: "record" }).first().locator("button").first().click();
+};
 
 /** A job screen is ready when its section is drawn under the strip. */
 const job = (selector: string): string[] => [selector, "[data-slot=view-tabs]"];
@@ -86,6 +92,11 @@ const SCENARIOS: Scenario[] = [
   { name: "overview-quiet-week", ready: ["[data-slot=tally-sentence]"] },
   { name: "overview-config", ready: ["[data-slot=tag-config] pre"], act: openConfig },
   { name: "config-script-only", ready: ["[data-slot=tag-config] pre"], act: openConfig },
+  { name: "events-empty", ready: ["[data-slot=ledger-empty]"], act: openView("events") },
+  { name: "events-live", ready: ["[data-slot=ledger-page] ~ [data-slot=ledger-page]"], act: openView("events") },
+  { name: "events-detail", ready: ["[data-slot=ledger-detail] [data-slot=badge]"], act: openRecord },
+  { name: "events-dropped", ready: ["[data-slot=ledger-dropped]"], act: openView("events") },
+  { name: "events-error", ready: ["[data-slot=ledger-empty]"], act: openView("events") },
   { name: "analytics-1", ready: ["[data-slot=analytics] [data-slot=chart] svg"], act: openView("analytics") },
   {
     name: "analytics-3",

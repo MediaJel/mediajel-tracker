@@ -17,6 +17,7 @@ import { TargetState } from "~/ui/screens/DeploySection";
 import { View } from "~/ui/views";
 
 import { TagActivityState, useTagActivity } from "./useTagActivity";
+import { EventsPush, WireEventsState, useWireEvents } from "./useWireEvents";
 import { normalizeView } from "~/sidepanel/view";
 
 /**
@@ -68,6 +69,8 @@ export interface PanelState {
   status: TrackerStatus;
   /** The last 7 days of every MediaJel tag on the page. */
   activity: TagActivityState;
+  /** What the page's tags have sent from this tab, newest first. */
+  ledger: WireEventsState;
   jobs: JobSummary[];
   flow: AppFlowState;
   generateBlocked: string;
@@ -130,6 +133,9 @@ export const usePanel = (): PanelState => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [access, setAccess] = useState<PanelState["access"]>({ status: "idle", message: "" });
   const [view, setView] = useState<View>("overview");
+  /** The latest ledger push, and how many times the ledger has had to be read again. */
+  const [ledgerDelta, setLedgerDelta] = useState<EventsPush | null>(null);
+  const [generation, setGeneration] = useState(0);
 
   const [verifyRunErrors, setVerifyRunErrors] = useState<string[]>([]);
   const [targetStates, setTargetStates] = useState<AppFlowState["deploy"]["targets"] | null>(null);
@@ -182,6 +188,7 @@ export const usePanel = (): PanelState => {
     setSite(view.site);
     setSession(view.session);
     setScreen("job");
+    setGeneration((value) => value + 1);
   }, []);
 
   // Bind to the tab this panel was opened for, and re-bind when the operator switches tabs —
@@ -241,25 +248,20 @@ export const usePanel = (): PanelState => {
     let port: chrome.runtime.Port | null = null;
     let closed = false;
 
-    const receive = (push: Push): void => {
-      switch (push.type) {
-        case "session":
-          return setSession(push.session);
-        case "verify-result":
-          return setVerifyRunErrors(push.errors);
-        case "generation-error":
-          return setDeployError("");
-        case "signed-out":
-          return signedOut(push.message);
-        case "tags":
-          if (push.site !== siteRef.current) return undefined;
-          setTags(push.tags);
-          setSettled(push.settled);
-          return setStatus(push.status);
-        default:
-          return undefined;
-      }
+    const handlers: { [K in Push["type"]]?: (push: Extract<Push, { type: K }>) => void } = {
+      session: (push) => setSession(push.session),
+      "verify-result": (push) => setVerifyRunErrors(push.errors),
+      "generation-error": () => setDeployError(""),
+      "signed-out": (push) => signedOut(push.message),
+      tags: (push) => {
+        if (push.site !== siteRef.current) return;
+        setTags(push.tags);
+        setSettled(push.settled);
+        setStatus(push.status);
+      },
+      events: (push) => setLedgerDelta(push),
     };
+    const receive = (push: Push): void => (handlers[push.type] as ((push: Push) => void) | undefined)?.(push);
 
     // Chrome recycles the service worker after about thirty seconds of quiet, and this port dies
     // with it. Connecting once left the panel permanently deaf: the background would stop the
@@ -282,6 +284,7 @@ export const usePanel = (): PanelState => {
         if (closed) return;
         connect();
         void loadJob(id);
+        setGeneration((value) => value + 1);
       });
     };
 
@@ -487,6 +490,13 @@ export const usePanel = (): PanelState => {
   const fallbackTargets = useMemo(() => deployTargets(site, status.appId), [site, status.appId]);
 
   const activity = useTagActivity({ active: screen === "job", tags, settled });
+  const ledger = useWireEvents({
+    active: screen === "job",
+    tabId: tabIdRef.current,
+    site,
+    delta: ledgerDelta,
+    generation,
+  });
 
   const flow: AppFlowState = {
     verifyRunErrors,
@@ -518,6 +528,7 @@ export const usePanel = (): PanelState => {
     session,
     status,
     activity,
+    ledger,
     jobs,
     flow,
     generateBlocked,

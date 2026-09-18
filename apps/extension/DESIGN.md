@@ -174,6 +174,30 @@ anywhere because a Nexxen segment is ninety opaque characters, and the script's 
 machine text. A tag heard only on the wire has no slip: the line under its app ID already says the
 page names nothing about it.
 
+**The ledger** is the Events view: every event this tab's page was heard sending — and, as their
+decoders land, every partner beacon, custom-tag fetch and third-party tag it fired — newest first
+under the page that made it, on one sheet with the tear. A page's band sits on carbon with its
+count as a mono pill, two digits at least, and the page's label (the host at the root, else the
+path, an off-site host under it). One row per event: a family mark drawn at 1.5px like the zigzag
+(a collector's tray, a beacon's pixel, the platform and network kinds for custom and other tags),
+a plain name ("Page view", "Page ping", "record", "Transaction", "Item"), the clock in mono at the
+right, and a second line in soft ink — the tag it belongs to, then a fact worth reading (an order
+and its total, a schema's name and version) and a status word only when something went wrong
+("sending…" in soft ink; "failed (503)" and "blocked" in warning ink — a word, never a colour
+alone). A row is a `Collapsible` that opens in place into its receipt, the sealed slip's own idiom:
+the transport as a chip and the status, three facts, then the payload in parts behind hairlines
+(Event, Transaction and Item open; User, Session, Page, Browser, Device and Ping closed), each a
+ruled table of key in mono, value, and a monochrome chip naming the value's type; entities and
+self-describing events as blocks headed by `name/version` with the vendor in fine print and a
+Data | JSON toggle; the tag's own `record` event opens into its configuration, printed by the
+slip's own groups. Above the list: the heading with the count on this tab and "Clear"; a search
+and four families (All · Collector · Partners · Custom tags · Other); and one line in soft ink,
+deliberately not privacy purple, saying all of it is read from the tab's own traffic and none of
+it leaves the browser. Empty, it listens; filtered to nothing, it says what nothing matched; past
+the memory cap, one line says how many of the oldest were let go. New rows announce themselves
+politely, at most once every four seconds. Schema and Errors are what the Data | JSON toggle grows
+when Iglu validation arrives; nothing is drawn for them until it does.
+
 **The week** sits inside the reading of the tag the tally's sentence singles out, under its counts:
 two bands — page views, and the job's own measure — at 40px plots under a one-line caption naming
 the day being read ("By day · Today so far · Wed, Sep 16", following the pointer or the arrow keys,

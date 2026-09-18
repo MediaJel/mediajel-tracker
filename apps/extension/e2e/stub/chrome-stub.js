@@ -507,6 +507,193 @@
    * One entry per screen the matrix draws. `step` and `session` shape the job, `page` what the tab
    * carries, `activity` what the service answers, `hang` which requests never answer.
    */
+
+  // ---- the ledger ----------------------------------------------------------------------------
+
+  const CHECKOUT = `https://${SITE}/checkout`;
+  const THANKS = `https://${SITE}/checkout/thank-you?order=T4821`;
+  const fieldGroup = (group, label, fields) => ({
+    group,
+    label,
+    fields: fields.map(([key, name, value]) => ({ key, label: name, value })),
+  });
+  const eventFields = (code) =>
+    fieldGroup("event", "Event", [
+      ["e", "Event type", code],
+      ["eid", "Event ID", "43aa4792-d2e4-4a3f-bf0a-46bd1744c9ca"],
+      ["dtm", "Created (device clock)", String(NOW - 50_000)],
+      ["stm", "Sent (device clock)", String(NOW - 49_999)],
+    ]);
+  const APP_FIELDS = fieldGroup("app", "App", [
+    ["p", "Platform", "web"],
+    ["tna", "Tracker name", APP_IDS[0]],
+    ["tv", "Tracker version", "js-3.22.1"],
+    ["aid", "App ID", APP_IDS[0]],
+  ]);
+  const USER_FIELDS = fieldGroup("user", "User", [
+    ["duid", "Domain user ID", "8f206e2f-6654-49f8-954f-dd31c858f933"],
+    ["nuid", "Network user ID", "1ea2deb3-c767-4847-ba04-eb27b8e83c50"],
+  ]);
+  const SESSION_FIELDS = fieldGroup("session", "Session", [
+    ["sid", "Session ID", "171f21ce-401e-4a54-afb8-01c265f16cbf"],
+    ["vid", "Visit number", "10"],
+  ]);
+  const pageFields = (url, title) =>
+    fieldGroup("page", "Page", [
+      ["url", "Page URL", url],
+      ["page", "Page title", title],
+      ["ds", "Document size", "700x6811"],
+      ["cs", "Charset", "UTF-8"],
+    ]);
+  const BROWSER_FIELDS = fieldGroup("browser", "Browser", [
+    ["ua", "User agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/153.0.0.0"],
+    ["cookie", "Cookies enabled", "1"],
+    ["lang", "Language", "en-US"],
+    ["vp", "Viewport", "714x1163"],
+  ]);
+  const DEVICE_FIELDS = fieldGroup("device", "Device", [
+    ["tz", "Timezone", "Asia/Manila"],
+    ["res", "Screen resolution", "1728x1117"],
+    ["cd", "Colour depth", "30"],
+  ]);
+  const PING_FIELDS = fieldGroup("ping", "Ping", [
+    ["pp_mix", "Scroll min X", "0"],
+    ["pp_max", "Scroll max X", "0"],
+    ["pp_miy", "Scroll min Y", "0"],
+    ["pp_may", "Scroll max Y", "370"],
+  ]);
+  const TRANSACTION_FIELDS = fieldGroup("transaction", "Transaction", [
+    ["tr_id", "Order ID", "T4821"],
+    ["tr_af", "Affiliation", APP_IDS[0]],
+    ["tr_tt", "Total", "84"],
+    ["tr_tx", "Tax", "6.72"],
+    ["tr_sh", "Shipping", "0"],
+    ["tr_cu", "Currency", "USD"],
+  ]);
+  const itemFields = (sku, name, price, quantity) =>
+    fieldGroup("item", "Item", [
+      ["ti_id", "Order ID", "T4821"],
+      ["ti_sk", "SKU", sku],
+      ["ti_nm", "Name", name],
+      ["ti_pr", "Unit price", price],
+      ["ti_qu", "Quantity", quantity],
+      ["ti_cu", "Currency", "USD"],
+    ]);
+  const WEB_PAGE = {
+    schema: "iglu:com.snowplowanalytics.snowplow/web_page/jsonschema/1-0-0",
+    vendor: "com.snowplowanalytics.snowplow",
+    name: "web_page",
+    version: "1-0-0",
+    data: JSON.stringify({ id: "1a6e7de8-86f6-497b-aca3-03c1255ad642" }),
+    truncated: false,
+  };
+  const common = (code, url, title) => [
+    eventFields(code),
+    APP_FIELDS,
+    USER_FIELDS,
+    SESSION_FIELDS,
+    pageFields(url, title),
+    BROWSER_FIELDS,
+    DEVICE_FIELDS,
+  ];
+  const wireEvent = (seq, pageKey, pageUrl, overrides) => ({
+    id: `r${seq}:0`,
+    seq,
+    at: NOW - 60_000 + seq * 4_000,
+    request: `r${seq}`,
+    pageKey,
+    pageUrl,
+    appId: APP_IDS[0],
+    outcome: { kind: "ok", status: 200, fromCache: false },
+    source: "collector",
+    transport: "post",
+    collector: COLLECTOR,
+    kind: "page-view",
+    code: "pv",
+    name: "Page view",
+    groups: [],
+    entities: [WEB_PAGE],
+    batch: { index: 0, size: 1 },
+    ...overrides,
+  });
+  const RECORD_CONFIG = configOf(APP_IDS[0]);
+  /** Two pages of a checkout, newest first: the thank-you page's transaction, then the checkout's page view and record. */
+  const WIRE = [
+    wireEvent(8, "doc-2", THANKS, {
+      kind: "page-ping",
+      code: "pp",
+      name: "Page ping",
+      groups: [PING_FIELDS, ...common("pp", THANKS, "Thank you")],
+      outcome: { kind: "blocked", error: "net::ERR_BLOCKED_BY_CLIENT" },
+    }),
+    wireEvent(7, "doc-2", THANKS, {
+      kind: "transaction-item",
+      code: "ti",
+      name: "Item",
+      groups: [itemFields("PR-1", "Pre-roll 1g", "10", "2"), ...common("ti", THANKS, "Thank you")],
+      batch: { index: 2, size: 3 },
+    }),
+    wireEvent(6, "doc-2", THANKS, {
+      kind: "transaction-item",
+      code: "ti",
+      name: "Item",
+      groups: [itemFields("BD-35", "Blue Dream 3.5g", "42", "2"), ...common("ti", THANKS, "Thank you")],
+      batch: { index: 1, size: 3 },
+    }),
+    wireEvent(5, "doc-2", THANKS, {
+      kind: "transaction",
+      code: "tr",
+      name: "Transaction",
+      groups: [TRANSACTION_FIELDS, ...common("tr", THANKS, "Thank you")],
+      batch: { index: 0, size: 3 },
+    }),
+    wireEvent(4, "doc-2", THANKS, { groups: common("pv", THANKS, "Thank you") }),
+    wireEvent(3, "doc-1", CHECKOUT, {
+      kind: "page-ping",
+      code: "pp",
+      name: "Page ping",
+      groups: [PING_FIELDS, ...common("pp", CHECKOUT, "Checkout")],
+    }),
+    wireEvent(2, "doc-1", CHECKOUT, {
+      kind: "self-describing",
+      code: "ue",
+      name: "record",
+      schema: "iglu:com.mediajel.events/record/jsonschema/1-0-2",
+      payload: JSON.stringify({
+        appId: APP_IDS[0],
+        version: "2",
+        environment: "production",
+        collector: `//${COLLECTOR}`,
+        ...RECORD_CONFIG.params,
+        tag: RECORD_CONFIG.element,
+      }),
+      record: {
+        appId: APP_IDS[0],
+        environment: "production",
+        version: "2",
+        event: "",
+        collector: COLLECTOR,
+        config: RECORD_CONFIG,
+      },
+      groups: common("ue", CHECKOUT, "Checkout"),
+    }),
+    wireEvent(1, "doc-1", CHECKOUT, { groups: common("pv", CHECKOUT, "Checkout") }),
+  ];
+  const LEDGER_PAGES = [
+    { key: "doc-2", url: THANKS, at: NOW - 44_000 },
+    { key: "doc-1", url: CHECKOUT, at: NOW - 56_000 },
+  ];
+  const LEDGERS = {
+    empty: { site: SITE, events: [], pages: [], dropped: 0, seq: 0 },
+    live: { site: SITE, events: WIRE, pages: LEDGER_PAGES, dropped: 0, seq: 8 },
+    dropped: { site: SITE, events: WIRE, pages: LEDGER_PAGES, dropped: 312, seq: 320 },
+  };
+  const readLedger = () => {
+    if (scenario.events === "error")
+      throw new Error("The assistant running in this browser is older than the panel and keeps no ledger.");
+    return LEDGERS[scenario.events || "empty"];
+  };
+
   const SCENARIOS = {
     loading: { hang: ["auth/session", "settings/read"] },
     "sign-in": { signedIn: false },
@@ -537,6 +724,11 @@
     "overview-quiet-week": { step: "home", activity: { quiet: true } },
     "overview-config": { step: "home" },
     "config-script-only": { step: "home", page: "script" },
+    "events-empty": { step: "home", events: "empty" },
+    "events-live": { step: "home", events: "live" },
+    "events-detail": { step: "home", events: "live" },
+    "events-dropped": { step: "home", events: "dropped" },
+    "events-error": { step: "home", events: "error" },
     "analytics-1": { step: "home" },
     "analytics-3": { step: "home", page: "three", activity: { unavailable: [1] } },
     "analytics-daily-null": { step: "home", activity: { daily: null } },
@@ -714,8 +906,8 @@
     "service/existing-tag": (request) => existingTag(request.kind),
     "service/deploy": (request) => deploy(request.kind),
     "service/tag-activity": (request) => tagActivity(request.appIds),
-    // The ledger is empty until the Events view arrives with its fixture; the stub never pushes events.
-    "events/read": () => ({ site: SITE, events: [], pages: [], dropped: 0, seq: 0 }),
+    // The ledger is what the scenario says; the stub never pushes events, so a picture holds still.
+    "events/read": () => readLedger(),
     "events/clear": () => null,
   };
 

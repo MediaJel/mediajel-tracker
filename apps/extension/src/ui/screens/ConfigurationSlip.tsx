@@ -7,7 +7,7 @@ import { Definitions } from "~/ui/components/Definitions";
 import { Eyebrow, Fine, Machine } from "~/ui/components/Section";
 import { Button } from "~/ui/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/ui/components/ui/collapsible";
-import { ConfigGroup, configurationOf } from "~/ui/tag-config";
+import { ConfigGroup, ConfigurationView, configurationOf } from "~/ui/tag-config";
 
 /**
  * The configuration slip: everything a tag runs with, one disclosure under its app ID.
@@ -37,6 +37,22 @@ const Group = ({ group }: { group: ConfigGroup }): ReactNode => (
   </div>
 );
 
+/** The slip's content: the source line, every group, and the script's markup — printed by the slip and by a record event's receipt. */
+export const ConfigurationGroups = ({ view }: { view: ConfigurationView }): ReactNode => (
+  <>
+    <Fine className="mt-1">{view.source}</Fine>
+    {view.groups.map((group) => (
+      <Group key={group.title} group={group} />
+    ))}
+    {view.markup && (
+      <div className="mt-2.5">
+        <Eyebrow className="mb-1 block">Script</Eyebrow>
+        <Machine>{view.markup}</Machine>
+      </div>
+    )}
+  </>
+);
+
 export const ConfigurationSlip = ({ tag }: { tag: TagRecord }): ReactNode => {
   const view = configurationOf(tag);
   if (!view) return null;
@@ -55,16 +71,7 @@ export const ConfigurationSlip = ({ tag }: { tag: TagRecord }): ReactNode => {
         </Button>
       </CollapsibleTrigger>
       <CollapsibleContent data-slot="tag-config">
-        <Fine className="mt-1">{view.source}</Fine>
-        {view.groups.map((group) => (
-          <Group key={group.title} group={group} />
-        ))}
-        {view.markup && (
-          <div className="mt-2.5">
-            <Eyebrow className="mb-1 block">Script</Eyebrow>
-            <Machine>{view.markup}</Machine>
-          </div>
-        )}
+        <ConfigurationGroups view={view} />
       </CollapsibleContent>
     </Collapsible>
   );
