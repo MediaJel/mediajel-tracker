@@ -39,9 +39,9 @@ describe("what a deploy does to the file", () => {
 describe("what the slip says about an edit being tried", () => {
   const tried = { edits: { a: "1", b: "2" }, block: ";", version: "v-0000abcd" };
 
-  test("how many edits, one edit, or none", () => {
-    expect(triedLine(tried)).toBe("2 edits tried on this page");
-    expect(triedLine({ ...tried, edits: { a: "1" } })).toBe("1 edit tried on this page");
+  test("how many params the edit changes from the tag's own, one, or none", () => {
+    expect(triedLine(tried)).toBe("2 changes tried on this page");
+    expect(triedLine({ ...tried, edits: { a: "1" } })).toBe("1 change tried on this page");
     expect(triedLine(undefined)).toBe("");
   });
 

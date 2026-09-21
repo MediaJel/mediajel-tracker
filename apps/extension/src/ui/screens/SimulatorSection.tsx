@@ -1,4 +1,4 @@
-import { FormEvent, ReactNode, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useRef, useState } from "react";
 
 import { ParsedTagUrl, SiteSimulation, parseTagUrl } from "@mediajel/assistant-core/simulation";
 
@@ -34,6 +34,26 @@ interface Props {
   /** Where the URL field starts: the last URL simulated, else this build's tag. */
   lastUrl: string;
 }
+
+/** Where focus goes when the section's control goes away: the record once a tag is simulated, the trigger once it is removed. */
+type FocusNext = "record" | "trigger" | null;
+
+interface Focusing {
+  focusNext: FocusNext;
+  onFocusNext(next: FocusNext): void;
+}
+
+/** An element that takes focus as it mounts, when the action that brought it asked for that — decided once, at mount. */
+const useFocusOnMount = <T extends HTMLElement>(wanted: boolean, done: () => void) => {
+  const element = useRef<T>(null);
+  const atMount = useRef({ wanted, done });
+  useEffect(() => {
+    if (!atMount.current.wanted) return;
+    element.current?.focus();
+    atMount.current.done();
+  }, []);
+  return element;
+};
 
 /** The section heading, in the voice of "Tag activity" below it. */
 const HEADING = "m-0 font-display text-xs font-semibold tracking-caps text-muted-foreground uppercase";
@@ -105,14 +125,16 @@ const SimulateButton = ({ site, ready, busy }: { site: string; ready: boolean; b
   </Button>
 );
 
-const SimulateForm = ({ site, simulation, lastUrl }: Props): ReactNode => {
+const SimulateForm = ({ site, simulation, lastUrl, onFocusNext }: Props & Pick<Focusing, "onFocusNext">): ReactNode => {
   const [url, setUrl] = useState(lastUrl);
   const [touched, setTouched] = useState(false);
   const parsed = parseTagUrl(url, TAG_SEARCH);
   const submit = (event: FormEvent): void => {
     event.preventDefault();
     setTouched(true);
-    if (parsed.ok && !simulation.busy) simulation.install(parsed.url);
+    if (!parsed.ok || simulation.busy) return;
+    onFocusNext("record");
+    simulation.install(parsed.url);
   };
   const edit = (next: string): void => {
     setUrl(next);
@@ -143,40 +165,51 @@ const SimulateForm = ({ site, simulation, lastUrl }: Props): ReactNode => {
   );
 };
 
-/** Closed: one line in the heading voice. Opened: the URL and what it configures. */
-const Simulate = (props: Props): ReactNode => (
-  <Collapsible data-slot="simulator">
-    <CollapsibleTrigger asChild>
-      <Button
-        type="button"
-        variant="ghost"
-        size="none"
-        data-slot="simulator-toggle"
-        className="group w-full justify-start gap-1.5 py-3 hover:bg-transparent"
-      >
-        <span className={HEADING}>Simulate a tag</span>
-        <span className="text-sm font-normal text-muted-foreground">on {props.site}</span>
-        <Chevron className="ml-auto group-aria-expanded:rotate-180" />
-      </Button>
-    </CollapsibleTrigger>
-    <CollapsibleContent>
-      <SimulateForm {...props} />
-    </CollapsibleContent>
-  </Collapsible>
-);
+/** Closed: one line in the heading voice, on the sheet's column. Opened: the URL and what it configures. */
+const Simulate = (props: Props & Focusing): ReactNode => {
+  const trigger = useFocusOnMount<HTMLButtonElement>(props.focusNext === "trigger", () => props.onFocusNext(null));
+  return (
+    <Collapsible data-slot="simulator">
+      <CollapsibleTrigger asChild>
+        <Button
+          ref={trigger}
+          type="button"
+          variant="ghost"
+          size="none"
+          data-slot="simulator-toggle"
+          className="group -mx-px w-[calc(100%+2px)] justify-start gap-1.5 px-0 py-3 hover:bg-transparent"
+        >
+          <span className={HEADING}>Simulate a tag</span>
+          <span className="text-sm font-normal text-muted-foreground">on {props.site}</span>
+          <Chevron className="ml-auto group-aria-expanded:rotate-180" />
+        </Button>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <SimulateForm {...props} />
+      </CollapsibleContent>
+    </Collapsible>
+  );
+};
 
 const PROBLEMS = new Set<SimulatedStatus>(["failed", "silent"]);
 
-const StatusLine = ({ status }: { status: SimulatedStatus | null }): ReactNode =>
-  status ? (
+/** A status worth the warning ink: the page blocked the tag, or the tag never spoke. */
+const isProblem = (status: SimulatedStatus | null): boolean => status !== null && PROBLEMS.has(status);
+
+/** What became of the tag, said as it changes: a polite live region that is there before it has words. */
+const StatusLine = ({ status }: { status: SimulatedStatus | null }): ReactNode => {
+  const problem = isProblem(status);
+  return (
     <p
       data-slot="simulator-status"
-      data-problem={PROBLEMS.has(status) || undefined}
-      className={cn("mt-1 mb-0 text-md", PROBLEMS.has(status) ? "text-warning-text" : "text-foreground")}
+      aria-live="polite"
+      data-problem={problem || undefined}
+      className={cn("mt-1 mb-0 text-md empty:mt-0", problem ? "text-warning-text" : "text-foreground")}
     >
-      {STATUS_LINES[status]}
+      {status ? STATUS_LINES[status] : ""}
     </p>
-  ) : null;
+  );
+};
 
 /** Where the simulated tag loads, or that it is paused and loads nowhere. */
 const whereLine = (kept: SiteSimulation): string =>
@@ -187,23 +220,34 @@ const whereLine = (kept: SiteSimulation): string =>
 type Kept = SiteSimulation & { install: NonNullable<SiteSimulation["install"]> };
 
 /** Which tag, and the stamp that says whether it is loading or set aside. */
-const SimulatedHead = ({ kept }: { kept: Kept }): ReactNode => (
-  <div className="flex items-start gap-3">
-    <div className="min-w-0 flex-auto">
-      <h2 id="mj-simulated-title" className={HEADING}>
-        Simulated tag
-      </h2>
-      <p className="mt-1 mb-0 font-mono text-sm leading-[1.45] wrap-anywhere text-foreground">{kept.install.appId}</p>
+const SimulatedHead = ({ kept, focusNext, onFocusNext }: { kept: Kept } & Focusing): ReactNode => {
+  const heading = useFocusOnMount<HTMLHeadingElement>(focusNext === "record", () => onFocusNext(null));
+  return (
+    <div className="flex items-start gap-3">
+      <div className="min-w-0 flex-auto">
+        <h2 ref={heading} id="mj-simulated-title" tabIndex={-1} className={HEADING}>
+          Simulated tag
+        </h2>
+        <p className="mt-1 mb-0 font-mono text-sm leading-[1.45] wrap-anywhere text-foreground">{kept.install.appId}</p>
+      </div>
+      <span className="mt-1 flex-none">
+        <Stamp label={kept.enabled ? "Simulated" : "Paused"} tone={kept.enabled ? "identity" : "soft"} />
+      </span>
     </div>
-    <span className="mt-1 flex-none">
-      <Stamp label={kept.enabled ? "Simulated" : "Paused"} tone={kept.enabled ? "identity" : "soft"} />
-    </span>
-  </div>
-);
+  );
+};
 
 /** The two ways out: set it aside for now, or take it off the site. Neither acts twice while one is working. */
-const SimulatedActions = ({ kept, simulation }: { kept: Kept; simulation: SimulationState }): ReactNode => {
+const SimulatedActions = ({
+  kept,
+  simulation,
+  onFocusNext,
+}: { kept: Kept; simulation: SimulationState } & Pick<Focusing, "onFocusNext">): ReactNode => {
   const idle = (act: () => void) => (simulation.busy ? undefined : act);
+  const remove = (): void => {
+    onFocusNext("trigger");
+    void simulation.remove();
+  };
   return (
     <div className="mt-3 flex items-center gap-3">
       <Button
@@ -215,13 +259,7 @@ const SimulatedActions = ({ kept, simulation }: { kept: Kept; simulation: Simula
       >
         {kept.enabled ? "Pause" : "Resume"}
       </Button>
-      <Button
-        type="button"
-        variant="link"
-        size="none"
-        className="text-sm"
-        onClick={idle(() => void simulation.remove())}
-      >
+      <Button type="button" variant="link" size="none" className="text-sm" onClick={idle(remove)}>
         Remove
       </Button>
     </div>
@@ -249,30 +287,37 @@ const ScriptUrl = ({ url }: { url: string }): ReactNode => (
 );
 
 /** A simulated tag, on record: stamped, named, where it loads, what became of it, and the two ways out. */
-const Simulating = ({ kept, simulation }: { kept: Kept; simulation: SimulationState }): ReactNode => (
+const Simulating = ({
+  kept,
+  simulation,
+  focusNext,
+  onFocusNext,
+}: { kept: Kept; simulation: SimulationState } & Focusing): ReactNode => (
   <section
     data-slot="simulating"
     data-paused={kept.enabled ? undefined : true}
     aria-labelledby="mj-simulated-title"
     className="pt-4 pb-4"
   >
-    <SimulatedHead kept={kept} />
+    <SimulatedHead kept={kept} focusNext={focusNext} onFocusNext={onFocusNext} />
     <p className="mt-2 mb-0 text-md text-muted-foreground">{whereLine(kept)}</p>
     <StatusLine status={simulation.status} />
     <ScriptUrl url={kept.install.url} />
-    <SimulatedActions kept={kept} simulation={simulation} />
+    <SimulatedActions kept={kept} simulation={simulation} onFocusNext={onFocusNext} />
     <Failure error={simulation.error} />
   </section>
 );
 
 export const SimulatorSection = (props: Props): ReactNode => {
   const kept = props.simulation.simulation;
+  const [focusNext, setFocusNext] = useState<FocusNext>(null);
+  const focusing: Focusing = { focusNext, onFocusNext: setFocusNext };
   return (
     <div data-slot="simulator-section" className="border-b border-border px-5">
       {kept?.install ? (
-        <Simulating kept={{ ...kept, install: kept.install }} simulation={props.simulation} />
+        <Simulating kept={{ ...kept, install: kept.install }} simulation={props.simulation} {...focusing} />
       ) : (
-        <Simulate {...props} />
+        <Simulate {...props} {...focusing} />
       )}
     </div>
   );

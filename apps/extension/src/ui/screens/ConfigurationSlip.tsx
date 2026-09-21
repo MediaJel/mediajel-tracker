@@ -92,7 +92,7 @@ export const ConfigurationSlip = ({ tag, note, footer, editing, tried }: SlipPro
   const view = configurationOf(tag);
   if (!view) return null;
   return (
-    <Collapsible className="mb-2.5">
+    <Collapsible className="mb-2.5 data-open:mb-5">
       <div className="flex flex-wrap items-baseline gap-x-2">
         <CollapsibleTrigger asChild>
           <Button

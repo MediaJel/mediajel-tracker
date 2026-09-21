@@ -20,12 +20,13 @@ export const deployLine = (preview: OverridesPreview): string => {
   return `Adds the edit below the file’s ${lines(linesOf(preview.before))} of its own code, which stay as they are.`;
 };
 
-const edits = (count: number): string => `${count} ${count === 1 ? "edit" : "edits"}`;
+/** Every param the edit sets is a change from the tag's own configuration — more than the last Try sent, when it built on an earlier edit. */
+const changes = (count: number): string => `${count} ${count === 1 ? "change" : "changes"}`;
 
 /** What the slip says, beside its trigger, about the edit being tried for the tag — or nothing. */
 export const triedLine = (tried: TriedEdit | undefined): string => {
   if (!tried) return "";
   if (tried.deployed) return "edit deployed · the page runs it until the tag’s CDN serves it";
   const count = Object.keys(tried.edits).length;
-  return count === 0 ? "trying the file without the edit deployed before" : `${edits(count)} tried on this page`;
+  return count === 0 ? "trying the file without the edit deployed before" : `${changes(count)} tried on this page`;
 };

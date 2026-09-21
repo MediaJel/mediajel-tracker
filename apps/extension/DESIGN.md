@@ -164,7 +164,8 @@ one says `PAUSED` in soft ink), where it loads, and what became of it on the pag
 the page's tags actually did: "Running on this page.", "Running beside the page's own tag, so both
 send page views.", or, in warning ink, "The page's own tag started first, so this copy is silent" and
 "The page refused the tag's script". The script URL waits one disclosure down; *Pause* (outline) and
-*Remove* (link) are the two ways out. Every change reloads the tab it came from — a tag only starts at
+*Remove* (link) are the two ways out. The status is a polite live region; Simulate hands focus to the
+record's heading, and Remove hands it back to the simulator's line. Every change reloads the tab it came from — a tag only starts at
 the top of a page — and the toolbar says `SIM` on every tab of a simulated site, so a forgotten
 simulation is never invisible; Settings lists every simulated tag in this browser with *Remove*.
 
@@ -201,18 +202,24 @@ page names nothing about it. LiquidM is read the way the tag reads it — `segme
 groups sits *Edit* (outline); editing turns them into fields in the same two columns — mono inputs,
 every param the tag reads by name listed whether it is set or not ("not set" as a placeholder),
 version as two choices (`1 · sp.js` / `2 · cnna.js`), environment suggesting the tag's adapters, and
-*Add a parameter* for anything else — with the same **Fields | Config object** toggle, the object
-being the params the block merges into `window.overrides["<appId>"]`. A changed field says
-`edited · was <value> · Undo` (the word in identity ink); a param an edit already made set says
-"set by the edit already made · Stop overriding"; an edit that renames the tag, redirects it or
-switches it off says so in warning ink, and only when the value actually changes. The editor starts
+*Add a parameter* for anything else (Enter adds it; a refused name says why) — with the same
+**Fields | Config object** toggle, the object being the params the block merges into
+`window.overrides["<appId>"]`. Values sit in one-row mono fields that grow to wrap anywhere, so a
+ninety-character Nexxen segment is read whole, and Enter never sends anything: only the Try button
+does. A changed field says `edited · was <value>` with *Undo* on its own line (the word in identity
+ink); a param an edit already made set says "set by the edit already made" with *Stop overriding*
+under it; an edit that renames the tag, redirects it or switches it off says so in warning ink, and
+only when the value actually changes. The editor starts
 from the edit already tried on the page, else the one deployed to the tag's app-id file, so it never
 drops what an earlier edit set. One privacy-purple line says what trying sends — the tag's app ID
 and the edit, to the assistant service, which writes the code — and the identity button says what
-it will do: *Try 2 changes on this page*. Tried, the slip says "2 edits tried on this page" in
+it will do: *Try 2 changes on this page*. Tried, the slip says "2 changes tried on this page" in
 identity ink beside its trigger, closed or open, marks each tried value `tried` in the same ink, and
 offers *Edit* again or *Stop trying the edit*; a tag that fetched its app-id file before the edit
-reached the page gets one warning line and *Apply again*. When the activity service has no numbers
+reached the page gets one warning line — it read its configuration before the edit arrived, "so it
+is running without the edit" — and *Apply again*. Focus follows the work: Edit lands on the first
+field, Try and Cancel return to Edit, Deploy… lands on the receipt's heading and its Cancel on
+Deploy…; an open slip keeps a full step of space under it before the counts. When the activity service has no numbers
 (failed, or not set up), the Overview still prints each tag's heading and configuration above the
 note, so an edit never depends on the counts.
 
@@ -223,8 +230,8 @@ file, replaces the edit deployed before, or takes it out), the block itself in a
 *The whole file* one disclosure down; then one privacy-purple line — it commits to master of the
 frictionless repo as the signed-in engineer, with MediaJel's credential, and the tag's CDN serves it
 within minutes — and *Deploy* (identity) · *Cancel*. Committed, the filled `DEPLOYED` stamp and *The
-commit* sit under the configuration, and the slip's note says the page runs the edit until the CDN
-serves it; the page bridge sees the edit's version in the served file and the edit stops being
+commit* sit on a line of their own under the configuration (a stamp never shares a line with a
+sentence at this width), and the slip's note says the page runs the edit until the CDN serves it; the page bridge sees the edit's version in the served file and the edit stops being
 tried. Stopping every param an earlier edit set, then trying, tries the file without that edit, and
 deploying it takes the block back out.
 

@@ -19,8 +19,9 @@ import { deployLine } from "~/ui/overrides-deploy";
  * tag's CDN serves the file that carries it.
  */
 
+/** A link at the size of the button beside it. */
 const TextButton = ({ onClick, children }: { onClick(): void; children: ReactNode }): ReactNode => (
-  <Button type="button" variant="link" size="none" className="text-xs" onClick={onClick}>
+  <Button type="button" variant="link" size="none" className="text-base" onClick={onClick}>
     {children}
   </Button>
 );
@@ -90,13 +91,16 @@ const usePreview = (overridesKey: string, tried: TriedEdit, simulation: Simulati
 };
 
 interface ReceiptProps {
+  /** The receipt's heading takes focus when Deploy… opens it. */
+  headingId: string;
   overridesKey: string;
   tried: TriedEdit;
   simulation: SimulationState;
-  onClose(): void;
+  /** Closed: true once the edit is committed, false when cancelled. */
+  onClose(deployed: boolean): void;
 }
 
-export const DeployReceipt = ({ overridesKey, tried, simulation, onClose }: ReceiptProps): ReactNode => {
+export const DeployReceipt = ({ headingId, overridesKey, tried, simulation, onClose }: ReceiptProps): ReactNode => {
   const { preview, error, setError } = usePreview(overridesKey, tried, simulation);
   const [busy, setBusy] = useState(false);
   const deploy = async (): Promise<void> => {
@@ -105,7 +109,7 @@ export const DeployReceipt = ({ overridesKey, tried, simulation, onClose }: Rece
     setError("");
     try {
       await simulation.deployEdit(overridesKey, preview.sha);
-      onClose();
+      onClose(true);
     } catch (err) {
       setError(message(err));
     } finally {
@@ -114,7 +118,9 @@ export const DeployReceipt = ({ overridesKey, tried, simulation, onClose }: Rece
   };
   return (
     <div data-slot="overrides-deploy" className="mt-3 border-t border-border pt-2.5">
-      <Eyebrow className="block">Deploy the edit</Eyebrow>
+      <Eyebrow id={headingId} tabIndex={-1} className="block">
+        Deploy the edit
+      </Eyebrow>
       <PlanOrWait preview={preview} error={error} />
       <ErrorLine error={error} />
       <p className="mt-2.5 mb-2.5 text-xs text-privacy">
@@ -125,20 +131,24 @@ export const DeployReceipt = ({ overridesKey, tried, simulation, onClose }: Rece
         <Button type="button" aria-disabled={!preview || busy} working={busy} onClick={() => void deploy()}>
           {busy ? "Deploying…" : "Deploy"}
         </Button>
-        <TextButton onClick={onClose}>Cancel</TextButton>
+        <TextButton onClick={() => onClose(false)}>Cancel</TextButton>
       </div>
     </div>
   );
 };
 
-/** A committed edit, stamped, with its commit — said until the tag's CDN serves it and it is no longer tried. */
+/**
+ * A committed edit: the stamp and its commit, on a line of their own — a stamp never shares a line
+ * with a sentence at this width. The note beside the slip's trigger says the rest.
+ */
 export const DeployedLine = ({ tried }: { tried: TriedEdit }): ReactNode =>
   tried.deployed ? (
-    <p data-slot="overrides-deployed" className="mt-0 mb-2 text-xs text-muted-foreground">
-      <Stamp label="Deployed" tone="platform" filled />{" "}
-      <a href={tried.deployed.commitUrl} target="_blank" rel="noreferrer" className="text-primary underline">
-        The commit
-      </a>{" "}
-      · The tag’s CDN serves it within minutes; this page runs the edit from here until then.
-    </p>
+    <div data-slot="overrides-deployed" className="mb-2.5 flex items-center gap-3">
+      <Stamp label="Deployed" tone="platform" filled />
+      <Button asChild variant="link" size="none" className="text-sm">
+        <a href={tried.deployed.commitUrl} target="_blank" rel="noreferrer">
+          The commit
+        </a>
+      </Button>
+    </div>
   ) : null;

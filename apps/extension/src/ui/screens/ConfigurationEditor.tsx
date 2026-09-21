@@ -1,4 +1,4 @@
-import { FormEvent, ReactNode, useId, useState } from "react";
+import { FormEvent, KeyboardEvent, ReactNode, useEffect, useId, useRef, useState } from "react";
 
 import { ENVIRONMENTS, TriedEdit } from "@mediajel/assistant-core/simulation";
 import { TagRecord } from "@mediajel/assistant-core/tags";
@@ -7,6 +7,7 @@ import type { SimulationState } from "~/sidepanel/useSimulation";
 import { Eyebrow, Machine } from "~/ui/components/Section";
 import { Button } from "~/ui/components/ui/button";
 import { Input } from "~/ui/components/ui/input";
+import { Textarea } from "~/ui/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "~/ui/components/ui/toggle-group";
 import {
   EditField,
@@ -50,40 +51,97 @@ interface FieldProps {
   onDraft(next: Edits): void;
 }
 
-/** Version is one of two SDKs; everything else is text, and environment suggests the tag's adapters. */
-const FieldInput = ({ field, value, id, onValue }: { field: EditField; value: string; id: string; onValue: Change }) =>
-  field.key === "version" ? (
-    <ToggleGroup
-      type="single"
-      value={value}
-      onValueChange={(next) => next && onValue(field, next)}
-      aria-label="Version"
-      className="w-fit"
-    >
-      <ToggleGroupItem value="1" className="min-h-[26px] px-2.5 text-xs whitespace-nowrap">
-        1 · sp.js
-      </ToggleGroupItem>
-      <ToggleGroupItem value="2" className="min-h-[26px] px-2.5 text-xs whitespace-nowrap">
-        2 · cnna.js
-      </ToggleGroupItem>
-    </ToggleGroup>
-  ) : (
-    <Input
-      id={id}
-      className="min-h-[26px] px-1.5 py-0.5 font-mono text-xs"
-      value={value}
-      placeholder={field.now ? undefined : "not set"}
-      list={field.key === "environment" ? ENVIRONMENT_LIST : undefined}
-      spellCheck={false}
-      autoComplete="off"
-      onChange={(event) => onValue(field, event.target.value)}
-    />
-  );
+/** Enter never sends an edit: only the Try button does. */
+const holdEnter = (event: KeyboardEvent): void => {
+  if (event.key === "Enter") event.preventDefault();
+};
 
-const Link = ({ onClick, children }: { onClick(): void; children: ReactNode }): ReactNode => (
-  <Button type="button" variant="link" size="none" className="text-xs" onClick={onClick}>
+interface InputProps {
+  field: EditField;
+  value: string;
+  id: string;
+  labelId: string;
+  onValue: Change;
+}
+
+/**
+ * A value on as many lines as it needs — a Nexxen segment is ninety characters — and never a line
+ * break. A block, because a textarea's baseline is its bottom edge: inline, it would carry a
+ * descender's space under it and open every row wider than the inputs'.
+ */
+const Words = ({ field, value, id, onValue }: InputProps): ReactNode => (
+  <Textarea
+    id={id}
+    rows={1}
+    className="block min-h-[26px] resize-none px-1.5 py-0.5 text-xs field-sizing-content wrap-anywhere"
+    value={value}
+    placeholder={field.now ? undefined : "not set"}
+    spellCheck={false}
+    autoComplete="off"
+    onKeyDown={holdEnter}
+    onChange={(event) => onValue(field, event.target.value.replace(/[\r\n]+/g, ""))}
+  />
+);
+
+/** Environment is short, and suggests the tag's adapters. */
+const Environment = ({ field, value, id, onValue }: InputProps): ReactNode => (
+  <Input
+    id={id}
+    className="min-h-[26px] px-1.5 py-0.5 font-mono text-xs"
+    value={value}
+    placeholder={field.now ? undefined : "not set"}
+    list={ENVIRONMENT_LIST}
+    spellCheck={false}
+    autoComplete="off"
+    onKeyDown={holdEnter}
+    onChange={(event) => onValue(field, event.target.value)}
+  />
+);
+
+/** Version is one of two SDKs, labelled by the field's own label. */
+const Version = ({ field, value, labelId, onValue }: InputProps): ReactNode => (
+  <ToggleGroup
+    type="single"
+    value={value}
+    onValueChange={(next) => next && onValue(field, next)}
+    aria-labelledby={labelId}
+    className="w-fit"
+  >
+    <ToggleGroupItem value="1" className="min-h-[26px] px-2.5 text-xs whitespace-nowrap">
+      1 · sp.js
+    </ToggleGroupItem>
+    <ToggleGroupItem value="2" className="min-h-[26px] px-2.5 text-xs whitespace-nowrap">
+      2 · cnna.js
+    </ToggleGroupItem>
+  </ToggleGroup>
+);
+
+const INPUTS: Record<string, (props: InputProps) => ReactNode> = { version: Version, environment: Environment };
+
+const FieldInput = (props: InputProps): ReactNode => (INPUTS[props.field.key] ?? Words)(props);
+
+/** A link set at the size of the text or button beside it. */
+const Link = ({
+  onClick,
+  size = "text-xs",
+  id,
+  children,
+}: {
+  onClick(): void;
+  size?: string;
+  id?: string;
+  children: ReactNode;
+}): ReactNode => (
+  <Button id={id} type="button" variant="link" size="none" className={size} onClick={onClick}>
     {children}
   </Button>
+);
+
+/** A note's action, on a line of its own, so the narrow column never breaks the note at a separator. */
+const NoteAction = ({ onClick, children }: { onClick(): void; children: ReactNode }): ReactNode => (
+  <span className="block">
+    <Link onClick={onClick}>{children}</Link>
+  </span>
 );
 
 /** What a field held when the editor opened: the earlier edit's value, else what the tag ran with. */
@@ -102,18 +160,20 @@ const FieldNote = ({ field, draft, start, onDraft }: Omit<FieldProps, "onValue">
   const notes: Record<ReturnType<typeof stateOf>, ReactNode> = {
     edited: (
       <>
-        <span className="text-primary">edited</span> · was {wasOf(field, start) || "not set"} ·{" "}
-        <Link onClick={back}>Undo</Link>
+        <span className="text-primary">edited</span> · was {wasOf(field, start) || "not set"}
+        <NoteAction onClick={back}>Undo</NoteAction>
       </>
     ),
     kept: (
       <>
-        set by the edit already made · <Link onClick={() => onDraft(released(draft, field.key))}>Stop overriding</Link>
+        set by the edit already made
+        <NoteAction onClick={() => onDraft(released(draft, field.key))}>Stop overriding</NoteAction>
       </>
     ),
     released: (
       <>
-        no longer overridden · <Link onClick={back}>Undo</Link>
+        no longer overridden
+        <NoteAction onClick={back}>Undo</NoteAction>
       </>
     ),
     none: <Legacy field={field} />,
@@ -132,15 +192,18 @@ const Consequence = ({ field, value }: { field: EditField; value: string }): Rea
 
 const FieldRow = (props: FieldProps): ReactNode => {
   const id = useId();
+  const labelId = useId();
   const { field, draft } = props;
   const value = field.key in draft ? draft[field.key] : field.now;
   return (
     <>
       <dt className="pt-1 text-muted-foreground">
-        <label htmlFor={id}>{field.label}</label>
+        <label id={labelId} htmlFor={id}>
+          {field.label}
+        </label>
       </dt>
       <dd className="m-0">
-        <FieldInput field={field} value={value} id={id} onValue={props.onValue} />
+        <FieldInput field={field} value={value} id={id} labelId={labelId} onValue={props.onValue} />
         <FieldNote {...props} />
         <Consequence field={field} value={value} />
       </dd>
@@ -159,6 +222,14 @@ const FieldGroup = ({ group, ...rest }: Omit<FieldProps, "field"> & { group: Edi
   </div>
 );
 
+/** Why a name was refused, once there is a name to refuse. */
+const NameRefused = ({ name, valid }: { name: string; valid: boolean }): ReactNode =>
+  name.trim() && !valid ? (
+    <p className="mt-1 mb-0 text-xs text-warning-text">
+      A parameter’s name is letters, numbers, dots, dashes and underscores, at most 64 of them.
+    </p>
+  ) : null;
+
 /** A param the tag reads that the slip has no field for: added by name, which must be one a URL could carry. */
 const AddParam = ({ onAdd }: { onAdd(name: string, value: string): void }): ReactNode => {
   const [name, setName] = useState("");
@@ -170,25 +241,36 @@ const AddParam = ({ onAdd }: { onAdd(name: string, value: string): void }): Reac
     setName("");
     setValue("");
   };
+  /** Enter in the row adds the parameter; it never sends the edit. */
+  const onKeyDown = (event: KeyboardEvent): void => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    add();
+  };
   return (
-    <div data-slot="config-add" className="mt-3 grid grid-cols-[9.5rem_1fr_auto] items-center gap-x-3 text-xs">
-      <Input
-        aria-label="New parameter's name"
-        className="min-h-[26px] px-1.5 py-0.5 font-mono text-xs"
-        placeholder="parameter"
-        value={name}
-        onChange={(event) => setName(event.target.value)}
-      />
-      <Input
-        aria-label="New parameter's value"
-        className="min-h-[26px] px-1.5 py-0.5 font-mono text-xs"
-        placeholder="value"
-        value={value}
-        onChange={(event) => setValue(event.target.value)}
-      />
-      <Button type="button" variant="outline" size="xs" aria-disabled={!valid} onClick={add}>
-        Add
-      </Button>
+    <div data-slot="config-add" className="mt-3">
+      <div className="grid grid-cols-[9.5rem_1fr_auto] items-center gap-x-3 text-xs">
+        <Input
+          aria-label="New parameter's name"
+          className="min-h-[26px] px-1.5 py-0.5 font-mono text-xs"
+          placeholder="parameter"
+          value={name}
+          onKeyDown={onKeyDown}
+          onChange={(event) => setName(event.target.value)}
+        />
+        <Input
+          aria-label="New parameter's value"
+          className="min-h-[26px] px-1.5 py-0.5 font-mono text-xs"
+          placeholder="value"
+          value={value}
+          onKeyDown={onKeyDown}
+          onChange={(event) => setValue(event.target.value)}
+        />
+        <Button type="button" variant="outline" size="xs" aria-disabled={!valid} onClick={add}>
+          Add
+        </Button>
+      </div>
+      <NameRefused name={name} valid={valid} />
     </div>
   );
 };
@@ -236,17 +318,26 @@ interface FormProps {
   onCancel(): void;
 }
 
+/** A form's first field, focused as the form opens — Edit put the operator here. */
+const useFirstField = () => {
+  const form = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    form.current?.querySelector<HTMLElement>("textarea, input, [role=radio]")?.focus();
+  }, []);
+  return form;
+};
+
 const ConfigurationForm = ({ tag, start, busy, onTry, onCancel }: FormProps): ReactNode => {
   const [draft, setDraft] = useState<Edits>(start);
   const [mode, setMode] = useState<Mode>("fields");
+  const form = useFirstField();
   const changes = changeCount(draft, start);
-  const submit = (event: FormEvent): void => {
-    event.preventDefault();
+  const send = (): void => {
     if (changes > 0 && !busy) onTry(draft);
   };
   const onValue: Change = (field, value) => setDraft((current) => withValue(current, start, field, value));
   return (
-    <form data-slot="config-edit" className="pb-1" onSubmit={submit}>
+    <form ref={form} data-slot="config-edit" className="pb-1" onSubmit={(event: FormEvent) => event.preventDefault()}>
       <ModeToggle mode={mode} onMode={setMode} />
       {mode === "fields" ? (
         <>
@@ -275,10 +366,12 @@ const ConfigurationForm = ({ tag, start, busy, onTry, onCancel }: FormProps): Re
         then runs it in this browser only.
       </p>
       <div className="flex items-center gap-3">
-        <Button type="submit" aria-disabled={changes === 0 || busy} working={busy}>
+        <Button type="button" aria-disabled={changes === 0 || busy} working={busy} onClick={send}>
           {changes === 0 ? "Nothing changed yet" : changesLabel(changes)}
         </Button>
-        <Link onClick={onCancel}>Cancel</Link>
+        <Link onClick={onCancel} size="text-base">
+          Cancel
+        </Link>
       </div>
     </form>
   );
@@ -294,7 +387,20 @@ const TriedNote = ({ tried }: { tried: TriedEdit | undefined }): ReactNode => {
   ) : null;
 };
 
+/** Where focus goes when the control that had it goes away. */
+interface Ids {
+  edit: string;
+  deploy: string;
+  receipt: string;
+}
+
+/** Focuses an element once the render that brings it has painted. */
+const focusSoon = (id: string): void => {
+  requestAnimationFrame(() => document.getElementById(id)?.focus());
+};
+
 interface ActionsProps {
+  ids: Ids;
   tried: TriedEdit | undefined;
   late: boolean;
   opening: boolean;
@@ -308,7 +414,8 @@ interface ActionsProps {
 const LateLine = ({ late, onApplyAgain }: Pick<ActionsProps, "late" | "onApplyAgain">): ReactNode =>
   late ? (
     <p data-slot="tag-config-late" className="mt-0 mb-2 text-xs text-warning-text">
-      This tag read its configuration before the edit reached the page. <Link onClick={onApplyAgain}>Apply again</Link>
+      This tag read its configuration before the edit reached the page, so it is running without the edit.{" "}
+      <Link onClick={onApplyAgain}>Apply again</Link>
     </p>
   ) : null;
 
@@ -319,16 +426,24 @@ const ErrorLine = ({ error }: { error: string }): ReactNode =>
     </p>
   ) : null;
 
-const EditButton = ({ opening, onEdit }: Pick<ActionsProps, "opening" | "onEdit">): ReactNode => (
-  <Button type="button" variant="outline" size="xs" aria-disabled={opening} working={opening} onClick={onEdit}>
+const EditButton = ({ opening, onEdit, ids }: Pick<ActionsProps, "opening" | "onEdit" | "ids">): ReactNode => (
+  <Button
+    id={ids.edit}
+    type="button"
+    variant="outline"
+    size="xs"
+    aria-disabled={opening}
+    working={opening}
+    onClick={onEdit}
+  >
     {opening ? "Reading the deployed configuration…" : "Edit"}
   </Button>
 );
 
 /** A tried edit not yet committed can be deployed; one already committed waits for the CDN. */
-const DeployButton = ({ tried, onDeploy }: Pick<ActionsProps, "tried" | "onDeploy">): ReactNode =>
+const DeployButton = ({ tried, onDeploy, ids }: Pick<ActionsProps, "tried" | "onDeploy" | "ids">): ReactNode =>
   tried && !tried.deployed ? (
-    <Button type="button" variant="outline" size="xs" onClick={onDeploy}>
+    <Button id={ids.deploy} type="button" variant="outline" size="xs" onClick={onDeploy}>
       Deploy…
     </Button>
   ) : null;
@@ -339,9 +454,13 @@ const SlipActions = (props: ActionsProps): ReactNode => (
     {props.tried && <DeployedLine tried={props.tried} />}
     <LateLine late={props.late} onApplyAgain={props.onApplyAgain} />
     <div className="flex items-center gap-3">
-      <EditButton opening={props.opening} onEdit={props.onEdit} />
-      <DeployButton tried={props.tried} onDeploy={props.onDeploy} />
-      {props.tried && <Link onClick={props.onStop}>Stop trying the edit</Link>}
+      <EditButton opening={props.opening} onEdit={props.onEdit} ids={props.ids} />
+      <DeployButton tried={props.tried} onDeploy={props.onDeploy} ids={props.ids} />
+      {props.tried && (
+        <Link onClick={props.onStop} size="text-sm">
+          Stop trying the edit
+        </Link>
+      )}
     </div>
     <ErrorLine error={props.error} />
   </div>
@@ -381,6 +500,7 @@ const isLate = (simulation: SimulationState, key: string): boolean => simulation
 type Editing = ReturnType<typeof useEditing>;
 
 interface PartProps {
+  ids: Ids;
   tag: TagRecord;
   overridesKey: string;
   tried: TriedEdit | undefined;
@@ -389,27 +509,33 @@ interface PartProps {
   simulation: SimulationState;
 }
 
-/** The form, while the configuration is being edited. */
-const EditingForm = ({ tag, overridesKey, editing, simulation }: PartProps): ReactNode => {
+/** The form, while the configuration is being edited; closing it hands focus back to Edit. */
+const EditingForm = ({ ids, tag, overridesKey, editing, simulation }: PartProps): ReactNode => {
   if (!editing.start) return null;
+  const close = (): void => {
+    editing.close();
+    focusSoon(ids.edit);
+  };
   const onTry = (edits: Edits): void => {
     simulation.tryEdits(overridesKey, edits);
-    editing.close();
+    close();
   };
-  return (
-    <ConfigurationForm tag={tag} start={editing.start} busy={simulation.busy} onTry={onTry} onCancel={editing.close} />
-  );
+  return <ConfigurationForm tag={tag} start={editing.start} busy={simulation.busy} onTry={onTry} onCancel={close} />;
 };
 
 /** The actions while it is read. */
-const ReadActions = ({ overridesKey, tried, editing, deploying, simulation }: PartProps): ReactNode => (
+const ReadActions = ({ ids, overridesKey, tried, editing, deploying, simulation }: PartProps): ReactNode => (
   <SlipActions
+    ids={ids}
     tried={tried}
     late={isLate(simulation, overridesKey)}
     opening={editing.opening}
     error={editing.error || simulation.error}
     onEdit={() => void editing.open()}
-    onDeploy={() => deploying.set(true)}
+    onDeploy={() => {
+      deploying.set(true);
+      focusSoon(ids.receipt);
+    }}
     onStop={() => simulation.stopTrying(overridesKey)}
     onApplyAgain={simulation.reloadPage}
   />
@@ -419,12 +545,18 @@ const ReadActions = ({ overridesKey, tried, editing, deploying, simulation }: Pa
 const ReadingActions = (props: PartProps): ReactNode => {
   if (props.editing.start) return null;
   const { tried, deploying } = props;
+  // Cancelled, focus goes back to Deploy…; committed, Deploy… is gone, so to Edit.
+  const close = (deployed: boolean): void => {
+    deploying.set(false);
+    focusSoon(deployed ? props.ids.edit : props.ids.deploy);
+  };
   return deploying.open && tried ? (
     <DeployReceipt
+      headingId={props.ids.receipt}
       overridesKey={props.overridesKey}
       tried={tried}
       simulation={props.simulation}
-      onClose={() => deploying.set(false)}
+      onClose={close}
     />
   ) : (
     <ReadActions {...props} />
@@ -444,7 +576,9 @@ export const EditableConfiguration = ({
   const tried = triedOf(simulation, overridesKey);
   const editing = useEditing(overridesKey, tried, simulation);
   const [deployOpen, setDeployOpen] = useState(false);
+  const ids: Ids = { edit: useId(), deploy: useId(), receipt: useId() };
   const parts: PartProps = {
+    ids,
     tag,
     overridesKey,
     tried,

@@ -69,9 +69,10 @@ const simulateObject = async (page: Page): Promise<void> => {
 const editConfig = async (page: Page): Promise<void> => {
   await openConfig(page);
   await page.locator("[data-slot=tag-config] button", { hasText: "Edit" }).first().click();
+  // A value is a one-row textarea that grows as it wraps; Environment alone is an input.
   const field = page
     .locator("[data-slot=config-edit] dt", { hasText: "Dstillery page-view" })
-    .locator("xpath=following-sibling::dd[1]//input");
+    .locator("xpath=following-sibling::dd[1]//textarea");
   await field.fill("Terrabis-Edited-PV");
   await field.blur();
 };

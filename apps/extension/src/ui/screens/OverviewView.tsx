@@ -210,7 +210,8 @@ const WhatCounts = (): ReactNode => (
 export const OverviewView = ({ site, lastUrl, ...props }: OverviewProps): ReactNode => (
   <Stack>
     <div className="bg-sheet shadow-press tear-bottom">
-      <SimulatorSection site={site} simulation={props.simulation} lastUrl={lastUrl} />
+      {/* Keyed by site: a focus asked for on one site is never honoured on the next. */}
+      <SimulatorSection key={site} site={site} simulation={props.simulation} lastUrl={lastUrl} />
       <Tally {...props} />
     </div>
   </Stack>
