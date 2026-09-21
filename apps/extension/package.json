@@ -1,0 +1,84 @@
+{
+  "name": "@mediajel/extension",
+  "displayName": "MediaJel Integrations Assistant",
+  "version": "1.0.0",
+  "description": "Record a client's purchase or sign-up signal, have MediaJel's assistant write the frictionless custom tag, verify it on the page, and deploy it — from a side panel, signed in with your MediaJel account.",
+  "author": "MediaJel",
+  "private": true,
+  "license": "ISC",
+  "//build-path": "Plasmo writes to build/<target> by default; --build-path=./dist puts it where turbo's `build` task already looks (outputs: [\"dist/**\"]), so no per-package task override is needed. --zip also drops dist/chrome-mv3-prod.zip, which is what CI stores as the artifact.",
+  "scripts": {
+    "//css": "Tailwind runs ahead of Plasmo, not inside it: Parcel 2.9 cannot load Tailwind 4's PostCSS plugin (its loader imports `node:` builtins Parcel's resolver does not know). The CLI compiles src/ui/globals.css — the legacy sheet inlined, fonts still relative — into the generated globals.built.css the pages import, and watches it beside `plasmo dev`.",
+    "css": "bun x @tailwindcss/cli -i ./src/ui/globals.css -o ./src/ui/globals.built.css",
+    "dev": "bun run css && concurrently -k -n css,plasmo \"bun x @tailwindcss/cli -i ./src/ui/globals.css -o ./src/ui/globals.built.css --watch\" \"plasmo dev --build-path=./dist --serve-host=127.0.0.1 --hmr-host=127.0.0.1\"",
+    "build": "bun run css && plasmo build --zip --build-path=./dist",
+    "package": "plasmo package --build-path=./dist",
+    "check": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "bun test --preload ./test/setup.ts test/",
+    "e2e": "playwright test"
+  },
+  "//test": "The `test/` filter keeps `bun test` to the unit tests: Playwright's specs in e2e/ match bun's *.spec.ts convention too, and bun would try to run them without a browser. `e2e` needs a production build in dist/ first (`bun run build`); see e2e/README.md.",
+  "//zod": "zod stays a direct dependency even though nothing here imports it by name: the `alias` below resolves a PATH into node_modules/zod, and this entry is what guarantees it is installed and hoisted where that path can find it. @mediajel/assistant-core imports zod for real.",
+  "dependencies": {
+    "@mediajel/assistant-core": "*",
+    "@mediajel/tracker-core": "*",
+    "@plasmohq/storage": "1.15.0",
+    "@radix-ui/react-alert-dialog": "^1.1.23",
+    "@radix-ui/react-checkbox": "^1.3.11",
+    "@radix-ui/react-collapsible": "^1.1.20",
+    "@radix-ui/react-popover": "^1.1.23",
+    "@radix-ui/react-radio-group": "^1.4.7",
+    "@radix-ui/react-slot": "^1.3.3",
+    "@radix-ui/react-tabs": "^1.1.2",
+    "@radix-ui/react-toggle-group": "^1.1.19",
+    "amazon-cognito-identity-js": "6.3.20",
+    "class-variance-authority": "^0.7.1",
+    "cn": "^0.3.0",
+    "d3-scale": "^4.0.2",
+    "plasmo": "0.90.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "recharts": "3.10.1",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@happy-dom/global-registrator": "^20.11.6",
+    "@mediajel/eslint-config": "*",
+    "@mediajel/tsconfig": "*",
+    "@playwright/test": "1.63.0",
+    "@tailwindcss/cli": "^4.3.3",
+    "@types/chrome": "^0.2.7",
+    "@types/d3-scale": "^4.0.9",
+    "@types/node": "^22.9.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "bun-types": "^1.4.0",
+    "concurrently": "^10.0.5",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.6.3"
+  },
+  "//browserslist": "The root package.json pins `since 2017-06` for the tag, and browserslist walks up to it; that would make Parcel add fallbacks for every modern colour function Tailwind emits. The panel runs in the Chrome that runs the extension. (This is browserslist, never `engines` — that field breaks Parcel's resolution.)",
+  "browserslist": ["last 2 Chrome versions"],
+  "manifest": {
+    "permissions": [
+      "sidePanel",
+      "storage",
+      "tabs",
+      "webRequest"
+    ],
+    "host_permissions": [
+      "$PLASMO_PUBLIC_WIDGET_API_URL/*",
+      "$PLASMO_PUBLIC_TAG_ORIGIN/*",
+      "http://*/*",
+      "https://*/*"
+    ],
+    "key": "$CRX_PUBLIC_KEY",
+    "minimum_chrome_version": "123"
+  },
+  "//manifest": "Only what Plasmo cannot infer. `scripting` is added by Plasmo itself, because the main-world recorder is registered rather than declared. `key` pins the extension id across reinstalls so a rebuild does not orphan saved jobs; it resolves from CRX_PUBLIC_KEY and is dropped when that is unset. host_permissions interpolate PLASMO_PUBLIC_* at build time — an unset one leaves a literal `$NAME/*` in the manifest, which Chrome rejects, so the build must be given its env file.",
+  "alias": {
+    "zod": "../../node_modules/zod/index.cjs"
+  },
+  "//alias": "Plasmo bundles with Parcel, and zod's ESM entry is `import * as z` over a chain of `export *` re-exports in a package marked `sideEffects: false`. Parcel drops that graph and `z` arrives as an object with no `.string` — a runtime failure, not a build error, which is why it has to be caught by opening the page. The CommonJS build is one file with every member already attached, so there is no graph to lose. This is the same class of problem the old in-page widget solved by pre-bundling its dependencies by hand."
+}

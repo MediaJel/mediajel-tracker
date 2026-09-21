@@ -26,6 +26,35 @@ commands:
           command: |
             curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.8"
             echo 'export PATH="$HOME/.bun/bin:$PATH"' >> "$BASH_ENV"
+  bun-test:
+    description: Run one workspace's bun tests, and run them again if the run stalls
+    parameters:
+      title:
+        type: string
+      workspace:
+        type: string
+    steps:
+      - run:
+          name: << parameters.title >>
+          working_directory: << parameters.workspace >>
+          # Bun 1.3 can stall between printing a test file's name and running its first test when
+          # the executor's two CPUs are busy (oven-sh/bun#31653): nothing fails and nothing prints,
+          # so the job sits out CircleCI's ten-minute silence limit. It has stalled this repo's
+          # builds that way on a different file each time — twice in one build, once, even on the
+          # first file of the second run. These suites finish in seconds, so a run still going
+          # after two minutes is that stall rather than a slow test: it is stopped and run again,
+          # up to four times. A failing test fails the step on the first run — only a stall is
+          # retried.
+          command: |
+            for attempt in 1 2 3 4; do
+              code=0
+              timeout --kill-after=10s 2m bun run test || code=$?
+              case "$code" in
+                124|137) echo "bun test stalled on attempt $attempt of 4 and was stopped (oven-sh/bun#31653)." ;;
+                *) exit "$code" ;;
+              esac
+            done
+            exit 1
   install-and-check:
     description: Install dependencies (hoisted) and type-check the tracker + its packages
     steps:
@@ -35,11 +64,72 @@ commands:
       - run:
           name: Type checking (tracker + shared packages)
           command: bun x turbo run check --filter=mediajel-tracker
+      - bun-test:
+          title: Unit tests (assistant-core — headless bun test, no Cypress deps)
+          workspace: packages/assistant-core
       - run:
           name: Build tag
           command: bun x turbo run build --filter=mediajel-tracker
 
 jobs:
+  # The extension is checked and packaged on every branch, which is the first gate this repo has
+  # had on a pull request. The .env.production is written from the context the same way the
+  # serverless repo writes its own: only PLASMO_PUBLIC_* names reach the extension's code, and an
+  # unset one would leave a literal "$NAME/*" in host_permissions that Chrome refuses to load.
+  build-extension:
+    executor: the-executor
+    steps:
+      - checkout
+      - install-bun
+      - run:
+          name: Install project dependencies
+          command: bun install --frozen-lockfile
+      - run:
+          name: Write the extension's build configuration
+          command: |
+            cd apps/extension
+            # Two of these have a documented value and a default, so a branch build produces an
+            # INSTALLABLE artifact instead of failing for want of something nobody has set yet.
+            # The assistant service has no deployed URL: until it does, a CI build points at a
+            # local one, which is where an engineer testing this zip is running it anyway. The
+            # guard below still fails hard on any OTHER unset PLASMO_PUBLIC_*, because those
+            # would leave a literal "$NAME/*" that Chrome refuses to load.
+            echo "PLASMO_PUBLIC_WIDGET_API_URL=${PLASMO_PUBLIC_WIDGET_API_URL:-http://localhost:3011/api/assistant}" >> .env.production
+            echo "PLASMO_PUBLIC_COGNITO_USER_POOL_ID=${PLASMO_PUBLIC_COGNITO_USER_POOL_ID}" >> .env.production
+            echo "PLASMO_PUBLIC_COGNITO_CLIENT_ID=${PLASMO_PUBLIC_COGNITO_CLIENT_ID}" >> .env.production
+            echo "PLASMO_PUBLIC_COGNITO_REGION=${PLASMO_PUBLIC_COGNITO_REGION}" >> .env.production
+            echo "PLASMO_PUBLIC_FRICTIONLESS_CUSTOMTAG_URL=${FRICTIONLESS_CUSTOMTAG_URL}" >> .env.production
+            echo "PLASMO_PUBLIC_TAG_URL=${PLASMO_PUBLIC_TAG_URL}" >> .env.production
+            echo "PLASMO_PUBLIC_TAG_ORIGIN=${PLASMO_PUBLIC_TAG_ORIGIN:-https://tags.cnna.io}" >> .env.production
+            echo "CRX_PUBLIC_KEY=${CRX_PUBLIC_KEY}" >> .env.production
+      - run:
+          name: Type check and lint the extension
+          command: bun x turbo run check lint --filter=@mediajel/extension
+      - bun-test:
+          title: Test the extension
+          workspace: apps/extension
+      - run:
+          name: Build and package the extension
+          command: bun x turbo run build --filter=@mediajel/extension
+      - run:
+          name: Confirm the manifest resolved its configuration
+          command: |
+            cd apps/extension
+            if grep -q '"\$PLASMO_PUBLIC' dist/chrome-mv3-prod/manifest.json; then
+              echo "An unset PLASMO_PUBLIC_* left a placeholder in the manifest; Chrome would refuse to load this."
+              grep '\$PLASMO_PUBLIC' dist/chrome-mv3-prod/manifest.json
+              exit 1
+            fi
+      - run:
+          name: Report the service URL this build points at
+          command: |
+            cd apps/extension
+            echo "This zip talks to: $(grep '^PLASMO_PUBLIC_WIDGET_API_URL=' .env.production | cut -d= -f2-)"
+            echo "A localhost URL means the STAGING context has not set one — run apps/assistant-api locally to use this build."
+      - store_artifacts:
+          path: apps/extension/dist/chrome-mv3-prod.zip
+          destination: mediajel-integrations-assistant.zip
+
   build-staging:
     executor: the-executor
     steps:
@@ -118,6 +208,8 @@ workflows:
   version: 2
   build:
     jobs:
+      - build-extension:
+          context: STAGING
       - build-staging:
           context: STAGING
           filters:

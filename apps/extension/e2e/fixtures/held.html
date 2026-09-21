@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Held-back tag fixture</title>
+  </head>
+  <body>
+    <h1>A page whose page-speed plugin holds the MediaJel tag back</h1>
+    <p>
+      The same tag as <code>old.html</code>, but the way WP Rocket leaves it: the URL sits in
+      <code>data-rocket-src</code> on a script the browser will not run, until the visitor's first interaction inserts a
+      real one. Nothing is sent before the mouse moves.
+    </p>
+    <script
+      type="rocketlazyloadscript"
+      data-rocket-src="http://127.0.0.1:3001/index.js?appId=e2e-old&environment=jane&version=2"
+    ></script>
+    <script>
+      window.addEventListener(
+        "mousemove",
+        function release() {
+          var held = document.querySelector('script[type="rocketlazyloadscript"]');
+          var real = document.createElement("script");
+          real.src = held.getAttribute("data-rocket-src");
+          document.body.appendChild(real);
+        },
+        { once: true },
+      );
+    </script>
+  </body>
+</html>

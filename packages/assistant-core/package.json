@@ -1,0 +1,33 @@
+{
+  "name": "@mediajel/assistant-core",
+  "version": "1.0.0",
+  "description": "The Integrations Assistant's framework-free half: the page recorder and its eleven sources, in-page verification, the prompt and its knowledge base, the step machine, masking and size policy. No UI, no storage, no network — the extension supplies all three.",
+  "private": true,
+  "license": "ISC",
+  "//exports": "Raw TS, compiled by the consuming app (same contract as tracker-core). The extension bundles it with esbuild via Plasmo; there is no build step here.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "alias": {
+    "@mediajel/tracker-core": "../tracker-core/src",
+    "@mediajel/assistant-core": "./src"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "lint": "eslint .",
+    "//test": "happy-dom is registered from the preload so the browser-only modules under test import unchanged; `bun test` exits 1 when it finds no test files.",
+    "test": "bun test --preload ./test/setup.ts"
+  },
+  "dependencies": {
+    "@mediajel/tracker-core": "*",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@happy-dom/global-registrator": "^20.11.6",
+    "@mediajel/eslint-config": "*",
+    "@mediajel/tsconfig": "*",
+    "@types/node": "^22.9.0",
+    "bun-types": "^1.4.0"
+  }
+}
