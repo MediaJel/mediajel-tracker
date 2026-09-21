@@ -11,6 +11,7 @@ import { forgetLedger, recordEvents, settleEvents } from "~/background/ledger";
 import { readTagsOnPage } from "~/background/page-tags";
 import { panelRegistry } from "~/background/panels";
 import { resumption } from "~/background/resume";
+import { armTab, forgetPage, markTab, reportFromPage, simulationView } from "~/background/simulation";
 import { forgetTab, learn } from "~/background/tag-state";
 import { listenAbroad, listenForOutcomes, listenForWire } from "~/background/wire";
 import { flushAll, openJob, peekJob, subscribeJobs, updateJob } from "~/store/jobs";
@@ -141,6 +142,7 @@ const UP: { [K in BridgeUp["type"]]: Handler<K> } = {
   ready: (tabId, site) => {
     void publish(tabId, site, { kind: "document" });
     resume(tabId, site);
+    void armTab(tabId, site, sendToTab);
   },
   "tags-running": (tabId, site, message) => publish(tabId, site, { kind: "running", appIds: message.appIds }),
   "tag-announced": (tabId, site, message) => publish(tabId, site, { kind: "announced", tag: message.tag }),
@@ -176,6 +178,10 @@ const UP: { [K in BridgeUp["type"]]: Handler<K> } = {
   "third-party-fired": (tabId, site, message, pageKey) =>
     appendToLedger(tabId, site, [heardFromBridge(message, pageKey, Date.now())]),
   "third-party-settled": (tabId, _site, message) => settleInLedger(tabId, message.key, message.outcome),
+  "simulate-report": async (tabId, site, message) => {
+    reportFromPage(tabId, { installFailed: message.installFailed });
+    toPanel(tabId, { type: "simulation", site, view: await simulationView(tabId, site) });
+  },
 };
 
 const handleUp = (tabId: number, site: string, message: BridgeUp, pageKey: string): void | Promise<void> =>
@@ -227,6 +233,12 @@ chrome.tabs.onUpdated.addListener((tabId, change, tab) => {
 chrome.tabs.onRemoved.addListener((tabId) => {
   void forgetTab(tabId);
   void forgetLedger(tabId);
+  forgetPage(tabId);
+});
+
+// Every tab says SIM on the toolbar while its site has a simulated tag, from the moment it navigates.
+chrome.tabs.onUpdated.addListener((tabId, change, tab) => {
+  if (change.status === "loading") void markTab(tabId, tab.url ?? "");
 });
 
 // Installed, updated, or reloaded over open tabs: give every one of them a relay and a bridge now,

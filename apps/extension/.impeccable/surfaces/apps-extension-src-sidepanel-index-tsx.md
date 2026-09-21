@@ -31,11 +31,15 @@ printed on the sheet and the others on the ground; the tally is the Overview, An
 reading in full, Events is the ledger, and Tracking setup holds the stack, where sealed steps
 compress to stamped slips that stay readable above the live sheet and the one next action is pinned
 at the bottom saying what it will do. Under every app ID, the tag's configuration is one disclosure
-away.
+away. The Overview opens on the simulator — one quiet line until it is used; opened, a tag URL and
+its configuration as fields or as the object the tag builds; simulating, a stamped record of the tag
+loaded on every page of the site in this browser, with what became of it on the page said from what
+the page's tags did — then the tally.
 
 Memorable moment: the receipt line on each sealed slip — five of them read top to bottom are the
 whole job, and they are what makes coming back to a site days later cheap.
 
 Unresolved: how deploys get gated once clients have access; whether the job list needs search or
-archiving once an engineer has hundreds; whether tag injection should be offered before sign-in;
-whether the panel should remember its view per site.
+archiving once an engineer has hundreds; whether the panel should remember its view per site.
+Resolved 2026-09-22: tag injection is the simulator on the Overview, behind sign-in like everything
+else, and kept per site until removed.

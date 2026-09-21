@@ -44,8 +44,11 @@ const ENVELOPE = "__mj" as const;
  *
  * Version 4: the bridge also reports the third-party tags the page registers with the tag, each
  * one the tag fires, and how each fire ended.
+ *
+ * Version 5: the one-shot `inject-tag` becomes `simulate` — the site's simulated tag, armed again on
+ * every page — and the bridge reports what became of it.
  */
-export const WIRE_VERSION = 4;
+export const WIRE_VERSION = 5;
 
 /** A third-party tag the tag fired, as the bridge saw the element it appended. */
 export interface ThirdPartyFired {
@@ -75,7 +78,9 @@ export type BridgeUp =
   | { type: "third-party-registered"; key: string; pageUrl: string; triggers: ThirdPartyTrigger[] }
   /** The tag fired one of them; `key` is what its outcome settles. */
   | ({ type: "third-party-fired"; key: string; pageUrl: string } & ThirdPartyFired)
-  | { type: "third-party-settled"; key: string; outcome: Outcome };
+  | { type: "third-party-settled"; key: string; outcome: Outcome }
+  /** What became of the simulated tag on this page. */
+  | { type: "simulate-report"; installFailed: boolean };
 
 /** What the background sends down. */
 export type BridgeDown =
@@ -83,7 +88,8 @@ export type BridgeDown =
   | { type: "stop-recording" }
   | { type: "snapshot" }
   | { type: "verify"; code: string }
-  | { type: "inject-tag"; url: string }
+  /** Load the site's simulated tag on this page. */
+  | { type: "simulate"; install: string }
   | { type: "clear-dedup"; appId: string };
 
 /** Which way a message is travelling, so the two listeners on one window never cross. */

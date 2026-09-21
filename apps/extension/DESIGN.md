@@ -102,7 +102,7 @@ everything), and no zoom or fade on open (stamps are the single authored motion)
 | `Badge` | `pill` numbers a capture, `chip` names "replayed"; labels, never signals |
 | `Skeleton` | the sheet settling: carbon stock with a wash passing across it |
 | `Chart` (`ChartContainer`, `ChartTooltip`) | recharts with its chrome taken away, for the by-day bands |
-| `Stamp` | custom, on cva: caps, 2px rule in the role colour, −4°, the one landing animation; `filled` for DEPLOYED |
+| `Stamp` | custom, on cva: caps, 2px rule in the role colour, −4°, the one landing animation; `filled` for DEPLOYED; `soft` (soft ink) for a PAUSED simulation |
 | `Tabs` (`TabsList`, `TabsTrigger`, `TabsContent`) | index tabs: the chosen view printed on the sheet, the others on the ground, no underline |
 | `Letterhead`, `Panel`/`Stack`, `ActionBar`, `ViewTabs`, `Chevron`, `Section` pieces, `Definitions`, `DayBands` | the sheet's own vocabulary, written once |
 
@@ -146,7 +146,29 @@ or why it cannot. It exists because in a document that scrolls, a primary action
 current section moves every time that section changes size — and because an action that is always
 in the same place can afford to explain itself. No section draws its own primary action.
 
-**The tally** is the Overview — the first view, on one sheet: what MediaJel recorded from every
+**The simulator** is the Overview's first section, above the tally, on the same sheet: a tag
+installed on this site from its URL, in this browser only, on every page until it is paused or
+removed — how an engineer tries a tag before a client has installed anything. Closed, it is one line
+in the tally's heading voice, `SIMULATE A TAG` with "on terrabis.co" beside it and a chevron, and a
+hairline under it, so on a site that has its tag it never outweighs the readings. Opened, it is the
+`Tag URL` field in mono (prefilled with the last URL simulated, else the build's tag); once the URL
+reads as a MediaJel tag's, its configuration prints in the configuration slip's own groups, said to
+be "read from the URL", with a **Fields | Config object** toggle — the object is the params as the tag
+builds them, in a Machine block with *Copy the object*; the collector is left out, since the tag's
+build sets it, not its URL. A refusal is said in warning ink only once the operator has written
+something ("That isn't a MediaJel tag URL: it is served from widget.example.com."). One line in privacy
+purple says what running it means — it sends to MediaJel's collector as an installed tag would — and
+the one identity button says *Simulate on terrabis.co*. Simulating, the section is a record: `SIMULATED
+TAG` with the app ID in mono under it and a `SIMULATED` stamp in identity ink at the right (a paused
+one says `PAUSED` in soft ink), where it loads, and what became of it on the page — said from what
+the page's tags actually did: "Running on this page.", "Running beside the page's own tag, so both
+send page views.", or, in warning ink, "The page's own tag started first, so this copy is silent" and
+"The page refused the tag's script". The script URL waits one disclosure down; *Pause* (outline) and
+*Remove* (link) are the two ways out. Every change reloads the tab it came from — a tag only starts at
+the top of a page — and the toolbar says `SIM` on every tab of a simulated site, so a forgotten
+simulation is never invisible; Settings lists every simulated tag in this browser with *Remove*.
+
+**The tally** is the Overview's second section, on the same sheet: what MediaJel recorded from every
 MediaJel tag on the page over the last 7 days — Page views, Transactions, Sign-ups, Sessions. It is
 the first thing the work order shows because it is a fact about the site: true before the job
 starts, and where the first real conversions show up after Deploy. It is a reading, not a dashboard — never the

@@ -134,6 +134,9 @@ export const SidePanel = (): ReactNode => {
       onOpenSettings={panel.onOpenSettings}
       onCloseSettings={panel.onCloseSettings}
       tagUrl={panel.tagUrl}
+      simulation={panel.simulation}
+      simulations={panel.simulations}
+      onRemoveSimulation={panel.onRemoveSimulation}
       view={panel.view}
       onView={panel.onView}
     />

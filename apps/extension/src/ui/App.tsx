@@ -13,6 +13,8 @@ import type { Identity } from "~/auth/cognito";
 import type { TagActivityState } from "~/sidepanel/useTagActivity";
 import type { WireEventsState } from "~/sidepanel/useWireEvents";
 import { Settings } from "~/store/settings";
+import type { SimulationState } from "~/sidepanel/useSimulation";
+import type { SiteSimulation } from "@mediajel/assistant-core/simulation";
 import { Letterhead } from "~/ui/components/Letterhead";
 import { Panel, Stack } from "~/ui/components/Panel";
 import {
@@ -58,8 +60,13 @@ export interface AppProps extends SetupViewProps {
   access: { status: "idle" | "checking" | "ok" | "error"; message: string };
   settingsOpen: boolean;
   onCloseSettings(): void;
-  /** The tag URL "load the tag on this page" would use. */
+  /** Where the simulator's URL field starts: the last URL simulated, else this build's tag. */
   tagUrl: string;
+  /** The tag simulated on this site, and what the page did with it. */
+  simulation: SimulationState;
+  /** Every tag simulated in this browser, for Settings. */
+  simulations: SiteSimulation[];
+  onRemoveSimulation(site: string): void;
   /** Which view is showing. */
   view: View;
   onView(view: View): void;
@@ -156,7 +163,14 @@ const Views = (props: AppProps): ReactNode => (
   <Tabs value={props.view} onValueChange={(next) => props.onView(next as View)}>
     <ViewTabs recording={props.session.step === "recording"} />
     <TabsContent value="overview">
-      <OverviewView activity={props.activity} goal={props.session.goal} onAnalytics={() => toAnalytics(props.onView)} />
+      <OverviewView
+        activity={props.activity}
+        goal={props.session.goal}
+        onAnalytics={() => toAnalytics(props.onView)}
+        site={props.site}
+        simulation={props.simulation}
+        lastUrl={props.tagUrl}
+      />
     </TabsContent>
     <TabsContent value="analytics">
       <AnalyticsView activity={props.activity} site={props.site} />
@@ -180,12 +194,12 @@ const Body = (props: AppProps): ReactNode => {
         settings={props.settings}
         appId={props.status.appId}
         access={props.access}
-        tagUrl={props.tagUrl}
+        simulations={props.simulations}
+        onRemoveSimulation={props.onRemoveSimulation}
         onCheckAccess={props.handlers.onCheckAccess}
         onPatch={props.handlers.onSettingsPatch}
         onSignOut={props.handlers.onSignOut}
         onClearDedup={props.handlers.onClearDedup}
-        onInjectTag={props.handlers.onInjectTag}
         onClearAllJobs={props.handlers.onClearAllJobs}
         onClose={props.onCloseSettings}
       />

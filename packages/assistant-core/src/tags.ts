@@ -418,7 +418,7 @@ const warningsFor = (tab: TabTags, optedOut: boolean): string[] => {
   if (tab.tags.length === 0) {
     return tab.settled
       ? [
-          "No MediaJel tag has spoken up on this page. You can still record and generate; Verify needs the tag, so load it first.",
+          "No MediaJel tag has spoken up on this page. You can still record and generate; Verify needs the tag, so simulate one from the Overview first.",
         ]
       : [];
   }

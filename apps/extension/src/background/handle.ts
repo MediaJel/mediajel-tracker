@@ -12,6 +12,8 @@ import { siteOf } from "~/lib/site";
 import { failureAnswer } from "~/background/answer";
 import { attach } from "~/background/attach";
 import { clearLedger, readLedger } from "~/background/ledger";
+import { SIMULATION_REQUESTS } from "~/background/simulation";
+import { siteOfTab } from "~/background/tab-site";
 import { learn, tagsOfTab } from "~/background/tag-state";
 import { readTagsOnPage } from "~/background/page-tags";
 import { checkAccess, deployTag, generateTag, readExistingTag, readTagActivity } from "~/service/client";
@@ -82,15 +84,6 @@ const deliver = async (send: Send, tabId: number, message: BridgeDown): Promise<
   (await send(tabId, message)) || ((await attach(tabId)) && send(tabId, message));
 
 const UNREACHABLE = "The assistant could not attach to this page; Chrome does not allow extensions on it.";
-
-const siteOfTab = async (tabId: number): Promise<string> => {
-  const tab = await chrome.tabs.get(tabId);
-  const site = siteOf(tab.url ?? "");
-  if (!site) {
-    throw new Error("This tab is not on a website the assistant can work with. Open the client's site first.");
-  }
-  return site;
-};
 
 const authState = async (challenge: AuthState["challenge"] = null): Promise<AuthState> => ({
   identity: (await readSession())?.identity ?? null,
@@ -202,16 +195,13 @@ const publishScripts = async (tabId: number, site: string, push: Push): Promise<
   if (tab) push(tabId, { type: "tags", site, tags: tab.tags, settled: tab.settled, status: trackerStatus(tab) });
 };
 
-/** An injected tag is in the page's scripts a moment later; read them then, so its row fills in. */
-const INJECTED_SCRIPT_READ_MS = 1_500;
-
 /** How a handler reaches the page and the panel. */
 interface Context {
   send: Send;
   push: Push;
 }
 
-type Handler<K extends Request["type"]> = (
+export type Handler<K extends Request["type"]> = (
   request: Extract<Request, { type: K }>,
   context: Context,
 ) => Promise<ResultOf[K]> | ResultOf[K];
@@ -297,14 +287,6 @@ const verifyOnPage: Handler<"page/verify"> = async (request, { send }) => {
   });
   if (!(await deliver(send, request.tabId, { type: "verify", code: session.generation.code })))
     throw new Error(UNREACHABLE);
-  return null;
-};
-
-const injectTag: Handler<"page/inject-tag"> = async (request, { send, push }) => {
-  const site = await siteOfTab(request.tabId);
-  if (!(await deliver(send, request.tabId, { type: "inject-tag", url: request.url }))) throw new Error(UNREACHABLE);
-  setTimeout(() => void publishScripts(request.tabId, site, push), INJECTED_SCRIPT_READ_MS);
-  await writeSettings({ lastInjectedTagUrl: request.url });
   return null;
 };
 
@@ -403,7 +385,6 @@ const REQUESTS: { [K in Request["type"]]: Handler<K> } = {
   "page/start-recording": startRecording,
   "page/stop-recording": stopRecording,
   "page/verify": verifyOnPage,
-  "page/inject-tag": injectTag,
   "page/clear-dedup": clearDedup,
   "service/generate": generate,
   "service/cancel-generate": cancelGenerate,
@@ -415,6 +396,7 @@ const REQUESTS: { [K in Request["type"]]: Handler<K> } = {
     await clearLedger(request.tabId, await siteOfTab(request.tabId));
     return null;
   },
+  ...SIMULATION_REQUESTS,
 };
 
 /**

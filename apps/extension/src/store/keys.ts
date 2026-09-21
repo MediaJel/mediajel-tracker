@@ -17,3 +17,9 @@ export const jobKey = (site: string): string => `jobs/${site}`;
 /** The site a job key belongs to, or null for any other key. */
 export const siteFromJobKey = (key: string): string | null =>
   key.startsWith("jobs/") && key !== JOBS_INDEX_KEY ? key.slice("jobs/".length) : null;
+
+/** The sites with a simulated tag, so Settings can list them without reading every key. */
+export const SIMULATIONS_INDEX_KEY = "simulate/index";
+
+/** One simulated tag per site, kept until it is removed. */
+export const simulationKey = (site: string): string => `simulate/${site}`;

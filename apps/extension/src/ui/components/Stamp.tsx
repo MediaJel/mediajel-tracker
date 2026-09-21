@@ -17,6 +17,8 @@ const stampVariants = cva(
         identity: "border-primary text-primary",
         platform: "border-platform text-platform",
         partner: "border-destructive text-destructive",
+        /** A stamp for something set aside — paused — in soft ink, still legible, never alarming. */
+        soft: "border-muted-foreground text-muted-foreground",
       },
       filled: {
         true: "border-stamp-fill bg-stamp-fill text-on-ink",

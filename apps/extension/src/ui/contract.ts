@@ -43,7 +43,6 @@ export interface AppHandlers {
   onSettingsPatch(patch: Partial<Settings>): void;
   onSignOut(): void;
   onClearDedup(): void;
-  onInjectTag(url: string): void;
   onClearAllJobs(): void;
   onOpenJobs(): void;
 }

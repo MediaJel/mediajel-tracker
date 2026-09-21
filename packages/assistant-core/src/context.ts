@@ -152,6 +152,9 @@ const scriptUrl = (script: ScriptSource): { url: URL; delayed: boolean } | null 
 const isOurs = (url: URL, hosts: string[]): boolean =>
   url.searchParams.has("mediajelAppId") || (url.searchParams.has("appId") && isTagHost(url.hostname, hosts));
 
+/** Whether a URL is a MediaJel tag's, by the same rule the page's scripts are read with. */
+export const isTagUrl = (url: URL, search: TagSearch = {}): boolean => isOurs(url, hostnamesOf(search.origins));
+
 /**
  * Read a tag's configuration back out of its URL — the same query string
  * `tracker-core/utils/get-context.ts` parses, except that runs as the tag and can use

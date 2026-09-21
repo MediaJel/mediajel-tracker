@@ -47,10 +47,14 @@ filtered out of the manifest by design) and adds the `scripting` permission for 
 The work order reads on a strip of index tabs under the zigzag. Every view is about the site the
 panel is bound to; a new site opens on Overview.
 
-- **Overview** — the tally: what MediaJel recorded from every tag on the page over the last 7
-  days, one reading per app ID with the tag's environment, version and state under it, the four
-  counts, and the week for the tag the sentence singles out. The numbers come from the assistant
-  service (`service/tag-activity`, app IDs only leave the browser).
+- **Overview** — first, the simulator: paste a tag URL and the tag loads on every page of the site
+  in this browser, as if the client had installed it, until it is paused or removed. It is kept per
+  site in `chrome.storage.local` (`simulate/<site>`), armed again on each new page through the page
+  bridge's `ready`, and said on the toolbar as `SIM`; only MediaJel tag hosts are accepted. Settings
+  lists every simulated tag. Then the tally: what MediaJel recorded from every tag on the page over the
+  last 7 days, one reading per app ID with the tag's environment, version and state under it, the
+  four counts, and the week for the tag the sentence singles out. The numbers come from the
+  assistant service (`service/tag-activity`, app IDs only leave the browser).
 - **Analytics** — every reading in full, one sheet per tag: the counts, the money, the last events,
   the days, and conversions by page. What Details used to open.
 - **Events** — the ledger: everything this tab's page was heard sending, newest first under the
@@ -100,7 +104,7 @@ Only `PLASMO_PUBLIC_*` names reach extension code. Copy `.env.example` to `.env.
 | `PLASMO_PUBLIC_WIDGET_API_URL` | the assistant service's Function URL (`yarn sls info --stage <stage>` in mediajel-serverless) |
 | `PLASMO_PUBLIC_COGNITO_USER_POOL_ID`, `..._CLIENT_ID`, `..._REGION` | the pool to sign into — public identifiers, and the app client has no secret, which is what lets a browser authenticate directly |
 | `PLASMO_PUBLIC_FRICTIONLESS_CUSTOMTAG_URL` | where a deployed tag is served from, so the receipt can name its URL |
-| `PLASMO_PUBLIC_TAG_URL`, `PLASMO_PUBLIC_TAG_ORIGIN` | the tag "load the tag on this page" injects, for sites that have not installed it yet |
+| `PLASMO_PUBLIC_TAG_URL`, `PLASMO_PUBLIC_TAG_ORIGIN` | the tag URL the simulator starts from, and the build's own tag host, which it accepts beside `*.cnna.io` |
 | `CRX_PUBLIC_KEY` | pins the extension id across reinstalls, so a rebuild does not orphan saved jobs |
 
 An unset `PLASMO_PUBLIC_*` used in `host_permissions` leaves a literal `$NAME/*` in the manifest,

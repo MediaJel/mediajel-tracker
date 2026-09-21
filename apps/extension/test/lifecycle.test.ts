@@ -9,7 +9,7 @@ import { recordEvents } from "~/background/ledger";
 import { learn } from "~/background/tag-state";
 import { readSession, writeSession } from "~/store/auth";
 import { failureAnswer } from "~/background/answer";
-import { clearAllJobs, openJob, peekJob, releaseJob } from "~/store/jobs";
+import { clearAllJobs, openJob, peekJob, releaseJob, updateJob } from "~/store/jobs";
 import { clearExtensionStorage } from "./setup";
 
 /**
@@ -311,11 +311,10 @@ describe("a tab open before the extension was", () => {
     try {
       await handle({ type: "page/start-recording", tabId: TAB, goal: "transaction" }, unreachable, push);
       await handle({ type: "job/advance", tabId: TAB, to: "review" }, unreachable, push);
-      const failure = await handle(
-        { type: "page/inject-tag", tabId: TAB, url: "https://tags.cnna.io/?appId=x" },
-        unreachable,
-        push,
-      ).catch((err: unknown) => err);
+      updateJob(SITE, (draft) => {
+        draft.generation = { code: "window.trackTrans({});" } as NonNullable<typeof draft.generation>;
+      });
+      const failure = await handle({ type: "page/verify", tabId: TAB }, unreachable, push).catch((err: unknown) => err);
       expect((failure as Error).message).toContain("Chrome does not allow extensions on it");
       expect((failure as Error).message).not.toMatch(/reload/i);
     } finally {

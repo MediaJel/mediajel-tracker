@@ -46,6 +46,25 @@ const answerSignIn = async (page: Page): Promise<void> => {
 const openJobs = click("button[title='Your jobs']");
 /** Open the first reading's configuration slip. */
 const openConfig = click("[data-slot=tag-config-toggle]");
+/** terrabis.co's tag, as an engineer would paste it into the simulator. */
+const TERRABIS_URL =
+  "https://tags.cnna.io/?appId=5f976cbb-7d29-46ce-bf07-0f701478d800&environment=dutchie&s1=bLeKC3ply8HYzQ1WC-afAA&s2.pv=ezo6F0kqQm2p&s3.pv=TerrabisMundelein-S3.PV&s3.tr=TerrabisMundelein-S3.TR&version=2&plugin=googleAds&conversionId=AW-17979043318";
+
+/** Open the simulator and write a URL into it. */
+const simulateUrl =
+  (url: string) =>
+  async (page: Page): Promise<void> => {
+    await page.locator("[data-slot=simulator-toggle]").click();
+    await page.locator("#mj-simulate-url").fill(url);
+    await page.locator("#mj-simulate-url").blur();
+  };
+
+/** The simulator with a URL written, showing the configuration as the object the tag builds. */
+const simulateObject = async (page: Page): Promise<void> => {
+  await simulateUrl(TERRABIS_URL)(page);
+  await page.locator("[data-slot=simulator-config] button", { hasText: "Config object" }).click();
+};
+
 /** Choose a view by its tab. */
 const openView = (view: "analytics" | "events" | "setup") => click(`[data-view=${view}]`);
 
@@ -112,6 +131,17 @@ const SCENARIOS: Scenario[] = [
   },
   { name: "overview-quiet-week", ready: ["[data-slot=tally-sentence]"] },
   { name: "overview-config", ready: ["[data-slot=tag-config] pre"], act: openConfig },
+  { name: "overview-simulate", ready: ["[data-slot=simulator-form]"], act: click("[data-slot=simulator-toggle]") },
+  { name: "overview-simulate-url", ready: ["[data-slot=simulator-config] dl"], act: simulateUrl(TERRABIS_URL) },
+  { name: "overview-simulate-object", ready: ["[data-slot=config-object]"], act: simulateObject },
+  {
+    name: "overview-simulate-refused",
+    ready: ["[data-slot=simulator-refusal]"],
+    act: simulateUrl("https://widget.example.com/loader.js?appId=a"),
+  },
+  { name: "overview-simulating", ready: ["[data-slot=simulating] [data-slot=simulator-status]"] },
+  { name: "overview-simulating-paused", ready: ["[data-slot=simulating][data-paused]"] },
+  { name: "overview-simulating-silent", ready: ["[data-slot=simulator-status][data-problem]"] },
   { name: "config-script-only", ready: ["[data-slot=tag-config] pre"], act: openConfig },
   { name: "events-empty", ready: ["[data-slot=ledger-empty]"], act: openView("events") },
   { name: "events-live", ready: ["[data-slot=ledger-page] ~ [data-slot=ledger-page]"], act: openView("events") },

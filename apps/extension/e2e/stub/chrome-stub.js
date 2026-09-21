@@ -522,6 +522,24 @@
    * carries, `activity` what the service answers, `hang` which requests never answer.
    */
 
+  // ---- the simulated tag -----------------------------------------------------------------------
+
+  /** A tag no page here runs: simulated beside the page's own, it stays silent. */
+  const SILENT_APP = "e64cabc8-1336-429e-ba66-3b04d80c9777";
+  const simulated = (appId, enabled = true, site = SITE) => ({
+    v: 1,
+    site,
+    enabled,
+    install: { url: tagSrc(appId), appId },
+    updatedAt: NOW - HOUR,
+  });
+  const SIMULATIONS = {
+    running: simulated(APP_IDS[0]),
+    paused: simulated(APP_IDS[0], false),
+    silent: simulated(SILENT_APP),
+  };
+  const simulationRead = () => ({ simulation: SIMULATIONS[scenario.simulation] || null, page: null });
+
   // ---- the ledger ----------------------------------------------------------------------------
 
   const CHECKOUT = `https://${SITE}/checkout`;
@@ -789,7 +807,10 @@
     "job-verify-problems": { step: "verify", session: { verify: { captured: [CAPTURE_BAD], errors: [] } } },
     "job-deploy": { step: "deploy" },
     "job-done": { step: "done" },
-    settings: { step: "home" },
+    settings: {
+      step: "home",
+      simulations: [simulated(APP_IDS[0]), simulated("5b677990-d3a8-49eb-9d18-15d686ad6e1a", false, "unity-rd.com")],
+    },
     "confirm-reset": { step: "result" },
     "overview-listening": { step: "home", page: "silent" },
     "overview-no-tags": { step: "home", page: "no-tags" },
@@ -800,6 +821,13 @@
     "overview-refreshing": { step: "home", page: "two", activity: { unavailable: [1], hangAfterCalls: 1 } },
     "overview-quiet-week": { step: "home", activity: { quiet: true } },
     "overview-config": { step: "home" },
+    "overview-simulate": { step: "home" },
+    "overview-simulate-url": { step: "home" },
+    "overview-simulate-object": { step: "home" },
+    "overview-simulate-refused": { step: "home" },
+    "overview-simulating": { step: "home", simulation: "running" },
+    "overview-simulating-paused": { step: "home", simulation: "paused" },
+    "overview-simulating-silent": { step: "home", simulation: "silent" },
     "config-script-only": { step: "home", page: "script" },
     "events-empty": { step: "home", events: "empty" },
     "events-live": { step: "home", events: "live" },
@@ -977,7 +1005,6 @@
     "page/start-recording": (request) => restart("recording", request.goal),
     "page/stop-recording": () => stepTo("review"),
     "page/verify": verify,
-    "page/inject-tag": () => null,
     "page/clear-dedup": () => {
       push({ type: "dedup-cleared", count: 3 });
       return null;
@@ -993,6 +1020,12 @@
     // The ledger is what the scenario says; the stub never pushes events, so a picture holds still.
     "events/read": () => readLedger(),
     "events/clear": () => null,
+    // The simulated tag is what the scenario says; the stub keeps nothing, so a click changes no picture.
+    "simulation/read": () => simulationRead(),
+    "simulation/install": () => simulationRead(),
+    "simulation/pause": () => simulationRead(),
+    "simulation/remove": () => [],
+    "simulation/list": () => scenario.simulations || [],
   };
 
   const settled = (value) => (value === HANG ? NEVER : { ok: true, value });

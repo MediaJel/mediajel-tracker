@@ -5,6 +5,7 @@ import { deployTargets } from "@mediajel/assistant-core/deploy/targets";
 import { TrackerStatus } from "@mediajel/assistant-core/tags";
 import { canDeploy, canGenerate } from "@mediajel/assistant-core/state/machine";
 import { WidgetGoal, WidgetSession } from "@mediajel/assistant-core/types";
+import { SiteSimulation } from "@mediajel/assistant-core/simulation";
 
 import type { AuthChallenge, Identity } from "~/auth/cognito";
 import { AppFlowState, AppHandlers } from "~/ui/contract";
@@ -18,6 +19,7 @@ import { View } from "~/ui/views";
 
 import { TagActivityState, useTagActivity } from "./useTagActivity";
 import { EventsPush, WireEventsState, useWireEvents } from "./useWireEvents";
+import { SimulationPush, SimulationState, useSimulation } from "./useSimulation";
 import { normalizeView } from "~/sidepanel/view";
 
 /**
@@ -71,6 +73,11 @@ export interface PanelState {
   activity: TagActivityState;
   /** What the page's tags have sent from this tab, newest first. */
   ledger: WireEventsState;
+  /** The tag simulated on this site, if any, and what the page did with it. */
+  simulation: SimulationState;
+  /** Every tag simulated in this browser, for Settings. */
+  simulations: SiteSimulation[];
+  onRemoveSimulation(site: string): void;
   jobs: JobSummary[];
   flow: AppFlowState;
   generateBlocked: string;
@@ -135,6 +142,8 @@ export const usePanel = (): PanelState => {
   const [view, setView] = useState<View>("overview");
   /** The latest ledger push, and how many times the ledger has had to be read again. */
   const [ledgerDelta, setLedgerDelta] = useState<EventsPush | null>(null);
+  const [simulationPush, setSimulationPush] = useState<SimulationPush | null>(null);
+  const [simulations, setSimulations] = useState<SiteSimulation[]>([]);
   const [generation, setGeneration] = useState(0);
 
   const [verifyRunErrors, setVerifyRunErrors] = useState<string[]>([]);
@@ -260,6 +269,7 @@ export const usePanel = (): PanelState => {
         setStatus(push.status);
       },
       events: (push) => setLedgerDelta(push),
+      simulation: (push) => setSimulationPush(push),
     };
     const receive = (push: Push): void => (handlers[push.type] as ((push: Push) => void) | undefined)?.(push);
 
@@ -462,7 +472,6 @@ export const usePanel = (): PanelState => {
           setScreen("sign-in");
         })(),
       onClearDedup: () => void run("loading-job", () => ask({ type: "page/clear-dedup", tabId: tabId() })),
-      onInjectTag: (url) => void run("loading-job", () => ask({ type: "page/inject-tag", tabId: tabId(), url })),
       onClearAllJobs: () =>
         void (async () => {
           await ask({ type: "job/clear-all" });
@@ -497,6 +506,23 @@ export const usePanel = (): PanelState => {
     delta: ledgerDelta,
     generation,
   });
+  const simulation = useSimulation({
+    active: screen === "job",
+    tabId: tabIdRef.current,
+    site,
+    push: simulationPush,
+    generation,
+    tags,
+    settled,
+  });
+
+  // Settings lists every simulated tag in this browser, read when it opens.
+  useEffect(() => {
+    if (!settingsOpen) return;
+    ask({ type: "simulation/list" })
+      .then(setSimulations)
+      .catch(() => setSimulations([]));
+  }, [settingsOpen]);
 
   const flow: AppFlowState = {
     verifyRunErrors,
@@ -529,6 +555,9 @@ export const usePanel = (): PanelState => {
     status,
     activity,
     ledger,
+    simulation,
+    simulations,
+    onRemoveSimulation: (target) => void simulation.remove(target).then(setSimulations),
     jobs,
     flow,
     generateBlocked,

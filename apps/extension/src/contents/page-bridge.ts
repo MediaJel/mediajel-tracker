@@ -9,6 +9,7 @@ import isUsPrivacyOptOut from "@mediajel/tracker-core/utils/privacy-opt-out";
 import { listenForAnnouncements } from "~/bridge/announcements";
 import { claimBridge } from "~/bridge/claim";
 import { BridgeDown, BridgeUp, WIRE_VERSION, unwrap, wrap } from "~/bridge/protocol";
+import { installSimulatedTag } from "~/bridge/simulate";
 import { watchThirdPartyTags } from "~/bridge/third-party";
 import { TAG_SEARCH } from "~/lib/tags";
 
@@ -130,21 +131,18 @@ const verify = (code: string): void => {
 };
 
 /**
- * Loads the MediaJel tag into a page that does not have one yet, so an integration can be
- * written and proved before the client has installed anything. The script runs in the page's
- * realm, exactly as it will when the client installs it — which is the point; a bundled copy
- * would prove the bundle, not the tag.
+ * The site's simulated tag, on this page: loaded from its own URL in the page's realm, exactly as
+ * it runs when a client installs it — which is the point; a bundled copy would prove the bundle,
+ * not the tag. Once it has loaded, the page is read again so its row fills in; a refusal is said.
  */
-const injectTag = (url: string): void => {
-  const script = document.createElement("script");
-  script.src = url;
-  script.async = true;
-  script.addEventListener("load", () => {
-    facts();
-    watchQueue();
+const simulate = (install: string): void =>
+  installSimulatedTag(document, install, {
+    loaded: () => {
+      facts();
+      watchQueue();
+    },
+    failed: () => send({ type: "simulate-report", installFailed: true }),
   });
-  (document.head ?? document.documentElement).appendChild(script);
-};
 
 /** The keys the tag's dedup keeps for an app ID in local storage. */
 const dedupKeys = (appId: string): string[] => {
@@ -181,7 +179,7 @@ const COMMANDS: { [K in BridgeDown["type"]]: (message: Extract<BridgeDown, { typ
   "stop-recording": () => recorder?.stop(),
   snapshot: () => snapshot(),
   verify: (message) => verify(message.code),
-  "inject-tag": (message) => injectTag(message.url),
+  simulate: (message) => simulate(message.install),
   "clear-dedup": (message) => clearDedup(message.appId),
 };
 

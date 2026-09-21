@@ -22,8 +22,11 @@ against.
 
 ## The specs
 
-- `fixtures.spec.ts` — two local pages carrying the production tag build. `old.html` installs it
-  the ordinary way; `held.html` the way WP Rocket leaves it, inert until the first `mousemove`.
+- `fixtures.spec.ts` — local pages and the production tag build. `old.html` installs it
+  the ordinary way; `held.html` the way WP Rocket leaves it, inert until the first `mousemove`;
+  `blank.html` carries no tag at all, and the simulator installs one (`simulation/install` with the
+  vendored bundle's URL): the tab reloads, the tag is heard sending for `e2e-simulated`, the stub
+  collector holds its batch, the toolbar says `SIM`, and once paused the next page carries none of it.
   Both must end with the tag heard sending for app ID `e2e-old` and with the stub collector holding
   the `payload_data` batch that named it. `old.html` also carries a segment for every partner
   (`s1`, `s2.pv`, `s2.tr`, `s3.pv`, `s3.tr`), so the tag fires the partners' page-view pixels; the

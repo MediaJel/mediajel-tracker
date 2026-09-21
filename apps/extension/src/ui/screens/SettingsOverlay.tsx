@@ -1,9 +1,10 @@
 import { ReactNode } from "react";
 
 import type { Identity } from "~/auth/cognito";
+import type { SiteSimulation } from "@mediajel/assistant-core/simulation";
 import { Settings, ThemeChoice } from "~/store/settings";
 import { Definitions } from "~/ui/components/Definitions";
-import { Fine, SectionBody, SectionFooter } from "~/ui/components/Section";
+import { Eyebrow, Fine, SectionBody, SectionFooter } from "~/ui/components/Section";
 import { Button } from "~/ui/components/ui/button";
 import { Checkbox } from "~/ui/components/ui/checkbox";
 import { FieldLegend, FieldSet } from "~/ui/components/ui/field";
@@ -22,12 +23,13 @@ export interface SettingsOverlayProps {
   settings: Settings;
   appId: string;
   access: { status: "idle" | "checking" | "ok" | "error"; message: string };
-  tagUrl: string;
+  /** Every tag simulated in this browser. */
+  simulations: SiteSimulation[];
+  onRemoveSimulation(site: string): void;
   onCheckAccess(): void;
   onPatch(patch: Partial<Settings>): void;
   onSignOut(): void;
   onClearDedup(): void;
-  onInjectTag(url: string): void;
   onClearAllJobs(): void;
   onClose(): void;
 }
@@ -129,26 +131,13 @@ const Appearance = ({ settings, onPatch }: Pick<SettingsOverlayProps, "settings"
 const pageLine = (appId: string): string =>
   appId
     ? `The MediaJel tag is on this page (appId ${appId}).`
-    : "There is no MediaJel tag on this page. Load one to record and verify before the client installs it.";
+    : "There is no MediaJel tag on this page. Simulate one from the Overview to record and verify before the client installs it.";
 
-const ThisPage = ({
-  appId,
-  tagUrl,
-  onInjectTag,
-  onClearDedup,
-}: Pick<SettingsOverlayProps, "appId" | "tagUrl" | "onInjectTag" | "onClearDedup">): ReactNode => (
+const ThisPage = ({ appId, onClearDedup }: Pick<SettingsOverlayProps, "appId" | "onClearDedup">): ReactNode => (
   <FieldSet>
     <FieldLegend>This page</FieldLegend>
     <Fine>{pageLine(appId)}</Fine>
     <div className="my-1 flex flex-wrap gap-2">
-      <Button
-        type="button"
-        variant="outline"
-        aria-disabled={!tagUrl}
-        onClick={tagUrl ? () => onInjectTag(tagUrl) : undefined}
-      >
-        Load the tag on this page
-      </Button>
       <Button type="button" variant="outline" aria-disabled={!appId} onClick={appId ? onClearDedup : undefined}>
         Clear tracker dedup state
       </Button>
@@ -157,9 +146,46 @@ const ThisPage = ({
   </FieldSet>
 );
 
-const ThisBrowser = ({ onClearAllJobs, onSignOut }: Pick<SettingsOverlayProps, "onClearAllJobs" | "onSignOut">) => (
+/** Every tag simulated in this browser, so none is ever forgotten on a site: where, which, and a way to remove it. */
+const Simulations = ({
+  simulations,
+  onRemoveSimulation,
+}: Pick<SettingsOverlayProps, "simulations" | "onRemoveSimulation">): ReactNode =>
+  simulations.length > 0 ? (
+    <div data-slot="simulations" className="mb-2.5">
+      <Eyebrow className="mb-1 block">Simulated tags</Eyebrow>
+      <ul className="m-0 grid list-none gap-1.5 p-0">
+        {simulations.map((simulation) => (
+          <li key={simulation.site} className="flex items-baseline gap-2">
+            <span className="min-w-0 truncate text-base text-foreground">{simulation.site}</span>
+            <span className="flex-none text-xs text-muted-foreground">
+              {simulation.enabled ? "simulating" : "paused"}
+            </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              className="ml-auto"
+              aria-label={`Remove the simulated tag on ${simulation.site}`}
+              onClick={() => onRemoveSimulation(simulation.site)}
+            >
+              Remove
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  ) : null;
+
+const ThisBrowser = ({
+  simulations,
+  onRemoveSimulation,
+  onClearAllJobs,
+  onSignOut,
+}: Pick<SettingsOverlayProps, "simulations" | "onRemoveSimulation" | "onClearAllJobs" | "onSignOut">) => (
   <FieldSet>
     <FieldLegend>This browser</FieldLegend>
+    <Simulations simulations={simulations} onRemoveSimulation={onRemoveSimulation} />
     <div className="my-1 flex flex-wrap gap-2">
       <Button type="button" variant="destructive" onClick={onClearAllJobs}>
         Delete every saved job
@@ -180,13 +206,13 @@ export const SettingsOverlay = (props: SettingsOverlayProps): ReactNode => (
     <h3 className="mt-0 mb-2.5 font-display text-sm font-bold tracking-label uppercase">Settings</h3>
     <Account {...props} />
     <Appearance settings={props.settings} onPatch={props.onPatch} />
-    <ThisPage
-      appId={props.appId}
-      tagUrl={props.tagUrl}
-      onInjectTag={props.onInjectTag}
-      onClearDedup={props.onClearDedup}
+    <ThisPage appId={props.appId} onClearDedup={props.onClearDedup} />
+    <ThisBrowser
+      simulations={props.simulations}
+      onRemoveSimulation={props.onRemoveSimulation}
+      onClearAllJobs={props.onClearAllJobs}
+      onSignOut={props.onSignOut}
     />
-    <ThisBrowser onClearAllJobs={props.onClearAllJobs} onSignOut={props.onSignOut} />
     <SectionFooter>
       <Button type="button" onClick={props.onClose}>
         Done

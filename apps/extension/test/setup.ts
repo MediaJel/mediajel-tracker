@@ -75,6 +75,7 @@ const session = area();
     query: async () => [{ id: 1, url: "https://shop.example.com/checkout", windowId: 1 }],
     get: async () => ({ id: 1, url: "https://shop.example.com/checkout", windowId: 1 }),
     update: async () => undefined,
+    reload: async () => undefined,
     onActivated: { addListener: () => undefined, removeListener: () => undefined },
     onUpdated: { addListener: () => undefined, removeListener: () => undefined },
     onRemoved: { addListener: () => undefined, removeListener: () => undefined },
@@ -93,6 +94,7 @@ const session = area();
     executeScript: async () => [],
   },
   sidePanel: { setPanelBehavior: async () => undefined, open: async () => undefined },
+  action: { setBadgeText: async () => undefined, setBadgeBackgroundColor: async () => undefined },
 };
 
 /** Lets a test start from a known store rather than from whatever ran before it. */

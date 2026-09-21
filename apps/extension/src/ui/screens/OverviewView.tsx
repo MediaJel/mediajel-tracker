@@ -13,6 +13,8 @@ import { Button } from "~/ui/components/ui/button";
 import { Failure, MAX_READINGS, Note, TallySettling, quietNote, settlingRows } from "~/ui/screens/ActivityNotes";
 import { TagCounts, TagHeading } from "~/ui/screens/ActivityReading";
 import { ActivityWeek } from "~/ui/screens/ActivityWeek";
+import { SimulatorSection } from "~/ui/screens/SimulatorSection";
+import type { SimulationState } from "~/sidepanel/useSimulation";
 
 /**
  * Overview: the tally — what MediaJel has recorded from this site's tags over the last 7 days,
@@ -25,6 +27,13 @@ import { ActivityWeek } from "~/ui/screens/ActivityWeek";
  */
 
 type Props = { activity: TagActivityState; goal: WidgetGoal; onAnalytics(): void };
+
+type OverviewProps = Props & {
+  site: string;
+  simulation: SimulationState;
+  /** Where the simulator's URL field starts. */
+  lastUrl: string;
+};
 
 /** Partner orange is under 4.5:1 as text on the light sheet, so a problem is said in ink, and the words carry it. */
 const Unread = ({ onRetry }: { onRetry(): void }): ReactNode => (
@@ -150,25 +159,36 @@ const WhatCounts = (): ReactNode => (
   </InfoTip>
 );
 
-export const OverviewView = (props: Props): ReactNode => (
+/**
+ * One sheet, two sections: the simulator first — a tag tried on this site before a client installs
+ * it — then the tally.
+ */
+export const OverviewView = ({ site, simulation, lastUrl, ...props }: OverviewProps): ReactNode => (
   <Stack>
-    <section
-      data-slot="overview"
-      className="bg-sheet px-5 pt-4 pb-[18px] shadow-press tear-bottom"
-      aria-labelledby="mj-tally-title"
-      aria-busy={props.activity.phase === "loading" || props.activity.refreshing}
-    >
-      <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
-        <h2
-          id="mj-tally-title"
-          className="m-0 font-display text-xs font-semibold tracking-caps text-muted-foreground uppercase"
-        >
-          Tag activity{" "}
-          <span className="ml-1.5 font-sans text-sm font-normal tracking-normal normal-case">Last 7 days</span>
-        </h2>
-        <WhatCounts />
-      </div>
-      <Body {...props} />
-    </section>
+    <div className="bg-sheet shadow-press tear-bottom">
+      <SimulatorSection site={site} simulation={simulation} lastUrl={lastUrl} />
+      <Tally {...props} />
+    </div>
   </Stack>
+);
+
+const Tally = (props: Props): ReactNode => (
+  <section
+    data-slot="overview"
+    className="px-5 pt-4 pb-[18px]"
+    aria-labelledby="mj-tally-title"
+    aria-busy={props.activity.phase === "loading" || props.activity.refreshing}
+  >
+    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+      <h2
+        id="mj-tally-title"
+        className="m-0 font-display text-xs font-semibold tracking-caps text-muted-foreground uppercase"
+      >
+        Tag activity{" "}
+        <span className="ml-1.5 font-sans text-sm font-normal tracking-normal normal-case">Last 7 days</span>
+      </h2>
+      <WhatCounts />
+    </div>
+    <Body {...props} />
+  </section>
 );

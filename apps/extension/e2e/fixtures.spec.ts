@@ -10,7 +10,16 @@ import type {
   TabLedger,
 } from "@mediajel/assistant-core/wire/types";
 
-import { Launched, launchWithExtension, pollTabLedger, pollTabRecord, stateOf, tabIdFor } from "./extension";
+import {
+  Launched,
+  askBackground,
+  launchWithExtension,
+  pollTabLedger,
+  pollTabRecord,
+  stateOf,
+  tabIdFor,
+  valueOf,
+} from "./extension";
 import {
   COLLECTOR_PORT,
   CollectorHit,
@@ -179,4 +188,56 @@ test("held.html: nothing before the mouse moves, then the same", async () => {
 
   await page.mouse.move(10, 10);
   await expectHeardSending(tabId!);
+});
+
+/** The same production bundle, installed by the simulator on a page that has no tag of its own. */
+const SIMULATED_APP = "e2e-simulated";
+const SIMULATED_URL = `http://127.0.0.1:${VENDOR_PORT}/index.js?appId=${SIMULATED_APP}&environment=jane&version=2`;
+
+const badgeOf = (tabId: number): Promise<string> =>
+  launched.worker.evaluate((id) => chrome.action.getBadgeText({ tabId: id }), tabId);
+
+test("blank.html: a simulated tag loads on the page, is heard sending, reaches the collector, and pauses", async () => {
+  await page.goto(`${fixtures.url}/blank.html`);
+  const tabId = await tabIdFor(launched.worker, `${fixtures.url}/blank.html`);
+  expect(tabId).not.toBeNull();
+
+  const view = valueOf(
+    await askBackground(launched.context, launched.extensionId, {
+      type: "simulation/install",
+      tabId: tabId!,
+      url: SIMULATED_URL,
+    }),
+  );
+  expect(view.simulation?.install?.appId).toBe(SIMULATED_APP);
+
+  // The install reloads the tab; the new page is armed with the tag, which boots and sends.
+  const read = await pollTabRecord(launched.worker, tabId!, (r) => stateOf(r, SIMULATED_APP) === "sending", 20_000);
+  console.log(`[fixtures] simulated ${SIMULATED_APP} is ${stateOf(read, SIMULATED_APP) ?? "absent"}`);
+  expect(stateOf(read, SIMULATED_APP)).toBe("sending");
+  const hit = await collector.waitForHit((h) => h.method === "POST" && appIdsIn(h).includes(SIMULATED_APP), 15_000);
+  expect(appIdsIn(hit)).toContain(SIMULATED_APP);
+  expect(await page.locator("script[data-mj-simulated]").count()).toBe(1);
+  expect(await badgeOf(tabId!)).toBe("SIM");
+
+  // Paused, the next page carries nothing of it, and the toolbar stops saying so.
+  valueOf(
+    await askBackground(launched.context, launched.extensionId, {
+      type: "simulation/pause",
+      tabId: tabId!,
+      enabled: false,
+    }),
+  );
+  await page.waitForLoadState("load");
+  await expect.poll(() => page.locator("script[data-mj-simulated]").count(), { timeout: 10_000 }).toBe(0);
+  expect(await badgeOf(tabId!)).toBe("");
+
+  const left = valueOf(
+    await askBackground(launched.context, launched.extensionId, {
+      type: "simulation/remove",
+      site: "127.0.0.1",
+      tabId: tabId!,
+    }),
+  );
+  expect(left).toEqual([]);
 });

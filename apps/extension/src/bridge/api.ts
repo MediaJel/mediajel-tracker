@@ -7,6 +7,7 @@ import type { TagRecord } from "@mediajel/assistant-core/tags";
 import type { TrackerStatus } from "@mediajel/assistant-core/tags";
 import type { WidgetGoal, WidgetSession, WidgetStep } from "@mediajel/assistant-core/types";
 import type { LedgerDelta, LedgerView } from "@mediajel/assistant-core/wire/types";
+import type { SimulationView, SiteSimulation } from "@mediajel/assistant-core/simulation";
 
 /**
  * What the panel, the popup and the options page can ask the background to do.
@@ -42,7 +43,6 @@ export type Request =
   | { type: "page/start-recording"; tabId: number; goal: WidgetGoal }
   | { type: "page/stop-recording"; tabId: number }
   | { type: "page/verify"; tabId: number }
-  | { type: "page/inject-tag"; tabId: number; url: string }
   | { type: "page/clear-dedup"; tabId: number }
   // — the service —
   | { type: "service/generate"; tabId: number }
@@ -52,7 +52,17 @@ export type Request =
   | { type: "service/tag-activity"; appIds: string[] }
   // — the ledger —
   | { type: "events/read"; tabId: number }
-  | { type: "events/clear"; tabId: number };
+  | { type: "events/clear"; tabId: number }
+  // — the simulated tag —
+  | { type: "simulation/read"; tabId: number }
+  | { type: "simulation/install"; tabId: number; url: string }
+  | { type: "simulation/pause"; tabId: number; enabled: boolean }
+  /** `tabId` is the tab the removal came from: reloaded when it shows that site. */
+  | { type: "simulation/remove"; site: string; tabId?: number }
+  | { type: "simulation/list" };
+
+/** The requests about a simulated tag, which the background answers from its own module. */
+export type SimulationRequest = Extract<Request, { type: `simulation/${string}` }>;
 
 /** The data-only edits the panel is allowed to make to a job. Steps go through `job/advance`. */
 export type JobPatch =
@@ -99,7 +109,6 @@ export interface ResultOf {
   "page/start-recording": WidgetStep;
   "page/stop-recording": WidgetStep;
   "page/verify": null;
-  "page/inject-tag": null;
   "page/clear-dedup": null;
   "service/generate": null;
   "service/cancel-generate": null;
@@ -109,6 +118,12 @@ export interface ResultOf {
   /** The tab's ledger, newest first — empty for a tab that has moved to another site. */
   "events/read": LedgerView;
   "events/clear": null;
+  "simulation/read": SimulationView;
+  "simulation/install": SimulationView;
+  "simulation/pause": SimulationView;
+  /** Every simulated tag left in this browser. */
+  "simulation/remove": SiteSimulation[];
+  "simulation/list": SiteSimulation[];
 }
 
 /** What the background pushes at a bound panel without being asked. */
@@ -118,6 +133,8 @@ export type Push =
   | { type: "tags"; site: string; tags: TagRecord[]; settled: boolean; status: TrackerStatus }
   /** What just changed in the bound tab's ledger — deltas only; the panel reads the rest with `events/read`. */
   | ({ type: "events"; site: string } & LedgerDelta)
+  /** What the page did with the site's simulated tag, when it said something new. */
+  | { type: "simulation"; site: string; view: SimulationView }
   | { type: "verify-result"; ok: boolean; errors: string[] }
   | { type: "dedup-cleared"; count: number }
   | { type: "generation-error"; message: string }
