@@ -218,8 +218,9 @@ identity ink beside its trigger, closed or open, marks each tried value `tried` 
 offers *Edit* again or *Stop trying the edit*; a tag that fetched its app-id file before the edit
 reached the page gets one warning line — it read its configuration before the edit arrived, "so it
 is running without the edit" — and *Apply again*. Focus follows the work: Edit lands on the first
-field, Try and Cancel return to Edit, Deploy… lands on the receipt's heading and its Cancel on
-Deploy…; an open slip keeps a full step of space under it before the counts. When the activity service has no numbers
+field (past the mode toggle), Try, Cancel and *Stop trying the edit* return to Edit, Deploy… lands
+on the receipt's heading and its Cancel on Deploy…; an open slip keeps a full step of space under
+it before the counts. When the activity service has no numbers
 (failed, or not set up), the Overview still prints each tag's heading and configuration above the
 note, so an edit never depends on the counts.
 

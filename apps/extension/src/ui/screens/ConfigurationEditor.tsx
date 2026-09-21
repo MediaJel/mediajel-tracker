@@ -318,11 +318,11 @@ interface FormProps {
   onCancel(): void;
 }
 
-/** A form's first field, focused as the form opens — Edit put the operator here. */
+/** A form's first field, focused as the form opens — Edit put the operator here, past the mode toggle. */
 const useFirstField = () => {
   const form = useRef<HTMLFormElement>(null);
   useEffect(() => {
-    form.current?.querySelector<HTMLElement>("textarea, input, [role=radio]")?.focus();
+    form.current?.querySelector<HTMLElement>("dd textarea, dd input, dd [role=radio]")?.focus();
   }, []);
   return form;
 };
@@ -536,7 +536,11 @@ const ReadActions = ({ ids, overridesKey, tried, editing, deploying, simulation 
       deploying.set(true);
       focusSoon(ids.receipt);
     }}
-    onStop={() => simulation.stopTrying(overridesKey)}
+    onStop={() => {
+      simulation.stopTrying(overridesKey);
+      // Stop trying goes with the edit it stopped; Edit stays.
+      focusSoon(ids.edit);
+    }}
     onApplyAgain={simulation.reloadPage}
   />
 );
