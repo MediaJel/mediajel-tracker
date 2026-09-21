@@ -3,6 +3,7 @@ import type { Request } from "express";
 
 import type { TagActivityResponse } from "./dto/activity.dto";
 import type { DeployOutcome, DeployRequest, ExistingTag } from "./dto/deploy.dto";
+import type { OverridesPreview, OverridesRequest } from "./dto/overrides.dto";
 import type { GenerateRequest, GenerateResponse } from "./dto/generate.dto";
 import { ApiError } from "./errors";
 import type { Authorized, AuthorizedRequest, DeployTargetKind } from "./types/assistant.types";
@@ -68,6 +69,14 @@ export class IntegrationsAssistantService {
 
   deploy(input: DeployRequest, who: Authorized): Promise<DeployOutcome> {
     return this.deployer.deploy(input, who);
+  }
+
+  previewOverrides(input: OverridesRequest): Promise<OverridesPreview> {
+    return this.deployer.previewOverrides(input);
+  }
+
+  deployOverrides(input: OverridesRequest, who: Authorized): Promise<DeployOutcome> {
+    return this.deployer.deployOverrides(input, who);
   }
 
   readActivity(appIds: string[]): Promise<TagActivityResponse> {

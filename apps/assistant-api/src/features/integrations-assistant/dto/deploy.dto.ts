@@ -4,7 +4,7 @@ import { z } from "zod";
  * A target name becomes a path in someone else's repository, so it is checked rather than
  * trusted: hostnames and app ids, nothing that can climb out of its folder.
  */
-const TargetName = z
+export const TargetName = z
   .string()
   .min(1)
   .max(253)

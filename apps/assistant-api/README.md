@@ -30,7 +30,7 @@ pressing Generate. Instructions are not the operator's data; evidence is.
 
 ## Endpoints
 
-All five require `Authorization: Bearer <Cognito ID token>` — the same pool the MediaJel dashboard
+All seven require `Authorization: Bearer <Cognito ID token>` — the same pool the MediaJel dashboard
 signs into. A verified token is the whole check; nobody holds a second credential.
 
 | | | |
@@ -40,6 +40,8 @@ signs into. A verified token is the whole check; nobody holds a second credentia
 | `GET /api/assistant/tag` | `{ exists, sha, content }` | the file a deploy would replace |
 | `POST /api/assistant/deploy` | `{ commitUrl, fileUrl, path, update }` | validate, then commit to `master` |
 | `GET /api/assistant/activity?appIds=a,b` | `{ days, tags }` | what each app ID's tag recorded in the last seven days |
+| `POST /api/assistant/overrides/preview` | `{ path, exists, sha, before, after, block, changed }` | what an edit to a tag's configuration does to its app-id file; nothing is committed |
+| `POST /api/assistant/overrides/deploy` | `{ commitUrl, fileUrl, path, update }` | commit that edit — or, with no edits, take it back out — to `master` |
 
 `/activity` reads internal-service's `tracker/events/activity` and `page-url-activity` endpoints —
 the ones gql-service already reads — for up to five app IDs, and answers for each one on its own:
@@ -106,3 +108,13 @@ Checks: `bun run check` (types, including the tests) · `bun run lint` · `bun r
   the service, while the operator-facing text sat unread inside the body.
 - **Deploy validates again, on the exact bytes.** Not defensive duplication: this endpoint holds
   the credential, and the browser's opinion does not get to stake the frictionless repo's build.
+- **A tag's edited configuration is a block this service renders, never code from the browser.**
+  `/overrides/*` take an app ID and the edited params, render them as a `window.overrides[appId]`
+  block (`services/overrides-block.ts`), and splice it below the tag's app-id file's own code
+  between `mediajel-assistant:overrides <appId> begin`/`end` markers. The app-id file runs last, so
+  the block merges into whatever the domain and app-id files set — an array entry, a keyed entry, or
+  a non-enumerable keyed entry over a flat object, which other tags never see — and it never throws.
+  A deploy from the Tracking setup carries those blocks into the file it replaces, and the rule
+  against `window.overrides =` in an app-id file reads only the file's own code.
+  `test/overrides.test.ts` runs the block against a copy of the tag's selection logic for every
+  shape the frictionless repo uses.

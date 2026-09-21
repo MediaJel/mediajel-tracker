@@ -8,6 +8,8 @@ import type { TagActivityResponse } from "./dto/activity.dto";
 import { DeployRequestSchema, TagQuerySchema } from "./dto/deploy.dto";
 import type { DeployOutcome, ExistingTag } from "./dto/deploy.dto";
 import { GenerateRequestSchema } from "./dto/generate.dto";
+import { OverridesRequestSchema } from "./dto/overrides.dto";
+import type { OverridesPreview } from "./dto/overrides.dto";
 import type { GenerateResponse } from "./dto/generate.dto";
 import { ApiError } from "./errors";
 import type { AuthorizedRequest } from "./types/assistant.types";
@@ -15,17 +17,18 @@ import { CognitoGuard } from "./guards/cognito.guard";
 import { IntegrationsAssistantService } from "./integrations-assistant.service";
 
 /**
- * The Integrations Assistant's five endpoints. The first four are the contract the extension
- * already speaks, so the move off the Lambda is a URL change for the client and nothing else;
- * /activity is new here.
+ * The Integrations Assistant's seven endpoints. The first four are the contract the extension
+ * already spoke when it moved off the Lambda; /activity and the two /overrides routes are new here.
  *
- *   GET  /health    → { ok, model, user, … }     the session is accepted; can this service deploy, read activity?
- *   POST /generate  → { output, model, … }       evidence → a validated tag
- *   GET  /tag       → { exists, sha, content }   the file a deploy would replace
- *   POST /deploy    → { commitUrl, … }           validate, then commit with MediaJel's credential
- *   GET  /activity  → { days, tags }             what each app ID's tag recorded in the last seven days
+ *   GET  /health             → { ok, model, user, … }            the session is accepted; can this service deploy, read activity?
+ *   POST /generate           → { output, model, … }              evidence → a validated tag
+ *   GET  /tag                → { exists, sha, content }          the file a deploy would replace
+ *   POST /deploy             → { commitUrl, … }                  validate, then commit with MediaJel's credential
+ *   GET  /activity           → { days, tags }                    what each app ID's tag recorded in the last seven days
+ *   POST /overrides/preview  → { path, before, after, block, … } what an edit to a tag's configuration does to its app-id file
+ *   POST /overrides/deploy   → { commitUrl, … }                  commit that edit, below the file's own code
  *
- * All five require `Authorization: Bearer <Cognito ID token>`.
+ * All seven require `Authorization: Bearer <Cognito ID token>`.
  */
 @ApiTags("Integrations Assistant")
 @Controller("assistant")
@@ -134,6 +137,40 @@ export class IntegrationsAssistantController {
     const who = this.assistant.who(request);
     const input = this.parse(DeployRequestSchema, body, "deploy request");
     return this.assistant.deploy(input, who);
+  }
+
+  @Post("overrides/preview")
+  @ApiOperation({
+    summary: "Show what an edit to a tag's configuration does to its app-id file",
+    description:
+      "Renders the block that carries the edited params as window.overrides[appId], splices it below the app-id file's own code, and returns the file before and after with the sha a deploy is checked against. Nothing is committed; the block is what the extension runs on the page when the edit is tried.",
+  })
+  @ApiResponse({ status: 200, description: "The file before and after, and the block" })
+  @ApiResponse({ status: 409, description: "The file's block for this tag was edited by hand and no longer pairs up" })
+  async previewOverrides(
+    @Req() request: Request & AuthorizedRequest,
+    @Body() body: unknown,
+  ): Promise<OverridesPreview> {
+    this.assistant.who(request);
+    const input = this.parse(OverridesRequestSchema, body, "overrides request");
+    return this.assistant.previewOverrides(input);
+  }
+
+  @Post("overrides/deploy")
+  @ApiOperation({
+    summary: "Commit an edit to a tag's configuration",
+    description:
+      "Re-reads the app-id file, checks the sha the operator was shown, splices the rendered block in (or out, with no edits), refuses a block that does not parse, and commits with MediaJel's own credential — attributed to the verified Cognito identity.",
+  })
+  @ApiResponse({ status: 200, description: "Committed" })
+  @ApiResponse({
+    status: 409,
+    description: "The file changed, already holds this configuration, or has hand-edited markers",
+  })
+  async deployOverrides(@Req() request: Request & AuthorizedRequest, @Body() body: unknown): Promise<DeployOutcome> {
+    const who = this.assistant.who(request);
+    const input = this.parse(OverridesRequestSchema, body, "overrides request");
+    return this.assistant.deployOverrides(input, who);
   }
 
   @Get("activity")

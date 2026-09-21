@@ -157,3 +157,83 @@ describe("a service with no deploy credential", () => {
     expect(githubToken("  ghp_real  ")).toBe("ghp_real");
   });
 });
+
+describe("an edit to a tag's configuration", () => {
+  const APP = "5f976cbb-7d29-46ce-bf07-0f701478d800";
+  const FILE = 'const tag = () => {\n  window.overrides = { "s3.pv": "test3" };\n};\n\ntag();\n';
+  const edit = (over: Partial<Parameters<DeployService["deployOverrides"]>[0]> = {}) => ({
+    appId: APP,
+    edits: { "s3.pv": "Edited" },
+    ...over,
+  });
+
+  test("previews the app-id file before and after, with the block the page runs, and commits nothing", async () => {
+    const recorded: Recorded = {};
+    const preview = await service({ sha: "abc", content: FILE }, recorded).previewOverrides(edit());
+    expect(preview.path).toBe(`src/app-ids/${APP}.ts`);
+    expect(preview).toMatchObject({ exists: true, sha: "abc", before: FILE, changed: true });
+    expect(preview.after).toBe(`${FILE}\n${preview.block}\n`);
+    expect(recorded.put).toBeUndefined();
+  });
+
+  test("a tag with no app-id file yet previews a new file holding only the block", async () => {
+    const preview = await service(null).previewOverrides(edit());
+    expect(preview).toMatchObject({ exists: false, before: "", changed: true });
+    expect(preview.after).toBe(`${preview.block}\n`);
+  });
+
+  test("commits the previewed bytes below the file's own code, attributed to the verified identity", async () => {
+    const recorded: Recorded = {};
+    const deploy = service({ sha: "abc", content: FILE }, recorded);
+    const preview = await deploy.previewOverrides(edit());
+    const result = await deploy.deployOverrides(edit({ expectedSha: "abc" }), WHO);
+    expect(recorded.put?.content).toBe(preview.after);
+    expect(recorded.put?.sha).toBe("abc");
+    expect(recorded.put?.message).toBe(
+      `Update the configuration overrides for app-id ${APP}\n\nEdited by: Pacholo Amit (pacholo@mediajel.com)`,
+    );
+    expect(result.update).toBe(true);
+  });
+
+  test("no edits take the tag's block back out", async () => {
+    const recorded: Recorded = {};
+    const withBlock = (await service({ sha: "abc", content: FILE }).previewOverrides(edit())).after;
+    await service({ sha: "def", content: withBlock }, recorded).deployOverrides(
+      edit({ edits: {}, expectedSha: "def" }),
+      WHO,
+    );
+    expect(recorded.put?.content).toBe(FILE);
+    expect(recorded.put?.message).toStartWith(`Remove the configuration overrides for app-id ${APP}`);
+  });
+
+  test("a file that already holds exactly this configuration is refused rather than committed again", async () => {
+    const withBlock = (await service({ sha: "abc", content: FILE }).previewOverrides(edit())).after;
+    await expect(
+      service({ sha: "def", content: withBlock }).deployOverrides(edit({ expectedSha: "def" }), WHO),
+    ).rejects.toThrow("already holds exactly this configuration");
+  });
+
+  test("is checked against the sha the operator was shown, like any deploy", async () => {
+    await expect(
+      service({ sha: "abc", content: FILE }).deployOverrides(edit({ expectedSha: "stale" }), WHO),
+    ).rejects.toThrow("changed in the repo while you were working");
+  });
+});
+
+describe("a deploy from the Tracking setup onto a file holding a tag's configuration", () => {
+  const APP = "5f976cbb-7d29-46ce-bf07-0f701478d800";
+
+  test("keeps the block below the new code, and the rule against window.overrides reads only the file's own code", async () => {
+    const withBlock = (await service(null).previewOverrides({ appId: APP, edits: { "s3.pv": "Edited" } })).after;
+    const recorded: Recorded = {};
+    await service({ sha: "abc", content: withBlock }, recorded).deploy(
+      request({ kind: "app-id", name: APP, expectedSha: "abc" }),
+      WHO,
+    );
+    expect(recorded.put?.content.startsWith(VALID)).toBe(true);
+    expect(recorded.put?.content).toContain(`/* mediajel-assistant:overrides ${APP} begin`);
+    expect(
+      new ValidateService().validate({ code: recorded.put!.content, goal: "transaction", appIdTarget: true }),
+    ).toEqual([]);
+  });
+});
