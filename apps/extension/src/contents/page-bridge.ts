@@ -138,7 +138,7 @@ let stopServingEdits = (): void => undefined;
 const serve = (tried: PageSimulation["tried"]): void => {
   stopServingEdits();
   if (Object.keys(tried).length === 0) return;
-  const served = serveEdits(window, tried);
+  const served = serveEdits(window, tried, (appId) => send({ type: "simulate-report", live: [appId] }));
   stopServingEdits = served.stop;
   if (served.late.length > 0) send({ type: "simulate-report", late: served.late });
 };

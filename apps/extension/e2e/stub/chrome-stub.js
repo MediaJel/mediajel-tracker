@@ -546,19 +546,39 @@
     tried: {},
     updatedAt: NOW - HOUR,
   });
+  /** The block the assistant API renders for the tried edit — its own renderer's output, kept as a fixture. */
+  const TRIED_BLOCK =
+    ';/* mediajel-assistant:overrides 5f976cbb-7d29-46ce-bf07-0f701478d800 begin\n * The tag configuration for 5f976cbb-7d29-46ce-bf07-0f701478d800, edited in the MediaJel Integrations Assistant. It merges\n * into whatever this file and the domain file set in window.overrides, for this tag alone, and it\n * never throws. Change it in the assistant; to undo it, delete this block, markers included.\n */\n(function (appId, edits, version) {\n  try {\n    var tried = window["__mediajelAssistantOverrides"];\n    if (tried && tried[appId] && tried[appId] !== version) return;\n    var has = Object.prototype.hasOwnProperty;\n    var copy = function (from, into) {\n      for (var key in from) if (has.call(from, key)) into[key] = from[key];\n      return into;\n    };\n    var edited = function (base) {\n      return copy(edits, copy(base, {}));\n    };\n    var hide = function (holder, value) {\n      Object.defineProperty(holder, appId, { value: value, enumerable: false, configurable: true, writable: true });\n    };\n    var current = window.overrides;\n    if (Array.isArray(current)) {\n      for (var i = 0; i < current.length; i += 1) {\n        if (current[i] && (current[i].tag === appId || current[i].appId === appId)) {\n          current[i] = edited(current[i]);\n          return;\n        }\n      }\n      current.push(edited({ appId: appId }));\n      return;\n    }\n    if (current && typeof current === "object") {\n      if (current[appId] && typeof current[appId] === "object") {\n        current[appId] = edited(current[appId]);\n        return;\n      }\n      var flat = {};\n      for (var name in current) if (has.call(current, name) && typeof current[name] !== "object") flat[name] = current[name];\n      hide(current, edited(flat));\n      return;\n    }\n    var defaults = {};\n    var scripts = document.getElementsByTagName("script");\n    for (var s = 0; s < scripts.length; s += 1) {\n      var src = scripts[s].src || "";\n      var query = new URLSearchParams(src.substring(src.indexOf("?")));\n      if ((query.get("appId") || query.get("mediajelAppId")) === appId) {\n        if (!query.get("s3.pv")) defaults["s3.pv"] = "00000";\n        if (!query.get("s3.tr")) defaults["s3.tr"] = "00000";\n        break;\n      }\n    }\n    window.overrides = {};\n    hide(window.overrides, edited(defaults));\n  } catch (error) {\n    if (window.console) window.console.warn("[MediaJel] The assistant\'s overrides for " + appId + " were not applied:", error);\n  }\n})("5f976cbb-7d29-46ce-bf07-0f701478d800", {"environment":"jane","s3.pv":"Terrabis-Edited-PV"}, "v-9ba59ccd");\n/* mediajel-assistant:overrides 5f976cbb-7d29-46ce-bf07-0f701478d800 end */';
+  const TRIED_AFTER =
+    'const tag = () => {\n  window.overrides = {};\n};\n\ntag();\n\n;/* mediajel-assistant:overrides 5f976cbb-7d29-46ce-bf07-0f701478d800 begin\n * The tag configuration for 5f976cbb-7d29-46ce-bf07-0f701478d800, edited in the MediaJel Integrations Assistant. It merges\n * into whatever this file and the domain file set in window.overrides, for this tag alone, and it\n * never throws. Change it in the assistant; to undo it, delete this block, markers included.\n */\n(function (appId, edits, version) {\n  try {\n    var tried = window["__mediajelAssistantOverrides"];\n    if (tried && tried[appId] && tried[appId] !== version) return;\n    var has = Object.prototype.hasOwnProperty;\n    var copy = function (from, into) {\n      for (var key in from) if (has.call(from, key)) into[key] = from[key];\n      return into;\n    };\n    var edited = function (base) {\n      return copy(edits, copy(base, {}));\n    };\n    var hide = function (holder, value) {\n      Object.defineProperty(holder, appId, { value: value, enumerable: false, configurable: true, writable: true });\n    };\n    var current = window.overrides;\n    if (Array.isArray(current)) {\n      for (var i = 0; i < current.length; i += 1) {\n        if (current[i] && (current[i].tag === appId || current[i].appId === appId)) {\n          current[i] = edited(current[i]);\n          return;\n        }\n      }\n      current.push(edited({ appId: appId }));\n      return;\n    }\n    if (current && typeof current === "object") {\n      if (current[appId] && typeof current[appId] === "object") {\n        current[appId] = edited(current[appId]);\n        return;\n      }\n      var flat = {};\n      for (var name in current) if (has.call(current, name) && typeof current[name] !== "object") flat[name] = current[name];\n      hide(current, edited(flat));\n      return;\n    }\n    var defaults = {};\n    var scripts = document.getElementsByTagName("script");\n    for (var s = 0; s < scripts.length; s += 1) {\n      var src = scripts[s].src || "";\n      var query = new URLSearchParams(src.substring(src.indexOf("?")));\n      if ((query.get("appId") || query.get("mediajelAppId")) === appId) {\n        if (!query.get("s3.pv")) defaults["s3.pv"] = "00000";\n        if (!query.get("s3.tr")) defaults["s3.tr"] = "00000";\n        break;\n      }\n    }\n    window.overrides = {};\n    hide(window.overrides, edited(defaults));\n  } catch (error) {\n    if (window.console) window.console.warn("[MediaJel] The assistant\'s overrides for " + appId + " were not applied:", error);\n  }\n})("5f976cbb-7d29-46ce-bf07-0f701478d800", {"environment":"jane","s3.pv":"Terrabis-Edited-PV"}, "v-9ba59ccd");\n/* mediajel-assistant:overrides 5f976cbb-7d29-46ce-bf07-0f701478d800 end */\n';
+  const triedEdit = { edits: TRIED_EDITS, block: TRIED_BLOCK, version: "v-9ba59ccd" };
   const trying = {
     v: 1,
     site: SITE,
     enabled: true,
     install: null,
-    tried: { [APP_IDS[0]]: { edits: TRIED_EDITS, block: ";/* the tried block */", version: "v-0000abcd" } },
+    tried: { [APP_IDS[0]]: triedEdit },
     updatedAt: NOW - HOUR,
+  };
+  const deployedEdit = {
+    ...trying,
+    tried: {
+      [APP_IDS[0]]: {
+        ...triedEdit,
+        deployed: {
+          commitUrl: "https://github.com/MediaJel/mediajel-frictionless-custom-tag/commit/9f3e2c1",
+          fileUrl: "https://github.com/MediaJel/mediajel-frictionless-custom-tag/blob/master/src/app-ids/x.ts",
+          at: NOW - 60_000,
+        },
+      },
+    },
   };
   const SIMULATIONS = {
     running: simulated(APP_IDS[0]),
     paused: simulated(APP_IDS[0], false),
     silent: simulated(SILENT_APP),
     trying,
+    deployed: deployedEdit,
   };
   const PAGE_REPORTS = { late: { installFailed: false, late: [APP_IDS[0]] } };
   const simulationRead = () => ({
@@ -571,9 +591,9 @@
     exists: true,
     sha: "3f1c2e9",
     before: "const tag = () => {\n  window.overrides = {};\n};\n\ntag();\n",
-    after: "const tag = () => {\n  window.overrides = {};\n};\n\ntag();\n\n;/* the block */\n",
-    block: ";/* the block */",
-    version: "v-0000abcd",
+    after: TRIED_AFTER,
+    block: TRIED_BLOCK,
+    version: triedEdit.version,
     deployed: scenario.deployed || null,
     changed: true,
   });
@@ -871,6 +891,8 @@
     "overview-config-object": { step: "home" },
     "overview-config-trying": { step: "home", page: "tried", simulation: "trying" },
     "overview-config-late": { step: "home", page: "tried", simulation: "trying", simulationPage: "late" },
+    "overview-config-deploy": { step: "home", page: "tried", simulation: "trying" },
+    "overview-config-deployed": { step: "home", page: "tried", simulation: "deployed" },
     "config-script-only": { step: "home", page: "script" },
     "events-empty": { step: "home", events: "empty" },
     "events-live": { step: "home", events: "live" },
@@ -1070,6 +1092,11 @@
     "simulation/remove": () => [],
     "simulation/list": () => scenario.simulations || [],
     "simulation/try": () => simulationRead(),
+    "simulation/stop": () => simulationRead(),
+    "simulation/deploy": () => ({
+      view: simulationRead(),
+      outcome: { commitUrl: deployedEdit.tried[APP_IDS[0]].deployed.commitUrl, fileUrl: "", path: "", update: true },
+    }),
     "simulation/reload": () => null,
     "service/overrides-preview": (request) => overridesPreview(request),
   };

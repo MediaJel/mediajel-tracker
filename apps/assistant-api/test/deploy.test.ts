@@ -176,6 +176,12 @@ describe("an edit to a tag's configuration", () => {
     expect(recorded.put).toBeUndefined();
   });
 
+  test("an edit that takes the block out still has a version, for the page to try the file without it", async () => {
+    const preview = await service({ sha: "abc", content: FILE }).previewOverrides(edit({ edits: {} }));
+    expect(preview.block).toBeNull();
+    expect(preview.version).toMatch(/^v-[0-9a-f]{8}$/);
+  });
+
   test("a tag with no app-id file yet previews a new file holding only the block", async () => {
     const preview = await service(null).previewOverrides(edit());
     expect(preview).toMatchObject({ exists: false, before: "", changed: true });

@@ -55,7 +55,10 @@ panel is bound to; a new site opens on Overview.
   edited and tried on the page: the assistant service renders the edit as the same
   `window.overrides[appId]` block a deploy writes into the tag's app-id file, and the page bridge
   serves that file with the block appended — so the page runs exactly what a deploy would leave there,
-  with a deployed block of another version standing aside while the edit is tried. Then the tally: what MediaJel recorded from every tag on the page over the
+  with a deployed block of another version standing aside while the edit is tried. *Deploy*
+  shows the app-id file as the commit would leave it and commits it through the assistant service
+  (`/overrides/deploy`, master of the frictionless repo); the page keeps running the edit until the
+  CDN serves the file that carries it. Then the tally: what MediaJel recorded from every tag on the page over the
   last 7 days, one reading per app ID with the tag's environment, version and state under it, the
   four counts, and the week for the tag the sentence singles out. The numbers come from the
   assistant service (`service/tag-activity`, app IDs only leave the browser).

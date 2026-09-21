@@ -4,6 +4,7 @@ import { SimulationView, SiteSimulation } from "@mediajel/assistant-core/simulat
 import { TagRecord } from "@mediajel/assistant-core/tags";
 
 import { Push, ask } from "~/bridge/api";
+import type { DeployOutcome, OverridesPreview } from "~/service/client";
 import { SimulatedStatus, simulatedStatus } from "~/ui/simulator";
 
 /**
@@ -29,6 +30,12 @@ export interface SimulationState extends SimulationView {
   reloadPage(): void;
   /** The edits the tag's app-id file already carries, for an editor to start from. */
   deployedEdits(appId: string): Promise<Record<string, string> | null>;
+  /** Stops trying a tag's edit: the page runs the tag's app-id file as it is. */
+  stopTrying(appId: string): void;
+  /** What deploying an edit would do to the tag's app-id file. */
+  previewEdit(appId: string, edits: Record<string, string>): Promise<OverridesPreview>;
+  /** Commits the edit tried for a tag, against the sha the operator was shown. */
+  deployEdit(appId: string, expectedSha: string | undefined): Promise<DeployOutcome>;
 }
 
 interface Inputs {
@@ -125,5 +132,15 @@ export const useSimulation = ({ active, tabId, site, push, generation, tags, set
       if (tabId !== null) void ask({ type: "simulation/reload", tabId });
     },
     deployedEdits: async (appId) => (await ask({ type: "service/overrides-preview", appId, edits: {} })).deployed,
+    stopTrying: (appId) => {
+      if (tabId !== null) applied(() => ask({ type: "simulation/stop", tabId, appId }));
+    },
+    previewEdit: (appId, edits) => ask({ type: "service/overrides-preview", appId, edits }),
+    deployEdit: async (appId, expectedSha) => {
+      if (tabId === null) throw new Error("The assistant is not bound to a tab yet.");
+      const deployed = await ask({ type: "simulation/deploy", tabId, appId, expectedSha });
+      setView(deployed.view);
+      return deployed.outcome;
+    },
   };
 };

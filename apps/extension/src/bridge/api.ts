@@ -58,8 +58,14 @@ export type Request =
   | { type: "simulation/read"; tabId: number }
   | { type: "simulation/install"; tabId: number; url: string }
   | { type: "simulation/pause"; tabId: number; enabled: boolean }
-  /** Try an edit to a tag's configuration on the site; no edits stop trying it. Keyed by the app ID the tag's URL names. */
+  /**
+   * Try an edit to a tag's configuration on the site, keyed by the app ID the tag's URL names. No
+   * edits, when the tag's app-id file holds an earlier one, tries the file without it.
+   */
   | { type: "simulation/try"; tabId: number; appId: string; edits: Record<string, string> }
+  | { type: "simulation/stop"; tabId: number; appId: string }
+  /** Commit the edit tried for a tag into its app-id file, against the sha the operator was shown. */
+  | { type: "simulation/deploy"; tabId: number; appId: string; expectedSha?: string }
   /** Start the tab's page again, so a tag that read its configuration too early reads it with the edits. */
   | { type: "simulation/reload"; tabId: number }
   /** `tabId` is the tab the removal came from: reloaded when it shows that site. */
@@ -128,6 +134,8 @@ export interface ResultOf {
   "simulation/install": SimulationView;
   "simulation/pause": SimulationView;
   "simulation/try": SimulationView;
+  "simulation/stop": SimulationView;
+  "simulation/deploy": { view: SimulationView; outcome: DeployOutcome };
   "simulation/reload": null;
   /** Every simulated tag left in this browser. */
   "simulation/remove": SiteSimulation[];

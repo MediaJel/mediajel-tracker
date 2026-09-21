@@ -80,8 +80,11 @@ export type BridgeUp =
   /** The tag fired one of them; `key` is what its outcome settles. */
   | ({ type: "third-party-fired"; key: string; pageUrl: string } & ThirdPartyFired)
   | { type: "third-party-settled"; key: string; outcome: Outcome }
-  /** What became of the simulation on this page: a refused script, or tags that ran before the edits arrived. */
-  | { type: "simulate-report"; installFailed?: boolean; late?: string[] };
+  /**
+   * What became of the simulation on this page: a refused script, tags that ran before the edits
+   * arrived, or tags whose app-id file the CDN already serves with the edit being tried.
+   */
+  | { type: "simulate-report"; installFailed?: boolean; late?: string[]; live?: string[] };
 
 /** What the background sends down. */
 export type BridgeDown =

@@ -21,8 +21,14 @@ export interface SimulatedInstall {
  */
 export interface TriedEdit {
   edits: Record<string, string>;
+  /** Empty for an edit that takes a deployed block out: the page then runs the file without it. */
   block: string;
   version: string;
+  /**
+   * The edit was committed. The page runs it from here until the tag's CDN serves the file that
+   * carries it, and then it is no longer tried.
+   */
+  deployed?: { commitUrl: string; fileUrl: string; at: number };
 }
 
 export interface SiteSimulation {

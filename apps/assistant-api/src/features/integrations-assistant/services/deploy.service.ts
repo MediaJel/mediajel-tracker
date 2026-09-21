@@ -86,7 +86,7 @@ export class DeployService {
       before,
       after,
       block,
-      version: block === null ? null : versionOf(request.appId, request.edits),
+      version: versionOf(request.appId, request.edits),
       deployed: editsIn(file?.content ?? null, request.appId),
       changed: after !== before,
     };

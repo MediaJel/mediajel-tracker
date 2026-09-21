@@ -11,7 +11,7 @@ import { forgetLedger, recordEvents, settleEvents } from "~/background/ledger";
 import { readTagsOnPage } from "~/background/page-tags";
 import { panelRegistry } from "~/background/panels";
 import { resumption } from "~/background/resume";
-import { armTab, forgetPage, markTab, reportFromPage, simulationView } from "~/background/simulation";
+import { armTab, forgetPage, markTab, reportFromPage, settleLive, simulationView } from "~/background/simulation";
 import { forgetTab, learn } from "~/background/tag-state";
 import { listenAbroad, listenForOutcomes, listenForWire } from "~/background/wire";
 import { flushAll, openJob, peekJob, subscribeJobs, updateJob } from "~/store/jobs";
@@ -179,6 +179,7 @@ const UP: { [K in BridgeUp["type"]]: Handler<K> } = {
     appendToLedger(tabId, site, [heardFromBridge(message, pageKey, Date.now())]),
   "third-party-settled": (tabId, _site, message) => settleInLedger(tabId, message.key, message.outcome),
   "simulate-report": async (tabId, site, message) => {
+    if (message.live) await settleLive(site, message.live);
     reportFromPage(tabId, {
       ...(message.installFailed === undefined ? {} : { installFailed: message.installFailed }),
       ...(message.late === undefined ? {} : { late: message.late }),

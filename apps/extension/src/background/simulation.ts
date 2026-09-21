@@ -13,7 +13,8 @@ import type { SimulationRequest } from "~/bridge/api";
 import { BridgeDown } from "~/bridge/protocol";
 import { siteOf } from "~/lib/site";
 import { TAG_SEARCH } from "~/lib/tags";
-import { previewOverrides } from "~/service/client";
+import { deployOverrides, previewOverrides } from "~/service/client";
+import type { DeployOutcome } from "~/service/client";
 import { currentIdToken } from "~/store/auth";
 import { writeSettings } from "~/store/settings";
 import { changeSimulation, listSimulations, readSimulation } from "~/store/simulations";
@@ -119,11 +120,38 @@ const withTried = (current: SiteSimulation | null, site: string, appId: string, 
   return orNone({ ...(current ?? blank(site)), enabled: true, tried, updatedAt: Date.now() });
 };
 
-/** The block the service renders for an edit — byte for byte what a deploy writes — or none for no edits. */
+/**
+ * The block the service renders for an edit — byte for byte what a deploy writes. No edits, when the
+ * tag's app-id file holds an earlier one, is still an edit: its version, named on the page, makes the
+ * deployed block stand aside, so the page runs the file as a deploy of no edits would leave it.
+ */
 const renderedEdit = async (appId: string, edits: Record<string, string>): Promise<TriedEdit | null> => {
-  if (Object.keys(edits).length === 0) return null;
   const preview = await previewOverrides(currentIdToken, { appId, edits });
-  return preview.block && preview.version ? { edits, block: preview.block, version: preview.version } : null;
+  if (Object.keys(edits).length === 0 && !preview.deployed) return null;
+  return { edits, block: preview.block ?? "", version: preview.version };
+};
+
+/** The tried edit, marked as committed: the page runs it until the tag's CDN serves it. */
+const markDeployed = (current: SiteSimulation | null, appId: string, outcome: DeployOutcome) => {
+  const tried = current?.tried[appId];
+  if (!current || !tried) return current;
+  const deployed = { commitUrl: outcome.commitUrl, fileUrl: outcome.fileUrl, at: Date.now() };
+  return { ...current, tried: { ...current.tried, [appId]: { ...tried, deployed } } };
+};
+
+/** Committed edits the CDN now serves are no longer tried: the page runs them without the assistant. */
+const withoutLive = (current: SiteSimulation | null, live: string[]): SiteSimulation | null => {
+  if (!current) return current;
+  const tried = Object.fromEntries(
+    Object.entries(current.tried).filter(([appId, edit]) => !(edit.deployed && live.includes(appId))),
+  );
+  return orNone({ ...current, tried });
+};
+
+/** A page found the CDN serving a tag's committed edit: the site stops trying it. */
+export const settleLive = async (site: string, live: string[]): Promise<void> => {
+  await changeSimulation(site, (current) => withoutLive(current, live));
+  await markSite(site);
 };
 
 const install: Handler<"simulation/install"> = async (request) => {
@@ -140,6 +168,25 @@ const tryEdit: Handler<"simulation/try"> = async (request) => {
   const edit = await renderedEdit(request.appId, request.edits);
   await changeSimulation(site, (current) => withTried(current, site, request.appId, edit));
   return applied(request.tabId, site);
+};
+
+const stop: Handler<"simulation/stop"> = async (request) => {
+  const site = await siteOfTab(request.tabId);
+  await changeSimulation(site, (current) => withTried(current, site, request.appId, null));
+  return applied(request.tabId, site);
+};
+
+const deploy: Handler<"simulation/deploy"> = async (request) => {
+  const site = await siteOfTab(request.tabId);
+  const tried = (await readSimulation(site))?.tried[request.appId];
+  if (!tried) throw new Error("There is no edit tried for this tag, so there is nothing to deploy.");
+  const outcome = await deployOverrides(currentIdToken, {
+    appId: request.appId,
+    edits: tried.edits,
+    expectedSha: request.expectedSha,
+  });
+  await changeSimulation(site, (current) => markDeployed(current, request.appId, outcome));
+  return { view: await simulationView(request.tabId, site), outcome };
 };
 
 const pause: Handler<"simulation/pause"> = async (request) => {
@@ -167,6 +214,8 @@ export const SIMULATION_REQUESTS: { [K in SimulationRequest["type"]]: Handler<K>
   "simulation/install": install,
   "simulation/pause": pause,
   "simulation/try": tryEdit,
+  "simulation/stop": stop,
+  "simulation/deploy": deploy,
   "simulation/reload": (request) => {
     reload(request.tabId);
     return null;

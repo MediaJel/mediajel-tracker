@@ -83,7 +83,7 @@ export interface OverridesPreview {
   after: string;
   /** The code the page runs when the edit is tried, byte for byte what a deploy writes; null when the edit takes the block out. */
   block: string | null;
-  version: string | null;
+  version: string;
   /** The edits the file's block for this tag carries now, or null when it has none. */
   deployed: Record<string, string> | null;
   changed: boolean;
@@ -92,6 +92,8 @@ export interface OverridesPreview {
 export interface OverridesInput {
   appId: string;
   edits: Record<string, string>;
+  /** The sha the operator was shown, so the service refuses a file that moved under us. */
+  expectedSha?: string;
 }
 
 /** A run that hangs is a failure the operator must see; two minutes is generous for a tag. */
@@ -240,6 +242,18 @@ export const previewOverrides = async (token: TokenSource, input: OverridesInput
   try {
     return await withTimeout(
       call<OverridesPreview>("/overrides/preview", token, { method: "POST", body: input }),
+      DEPLOY_TIMEOUT_MS,
+    );
+  } catch (err) {
+    throw failure(err);
+  }
+};
+
+/** Commits an edit to a tag's configuration into its app-id file — or, with no edits, takes it back out. */
+export const deployOverrides = async (token: TokenSource, input: OverridesInput): Promise<DeployOutcome> => {
+  try {
+    return await withTimeout(
+      call<DeployOutcome>("/overrides/deploy", token, { method: "POST", body: input }),
       DEPLOY_TIMEOUT_MS,
     );
   } catch (err) {

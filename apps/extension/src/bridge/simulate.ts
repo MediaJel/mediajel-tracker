@@ -82,7 +82,12 @@ const lateFor = (win: Window, tried: Tried): string[] => {
  * other request goes through as it came. The tried versions are named on the page, so a block
  * already deployed to the file, of another version, stands aside for the one being tried.
  */
-export const serveEdits = (win: Window, tried: Tried): { late: string[]; stop(): void } => {
+export const serveEdits = (
+  win: Window,
+  tried: Tried,
+  /** Called when the tag's CDN already serves a tried edit — its version is in the file. */
+  onLive: (appId: string) => void = () => undefined,
+): { late: string[]; stop(): void } => {
   const page = win as unknown as Record<string, unknown>;
   page[TRIED_VERSIONS] = Object.fromEntries(Object.entries(tried).map(([appId, edit]) => [appId, edit.version]));
   const original = win.fetch;
@@ -90,6 +95,7 @@ export const serveEdits = (win: Window, tried: Tried): { late: string[]; stop():
     const appId = editedFor(urlOf(input, win.location.href), tried);
     if (!appId) return original.call(win, input, init);
     const code = await original.call(win, input, init).then(codeOf, () => "");
+    if (code.includes(JSON.stringify(tried[appId].version))) onLive(appId);
     return new Response(`${code}\n${tried[appId].block}\n`, {
       status: 200,
       headers: { "content-type": "text/javascript" },

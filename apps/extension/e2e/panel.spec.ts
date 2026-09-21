@@ -82,6 +82,21 @@ const editObject = async (page: Page): Promise<void> => {
   await page.locator("[data-slot=config-edit] button", { hasText: "Config object" }).click();
 };
 
+/** The tried edit's configuration, with Deploy asked for: the receipt of what the commit would do. */
+const openDeploy = async (page: Page): Promise<void> => {
+  await openConfig(page);
+  await page.locator("[data-slot=tag-config] button", { hasText: "Deploy…" }).click();
+  await page.locator("[data-slot=overrides-deploy] [data-slot=overrides-block]").scrollIntoViewIfNeeded();
+  // The pointer is left where the button was; after the scroll that is over the chart, whose tooltip would show.
+  await page.mouse.move(0, 0);
+};
+
+/** A committed edit's configuration, scrolled to the stamp under it. */
+const openDeployed = async (page: Page): Promise<void> => {
+  await openConfig(page);
+  await page.locator("[data-slot=overrides-deployed]").scrollIntoViewIfNeeded();
+};
+
 /** Choose a view by its tab. */
 const openView = (view: "analytics" | "events" | "setup") => click(`[data-view=${view}]`);
 
@@ -164,6 +179,12 @@ const SCENARIOS: Scenario[] = [
   { name: "overview-config-object", ready: ["[data-slot=config-edit] [data-slot=config-object]"], act: editObject },
   { name: "overview-config-trying", ready: ["[data-slot=tag-config] pre"], act: openConfig },
   { name: "overview-config-late", ready: ["[data-slot=tag-config-late]"], act: openConfig },
+  {
+    name: "overview-config-deploy",
+    ready: ["[data-slot=overrides-deploy] [data-slot=overrides-block]"],
+    act: openDeploy,
+  },
+  { name: "overview-config-deployed", ready: ["[data-slot=overrides-deployed]"], act: openDeployed },
   { name: "config-script-only", ready: ["[data-slot=tag-config] pre"], act: openConfig },
   { name: "events-empty", ready: ["[data-slot=ledger-empty]"], act: openView("events") },
   { name: "events-live", ready: ["[data-slot=ledger-page] ~ [data-slot=ledger-page]"], act: openView("events") },

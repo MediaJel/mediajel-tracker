@@ -216,6 +216,18 @@ reached the page gets one warning line and *Apply again*. When the activity serv
 (failed, or not set up), the Overview still prints each tag's heading and configuration above the
 note, so an edit never depends on the counts.
 
+**Deploying an edit** opens a receipt in the slip, under a hairline, in place of its actions:
+`DEPLOY THE EDIT`, the tag's app-id file's path in mono, one sentence on what the commit does to it
+("Adds the edit below the file's 5 lines of its own code, which stay as they are" — or creates the
+file, replaces the edit deployed before, or takes it out), the block itself in a Machine block, and
+*The whole file* one disclosure down; then one privacy-purple line — it commits to master of the
+frictionless repo as the signed-in engineer, with MediaJel's credential, and the tag's CDN serves it
+within minutes — and *Deploy* (identity) · *Cancel*. Committed, the filled `DEPLOYED` stamp and *The
+commit* sit under the configuration, and the slip's note says the page runs the edit until the CDN
+serves it; the page bridge sees the edit's version in the served file and the edit stops being
+tried. Stopping every param an earlier edit set, then trying, tries the file without that edit, and
+deploying it takes the block back out.
+
 **The ledger** is the Events view: every event this tab's page was heard sending — collector
 events, partner beacons, custom-tag fetches and the third-party tags they register — newest first
 under the page that made it, in a rail of rows with the receipt of the chosen row beside it. From

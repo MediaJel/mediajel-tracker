@@ -1,6 +1,6 @@
 import { FormEvent, ReactNode, useId, useState } from "react";
 
-import { ENVIRONMENTS } from "@mediajel/assistant-core/simulation";
+import { ENVIRONMENTS, TriedEdit } from "@mediajel/assistant-core/simulation";
 import { TagRecord } from "@mediajel/assistant-core/tags";
 
 import type { SimulationState } from "~/sidepanel/useSimulation";
@@ -23,6 +23,8 @@ import {
   withValue,
 } from "~/ui/config-edit";
 import { ConfigurationSlip } from "~/ui/screens/ConfigurationSlip";
+import { DeployReceipt, DeployedLine } from "~/ui/screens/OverridesDeploy";
+import { triedLine } from "~/ui/overrides-deploy";
 
 /**
  * A tag's configuration on the Overview, where it can be changed and tried on the page.
@@ -282,22 +284,23 @@ const ConfigurationForm = ({ tag, start, busy, onTry, onCancel }: FormProps): Re
   );
 };
 
-const editsCount = (count: number): string => `${count} ${count === 1 ? "edit" : "edits"}`;
-
 /** What is being tried on the page, said beside the disclosure so it shows closed as well as open. */
-const TriedNote = ({ count }: { count: number }): ReactNode =>
-  count > 0 ? (
+const TriedNote = ({ tried }: { tried: TriedEdit | undefined }): ReactNode => {
+  const line = triedLine(tried);
+  return line ? (
     <span data-slot="tag-config-tried" className="text-xs text-primary">
-      {editsCount(count)} tried on this page
+      {line}
     </span>
   ) : null;
+};
 
 interface ActionsProps {
-  trying: boolean;
+  tried: TriedEdit | undefined;
   late: boolean;
   opening: boolean;
   error: string;
   onEdit(): void;
+  onDeploy(): void;
   onStop(): void;
   onApplyAgain(): void;
 }
@@ -322,13 +325,23 @@ const EditButton = ({ opening, onEdit }: Pick<ActionsProps, "opening" | "onEdit"
   </Button>
 );
 
-/** Under the read configuration: edit it, stop trying an edit, or start the page again when the tag read it too early. */
+/** A tried edit not yet committed can be deployed; one already committed waits for the CDN. */
+const DeployButton = ({ tried, onDeploy }: Pick<ActionsProps, "tried" | "onDeploy">): ReactNode =>
+  tried && !tried.deployed ? (
+    <Button type="button" variant="outline" size="xs" onClick={onDeploy}>
+      Deploy…
+    </Button>
+  ) : null;
+
+/** Under the read configuration: edit it, deploy the edit tried, stop trying it, or start the page again when the tag read it too early. */
 const SlipActions = (props: ActionsProps): ReactNode => (
   <div className="mt-3">
+    {props.tried && <DeployedLine tried={props.tried} />}
     <LateLine late={props.late} onApplyAgain={props.onApplyAgain} />
     <div className="flex items-center gap-3">
       <EditButton opening={props.opening} onEdit={props.onEdit} />
-      {props.trying && <Link onClick={props.onStop}>Stop trying the edit</Link>}
+      <DeployButton tried={props.tried} onDeploy={props.onDeploy} />
+      {props.tried && <Link onClick={props.onStop}>Stop trying the edit</Link>}
     </div>
     <ErrorLine error={props.error} />
   </div>
@@ -337,13 +350,13 @@ const SlipActions = (props: ActionsProps): ReactNode => (
 const message = (err: unknown): string => (err instanceof Error ? err.message : String(err));
 
 /** Where an editor starts: the edit tried on the page, else the one deployed to the tag's app-id file. */
-const useEditing = (key: string, tried: Edits | undefined, simulation: SimulationState) => {
+const useEditing = (key: string, tried: TriedEdit | undefined, simulation: SimulationState) => {
   const [start, setStart] = useState<Edits | null>(null);
   const [opening, setOpening] = useState(false);
   const [error, setError] = useState("");
   const open = async (): Promise<void> => {
     if (tried) {
-      setStart(tried);
+      setStart(tried.edits);
       return;
     }
     setOpening(true);
@@ -359,8 +372,9 @@ const useEditing = (key: string, tried: Edits | undefined, simulation: Simulatio
   return { start, opening, error, open, close: () => setStart(null) };
 };
 
-/** The edit tried on the page for this tag — its params — or none; a background older than the panel sends no `tried` at all. */
-const triedOf = (simulation: SimulationState, key: string): Edits => simulation.simulation?.tried?.[key]?.edits ?? {};
+/** The edit tried on the page for this tag, or none; a background older than the panel sends no `tried` at all. */
+const triedOf = (simulation: SimulationState, key: string): TriedEdit | undefined =>
+  simulation.simulation?.tried?.[key];
 
 const isLate = (simulation: SimulationState, key: string): boolean => simulation.page?.late.includes(key) ?? false;
 
@@ -369,8 +383,9 @@ type Editing = ReturnType<typeof useEditing>;
 interface PartProps {
   tag: TagRecord;
   overridesKey: string;
-  tried: Edits;
+  tried: TriedEdit | undefined;
   editing: Editing;
+  deploying: { open: boolean; set(open: boolean): void };
   simulation: SimulationState;
 }
 
@@ -386,19 +401,37 @@ const EditingForm = ({ tag, overridesKey, editing, simulation }: PartProps): Rea
   );
 };
 
-/** The actions, while it is read. */
-const ReadingActions = ({ overridesKey, tried, editing, simulation }: PartProps): ReactNode =>
-  editing.start ? null : (
-    <SlipActions
-      trying={Object.keys(tried).length > 0}
-      late={isLate(simulation, overridesKey)}
-      opening={editing.opening}
-      error={editing.error || simulation.error}
-      onEdit={() => void editing.open()}
-      onStop={() => simulation.tryEdits(overridesKey, {})}
-      onApplyAgain={simulation.reloadPage}
+/** The actions while it is read. */
+const ReadActions = ({ overridesKey, tried, editing, deploying, simulation }: PartProps): ReactNode => (
+  <SlipActions
+    tried={tried}
+    late={isLate(simulation, overridesKey)}
+    opening={editing.opening}
+    error={editing.error || simulation.error}
+    onEdit={() => void editing.open()}
+    onDeploy={() => deploying.set(true)}
+    onStop={() => simulation.stopTrying(overridesKey)}
+    onApplyAgain={simulation.reloadPage}
+  />
+);
+
+/** Under the groups while they are read: the actions — or, once Deploy is asked for, the deploy's receipt in their place. */
+const ReadingActions = (props: PartProps): ReactNode => {
+  if (props.editing.start) return null;
+  const { tried, deploying } = props;
+  return deploying.open && tried ? (
+    <DeployReceipt
+      overridesKey={props.overridesKey}
+      tried={tried}
+      simulation={props.simulation}
+      onClose={() => deploying.set(false)}
     />
+  ) : (
+    <ReadActions {...props} />
   );
+};
+
+const NO_KEYS: ReadonlySet<string> = new Set();
 
 export const EditableConfiguration = ({
   tag,
@@ -409,14 +442,21 @@ export const EditableConfiguration = ({
 }): ReactNode => {
   const overridesKey = overridesKeyOf(tag);
   const tried = triedOf(simulation, overridesKey);
-  const trying = Object.keys(tried).length > 0;
-  const editing = useEditing(overridesKey, trying ? tried : undefined, simulation);
-  const parts: PartProps = { tag, overridesKey, tried, editing, simulation };
+  const editing = useEditing(overridesKey, tried, simulation);
+  const [deployOpen, setDeployOpen] = useState(false);
+  const parts: PartProps = {
+    tag,
+    overridesKey,
+    tried,
+    editing,
+    deploying: { open: deployOpen, set: setDeployOpen },
+    simulation,
+  };
   return (
     <ConfigurationSlip
       tag={tag}
-      note={<TriedNote count={Object.keys(tried).length} />}
-      tried={new Set(Object.keys(tried))}
+      note={<TriedNote tried={tried} />}
+      tried={tried ? new Set(Object.keys(tried.edits)) : NO_KEYS}
       editing={editing.start ? <EditingForm {...parts} /> : undefined}
       footer={<ReadingActions {...parts} />}
     />

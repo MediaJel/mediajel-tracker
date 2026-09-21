@@ -2,20 +2,33 @@ import { beforeEach, describe, expect, mock, test } from "bun:test";
 
 import { BridgeDown } from "~/bridge/protocol";
 import { handle } from "~/background/handle";
-import { armTab, reportFromPage } from "~/background/simulation";
+import { armTab, reportFromPage, settleLive } from "~/background/simulation";
 import { installSimulatedTag, serveEdits } from "~/bridge/simulate";
 import { readSettings } from "~/store/settings";
 import { clearExtensionStorage } from "./setup";
 
-/** The assistant service's preview, as the background asks it: the block it would render, and its version. */
+/** The assistant service's preview and deploy, as the background asks them. */
 const previews: { appId: string; edits: Record<string, string> }[] = [];
+const deploys: { appId: string; edits: Record<string, string>; expectedSha?: string }[] = [];
+/** What the tag's app-id file carries now, as the preview reads it back. */
+let deployedInFile: Record<string, string> | null = null;
 // Every other export stays the real one, so no other test file that runs after this one is touched.
 const client = await import("~/service/client");
 mock.module("~/service/client", () => ({
   ...client,
   previewOverrides: async (_token: unknown, input: { appId: string; edits: Record<string, string> }) => {
     previews.push(input);
-    return { block: `;/* block for ${input.appId} */`, version: "v-0000abcd", deployed: null };
+    const empty = Object.keys(input.edits).length === 0;
+    return { block: empty ? null : `;/* block for ${input.appId} */`, version: "v-0000abcd", deployed: deployedInFile };
+  },
+  deployOverrides: async (_token: unknown, input: { appId: string; edits: Record<string, string> }) => {
+    deploys.push(input);
+    return {
+      commitUrl: "https://github.com/c/1",
+      fileUrl: "https://github.com/f/1",
+      path: "src/app-ids/x.ts",
+      update: true,
+    };
   },
 }));
 
@@ -41,8 +54,16 @@ interface ChromeSpies {
 }
 const spies: ChromeSpies = { reloaded: [], badges: [] };
 
-beforeEach(() => {
+beforeEach(async () => {
+  // The store keeps a mirror in memory; removing through it leaves both it and storage empty.
+  await handle(
+    { type: "simulation/remove", site: "shop.example.com" },
+    async () => true,
+    () => undefined,
+  );
   clearExtensionStorage();
+  deployedInFile = null;
+  deploys.length = 0;
   sent.length = 0;
   spies.reloaded.length = 0;
   spies.badges.length = 0;
@@ -165,16 +186,26 @@ describe("an edit tried on a site", () => {
     });
   });
 
-  test("no edits stop trying it, and a site with nothing left to run has no simulation", async () => {
+  test("stopping it — or trying no edits on a file that holds none — leaves a site with nothing to run", async () => {
     await ask({ type: "simulation/try", tabId: TAB, appId: APP, edits: { "s3.pv": "Tried" } });
+    await ask({ type: "simulation/stop", tabId: TAB, appId: APP });
+    expect(await ask({ type: "simulation/read", tabId: TAB })).toEqual({ simulation: null, page: null });
     await ask({ type: "simulation/try", tabId: TAB, appId: APP, edits: {} });
     expect(await ask({ type: "simulation/read", tabId: TAB })).toEqual({ simulation: null, page: null });
+  });
+
+  test("no edits on a file that holds an earlier one tries the file without it", async () => {
+    deployedInFile = { "s3.pv": "Earlier" };
+    const view = (await ask({ type: "simulation/try", tabId: TAB, appId: APP, edits: {} })) as {
+      simulation: { tried: Record<string, unknown> };
+    };
+    expect(view.simulation.tried[APP]).toEqual({ edits: {}, block: "", version: "v-0000abcd" });
   });
 
   test("beside a simulated install, the install stays when the edit goes", async () => {
     await ask({ type: "simulation/install", tabId: TAB, url: URL_ });
     await ask({ type: "simulation/try", tabId: TAB, appId: APP, edits: { "s3.pv": "Tried" } });
-    const view = (await ask({ type: "simulation/try", tabId: TAB, appId: APP, edits: {} })) as {
+    const view = (await ask({ type: "simulation/stop", tabId: TAB, appId: APP })) as {
       simulation: { install: unknown; tried: Record<string, unknown> };
     };
     expect(view.simulation.install).not.toBeNull();
@@ -250,5 +281,52 @@ describe("edits served in the page", () => {
     served.stop();
     expect(win.fetch).toBe(own);
     expect(win.__mediajelAssistantOverrides).toBeUndefined();
+  });
+});
+
+describe("deploying a tried edit", () => {
+  const APP = "5f976cbb-7d29-46ce-bf07-0f701478d800";
+
+  test("commits exactly the edit tried, against the sha shown, and keeps running it until the CDN serves it", async () => {
+    await ask({ type: "simulation/try", tabId: TAB, appId: APP, edits: { "s3.pv": "Tried" } });
+    const deployed = (await ask({ type: "simulation/deploy", tabId: TAB, appId: APP, expectedSha: "3f1c2e9" })) as {
+      view: { simulation: { tried: Record<string, { deployed?: { commitUrl: string } }> } };
+      outcome: { commitUrl: string };
+    };
+    expect(deploys).toEqual([{ appId: APP, edits: { "s3.pv": "Tried" }, expectedSha: "3f1c2e9" }]);
+    expect(deployed.outcome.commitUrl).toBe("https://github.com/c/1");
+    expect(deployed.view.simulation.tried[APP].deployed?.commitUrl).toBe("https://github.com/c/1");
+
+    // A page found the CDN serving it: no longer tried, and nothing is left to run on the site.
+    await settleLive(SITE, [APP]);
+    expect(await ask({ type: "simulation/read", tabId: TAB })).toMatchObject({ simulation: null });
+  });
+
+  test("an edit not yet committed stays tried however the CDN answers", async () => {
+    await ask({ type: "simulation/try", tabId: TAB, appId: APP, edits: { "s3.pv": "Tried" } });
+    await settleLive(SITE, [APP]);
+    expect(await ask({ type: "simulation/read", tabId: TAB })).toMatchObject({
+      simulation: { tried: { [APP]: { edits: { "s3.pv": "Tried" } } } },
+    });
+  });
+
+  test("there is nothing to deploy for a tag with no edit tried", async () => {
+    await expect(ask({ type: "simulation/deploy", tabId: TAB, appId: APP })).rejects.toThrow("nothing to deploy");
+  });
+});
+
+describe("a tried edit the CDN already serves", () => {
+  const APP = "5f976cbb-7d29-46ce-bf07-0f701478d800";
+
+  test("is noticed by its version in the served file", async () => {
+    const live: string[] = [];
+    const win = {
+      location: { href: "https://terrabis.co/" },
+      fetch: async () => new Response(';(function(){})("5f976cbb",{},"v-0000abcd");'),
+      performance: { getEntriesByType: () => [] },
+    } as unknown as Window;
+    serveEdits(win, { [APP]: { block: ";/* tried */", version: "v-0000abcd" } }, (appId) => live.push(appId));
+    await win.fetch(`https://test-custom-tags.cnna.io/app-ids/${btoa(APP)}.js`);
+    expect(live).toEqual([APP]);
   });
 });
