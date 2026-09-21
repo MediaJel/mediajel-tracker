@@ -4,6 +4,7 @@ import { trackerStatus } from "@mediajel/assistant-core/tags";
 import { viewOf } from "@mediajel/assistant-core/wire/view";
 
 import { AuthState, JobPatch, JobView, Request, ResultOf } from "~/bridge/api";
+import type { WidgetGeneration, WidgetSession } from "@mediajel/assistant-core/types";
 import { BridgeDown } from "~/bridge/protocol";
 import { answerChallenge, forgetPending, signIn } from "~/auth/cognito";
 import { SIGNED_OUT } from "~/auth/signed-out";
@@ -55,8 +56,8 @@ const slimTag = ({
 });
 
 /**
- * The status as it stood before the tag record learned its collector, its configuration and when it
- * was last heard — what the assistant service has always been sent. Nothing the panel now reads off
+ * The status as it stood before the tag record learned its collector and its configuration — what
+ * the assistant service has always been sent. Nothing the panel now reads off
  * the wire leaves the browser with a generation.
  */
 const slimStatus = (status: TrackerStatus): TrackerStatus => ({
@@ -204,198 +205,231 @@ const publishScripts = async (tabId: number, site: string, push: Push): Promise<
 /** An injected tag is in the page's scripts a moment later; read them then, so its row fills in. */
 const INJECTED_SCRIPT_READ_MS = 1_500;
 
-export const handle = async (request: Request, send: Send, push: Push): Promise<ResultOf[Request["type"]]> => {
-  switch (request.type) {
-    case "auth/session":
-      return authState();
+/** How a handler reaches the page and the panel. */
+interface Context {
+  send: Send;
+  push: Push;
+}
 
-    case "auth/sign-in": {
-      const result = await signIn(request.username.trim(), request.password);
-      if (!result.done) return authState(result.challenge);
-      await writeSession(result.session);
-      return authState();
-    }
+type Handler<K extends Request["type"]> = (
+  request: Extract<Request, { type: K }>,
+  context: Context,
+) => Promise<ResultOf[K]> | ResultOf[K];
 
-    case "auth/answer": {
-      const session = await answerChallenge(request.kind, request.answer.trim());
-      await writeSession(session);
-      return authState();
-    }
+const signInWith: Handler<"auth/sign-in"> = async (request) => {
+  const result = await signIn(request.username.trim(), request.password);
+  if (!result.done) return authState(result.challenge);
+  await writeSession(result.session);
+  return authState();
+};
 
-    case "auth/sign-out":
-      forgetPending();
-      await clearSession();
-      return authState();
+/**
+ * Ask the page what it can see now rather than trusting what it said a page-load ago — a tag can
+ * arrive late, and Verify's whole story depends on whether it is there — and read its scripts
+ * from here, which needs nothing in the page to answer.
+ */
+const openJobView: Handler<"job/open"> = async (request, { send, push }) => {
+  const tab = await chrome.tabs.get(request.tabId);
+  const site = siteOf(tab.url ?? "");
+  if (!site) return null;
+  void deliver(send, request.tabId, { type: "snapshot" });
+  await publishScripts(request.tabId, site, push);
+  return view(request.tabId);
+};
 
-    case "auth/check-access":
-      return checkAccess(currentIdToken);
+const resetJobView: Handler<"job/reset"> = async (request, { send }) => {
+  const site = await siteOfTab(request.tabId);
+  void send(request.tabId, { type: "stop-recording" });
+  generating.get(request.tabId)?.abort();
+  await resetJob(site, { goal: request.goal });
+  return view(request.tabId);
+};
 
-    case "settings/read":
-      return readSettings();
+/** Same reason as stop: without the rehydration, a recycled worker turns every step change into "home". */
+const advanceJob: Handler<"job/advance"> = async (request) => {
+  const site = await siteOfTab(request.tabId);
+  await openJob(site);
+  return advance(site, request.to, { confirmed: request.confirmed }) ?? "home";
+};
 
-    case "settings/write":
-      return writeSettings(request.patch);
+const patchJobView: Handler<"job/patch"> = async (request) => {
+  const site = await siteOfTab(request.tabId);
+  patchJob(site, request.patch);
+  return peekJob(site) ?? (await openJob(site));
+};
 
-    case "job/open": {
-      const tab = await chrome.tabs.get(request.tabId);
-      const site = siteOf(tab.url ?? "");
-      if (!site) return null;
-      // Ask the page what it can see now rather than trusting what it said a page-load ago — a
-      // tag can arrive late, and Verify's whole story depends on whether it is there — and read
-      // its scripts from here, which needs nothing in the page to answer.
-      void deliver(send, request.tabId, { type: "snapshot" });
-      await publishScripts(request.tabId, site, push);
-      return view(request.tabId);
-    }
+/** A fresh job: new session id, new startedAt — every event's `t` is measured from it. */
+const startRecording: Handler<"page/start-recording"> = async (request, { send }) => {
+  const site = await siteOfTab(request.tabId);
+  const session = await resetJob(site, { goal: request.goal });
+  const step = advance(site, "recording");
+  void deliver(send, request.tabId, { type: "start-recording", startedAt: session.startedAt });
+  return step ?? "home";
+};
 
-    case "job/list":
-      return listJobs();
+/**
+ * Rehydrate first. A recording is minutes of the panel saying nothing to this worker, so Chrome has
+ * very likely recycled it and `live` is empty — and `advance` on an empty map returns null, which
+ * used to leave the operator pressing Stop against a dead step.
+ */
+const stopRecording: Handler<"page/stop-recording"> = async (request, { send }) => {
+  const site = await siteOfTab(request.tabId);
+  await openJob(site);
+  void deliver(send, request.tabId, { type: "stop-recording" });
+  return advance(site, "review") ?? "recording";
+};
 
-    case "job/delete":
-      await deleteJob(request.site);
-      return null;
+/** The job's generated tag, or the reason there is nothing to act on yet. */
+const generatedOf = async (
+  site: string,
+  missing: string,
+): Promise<WidgetSession & { generation: WidgetGeneration }> => {
+  const session = peekJob(site) ?? (await openJob(site));
+  if (!session.generation) throw new Error(missing);
+  return session as WidgetSession & { generation: WidgetGeneration };
+};
 
-    case "job/clear-all":
-      await clearAllJobs();
-      return null;
+const verifyOnPage: Handler<"page/verify"> = async (request, { send }) => {
+  const site = await siteOfTab(request.tabId);
+  const session = await generatedOf(site, "There is no generated tag to verify yet.");
+  updateJob(site, (draft) => {
+    draft.verify = { captured: draft.verify?.captured ?? [], errors: [] };
+  });
+  if (!(await deliver(send, request.tabId, { type: "verify", code: session.generation.code })))
+    throw new Error(UNREACHABLE);
+  return null;
+};
 
-    case "job/reset": {
-      const site = await siteOfTab(request.tabId);
-      void send(request.tabId, { type: "stop-recording" });
-      generating.get(request.tabId)?.abort();
-      await resetJob(site, { goal: request.goal });
-      return view(request.tabId);
-    }
+const injectTag: Handler<"page/inject-tag"> = async (request, { send, push }) => {
+  const site = await siteOfTab(request.tabId);
+  if (!(await deliver(send, request.tabId, { type: "inject-tag", url: request.url }))) throw new Error(UNREACHABLE);
+  setTimeout(() => void publishScripts(request.tabId, site, push), INJECTED_SCRIPT_READ_MS);
+  await writeSettings({ lastInjectedTagUrl: request.url });
+  return null;
+};
 
-    case "job/advance": {
-      const site = await siteOfTab(request.tabId);
-      // Same reason as stop: without this, a recycled worker turns every step change into "home".
-      await openJob(site);
-      return advance(site, request.to, { confirmed: request.confirmed }) ?? "home";
-    }
+const clearDedup: Handler<"page/clear-dedup"> = async (request, { send }) => {
+  const site = await siteOfTab(request.tabId);
+  const { appId } = await statusOf(request.tabId, site);
+  if (!appId) throw new Error("This page has no MediaJel tag, so there is no dedup state to clear.");
+  void send(request.tabId, { type: "clear-dedup", appId });
+  return null;
+};
 
-    case "job/patch": {
-      const site = await siteOfTab(request.tabId);
-      patchJob(site, request.patch);
-      return peekJob(site) ?? (await openJob(site));
-    }
+const generate: Handler<"service/generate"> = async (request, { push }) => {
+  const site = await siteOfTab(request.tabId);
+  advance(site, "generating");
+  void runGeneration(request.tabId, site, push);
+  return null;
+};
 
-    case "page/start-recording": {
-      const site = await siteOfTab(request.tabId);
-      // A fresh job: new session id, new startedAt — every event's `t` is measured from it.
-      const session = await resetJob(site, { goal: request.goal });
-      const step = advance(site, "recording");
-      void deliver(send, request.tabId, { type: "start-recording", startedAt: session.startedAt });
-      return step ?? "home";
-    }
+const cancelGenerate: Handler<"service/cancel-generate"> = async (request) => {
+  const site = await siteOfTab(request.tabId);
+  generating.get(request.tabId)?.abort();
+  generating.delete(request.tabId);
+  advance(site, "review");
+  return null;
+};
 
-    case "page/stop-recording": {
-      const site = await siteOfTab(request.tabId);
-      // Rehydrate first. A recording is minutes of the panel saying nothing to this worker, so
-      // Chrome has very likely recycled it and `live` is empty — and `advance` on an empty map
-      // returns null, which used to leave the operator pressing Stop against a dead step.
-      await openJob(site);
-      void deliver(send, request.tabId, { type: "stop-recording" });
-      return advance(site, "review") ?? "recording";
-    }
+/** Where the tag the deploy wrote is served from, when this build knows the custom-tag host. */
+const cdnUrlOf = (kind: "domain" | "app-id", name: string): string | undefined => {
+  const base = (process.env.PLASMO_PUBLIC_FRICTIONLESS_CUSTOMTAG_URL ?? "").trim();
+  return base ? `${base}/${kind === "domain" ? "domains" : "app-ids"}/${btoa(name)}.js` : undefined;
+};
 
-    case "page/verify": {
-      const site = await siteOfTab(request.tabId);
-      const session = peekJob(site) ?? (await openJob(site));
-      if (!session.generation) throw new Error("There is no generated tag to verify yet.");
-      updateJob(site, (draft) => {
-        draft.verify = { captured: draft.verify?.captured ?? [], errors: [] };
-      });
-      if (!(await deliver(send, request.tabId, { type: "verify", code: session.generation.code })))
-        throw new Error(UNREACHABLE);
-      return null;
-    }
-
-    case "page/inject-tag": {
-      const site = await siteOfTab(request.tabId);
-      if (!(await deliver(send, request.tabId, { type: "inject-tag", url: request.url }))) throw new Error(UNREACHABLE);
-      setTimeout(() => void publishScripts(request.tabId, site, push), INJECTED_SCRIPT_READ_MS);
-      await writeSettings({ lastInjectedTagUrl: request.url });
-      return null;
-    }
-
-    case "page/clear-dedup": {
-      const site = await siteOfTab(request.tabId);
-      const { appId } = await statusOf(request.tabId, site);
-      if (!appId) throw new Error("This page has no MediaJel tag, so there is no dedup state to clear.");
-      void send(request.tabId, { type: "clear-dedup", appId });
-      return null;
-    }
-
-    case "service/generate": {
-      const site = await siteOfTab(request.tabId);
-      advance(site, "generating");
-      void runGeneration(request.tabId, site, push);
-      return null;
-    }
-
-    case "service/cancel-generate": {
-      const site = await siteOfTab(request.tabId);
-      generating.get(request.tabId)?.abort();
-      generating.delete(request.tabId);
-      advance(site, "review");
-      return null;
-    }
-
-    case "service/existing-tag":
-      return readExistingTag(currentIdToken, request.kind, request.name);
-
-    case "service/tag-activity":
-      return readTagActivity(currentIdToken, request.appIds);
-
-    case "events/read":
-      return viewOf(await readLedger(request.tabId, await siteOfTab(request.tabId)));
-
-    case "events/clear":
-      await clearLedger(request.tabId, await siteOfTab(request.tabId));
-      return null;
-
-    case "service/deploy": {
-      const site = await siteOfTab(request.tabId);
-      const session = peekJob(site) ?? (await openJob(site));
-      if (!session.generation) throw new Error("There is no generated tag to deploy.");
-
-      const outcome = await deployTag(currentIdToken, {
-        goal: session.goal,
+const deployFromJob: Handler<"service/deploy"> = async (request) => {
+  const site = await siteOfTab(request.tabId);
+  const session = await generatedOf(site, "There is no generated tag to deploy.");
+  const outcome = await deployTag(currentIdToken, {
+    goal: session.goal,
+    kind: request.kind,
+    name: request.name,
+    code: session.generation.code,
+    expectedSha: request.expectedSha,
+  });
+  updateJob(
+    site,
+    (draft) => {
+      draft.deploy = {
+        at: Date.now(),
         kind: request.kind,
-        name: request.name,
-        code: session.generation.code,
-        expectedSha: request.expectedSha,
-      });
-      const base = (process.env.PLASMO_PUBLIC_FRICTIONLESS_CUSTOMTAG_URL ?? "").trim();
-      updateJob(
-        site,
-        (draft) => {
-          draft.deploy = {
-            at: Date.now(),
-            kind: request.kind,
-            path: outcome.path,
-            commitUrl: outcome.commitUrl,
-            fileUrl: outcome.fileUrl,
-            update: outcome.update,
-            cdnUrl: base
-              ? `${base}/${request.kind === "domain" ? "domains" : "app-ids"}/${btoa(request.name)}.js`
-              : undefined,
-          };
-        },
-        { flush: true },
-      );
-      advance(site, "done");
-      return outcome;
-    }
+        path: outcome.path,
+        commitUrl: outcome.commitUrl,
+        fileUrl: outcome.fileUrl,
+        update: outcome.update,
+        cdnUrl: cdnUrlOf(request.kind, request.name),
+      };
+    },
+    { flush: true },
+  );
+  advance(site, "done");
+  return outcome;
+};
 
-    default:
-      // A panel newer than this background asked for something it has no case for. Answering with
-      // nothing surfaced as a crash layers away in the panel; refusing in words says what to do.
-      throw new Error(
-        `This version of the assistant's background does not know "${(request as { type: string }).type}". Reload the extension in chrome://extensions.`,
-      );
-  }
+/**
+ * Every request the panel can make, each one thing that returns a value; the caller in `index.ts`
+ * turns a throw into `{ ok: false, error }`. That is what lets every failure in the product — a
+ * wrong password, an expired session, a service that refused a tag — arrive at the panel as one
+ * string written to be read, instead of as an exception someone has to interpret.
+ */
+const REQUESTS: { [K in Request["type"]]: Handler<K> } = {
+  "auth/session": () => authState(),
+  "auth/sign-in": signInWith,
+  "auth/answer": async (request) => {
+    await writeSession(await answerChallenge(request.kind, request.answer.trim()));
+    return authState();
+  },
+  "auth/sign-out": async () => {
+    forgetPending();
+    await clearSession();
+    return authState();
+  },
+  "auth/check-access": () => checkAccess(currentIdToken),
+  "settings/read": () => readSettings(),
+  "settings/write": (request) => writeSettings(request.patch),
+  "job/open": openJobView,
+  "job/list": () => listJobs(),
+  "job/delete": async (request) => {
+    await deleteJob(request.site);
+    return null;
+  },
+  "job/clear-all": async () => {
+    await clearAllJobs();
+    return null;
+  },
+  "job/reset": resetJobView,
+  "job/advance": advanceJob,
+  "job/patch": patchJobView,
+  "page/start-recording": startRecording,
+  "page/stop-recording": stopRecording,
+  "page/verify": verifyOnPage,
+  "page/inject-tag": injectTag,
+  "page/clear-dedup": clearDedup,
+  "service/generate": generate,
+  "service/cancel-generate": cancelGenerate,
+  "service/existing-tag": (request) => readExistingTag(currentIdToken, request.kind, request.name),
+  "service/tag-activity": (request) => readTagActivity(currentIdToken, request.appIds),
+  "service/deploy": deployFromJob,
+  "events/read": async (request) => viewOf(await readLedger(request.tabId, await siteOfTab(request.tabId))),
+  "events/clear": async (request) => {
+    await clearLedger(request.tabId, await siteOfTab(request.tabId));
+    return null;
+  },
+};
+
+/**
+ * A panel newer than this background asked for something it has no case for. Answering with
+ * nothing surfaced as a crash layers away in the panel; refusing in words says what to do.
+ */
+const unknown = (type: string): Error =>
+  new Error(
+    `This version of the assistant's background does not know "${type}". Reload the extension in chrome://extensions.`,
+  );
+
+export const handle = async (request: Request, send: Send, push: Push): Promise<ResultOf[Request["type"]]> => {
+  const handler = REQUESTS[request.type] as Handler<Request["type"]> | undefined;
+  if (!handler) throw unknown((request as { type: string }).type);
+  return handler(request as never, { send, push });
 };
 
 /** Both deploy targets for a tab, so the panel can offer the choice without guessing paths. */
