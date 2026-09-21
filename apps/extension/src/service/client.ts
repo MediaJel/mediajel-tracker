@@ -74,6 +74,26 @@ export interface DeployOutcome {
   update: boolean;
 }
 
+/** What an edit to a tag's configuration does to its app-id file: the service's `/overrides/preview`. */
+export interface OverridesPreview {
+  path: string;
+  exists: boolean;
+  sha?: string;
+  before: string;
+  after: string;
+  /** The code the page runs when the edit is tried, byte for byte what a deploy writes; null when the edit takes the block out. */
+  block: string | null;
+  version: string | null;
+  /** The edits the file's block for this tag carries now, or null when it has none. */
+  deployed: Record<string, string> | null;
+  changed: boolean;
+}
+
+export interface OverridesInput {
+  appId: string;
+  edits: Record<string, string>;
+}
+
 /** A run that hangs is a failure the operator must see; two minutes is generous for a tag. */
 const GENERATION_TIMEOUT_MS = 120_000;
 const HEALTH_TIMEOUT_MS = 20_000;
@@ -208,6 +228,18 @@ export const deployTag = async (token: TokenSource, input: DeployInput): Promise
   try {
     return await withTimeout(
       call<DeployOutcome>("/deploy", token, { method: "POST", body, signal }),
+      DEPLOY_TIMEOUT_MS,
+    );
+  } catch (err) {
+    throw failure(err);
+  }
+};
+
+/** What an edit would do to the tag's app-id file. Nothing is committed. */
+export const previewOverrides = async (token: TokenSource, input: OverridesInput): Promise<OverridesPreview> => {
+  try {
+    return await withTimeout(
+      call<OverridesPreview>("/overrides/preview", token, { method: "POST", body: input }),
       DEPLOY_TIMEOUT_MS,
     );
   } catch (err) {

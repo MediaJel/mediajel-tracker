@@ -7,6 +7,8 @@ import { ConfigSource, TagRecord } from "@mediajel/assistant-core/tags";
  */
 
 export interface ConfigEntry {
+  /** The param the value is read from — the name an edit to it sets. */
+  key: string;
   label: string;
   value: string;
   /** A line under the value: what the value means when it is not what it seems. */
@@ -44,15 +46,17 @@ const SDK: Record<string, string> = {
 /** The value the tag synthesises for a Dstillery segment when the page carries no overrides. */
 const DSTILLERY_DEFAULT = "00000";
 
-interface ParamSpec {
+export interface ParamSpec {
   key: string;
   label: string;
   /** The older name the tag still reads for the same thing. */
   legacy?: string;
+  /** The tag reads the older name first (`segmentId || s1`), so it wins when both are set. */
+  legacyFirst?: boolean;
 }
 
 const SEGMENTS: ParamSpec[] = [
-  { key: "s1", label: "LiquidM segment", legacy: "segmentId" },
+  { key: "s1", label: "LiquidM segment", legacy: "segmentId", legacyFirst: true },
   { key: "s2.pv", label: "Nexxen page-view beacon", legacy: "s2" },
   { key: "s2.tr", label: "Nexxen transaction beacon", legacy: "s2" },
   { key: "s3.pv", label: "Dstillery page-view", legacy: "s3" },
@@ -80,29 +84,40 @@ const LIFTED = new Set(["appId", "mediajelAppId", "version", "environment", "eve
 const identity = (tag: TagRecord): ConfigGroup => ({
   title: "Identity",
   entries: [
-    { label: "App ID", value: tag.appId },
-    { label: "Environment", value: tag.environment || "production", note: tag.environment ? undefined : "default" },
-    { label: "Version", value: SDK[tag.version] ?? tag.version },
-    { label: "Event", value: tag.event || "not set" },
-    { label: "Collector", value: tag.collector || "not set" },
+    { key: "appId", label: "App ID", value: tag.appId },
+    {
+      key: "environment",
+      label: "Environment",
+      value: tag.environment || "production",
+      note: tag.environment ? undefined : "default",
+    },
+    { key: "version", label: "Version", value: SDK[tag.version] ?? tag.version },
+    { key: "event", label: "Event", value: tag.event || "not set" },
+    { key: "collector", label: "Collector", value: tag.collector || "not set" },
   ],
 });
 
-/** A spec's value: from its own key, else from its legacy name. */
-const valueFor = (spec: ParamSpec, params: Record<string, string>): { value?: string; viaLegacy: boolean } => {
-  if (spec.key in params) return { value: params[spec.key], viaLegacy: false };
-  return spec.legacy ? { value: params[spec.legacy], viaLegacy: true } : { value: undefined, viaLegacy: false };
+/** The names a spec's value can be read from, in the order the tag reads them. */
+const namesOf = (spec: ParamSpec): string[] => {
+  const names = spec.legacy ? [spec.key, spec.legacy] : [spec.key];
+  return spec.legacyFirst ? names.reverse() : names;
 };
+
+/** Which of a spec's names the tag's value is read from — the first it has, in the tag's own order — or null. */
+export const readFrom = (spec: ParamSpec, params: Record<string, string>): string | null =>
+  namesOf(spec).find((name) => name in params) ?? null;
 
 /** The entry for a spec, or nothing when the tag has neither of its names. */
 const entryFor = (spec: ParamSpec, params: Record<string, string>): ConfigEntry | null => {
-  const { value, viaLegacy } = valueFor(spec, params);
-  if (value === undefined) return null;
+  const from = readFrom(spec, params);
+  if (from === null) return null;
+  const value = params[from];
   return {
+    key: from,
     label: spec.label,
     value,
     note: value === DSTILLERY_DEFAULT ? "not configured (tag default)" : undefined,
-    legacy: viaLegacy ? spec.legacy : undefined,
+    legacy: from === spec.key ? undefined : from,
   };
 };
 
@@ -114,11 +129,21 @@ const group = (title: string, specs: ParamSpec[], params: Record<string, string>
 /** `enable` comes from the record, not the params: it is what the tag did with the value. */
 const controls = (tag: TagRecord, params: Record<string, string>): ConfigGroup => {
   const built = group("Controls", CONTROLS, params);
-  const enable = { label: "Enabled", value: tag.enabled ? "yes" : "no (enable=false)" };
+  const enable = { key: "enable", label: "Enabled", value: tag.enabled ? "yes" : "no (enable=false)" };
   return { ...built, entries: [enable, ...built.entries] };
 };
 
 const consumed = new Set([...SEGMENTS, ...PLUGINS, ...CONTROLS].flatMap((spec) => [spec.key, spec.legacy ?? ""]));
+
+/** The params an editor offers by name, grouped as the slip prints them, whether or not the tag sets them. */
+export const EDITABLE: { title: string; specs: ParamSpec[] }[] = [
+  { title: "Audience segments", specs: SEGMENTS },
+  { title: "Plugins", specs: PLUGINS },
+  { title: "Controls", specs: [{ key: "enable", label: "Enabled" }, ...CONTROLS] },
+];
+
+/** Whether a param is one the slip prints by name, rather than under "Other parameters". */
+export const isNamedParam = (key: string): boolean => LIFTED.has(key) || consumed.has(key);
 
 /** Every parameter nothing above claimed, in order, its key as its label. */
 const other = (params: Record<string, string>): ConfigGroup => ({
@@ -126,7 +151,7 @@ const other = (params: Record<string, string>): ConfigGroup => ({
   entries: Object.keys(params)
     .filter((key) => !LIFTED.has(key) && !consumed.has(key))
     .sort()
-    .map((key) => ({ label: key, value: params[key] })),
+    .map((key) => ({ key, label: key, value: params[key] })),
 });
 
 /**

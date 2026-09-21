@@ -1,9 +1,10 @@
 import { TagSearch, isTagUrl } from "./context";
 
 /**
- * A tag simulated on a site: installed from its URL in this browser only, on every page of the
- * site, until it is paused or removed — the way an engineer tries a tag before a client installs
- * it. Kept by the extension per site; nothing about it leaves the browser.
+ * A tag simulated on a site, in this browser only, on every page of the site until it is paused or
+ * removed: a tag installed from its URL — the way an engineer tries a tag before a client installs
+ * it — and edits to a tag's configuration, tried before they are deployed. Kept by the extension
+ * per site.
  */
 
 /** The tag a simulation loads, by its URL and the app ID that URL names. */
@@ -12,12 +13,25 @@ export interface SimulatedInstall {
   appId: string;
 }
 
+/**
+ * An edit to a tag's configuration, tried on the site: the params, and the block the assistant
+ * service rendered for them — byte for byte what a deploy writes — with the version the page names
+ * so a deployed block of another version stands aside. Keyed by the app ID the tag's URL names,
+ * which is the key the tag reads `window.overrides` by.
+ */
+export interface TriedEdit {
+  edits: Record<string, string>;
+  block: string;
+  version: string;
+}
+
 export interface SiteSimulation {
   v: 1;
   site: string;
   /** Paused keeps the simulation and loads nothing. */
   enabled: boolean;
   install: SimulatedInstall | null;
+  tried: Record<string, TriedEdit>;
   updatedAt: number;
 }
 
@@ -25,6 +39,8 @@ export interface SiteSimulation {
 export interface SimulationOnPage {
   /** The simulated tag's script did not load: the page's security policy, or the tag's host, refused it. */
   installFailed: boolean;
+  /** Tags that fetched their app-id file before the edits reached the page, so ran without them. */
+  late: string[];
 }
 
 /** A site's simulation as the panel reads it: what is kept, and what the page did with it. */
@@ -82,6 +98,73 @@ export const parseTagUrl = (input: string, search: TagSearch = {}): ParsedTagUrl
   return { ok: true, url: clean.href, appId: appIdOf(clean), params: Object.fromEntries(clean.searchParams) };
 };
 
-/** The command a page needs for a simulation: the tag to load, or nothing when there is none to load. */
-export const installOf = (simulation: SiteSimulation | null): string | null =>
-  simulation?.enabled && simulation.install ? simulation.install.url : null;
+/** What a page is asked to run for a simulation: the tag to load, and each edited tag's block. */
+export interface PageSimulation {
+  install: string | null;
+  tried: Record<string, { block: string; version: string }>;
+}
+
+const blocksOf = (tried: Record<string, TriedEdit>): PageSimulation["tried"] =>
+  Object.fromEntries(
+    Object.entries(tried).map(([appId, edit]) => [appId, { block: edit.block, version: edit.version }]),
+  );
+
+/** The command a page needs for a simulation, or nothing while it is paused or holds nothing to run. */
+export const commandOf = (simulation: SiteSimulation | null): PageSimulation | null => {
+  if (!simulation?.enabled) return null;
+  const command = { install: simulation.install?.url ?? null, tried: blocksOf(simulation.tried) };
+  return command.install || Object.keys(command.tried).length > 0 ? command : null;
+};
+
+/**
+ * Every `environment` the tag has an adapter for — the `case` labels of the tag's own switches
+ * (`apps/tracker/src/adapters/ecommerce.ts`, and `impressions.ts` for impression tags) — offered as
+ * suggestions when an environment is edited. A test holds this list to those files.
+ */
+export const ENVIRONMENTS: readonly string[] = [
+  "bigcommerce",
+  "blaze",
+  "buddi",
+  "carrot",
+  "dispense",
+  "drupal",
+  "dutchie",
+  "dutchie-iframe",
+  "dutchie-subdomain",
+  "dutchieplus",
+  "ecwid",
+  "evenue",
+  "exercise",
+  "flowhub",
+  "foxy",
+  "grassdoor",
+  "greenrush",
+  "iqmetrix",
+  "jane",
+  "leafly",
+  "lightspeed",
+  "liquidm",
+  "magento",
+  "mantis",
+  "meadow",
+  "olla",
+  "posabit",
+  "shopify",
+  "simplifi",
+  "square",
+  "sticky-leaf",
+  "sweed",
+  "thirdparty",
+  "ticketmaster",
+  "ticketure",
+  "tnew",
+  "training",
+  "treez",
+  "tymber",
+  "weave",
+  "webjoint",
+  "wefunder",
+  "wix",
+  "woocommerce",
+  "yotpo",
+];

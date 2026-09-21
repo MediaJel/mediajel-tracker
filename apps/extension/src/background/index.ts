@@ -179,7 +179,10 @@ const UP: { [K in BridgeUp["type"]]: Handler<K> } = {
     appendToLedger(tabId, site, [heardFromBridge(message, pageKey, Date.now())]),
   "third-party-settled": (tabId, _site, message) => settleInLedger(tabId, message.key, message.outcome),
   "simulate-report": async (tabId, site, message) => {
-    reportFromPage(tabId, { installFailed: message.installFailed });
+    reportFromPage(tabId, {
+      ...(message.installFailed === undefined ? {} : { installFailed: message.installFailed }),
+      ...(message.late === undefined ? {} : { late: message.late }),
+    });
     toPanel(tabId, { type: "simulation", site, view: await simulationView(tabId, site) });
   },
 };

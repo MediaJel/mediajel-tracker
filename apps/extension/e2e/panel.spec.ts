@@ -65,6 +65,23 @@ const simulateObject = async (page: Page): Promise<void> => {
   await page.locator("[data-slot=simulator-config] button", { hasText: "Config object" }).click();
 };
 
+/** Open the first reading's configuration and start editing it, with one value changed. */
+const editConfig = async (page: Page): Promise<void> => {
+  await openConfig(page);
+  await page.locator("[data-slot=tag-config] button", { hasText: "Edit" }).first().click();
+  const field = page
+    .locator("[data-slot=config-edit] dt", { hasText: "Dstillery page-view" })
+    .locator("xpath=following-sibling::dd[1]//input");
+  await field.fill("Terrabis-Edited-PV");
+  await field.blur();
+};
+
+/** The same edit, read as the object the block merges into `window.overrides`. */
+const editObject = async (page: Page): Promise<void> => {
+  await editConfig(page);
+  await page.locator("[data-slot=config-edit] button", { hasText: "Config object" }).click();
+};
+
 /** Choose a view by its tab. */
 const openView = (view: "analytics" | "events" | "setup") => click(`[data-view=${view}]`);
 
@@ -142,6 +159,11 @@ const SCENARIOS: Scenario[] = [
   { name: "overview-simulating", ready: ["[data-slot=simulating] [data-slot=simulator-status]"] },
   { name: "overview-simulating-paused", ready: ["[data-slot=simulating][data-paused]"] },
   { name: "overview-simulating-silent", ready: ["[data-slot=simulator-status][data-problem]"] },
+  { name: "overview-config-edit", ready: ["[data-slot=config-edit] dl"], act: editConfig },
+  { name: "overview-config-edit-deployed", ready: ["[data-slot=config-edit] dl"], act: editConfig },
+  { name: "overview-config-object", ready: ["[data-slot=config-edit] [data-slot=config-object]"], act: editObject },
+  { name: "overview-config-trying", ready: ["[data-slot=tag-config] pre"], act: openConfig },
+  { name: "overview-config-late", ready: ["[data-slot=tag-config-late]"], act: openConfig },
   { name: "config-script-only", ready: ["[data-slot=tag-config] pre"], act: openConfig },
   { name: "events-empty", ready: ["[data-slot=ledger-empty]"], act: openView("events") },
   { name: "events-live", ready: ["[data-slot=ledger-page] ~ [data-slot=ledger-page]"], act: openView("events") },

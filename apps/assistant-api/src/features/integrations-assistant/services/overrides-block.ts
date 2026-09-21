@@ -20,6 +20,12 @@ import { ApiError } from "../errors";
  * Every byte of it is rendered here. The panel sends data — an app ID and the edited params — and
  * gets back the exact text that the preview shows, the page runs when the edit is tried, and the
  * commit writes.
+ *
+ * Each block carries a version — a hash of its app ID and edits. While an engineer tries an edit on a
+ * page, the extension names the version it is trying in `window.__mediajelAssistantOverrides`, and a
+ * deployed block of another version for the same tag stands aside, so the page runs exactly what the
+ * deploy would leave in the file — including an edit taken back out. Nothing sets that name on a
+ * visitor's page, so there every block runs.
  */
 
 const MARK = "mediajel-assistant:overrides";
@@ -28,8 +34,10 @@ const beginOf = (appId: string): string => `/* ${MARK} ${appId} begin`;
 const endOf = (appId: string): string => `/* ${MARK} ${appId} end */`;
 
 /** What runs, for any app ID and any edits: plain ES5, valid as JavaScript and as TypeScript. */
-const BODY = `(function (appId, edits) {
+const BODY = `(function (appId, edits, version) {
   try {
+    var tried = window["__mediajelAssistantOverrides"];
+    if (tried && tried[appId] && tried[appId] !== version) return;
     var has = Object.prototype.hasOwnProperty;
     var copy = function (from, into) {
       for (var key in from) if (has.call(from, key)) into[key] = from[key];
@@ -97,6 +105,20 @@ const sorted = (edits: Record<string, string>): Record<string, string> =>
       .map((key) => [key, edits[key]]),
   );
 
+/** FNV-1a, 32 bits: enough to tell one edit from another, the same in every runtime. */
+const fnv = (text: string): string => {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(16).padStart(8, "0");
+};
+
+/** The version a block for these edits carries: the same edits, the same version. */
+export const versionOf = (appId: string, edits: Record<string, string>): string =>
+  `v-${fnv(`${appId}\n${JSON.stringify(sorted(edits))}`)}`;
+
 /**
  * The block for one tag. It opens with a semicolon, so a file that ends in a bare call — `fn()`, no
  * semicolon — is not continued into it, and it never ends in a newline, which the splice supplies.
@@ -108,7 +130,7 @@ export const renderBlock = (appId: string, edits: Record<string, string>): strin
     " * into whatever this file and the domain file set in window.overrides, for this tag alone, and it",
     " * never throws. Change it in the assistant; to undo it, delete this block, markers included.",
     " */",
-    `${BODY}(${literal(appId)}, ${literal(sorted(edits))});`,
+    `${BODY}(${literal(appId)}, ${literal(sorted(edits))}, ${literal(versionOf(appId, edits))});`,
     endOf(appId),
   ].join("\n");
 
@@ -198,6 +220,20 @@ export const carryBlocks = (previous: string | null, next: string): string => {
   return blocksIn(previous ?? "")
     .filter((block) => !present.has(block.appId))
     .reduce((file, block) => appended(file.replace(/\n$/, ""), block.text), next);
+};
+
+const CALL = /\}\)\(("(?:[^"\\]|\\.)*"), (\{.*\}), ("v-[0-9a-f]{8}")\);\n/;
+
+/** The edits a file's block for this tag carries now, or null when it has none — what the editor starts from. */
+export const editsIn = (content: string | null, appId: string): Record<string, string> | null => {
+  const region = content === null ? null : regionOf(content, appId);
+  const call = region && (content as string).slice(region.start, region.end).match(CALL);
+  if (!call) return null;
+  try {
+    return JSON.parse(call[2]) as Record<string, string>;
+  } catch {
+    return null;
+  }
 };
 
 /** What an edit does to a file: the block it renders (none, to take the tag's block out) and the file after. */

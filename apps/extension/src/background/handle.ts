@@ -16,7 +16,14 @@ import { SIMULATION_REQUESTS } from "~/background/simulation";
 import { siteOfTab } from "~/background/tab-site";
 import { learn, tagsOfTab } from "~/background/tag-state";
 import { readTagsOnPage } from "~/background/page-tags";
-import { checkAccess, deployTag, generateTag, readExistingTag, readTagActivity } from "~/service/client";
+import {
+  checkAccess,
+  deployTag,
+  generateTag,
+  previewOverrides,
+  readExistingTag,
+  readTagActivity,
+} from "~/service/client";
 import { clearSession, currentIdToken, readSession, writeSession } from "~/store/auth";
 import { advance, clearAllJobs, deleteJob, listJobs, openJob, peekJob, resetJob, updateJob } from "~/store/jobs";
 import { readSettings, writeSettings } from "~/store/settings";
@@ -390,6 +397,8 @@ const REQUESTS: { [K in Request["type"]]: Handler<K> } = {
   "service/cancel-generate": cancelGenerate,
   "service/existing-tag": (request) => readExistingTag(currentIdToken, request.kind, request.name),
   "service/tag-activity": (request) => readTagActivity(currentIdToken, request.appIds),
+  "service/overrides-preview": (request) =>
+    previewOverrides(currentIdToken, { appId: request.appId, edits: request.edits }),
   "service/deploy": deployFromJob,
   "events/read": async (request) => viewOf(await readLedger(request.tabId, await siteOfTab(request.tabId))),
   "events/clear": async (request) => {

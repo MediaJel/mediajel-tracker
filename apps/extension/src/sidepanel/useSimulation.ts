@@ -23,6 +23,12 @@ export interface SimulationState extends SimulationView {
   pause(enabled: boolean): void;
   /** Removes a site's simulation — this site's unless another is named — and answers with every one left. */
   remove(site?: string): Promise<SiteSimulation[]>;
+  /** Tries an edit to a tag's configuration on the site; no edits stop trying it. */
+  tryEdits(appId: string, edits: Record<string, string>): void;
+  /** Starts the page again, so a tag that read its configuration too early reads it with the edits. */
+  reloadPage(): void;
+  /** The edits the tag's app-id file already carries, for an editor to start from. */
+  deployedEdits(appId: string): Promise<Record<string, string> | null>;
 }
 
 interface Inputs {
@@ -112,5 +118,12 @@ export const useSimulation = ({ active, tabId, site, push, generation, tags, set
       if (tabId !== null) applied(() => ask({ type: "simulation/pause", tabId, enabled }));
     },
     remove,
+    tryEdits: (appId, edits) => {
+      if (tabId !== null) applied(() => ask({ type: "simulation/try", tabId, appId, edits }));
+    },
+    reloadPage: () => {
+      if (tabId !== null) void ask({ type: "simulation/reload", tabId });
+    },
+    deployedEdits: async (appId) => (await ask({ type: "service/overrides-preview", appId, edits: {} })).deployed,
   };
 };

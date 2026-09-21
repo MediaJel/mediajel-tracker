@@ -6,7 +6,7 @@ import type { Authorized, DeployTargetKind } from "../types/assistant.types";
 import { ApiError } from "../errors";
 import { GithubService } from "./github.service";
 import type { ExistingFile } from "./github.service";
-import { carryBlocks, planOverrides } from "./overrides-block";
+import { carryBlocks, editsIn, planOverrides, versionOf } from "./overrides-block";
 import { parseGate } from "./rewrite-imports";
 import { ValidateService } from "./validate.service";
 
@@ -79,7 +79,17 @@ export class DeployService {
     const file = await this.github.client().getFile(path);
     const before = file?.content ?? "";
     const { block, after } = planOverrides(file?.content ?? null, request.appId, request.edits);
-    return { path, exists: !!file, sha: file?.sha, before, after, block, changed: after !== before };
+    return {
+      path,
+      exists: !!file,
+      sha: file?.sha,
+      before,
+      after,
+      block,
+      version: block === null ? null : versionOf(request.appId, request.edits),
+      deployed: editsIn(file?.content ?? null, request.appId),
+      changed: after !== before,
+    };
   }
 
   /** Commits an edit to a tag's configuration: its block, below the app-id file's own code. */

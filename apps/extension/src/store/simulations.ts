@@ -16,11 +16,22 @@ const area = new Storage({ area: "local" });
 const mirror = new Map<string, SiteSimulation | null>();
 let chain: Promise<unknown> = Promise.resolve();
 
+const isSimulation = (value: Partial<SiteSimulation> | null | undefined, site: string): boolean =>
+  value?.v === 1 && value.site === site;
+
+/** A stored simulation as this build reads it, with what an older build never wrote filled in. */
+const completed = (value: Partial<SiteSimulation>, site: string): SiteSimulation => ({
+  v: 1,
+  site,
+  enabled: value.enabled !== false,
+  install: value.install ?? null,
+  tried: value.tried ?? {},
+  updatedAt: value.updatedAt ?? 0,
+});
+
 /** A stored value as this build reads it: anything that is not a simulation is none. */
 const normalized = (value: Partial<SiteSimulation> | null | undefined, site: string): SiteSimulation | null =>
-  value && value.v === 1 && value.site === site
-    ? { v: 1, site, enabled: value.enabled !== false, install: value.install ?? null, updatedAt: value.updatedAt ?? 0 }
-    : null;
+  isSimulation(value, site) ? completed(value as Partial<SiteSimulation>, site) : null;
 
 export const readSimulation = async (site: string): Promise<SiteSimulation | null> => {
   if (!mirror.has(site)) mirror.set(site, normalized(await area.get<SiteSimulation>(simulationKey(site)), site));

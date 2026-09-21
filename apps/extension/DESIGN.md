@@ -195,7 +195,26 @@ legacy name noted and `00000` printed as "not configured (tag default)"), Plugin
 Other parameters for whatever else the URL carried; labels in soft ink, values in mono that wrap
 anywhere because a Nexxen segment is ninety opaque characters, and the script's own markup last, as
 machine text. A tag heard only on the wire has no slip: the line under its app ID already says the
-page names nothing about it.
+page names nothing about it. LiquidM is read the way the tag reads it — `segmentId` before `s1`.
+
+**Editing a configuration** happens in the Overview's slip (Analytics' stays read-only). Under the
+groups sits *Edit* (outline); editing turns them into fields in the same two columns — mono inputs,
+every param the tag reads by name listed whether it is set or not ("not set" as a placeholder),
+version as two choices (`1 · sp.js` / `2 · cnna.js`), environment suggesting the tag's adapters, and
+*Add a parameter* for anything else — with the same **Fields | Config object** toggle, the object
+being the params the block merges into `window.overrides["<appId>"]`. A changed field says
+`edited · was <value> · Undo` (the word in identity ink); a param an edit already made set says
+"set by the edit already made · Stop overriding"; an edit that renames the tag, redirects it or
+switches it off says so in warning ink, and only when the value actually changes. The editor starts
+from the edit already tried on the page, else the one deployed to the tag's app-id file, so it never
+drops what an earlier edit set. One privacy-purple line says what trying sends — the tag's app ID
+and the edit, to the assistant service, which writes the code — and the identity button says what
+it will do: *Try 2 changes on this page*. Tried, the slip says "2 edits tried on this page" in
+identity ink beside its trigger, closed or open, marks each tried value `tried` in the same ink, and
+offers *Edit* again or *Stop trying the edit*; a tag that fetched its app-id file before the edit
+reached the page gets one warning line and *Apply again*. When the activity service has no numbers
+(failed, or not set up), the Overview still prints each tag's heading and configuration above the
+note, so an edit never depends on the counts.
 
 **The ledger** is the Events view: every event this tab's page was heard sending — collector
 events, partner beacons, custom-tag fetches and the third-party tags they register — newest first

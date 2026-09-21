@@ -11,8 +11,14 @@ import type {
 } from "@mediajel/assistant-core/wire/types";
 
 import {
+  renderBlock,
+  versionOf,
+} from "../../assistant-api/src/features/integrations-assistant/services/overrides-block";
+
+import {
   Launched,
   askBackground,
+  currentWorker,
   launchWithExtension,
   pollTabLedger,
   pollTabRecord,
@@ -240,4 +246,63 @@ test("blank.html: a simulated tag loads on the page, is heard sending, reaches t
     }),
   );
   expect(left).toEqual([]);
+});
+
+/**
+ * An edit tried on a tag with the page's own overrides in place: the block the assistant service
+ * renders — rendered here by the service's own code — reaches the production tag through its app-id
+ * file, and the tag runs with the edit and with the page's overrides both. The harness has no
+ * assistant service, so the simulation is written to the extension's storage and the worker
+ * restarted to read it, as a browser restart would.
+ */
+const EDITED_APP = "e2e-edit";
+const EDIT = { "s2.pv": "e2e-edited-nexxen" };
+
+/** The tag's latest record event — the ledger also holds the one from before the edit was tried. */
+const editedRecord = (ledger: TabLedger | null): CollectorEvent | undefined =>
+  (ledger?.events ?? [])
+    .filter(
+      (event): event is CollectorEvent =>
+        event.source === "collector" && event.name === "record" && event.appId === EDITED_APP,
+    )
+    .at(-1);
+
+const carriesEdit = (ledger: TabLedger | null): boolean =>
+  editedRecord(ledger)?.record?.config.params["s2.pv"] === EDIT["s2.pv"] &&
+  partnerRows(ledger).some((row) => row.partner === "nexxen" && row.segment === EDIT["s2.pv"]);
+
+test("edit.html: a tried edit reaches the production tag through its app-id file, beside the page's own overrides", async () => {
+  await page.goto(`${fixtures.url}/edit.html`);
+  const tabId = await tabIdFor(launched.worker, `${fixtures.url}/edit.html`);
+  expect(tabId).not.toBeNull();
+
+  const simulation = {
+    v: 1,
+    site: "127.0.0.1",
+    enabled: true,
+    install: null,
+    tried: {
+      [EDITED_APP]: { edits: EDIT, block: renderBlock(EDITED_APP, EDIT), version: versionOf(EDITED_APP, EDIT) },
+    },
+    updatedAt: Date.now(),
+  };
+  await launched.worker.evaluate((stored) => chrome.storage.local.set(stored), {
+    "simulate/127.0.0.1": JSON.stringify(simulation),
+    "simulate/index": JSON.stringify(["127.0.0.1"]),
+  });
+  const cdp = await launched.context.newCDPSession(page);
+  await cdp.send("ServiceWorker.enable");
+  await cdp.send("ServiceWorker.stopAllWorkers");
+
+  await page.reload();
+  const worker = await currentWorker(launched.context);
+  const ledger = await pollTabLedger(worker, tabId!, carriesEdit, 20_000);
+  const params = editedRecord(ledger)?.record?.config.params;
+  console.log(`[fixtures] edited record: ${JSON.stringify(params)}`);
+  expect(params).toMatchObject({ "s2.pv": "e2e-edited-nexxen", "s3.pv": "page-flat-pv", "s3.tr": "page-flat-tr" });
+
+  // The edit is what the tag fired: after the reload, Nexxen's beacon carries the edited segment, not the URL's.
+  const nexxen = partnerRows(ledger).filter((row) => row.partner === "nexxen");
+  console.log(`[fixtures] nexxen beacon segments: ${nexxen.map((row) => row.segment).join(" → ") || "none"}`);
+  expect(nexxen.at(-1)?.segment).toBe("e2e-edited-nexxen");
 });

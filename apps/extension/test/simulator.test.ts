@@ -60,6 +60,6 @@ describe("what became of a simulated tag", () => {
 
   test("opted out, and refused by the page, each said before anything else", () => {
     expect(simulatedStatus(INSTALL, null, [tag(APP, "opted-out")], true)).toBe("opted-out");
-    expect(simulatedStatus(INSTALL, { installFailed: true }, [tag(APP, "sending")], true)).toBe("failed");
+    expect(simulatedStatus(INSTALL, { installFailed: true, late: [] }, [tag(APP, "sending")], true)).toBe("failed");
   });
 });

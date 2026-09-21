@@ -6,10 +6,12 @@ import * as ts from "typescript";
 import {
   blockAppIds,
   carryBlocks,
+  editsIn,
   planOverrides,
   regionOf,
   renderBlock,
   splice,
+  versionOf,
   withoutBlocks,
 } from "~/features/integrations-assistant/services/overrides-block";
 
@@ -81,10 +83,19 @@ const OTHER = "e64cabc8-1336-429e-ba66-3b04d80c9777";
 const scriptFor = (appId: string, extra = ""): string => `https://tags.cnna.io/?appId=${appId}&version=2${extra}`;
 
 /** Runs the file's code (a frictionless file's own statements), then the block, on a page of its own. */
-const run = (page: Page, before: string, block: string): { win: { overrides?: unknown }; warned: unknown[] } => {
+const run = (
+  page: Page & { tried?: Record<string, string> },
+  before: string,
+  block: string,
+): { win: { overrides?: unknown }; warned: unknown[] } => {
   const warned: unknown[] = [];
-  const win: { overrides?: unknown; console: { warn: (...args: unknown[]) => void } } = {
+  const win: {
+    overrides?: unknown;
+    __mediajelAssistantOverrides?: Record<string, string>;
+    console: { warn: (...args: unknown[]) => void };
+  } = {
     overrides: page.overrides,
+    __mediajelAssistantOverrides: page.tried,
     console: { warn: (...args) => warned.push(args) },
   };
   const document = { getElementsByTagName: () => page.scripts.map((src) => ({ src })) };
@@ -307,5 +318,37 @@ describe("a file replaced by the Tracking setup keeps its deployed configuration
   test("a new file with nothing to carry is the new file", () => {
     expect(carryBlocks(null, "fresh();\n")).toBe("fresh();\n");
     expect(carryBlocks("old();\n", "fresh();\n")).toBe("fresh();\n");
+  });
+});
+
+describe("an edit tried on a page that already carries a deployed one", () => {
+  const deployed = renderBlock(TAG, { "s3.pv": "Deployed", plugin: "googleAds" });
+  const tried = { "s3.pv": "Tried" };
+
+  test("the deployed block of another version stands aside, so the page runs what the deploy would leave", () => {
+    const page = { scripts: [scriptFor(TAG)], tried: { [TAG]: versionOf(TAG, tried) } };
+    const { win } = run(page, 'window.overrides = { "s2.pv": "file" };', `${deployed}\n${renderBlock(TAG, tried)}`);
+    // The plugin the deployed block set is gone, as it would be once the tried edit replaced it.
+    expect(params(runsWith(win, contextOf(TAG)))).toMatchObject({ "s2.pv": "file", "s3.pv": "Tried" });
+    expect(params(runsWith(win, contextOf(TAG))).plugin).toBeUndefined();
+  });
+
+  test("on a visitor's page, where nothing is being tried, every block runs", () => {
+    const page = { scripts: [scriptFor(TAG)] };
+    const { win } = run(page, "", deployed);
+    expect(params(runsWith(win, contextOf(TAG)))).toMatchObject({ "s3.pv": "Deployed", plugin: "googleAds" });
+  });
+
+  test("the same edits carry the same version, whatever their order; different edits do not", () => {
+    expect(versionOf(TAG, { a: "1", b: "2" })).toBe(versionOf(TAG, { b: "2", a: "1" }));
+    expect(versionOf(TAG, { a: "1" })).not.toBe(versionOf(TAG, { a: "2" }));
+    expect(versionOf(TAG, { a: "1" })).toMatch(/^v-[0-9a-f]{8}$/);
+  });
+
+  test("the edits a file's block carries are read back, for the editor to start from", () => {
+    const file = splice("tag();\n", TAG, renderBlock(TAG, { "s3.pv": 'say "hi"', plugin: "googleAds" }));
+    expect(editsIn(file, TAG)).toEqual({ plugin: "googleAds", "s3.pv": 'say "hi"' });
+    expect(editsIn("tag();\n", TAG)).toBeNull();
+    expect(editsIn(null, TAG)).toBeNull();
   });
 });

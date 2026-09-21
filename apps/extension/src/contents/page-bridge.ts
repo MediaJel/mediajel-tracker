@@ -1,6 +1,7 @@
 import type { PlasmoCSConfig } from "plasmo";
 
 import { readPageContext } from "@mediajel/assistant-core/context";
+import type { PageSimulation } from "@mediajel/assistant-core/simulation";
 import { Recorder, RecorderSink, createRecorder } from "@mediajel/assistant-core/recorder/recorder";
 import { askRunningTags } from "@mediajel/assistant-core/trackers";
 import { runGenerated } from "@mediajel/assistant-core/verify/runner";
@@ -9,7 +10,7 @@ import isUsPrivacyOptOut from "@mediajel/tracker-core/utils/privacy-opt-out";
 import { listenForAnnouncements } from "~/bridge/announcements";
 import { claimBridge } from "~/bridge/claim";
 import { BridgeDown, BridgeUp, WIRE_VERSION, unwrap, wrap } from "~/bridge/protocol";
-import { installSimulatedTag } from "~/bridge/simulate";
+import { installSimulatedTag, serveEdits } from "~/bridge/simulate";
 import { watchThirdPartyTags } from "~/bridge/third-party";
 import { TAG_SEARCH } from "~/lib/tags";
 
@@ -130,12 +131,27 @@ const verify = (code: string): void => {
   send({ type: "verify-result", ok: result.ok, errors: result.errors });
 };
 
+/** The edits tried on this page, served until the page goes or the bridge stands down. */
+let stopServingEdits = (): void => undefined;
+
+/** Edits to the page's tags, served with their app-id files; a tag that fetched its file first is said. */
+const serve = (tried: PageSimulation["tried"]): void => {
+  stopServingEdits();
+  if (Object.keys(tried).length === 0) return;
+  const served = serveEdits(window, tried);
+  stopServingEdits = served.stop;
+  if (served.late.length > 0) send({ type: "simulate-report", late: served.late });
+};
+
 /**
- * The site's simulated tag, on this page: loaded from its own URL in the page's realm, exactly as
- * it runs when a client installs it — which is the point; a bundled copy would prove the bundle,
- * not the tag. Once it has loaded, the page is read again so its row fills in; a refusal is said.
+ * The site's simulation, on this page. Edits first, so they are armed before the simulated tag can
+ * ask for its app-id file. The tag loads from its own URL in the page's realm, exactly as it runs
+ * when a client installs it — which is the point; a bundled copy would prove the bundle, not the
+ * tag. Once it has loaded, the page is read again so its row fills in; a refusal is said.
  */
-const simulate = (install: string): void =>
+const simulate = ({ install, tried }: PageSimulation): void => {
+  serve(tried);
+  if (!install) return;
   installSimulatedTag(document, install, {
     loaded: () => {
       facts();
@@ -143,6 +159,7 @@ const simulate = (install: string): void =>
     },
     failed: () => send({ type: "simulate-report", installFailed: true }),
   });
+};
 
 /** The keys the tag's dedup keeps for an app ID in local storage. */
 const dedupKeys = (appId: string): string[] => {
@@ -179,7 +196,7 @@ const COMMANDS: { [K in BridgeDown["type"]]: (message: Extract<BridgeDown, { typ
   "stop-recording": () => recorder?.stop(),
   snapshot: () => snapshot(),
   verify: (message) => verify(message.code),
-  simulate: (message) => simulate(message.install),
+  simulate: (message) => simulate(message),
   "clear-dedup": (message) => clearDedup(message.appId),
 };
 
@@ -213,6 +230,7 @@ claimBridge(window, WIRE_VERSION, () => {
   stopListeningForAnnouncements();
   stopWatchingQueue();
   stopWatchingThirdParty();
+  stopServingEdits();
   if (settleTimer) clearTimeout(settleTimer);
   recorder?.stop();
 });

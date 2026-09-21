@@ -13,6 +13,7 @@ import { Button } from "~/ui/components/ui/button";
 import { Failure, MAX_READINGS, Note, TallySettling, quietNote, settlingRows } from "~/ui/screens/ActivityNotes";
 import { TagCounts, TagHeading } from "~/ui/screens/ActivityReading";
 import { ActivityWeek } from "~/ui/screens/ActivityWeek";
+import { EditableConfiguration } from "~/ui/screens/ConfigurationEditor";
 import { SimulatorSection } from "~/ui/screens/SimulatorSection";
 import type { SimulationState } from "~/sidepanel/useSimulation";
 
@@ -26,14 +27,23 @@ import type { SimulationState } from "~/sidepanel/useSimulation";
  * Analytics has every reading in full; past three, the rest are there.
  */
 
-type Props = { activity: TagActivityState; goal: WidgetGoal; onAnalytics(): void };
+type Props = {
+  activity: TagActivityState;
+  goal: WidgetGoal;
+  onAnalytics(): void;
+  /** The site's simulation: what the configurations here can be tried with. */
+  simulation: SimulationState;
+};
 
 type OverviewProps = Props & {
   site: string;
-  simulation: SimulationState;
   /** Where the simulator's URL field starts. */
   lastUrl: string;
 };
+
+/** A tag's configuration here can be edited and tried on the page; Analytics prints it read-only. */
+const slipFor = (tag: TagRecord | undefined, simulation: SimulationState): ReactNode =>
+  tag ? <EditableConfiguration tag={tag} simulation={simulation} /> : undefined;
 
 /** Partner orange is under 4.5:1 as text on the light sheet, so a problem is said in ink, and the words carry it. */
 const Unread = ({ onRetry }: { onRetry(): void }): ReactNode => (
@@ -47,6 +57,7 @@ const Unread = ({ onRetry }: { onRetry(): void }): ReactNode => (
 
 interface ReadingProps {
   result: TagActivity;
+  simulation: SimulationState;
   /** What the page says about this tag — its configuration and state — when it has been heard at all. */
   tag: TagRecord | undefined;
   many: boolean;
@@ -58,9 +69,9 @@ interface ReadingProps {
 }
 
 /** One tag's reading: which tag, then its counts, then — for the tag the sentence is about — its week. */
-const Reading = ({ result, tag, many, week, goal, stale, onRetry }: ReadingProps): ReactNode => (
+const Reading = ({ result, tag, many, week, goal, stale, onRetry, simulation }: ReadingProps): ReactNode => (
   <li data-slot="reading">
-    <TagHeading appId={result.appId} tag={tag} />
+    <TagHeading appId={result.appId} tag={tag} slip={slipFor(tag, simulation)} />
     {result.status === "ok" ? (
       <>
         <TagCounts totals={result.totals} format={tallyNumber} big={!many} />
@@ -96,7 +107,7 @@ const Sentence = ({ text }: { text: string }): ReactNode =>
 const weekOf = (shown: TagActivity[], goal: WidgetGoal): string | undefined => stripTag(shown, goal)?.appId;
 
 /** A refresh keeps the readings where they are, dimmed, rather than blanking the sheet. */
-const Readings = ({ activity, goal, onAnalytics }: Props): ReactNode => {
+const Readings = ({ activity, goal, onAnalytics, simulation }: Props): ReactNode => {
   const shown = activity.results.slice(0, MAX_READINGS);
   const many = activity.results.length > 1;
   const week = weekOf(shown, goal);
@@ -121,6 +132,7 @@ const Readings = ({ activity, goal, onAnalytics }: Props): ReactNode => {
             goal={goal}
             stale={activity.refreshing}
             onRetry={activity.refresh}
+            simulation={simulation}
           />
         ))}
       </ol>
@@ -130,13 +142,45 @@ const Readings = ({ activity, goal, onAnalytics }: Props): ReactNode => {
   );
 };
 
+/**
+ * The page's tags when the lookup has no numbers for them — failed, or not set up on the service —
+ * each still headed by its app ID with its configuration under it, so a configuration can be read
+ * and tried whatever the activity service says.
+ */
+const KnownTags = ({ activity, simulation }: Pick<Props, "activity" | "simulation">): ReactNode =>
+  activity.tags.length > 0 ? (
+    <ol
+      data-slot="known-tags"
+      className="m-0 mt-2.5 grid list-none gap-3 p-0 [&>li+li]:border-t [&>li+li]:border-border [&>li+li]:pt-3"
+    >
+      {activity.tags.map((tag) => (
+        <li key={tag.appId} data-slot="reading">
+          <TagHeading appId={tag.appId} tag={tag} slip={slipFor(tag, simulation)} />
+        </li>
+      ))}
+    </ol>
+  ) : null;
+
+/** A lookup that answered without numbers: the tags the page carries, then what the lookup said. */
+const Unanswered = ({ children, ...props }: Pick<Props, "activity" | "simulation"> & { children: ReactNode }) => (
+  <>
+    <KnownTags {...props} />
+    {children}
+  </>
+);
+
 /** Everything the tally can say instead of its readings — each one a different fact, never zeros. */
 const Body = (props: Props): ReactNode => {
   const { activity } = props;
   if (activity.phase === "ready") return <Readings {...props} />;
-  if (activity.phase === "error") return <Failure activity={activity} />;
+  if (activity.phase === "error")
+    return (
+      <Unanswered {...props}>
+        <Failure activity={activity} />
+      </Unanswered>
+    );
   const note = quietNote(activity);
-  if (note) return <Note>{note}</Note>;
+  if (note) return <Unanswered {...props}>{<Note>{note}</Note>}</Unanswered>;
   return <TallySettling readings={settlingRows(activity)} />;
 };
 
@@ -163,10 +207,10 @@ const WhatCounts = (): ReactNode => (
  * One sheet, two sections: the simulator first — a tag tried on this site before a client installs
  * it — then the tally.
  */
-export const OverviewView = ({ site, simulation, lastUrl, ...props }: OverviewProps): ReactNode => (
+export const OverviewView = ({ site, lastUrl, ...props }: OverviewProps): ReactNode => (
   <Stack>
     <div className="bg-sheet shadow-press tear-bottom">
-      <SimulatorSection site={site} simulation={simulation} lastUrl={lastUrl} />
+      <SimulatorSection site={site} simulation={props.simulation} lastUrl={lastUrl} />
       <Tally {...props} />
     </div>
   </Stack>

@@ -34,7 +34,8 @@ at the bottom saying what it will do. Under every app ID, the tag's configuratio
 away. The Overview opens on the simulator — one quiet line until it is used; opened, a tag URL and
 its configuration as fields or as the object the tag builds; simulating, a stamped record of the tag
 loaded on every page of the site in this browser, with what became of it on the page said from what
-the page's tags did — then the tally.
+the page's tags did — then the tally, where each tag's configuration can be edited and tried on
+the page, the edit served through the tag's own app-id file exactly as a deploy would leave it.
 
 Memorable moment: the receipt line on each sealed slip — five of them read top to bottom are the
 whole job, and they are what makes coming back to a site days later cheap.

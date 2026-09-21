@@ -18,10 +18,13 @@ export const TagHeading = ({
   id,
   appId,
   tag,
+  slip,
 }: {
   id?: string;
   appId: string;
   tag: TagRecord | undefined;
+  /** The configuration slip to print, when not the read-only one — the Overview's can be edited. */
+  slip?: ReactNode;
 }): ReactNode => {
   const description = describeTag(tag);
   return (
@@ -30,7 +33,7 @@ export const TagHeading = ({
         {appId}
       </h3>
       {description && <p className="mt-0.5 mb-2 text-xs leading-[1.45] text-muted-foreground">{description}</p>}
-      {tag && <ConfigurationSlip tag={tag} />}
+      {tag && (slip ?? <ConfigurationSlip tag={tag} />)}
     </>
   );
 };

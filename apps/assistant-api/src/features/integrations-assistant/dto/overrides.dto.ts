@@ -32,6 +32,10 @@ export interface OverridesPreview {
   after: string;
   /** The code the page runs when the edit is tried, byte for byte what the commit writes; null when the edit takes the block out. */
   block: string | null;
+  /** The block's version, which the page names while the edit is tried; null with no block. */
+  version: string | null;
+  /** The edits the file's block for this tag carries now, or null when it has none. */
+  deployed: Record<string, string> | null;
   /** Whether committing would change the file at all. */
   changed: boolean;
 }

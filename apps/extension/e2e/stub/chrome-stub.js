@@ -67,7 +67,7 @@
     config: configOf(appId),
   });
   const NO_TAG =
-    "No MediaJel tag has spoken up on this page. You can still record and generate; Verify needs the tag, so load it first.";
+    "No MediaJel tag has spoken up on this page. You can still record and generate; Verify needs the tag, so simulate one from the Overview first.";
 
   /** What the background derives from a tab's tags: the first tag's configuration, and what to warn about. */
   const statusFor = (tags, settled) => {
@@ -103,8 +103,20 @@
     },
   });
 
+  /** The edit tried in the `trying` scenarios, and the tag as its record event reads once the page runs it. */
+  const TRIED_EDITS = { "s3.pv": "Terrabis-Edited-PV", environment: "jane" };
+  const triedTag = (appId, index) => {
+    const base = tagOf(appId, index);
+    return {
+      ...base,
+      environment: TRIED_EDITS.environment,
+      config: { ...base.config, params: { ...base.config.params, "s3.pv": TRIED_EDITS["s3.pv"] } },
+    };
+  };
+
   const PAGES = {
     one: { tags: APP_IDS.slice(0, 1).map(tagOf), settled: true },
+    tried: { tags: APP_IDS.slice(0, 1).map(triedTag), settled: true },
     script: { tags: APP_IDS.slice(0, 1).map(scriptTag), settled: true },
     two: { tags: APP_IDS.slice(0, 2).map(tagOf), settled: true },
     three: { tags: APP_IDS.slice(0, 3).map(tagOf), settled: true },
@@ -531,14 +543,40 @@
     site,
     enabled,
     install: { url: tagSrc(appId), appId },
+    tried: {},
     updatedAt: NOW - HOUR,
   });
+  const trying = {
+    v: 1,
+    site: SITE,
+    enabled: true,
+    install: null,
+    tried: { [APP_IDS[0]]: { edits: TRIED_EDITS, block: ";/* the tried block */", version: "v-0000abcd" } },
+    updatedAt: NOW - HOUR,
+  };
   const SIMULATIONS = {
     running: simulated(APP_IDS[0]),
     paused: simulated(APP_IDS[0], false),
     silent: simulated(SILENT_APP),
+    trying,
   };
-  const simulationRead = () => ({ simulation: SIMULATIONS[scenario.simulation] || null, page: null });
+  const PAGE_REPORTS = { late: { installFailed: false, late: [APP_IDS[0]] } };
+  const simulationRead = () => ({
+    simulation: SIMULATIONS[scenario.simulation] || null,
+    page: PAGE_REPORTS[scenario.simulationPage] || null,
+  });
+  /** What an edit would do to the tag's app-id file — this one carries no earlier edit, unless the scenario says so. */
+  const overridesPreview = (request) => ({
+    path: `src/app-ids/${request.appId}.ts`,
+    exists: true,
+    sha: "3f1c2e9",
+    before: "const tag = () => {\n  window.overrides = {};\n};\n\ntag();\n",
+    after: "const tag = () => {\n  window.overrides = {};\n};\n\ntag();\n\n;/* the block */\n",
+    block: ";/* the block */",
+    version: "v-0000abcd",
+    deployed: scenario.deployed || null,
+    changed: true,
+  });
 
   // ---- the ledger ----------------------------------------------------------------------------
 
@@ -828,6 +866,11 @@
     "overview-simulating": { step: "home", simulation: "running" },
     "overview-simulating-paused": { step: "home", simulation: "paused" },
     "overview-simulating-silent": { step: "home", simulation: "silent" },
+    "overview-config-edit": { step: "home" },
+    "overview-config-edit-deployed": { step: "home", deployed: { "s2.pv": "Deployed-Nexxen" } },
+    "overview-config-object": { step: "home" },
+    "overview-config-trying": { step: "home", page: "tried", simulation: "trying" },
+    "overview-config-late": { step: "home", page: "tried", simulation: "trying", simulationPage: "late" },
     "config-script-only": { step: "home", page: "script" },
     "events-empty": { step: "home", events: "empty" },
     "events-live": { step: "home", events: "live" },
@@ -1026,6 +1069,9 @@
     "simulation/pause": () => simulationRead(),
     "simulation/remove": () => [],
     "simulation/list": () => scenario.simulations || [],
+    "simulation/try": () => simulationRead(),
+    "simulation/reload": () => null,
+    "service/overrides-preview": (request) => overridesPreview(request),
   };
 
   const settled = (value) => (value === HANG ? NEVER : { ok: true, value });

@@ -51,7 +51,11 @@ panel is bound to; a new site opens on Overview.
   in this browser, as if the client had installed it, until it is paused or removed. It is kept per
   site in `chrome.storage.local` (`simulate/<site>`), armed again on each new page through the page
   bridge's `ready`, and said on the toolbar as `SIM`; only MediaJel tag hosts are accepted. Settings
-  lists every simulated tag. Then the tally: what MediaJel recorded from every tag on the page over the
+  lists every simulated tag. Under each tag's app ID on the Overview, its configuration can be
+  edited and tried on the page: the assistant service renders the edit as the same
+  `window.overrides[appId]` block a deploy writes into the tag's app-id file, and the page bridge
+  serves that file with the block appended — so the page runs exactly what a deploy would leave there,
+  with a deployed block of another version standing aside while the edit is tried. Then the tally: what MediaJel recorded from every tag on the page over the
   last 7 days, one reading per app ID with the tag's environment, version and state under it, the
   four counts, and the week for the tag the sentence singles out. The numbers come from the
   assistant service (`service/tag-activity`, app IDs only leave the browser).

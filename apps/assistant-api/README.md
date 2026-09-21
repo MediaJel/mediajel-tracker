@@ -117,4 +117,8 @@ Checks: `bun run check` (types, including the tests) · `bun run lint` · `bun r
   A deploy from the Tracking setup carries those blocks into the file it replaces, and the rule
   against `window.overrides =` in an app-id file reads only the file's own code.
   `test/overrides.test.ts` runs the block against a copy of the tag's selection logic for every
-  shape the frictionless repo uses.
+  shape the frictionless repo uses. Each block carries a version (a hash of its app ID and edits);
+  while the extension tries an edit on a page it names that version in
+  `window.__mediajelAssistantOverrides`, and a deployed block of another version for the same tag
+  stands aside — nothing sets that name on a visitor's page, so there every block runs. The preview
+  also returns the edits the file's block carries now, so the panel's editor starts from them.

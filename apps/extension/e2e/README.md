@@ -27,6 +27,10 @@ against.
   `blank.html` carries no tag at all, and the simulator installs one (`simulation/install` with the
   vendored bundle's URL): the tab reloads, the tag is heard sending for `e2e-simulated`, the stub
   collector holds its batch, the toolbar says `SIM`, and once paused the next page carries none of it.
+  `edit.html` sets its own flat `window.overrides` (the Dstillery segments) before the tag; the test
+  stores a tried edit to the Nexxen segment — its block rendered by the assistant API's own
+  `renderBlock` — restarts the worker to read it, and reloads: the tag's record event carries the
+  edited Nexxen segment and the page's Dstillery ones, and Nexxen's beacon fires with the edit.
   Both must end with the tag heard sending for app ID `e2e-old` and with the stub collector holding
   the `payload_data` batch that named it. `old.html` also carries a segment for every partner
   (`s1`, `s2.pv`, `s2.tr`, `s3.pv`, `s3.tr`), so the tag fires the partners' page-view pixels; the

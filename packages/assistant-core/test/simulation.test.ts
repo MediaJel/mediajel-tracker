@@ -1,6 +1,9 @@
 import { describe, expect, test } from "bun:test";
 
-import { SiteSimulation, installOf, parseTagUrl } from "@mediajel/assistant-core/simulation";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+import { ENVIRONMENTS, SiteSimulation, commandOf, parseTagUrl } from "@mediajel/assistant-core/simulation";
 
 /**
  * A pasted tag URL, read the way the tag reads its own — terrabis.co's and unity-rd.com's are the
@@ -74,14 +77,33 @@ describe("what a page is asked to load", () => {
     site: "terrabis.co",
     enabled: true,
     install: { url: TERRABIS, appId: "5f976cbb-7d29-46ce-bf07-0f701478d800" },
+    tried: {},
     updatedAt: 0,
     ...over,
   });
+  const EDIT = { edits: { "s3.pv": "Tried" }, block: ";/* the block */", version: "v-0000abcd" };
 
   test("the simulated tag while the simulation runs, and nothing while it is paused or empty", () => {
-    expect(installOf(simulation())).toBe(TERRABIS);
-    expect(installOf(simulation({ enabled: false }))).toBeNull();
-    expect(installOf(simulation({ install: null }))).toBeNull();
-    expect(installOf(null)).toBeNull();
+    expect(commandOf(simulation())).toEqual({ install: TERRABIS, tried: {} });
+    expect(commandOf(simulation({ enabled: false }))).toBeNull();
+    expect(commandOf(simulation({ install: null }))).toBeNull();
+    expect(commandOf(null)).toBeNull();
+  });
+
+  test("each tried edit's block and version, without the params the page has no use for", () => {
+    expect(commandOf(simulation({ install: null, tried: { a: EDIT } }))).toEqual({
+      install: null,
+      tried: { a: { block: EDIT.block, version: EDIT.version } },
+    });
+  });
+});
+
+describe("the environments an edit can suggest", () => {
+  test("are exactly the ones the tag has an adapter for", () => {
+    const adapters = join(__dirname, "../../../apps/tracker/src/adapters");
+    const labels = ["ecommerce.ts", "impressions.ts"].flatMap((file) =>
+      Array.from(readFileSync(join(adapters, file), "utf8").matchAll(/case "([^"]+)"/g), (match) => match[1]),
+    );
+    expect([...ENVIRONMENTS].sort()).toEqual([...new Set(labels)].sort());
   });
 });

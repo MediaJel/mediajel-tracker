@@ -2,7 +2,8 @@ import {
   SimulationOnPage,
   SimulationView,
   SiteSimulation,
-  installOf,
+  TriedEdit,
+  commandOf,
   parseTagUrl,
 } from "@mediajel/assistant-core/simulation";
 
@@ -12,12 +13,14 @@ import type { SimulationRequest } from "~/bridge/api";
 import { BridgeDown } from "~/bridge/protocol";
 import { siteOf } from "~/lib/site";
 import { TAG_SEARCH } from "~/lib/tags";
+import { previewOverrides } from "~/service/client";
+import { currentIdToken } from "~/store/auth";
 import { writeSettings } from "~/store/settings";
 import { changeSimulation, listSimulations, readSimulation } from "~/store/simulations";
 
 /**
- * A simulated tag, from the worker's side: kept per site, armed again on every new page of that
- * site, and said on the toolbar.
+ * A simulated tag and tried edits, from the worker's side: kept per site, armed again on every new
+ * page of that site, and said on the toolbar.
  *
  * The page bridge posts `ready` as each document starts; the worker answers with the tag to load,
  * the same way a recording is picked back up after the cart navigates to the thank-you page.
@@ -34,7 +37,7 @@ const IDENTITY = "#1f4fe0";
 /** The toolbar says SIM on every tab of a simulated site, so a forgotten simulation is never invisible. */
 export const markTab = async (tabId: number, url: string): Promise<void> => {
   const site = siteOf(url);
-  const on = site ? installOf(await readSimulation(site)) !== null : false;
+  const on = site ? commandOf(await readSimulation(site)) !== null : false;
   try {
     await chrome.action?.setBadgeText({ tabId, text: on ? "SIM" : "" });
     if (on) await chrome.action?.setBadgeBackgroundColor({ tabId, color: IDENTITY });
@@ -57,12 +60,15 @@ type Send = (tabId: number, message: BridgeDown) => Promise<boolean>;
 /** A new document in a tab: what the last one said is gone, and the site's simulation is armed again. */
 export const armTab = async (tabId: number, site: string, send: Send): Promise<void> => {
   pages.delete(tabId);
-  const install = installOf(await readSimulation(site));
-  if (install) await send(tabId, { type: "simulate", install });
+  const command = commandOf(await readSimulation(site));
+  if (command) await send(tabId, { type: "simulate", ...command });
 };
 
-export const reportFromPage = (tabId: number, report: SimulationOnPage): void => {
-  pages.set(tabId, report);
+const QUIET: SimulationOnPage = { installFailed: false, late: [] };
+
+/** What the page said, added to what it said before on this document. */
+export const reportFromPage = (tabId: number, report: Partial<SimulationOnPage>): void => {
+  pages.set(tabId, { ...(pages.get(tabId) ?? QUIET), ...report });
 };
 
 export const forgetPage = (tabId: number): void => {
@@ -85,20 +91,54 @@ const applied = async (tabId: number, site: string): Promise<SimulationView> => 
   return simulationView(tabId, site);
 };
 
-const installed = (site: string, url: string, appId: string): SiteSimulation => ({
+const blank = (site: string): SiteSimulation => ({
   v: 1,
   site,
+  enabled: true,
+  install: null,
+  tried: {},
+  updatedAt: Date.now(),
+});
+
+const installed = (current: SiteSimulation | null, site: string, url: string, appId: string): SiteSimulation => ({
+  ...(current ?? blank(site)),
   enabled: true,
   install: { url, appId },
   updatedAt: Date.now(),
 });
 
+/** A simulation that holds nothing to run is no simulation. */
+const orNone = (simulation: SiteSimulation): SiteSimulation | null =>
+  simulation.install || Object.keys(simulation.tried).length > 0 ? simulation : null;
+
+/** The simulation with one tag's edit tried — or, with none, no longer tried. */
+const withTried = (current: SiteSimulation | null, site: string, appId: string, edit: TriedEdit | null) => {
+  const tried = { ...(current?.tried ?? {}) };
+  if (edit) tried[appId] = edit;
+  else delete tried[appId];
+  return orNone({ ...(current ?? blank(site)), enabled: true, tried, updatedAt: Date.now() });
+};
+
+/** The block the service renders for an edit — byte for byte what a deploy writes — or none for no edits. */
+const renderedEdit = async (appId: string, edits: Record<string, string>): Promise<TriedEdit | null> => {
+  if (Object.keys(edits).length === 0) return null;
+  const preview = await previewOverrides(currentIdToken, { appId, edits });
+  return preview.block && preview.version ? { edits, block: preview.block, version: preview.version } : null;
+};
+
 const install: Handler<"simulation/install"> = async (request) => {
   const site = await siteOfTab(request.tabId);
   const parsed = parseTagUrl(request.url, TAG_SEARCH);
   if (!parsed.ok) throw new Error(parsed.reason || "Paste the tag's whole URL, starting with https://.");
-  await changeSimulation(site, () => installed(site, parsed.url, parsed.appId));
+  await changeSimulation(site, (current) => installed(current, site, parsed.url, parsed.appId));
   await writeSettings({ lastInjectedTagUrl: parsed.url });
+  return applied(request.tabId, site);
+};
+
+const tryEdit: Handler<"simulation/try"> = async (request) => {
+  const site = await siteOfTab(request.tabId);
+  const edit = await renderedEdit(request.appId, request.edits);
+  await changeSimulation(site, (current) => withTried(current, site, request.appId, edit));
   return applied(request.tabId, site);
 };
 
@@ -126,6 +166,11 @@ export const SIMULATION_REQUESTS: { [K in SimulationRequest["type"]]: Handler<K>
   "simulation/read": async (request) => simulationView(request.tabId, await siteOfTab(request.tabId)),
   "simulation/install": install,
   "simulation/pause": pause,
+  "simulation/try": tryEdit,
+  "simulation/reload": (request) => {
+    reload(request.tabId);
+    return null;
+  },
   "simulation/remove": remove,
   "simulation/list": () => listSimulations(),
 };

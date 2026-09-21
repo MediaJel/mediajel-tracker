@@ -61,6 +61,7 @@ describe("the configuration slip", () => {
     expect(entry(tag, "Event")?.value).toBe("not set");
     expect(entry(tag, "Nexxen transaction beacon")?.value).toBe(TERRABIS["s2.tr"]);
     expect(entry(tag, "Dstillery page-view")).toEqual({
+      key: "s3.pv",
       label: "Dstillery page-view",
       value: "TerrabisMundelein-S3.PV",
       note: undefined,
@@ -83,8 +84,14 @@ describe("the configuration slip", () => {
       },
     });
     expect(entry(tag, "Version")?.value).toBe("1 · sp.js, Snowplow 2.14");
-    expect(entry(tag, "Environment")).toEqual({ label: "Environment", value: "production", note: "default" });
+    expect(entry(tag, "Environment")).toEqual({
+      key: "environment",
+      label: "Environment",
+      value: "production",
+      note: "default",
+    });
     expect(entry(tag, "LiquidM segment")).toEqual({
+      key: "segmentId",
       label: "LiquidM segment",
       value: "e-oqTEY2SNGlRzvmH9esjw",
       legacy: "segmentId",
@@ -113,5 +120,27 @@ describe("the configuration slip", () => {
     expect(entry(tag, "Logging")?.value).toBe("false");
     expect(view.source).toBe("From the tag’s announcement.");
     expect(view.markup).toBe("https://tags.cnna.io/?appId=x");
+  });
+});
+
+describe("which name the tag reads a segment from", () => {
+  const withParams = (params: Record<string, string>) =>
+    record({ config: { params, src: "", element: "", source: "script" } });
+
+  test("LiquidM: segmentId wins over s1 when both are set, as the tag reads them", () => {
+    expect(entry(withParams({ s1: "new", segmentId: "legacy" }), "LiquidM segment")).toMatchObject({
+      key: "segmentId",
+      value: "legacy",
+      legacy: "segmentId",
+    });
+    expect(entry(withParams({ s1: "new" }), "LiquidM segment")).toMatchObject({ key: "s1", value: "new" });
+  });
+
+  test("Nexxen and Dstillery: the page-view name wins over the legacy one", () => {
+    expect(entry(withParams({ s2: "legacy", "s2.pv": "new" }), "Nexxen page-view beacon")).toMatchObject({
+      key: "s2.pv",
+      value: "new",
+    });
+    expect(entry(withParams({ s3: "legacy" }), "Dstillery page-view")).toMatchObject({ key: "s3", legacy: "s3" });
   });
 });

@@ -1,3 +1,4 @@
+import type { PageSimulation } from "@mediajel/assistant-core/simulation";
 import type { AnnouncedTag, PageFacts } from "@mediajel/assistant-core/tags";
 import type { TimelineEvent, VerifyCapture, WidgetPage } from "@mediajel/assistant-core/types";
 import type {
@@ -79,8 +80,8 @@ export type BridgeUp =
   /** The tag fired one of them; `key` is what its outcome settles. */
   | ({ type: "third-party-fired"; key: string; pageUrl: string } & ThirdPartyFired)
   | { type: "third-party-settled"; key: string; outcome: Outcome }
-  /** What became of the simulated tag on this page. */
-  | { type: "simulate-report"; installFailed: boolean };
+  /** What became of the simulation on this page: a refused script, or tags that ran before the edits arrived. */
+  | { type: "simulate-report"; installFailed?: boolean; late?: string[] };
 
 /** What the background sends down. */
 export type BridgeDown =
@@ -88,8 +89,8 @@ export type BridgeDown =
   | { type: "stop-recording" }
   | { type: "snapshot" }
   | { type: "verify"; code: string }
-  /** Load the site's simulated tag on this page. */
-  | { type: "simulate"; install: string }
+  /** Run the site's simulation on this page: the tag to load, and each edited tag's block. */
+  | ({ type: "simulate" } & PageSimulation)
   | { type: "clear-dedup"; appId: string };
 
 /** Which way a message is travelling, so the two listeners on one window never cross. */

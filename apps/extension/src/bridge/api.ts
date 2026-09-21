@@ -1,6 +1,6 @@
 import type { AuthChallenge, Identity } from "~/auth/cognito";
 import { SIGNED_OUT } from "~/auth/signed-out";
-import type { DeployOutcome, ExistingTag, TagActivityResponse } from "~/service/client";
+import type { DeployOutcome, ExistingTag, OverridesPreview, TagActivityResponse } from "~/service/client";
 import type { JobSummary } from "~/store/jobs";
 import type { Settings } from "~/store/settings";
 import type { TagRecord } from "@mediajel/assistant-core/tags";
@@ -50,6 +50,7 @@ export type Request =
   | { type: "service/existing-tag"; kind: "domain" | "app-id"; name: string }
   | { type: "service/deploy"; tabId: number; kind: "domain" | "app-id"; name: string; expectedSha?: string }
   | { type: "service/tag-activity"; appIds: string[] }
+  | { type: "service/overrides-preview"; appId: string; edits: Record<string, string> }
   // — the ledger —
   | { type: "events/read"; tabId: number }
   | { type: "events/clear"; tabId: number }
@@ -57,6 +58,10 @@ export type Request =
   | { type: "simulation/read"; tabId: number }
   | { type: "simulation/install"; tabId: number; url: string }
   | { type: "simulation/pause"; tabId: number; enabled: boolean }
+  /** Try an edit to a tag's configuration on the site; no edits stop trying it. Keyed by the app ID the tag's URL names. */
+  | { type: "simulation/try"; tabId: number; appId: string; edits: Record<string, string> }
+  /** Start the tab's page again, so a tag that read its configuration too early reads it with the edits. */
+  | { type: "simulation/reload"; tabId: number }
   /** `tabId` is the tab the removal came from: reloaded when it shows that site. */
   | { type: "simulation/remove"; site: string; tabId?: number }
   | { type: "simulation/list" };
@@ -115,12 +120,15 @@ export interface ResultOf {
   "service/existing-tag": ExistingTag;
   "service/deploy": DeployOutcome;
   "service/tag-activity": TagActivityResponse;
+  "service/overrides-preview": OverridesPreview;
   /** The tab's ledger, newest first — empty for a tab that has moved to another site. */
   "events/read": LedgerView;
   "events/clear": null;
   "simulation/read": SimulationView;
   "simulation/install": SimulationView;
   "simulation/pause": SimulationView;
+  "simulation/try": SimulationView;
+  "simulation/reload": null;
   /** Every simulated tag left in this browser. */
   "simulation/remove": SiteSimulation[];
   "simulation/list": SiteSimulation[];

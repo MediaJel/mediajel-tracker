@@ -1,11 +1,23 @@
-import { beforeEach, describe, expect, test } from "bun:test";
+import { beforeEach, describe, expect, mock, test } from "bun:test";
 
 import { BridgeDown } from "~/bridge/protocol";
 import { handle } from "~/background/handle";
 import { armTab, reportFromPage } from "~/background/simulation";
-import { installSimulatedTag } from "~/bridge/simulate";
+import { installSimulatedTag, serveEdits } from "~/bridge/simulate";
 import { readSettings } from "~/store/settings";
 import { clearExtensionStorage } from "./setup";
+
+/** The assistant service's preview, as the background asks it: the block it would render, and its version. */
+const previews: { appId: string; edits: Record<string, string> }[] = [];
+// Every other export stays the real one, so no other test file that runs after this one is touched.
+const client = await import("~/service/client");
+mock.module("~/service/client", () => ({
+  ...client,
+  previewOverrides: async (_token: unknown, input: { appId: string; edits: Record<string, string> }) => {
+    previews.push(input);
+    return { block: `;/* block for ${input.appId} */`, version: "v-0000abcd", deployed: null };
+  },
+}));
 
 /**
  * A simulated tag, kept per site: installed from its URL, armed again on every page of the site,
@@ -65,7 +77,7 @@ describe("simulating a tag on a site", () => {
   test("arms every new page of the site with the tag, and none while it is paused", async () => {
     await ask({ type: "simulation/install", tabId: TAB, url: URL_ });
     await armTab(TAB, SITE, send);
-    expect(sent).toEqual([{ type: "simulate", install: URL_ }]);
+    expect(sent).toEqual([{ type: "simulate", install: URL_, tried: {} }]);
 
     sent.length = 0;
     await ask({ type: "simulation/pause", tabId: TAB, enabled: false });
@@ -125,5 +137,118 @@ describe("the simulated tag in the page", () => {
     installSimulatedTag(doc, URL_, callbacks);
     doc.querySelector("script[data-mj-simulated]")?.dispatchEvent(new Event("error"));
     expect(seen.failed).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe("an edit tried on a site", () => {
+  const APP = "5f976cbb-7d29-46ce-bf07-0f701478d800";
+
+  test("is rendered by the service, kept for the site with its block and version, and armed on every page", async () => {
+    previews.length = 0;
+    const view = (await ask({ type: "simulation/try", tabId: TAB, appId: APP, edits: { "s3.pv": "Tried" } })) as {
+      simulation: { tried: Record<string, unknown>; enabled: boolean };
+    };
+    expect(previews).toEqual([{ appId: APP, edits: { "s3.pv": "Tried" } }]);
+    expect(view.simulation.tried[APP]).toEqual({
+      edits: { "s3.pv": "Tried" },
+      block: `;/* block for ${APP} */`,
+      version: "v-0000abcd",
+    });
+    expect(spies.reloaded).toEqual([TAB]);
+    expect(spies.badges.at(-1)).toEqual({ tabId: TAB, text: "SIM" });
+
+    await armTab(TAB, SITE, send);
+    expect(sent.at(-1)).toEqual({
+      type: "simulate",
+      install: null,
+      tried: { [APP]: { block: `;/* block for ${APP} */`, version: "v-0000abcd" } },
+    });
+  });
+
+  test("no edits stop trying it, and a site with nothing left to run has no simulation", async () => {
+    await ask({ type: "simulation/try", tabId: TAB, appId: APP, edits: { "s3.pv": "Tried" } });
+    await ask({ type: "simulation/try", tabId: TAB, appId: APP, edits: {} });
+    expect(await ask({ type: "simulation/read", tabId: TAB })).toEqual({ simulation: null, page: null });
+  });
+
+  test("beside a simulated install, the install stays when the edit goes", async () => {
+    await ask({ type: "simulation/install", tabId: TAB, url: URL_ });
+    await ask({ type: "simulation/try", tabId: TAB, appId: APP, edits: { "s3.pv": "Tried" } });
+    const view = (await ask({ type: "simulation/try", tabId: TAB, appId: APP, edits: {} })) as {
+      simulation: { install: unknown; tried: Record<string, unknown> };
+    };
+    expect(view.simulation.install).not.toBeNull();
+    expect(view.simulation.tried).toEqual({});
+  });
+
+  test("a page's report of tags that ran before the edits is kept beside what else it said", async () => {
+    await ask({ type: "simulation/try", tabId: TAB, appId: APP, edits: { "s3.pv": "Tried" } });
+    reportFromPage(TAB, { late: [APP] });
+    reportFromPage(TAB, { installFailed: false });
+    expect(await ask({ type: "simulation/read", tabId: TAB })).toMatchObject({
+      page: { installFailed: false, late: [APP] },
+    });
+  });
+});
+
+describe("edits served in the page", () => {
+  const APP = "5f976cbb-7d29-46ce-bf07-0f701478d800";
+  const FILE_URL = `https://test-custom-tags.cnna.io/app-ids/${btoa(APP)}.js`;
+  const TRIED = { [APP]: { block: ";/* the tried block */", version: "v-0000abcd" } };
+
+  /** A page whose own fetch answers with a file, a 404, or a network failure, and says what it was asked. */
+  const pageWith = (answer: () => Promise<Response>) => {
+    const asked: string[] = [];
+    const win = {
+      location: { href: "https://terrabis.co/" },
+      fetch: async (input: RequestInfo | URL) => {
+        asked.push(String(input));
+        return answer();
+      },
+      performance: { getEntriesByType: () => [] as { name: string }[] },
+    } as unknown as Window & Record<string, unknown>;
+    return { win, asked };
+  };
+
+  test("an edited tag's app-id file comes back with the block after its own code, and the versions are named", async () => {
+    const { win } = pageWith(async () => new Response("window.overrides = { a: 1 };"));
+    serveEdits(win, TRIED);
+    const text = await (await win.fetch(FILE_URL)).text();
+    expect(text).toBe("window.overrides = { a: 1 };\n;/* the tried block */\n");
+    expect(win.__mediajelAssistantOverrides).toEqual({ [APP]: "v-0000abcd" });
+  });
+
+  test("a file that does not exist, or a request that fails, is served as the block alone", async () => {
+    for (const answer of [
+      async () => new Response("<Error>NoSuchKey</Error>", { status: 404 }),
+      async () => {
+        throw new TypeError("Failed to fetch");
+      },
+    ]) {
+      const { win } = pageWith(answer);
+      serveEdits(win, TRIED);
+      expect(await (await win.fetch(FILE_URL)).text()).toBe("\n;/* the tried block */\n");
+    }
+  });
+
+  test("every other request goes through as it came", async () => {
+    const { win, asked } = pageWith(async () => new Response("theirs"));
+    serveEdits(win, TRIED);
+    expect(await (await win.fetch("https://terrabis.co/api/cart")).text()).toBe("theirs");
+    expect(await (await win.fetch(`https://test-custom-tags.cnna.io/app-ids/${btoa("another-tag")}.js`)).text()).toBe(
+      "theirs",
+    );
+    expect(asked).toHaveLength(2);
+  });
+
+  test("a tag that fetched its file before the edits arrived is named, and stopping gives the page its own fetch back", () => {
+    const { win } = pageWith(async () => new Response(""));
+    (win as unknown as { performance: unknown }).performance = { getEntriesByType: () => [{ name: FILE_URL }] };
+    const own = win.fetch;
+    const served = serveEdits(win, TRIED);
+    expect(served.late).toEqual([APP]);
+    served.stop();
+    expect(win.fetch).toBe(own);
+    expect(win.__mediajelAssistantOverrides).toBeUndefined();
   });
 });
