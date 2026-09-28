@@ -451,6 +451,7 @@ describe("a service with no internal-service configuration", () => {
       {} as never,
       { configured: true } as never,
       new ActivityService(stubSource({ configured: false }), stubDays()),
+      { configured: () => true } as never,
       { modelId: () => "stub-model" } as never,
     );
 

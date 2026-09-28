@@ -72,6 +72,8 @@ const Consequence = (line: Line): ReactNode => {
   const { text, warning } = consequenceLine(line);
   return (
     <p
+      data-slot="action-consequence"
+      data-blocked={warning || undefined}
       className={cn("mt-2.5 mb-0 text-md leading-[1.5] text-muted-foreground", warning && "text-warning-text")}
       aria-live="polite"
     >

@@ -15,6 +15,7 @@ import {
   endsSession,
   generateTag,
   readExistingTag,
+  readTagAccess,
   readTagActivity,
 } from "~/service/client";
 
@@ -168,15 +169,19 @@ describe("deployTag", () => {
       goal: "transaction",
       kind: "domain",
       name: "a.com",
+      appId: "app-1",
       code: "x",
       expectedSha: "abc",
     });
 
     expect(calls[0].method).toBe("POST");
+    // The app id rides along even for a domain file: the file is named after the hostname, so it
+    // is the only thing that says whose tag this deploy changes.
     expect(calls[0].body).toEqual({
       goal: "transaction",
       kind: "domain",
       name: "a.com",
+      appId: "app-1",
       code: "x",
       expectedSha: "abc",
     });
@@ -193,9 +198,42 @@ describe("deployTag", () => {
         },
       },
     }));
-    await expect(deployTag(token, { goal: "transaction", kind: "domain", name: "a.com", code: "bad" })).rejects.toThrow(
-      /no dedup guard/,
-    );
+    await expect(
+      deployTag(token, { goal: "transaction", kind: "domain", name: "a.com", appId: "app-1", code: "bad" }),
+    ).rejects.toThrow(/no dedup guard/);
+  });
+
+  test("a tag that belongs to another org is refused, and the service's sentence is what shows", async () => {
+    server(() => ({
+      status: 403,
+      json: {
+        error: {
+          code: "not_your_tag",
+          message:
+            "This tag belongs to Acme Cannabis. Your MediaJel account is not in that org, or in any org above it.",
+        },
+      },
+    }));
+
+    await expect(
+      deployTag(token, { goal: "transaction", kind: "domain", name: "a.com", appId: "app-1", code: "x" }),
+    ).rejects.toThrow(/not in that org/);
+  });
+});
+
+describe("readTagAccess", () => {
+  test("asks about one app id and reports what the service said", async () => {
+    const { calls } = server(() => ({
+      status: 200,
+      json: { appId: "app-1", allowed: false, reason: "This tag belongs to Acme.", org: { id: "o1", name: "Acme" } },
+    }));
+
+    const answer = await readTagAccess(token, "app-1");
+
+    expect(calls[0].url).toContain("/tag-access?appId=app-1");
+    expect(answer.allowed).toBe(false);
+    expect(answer.reason).toBe("This tag belongs to Acme.");
+    expect(answer.org?.name).toBe("Acme");
   });
 });
 

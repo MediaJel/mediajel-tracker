@@ -30,8 +30,13 @@ pressing Generate. Instructions are not the operator's data; evidence is.
 
 ## Endpoints
 
-All seven require `Authorization: Bearer <Cognito ID token>` — the same pool the MediaJel dashboard
-signs into. A verified token is the whole check; nobody holds a second credential.
+All eight require `Authorization: Bearer <Cognito ID token>` — the same pool the MediaJel dashboard
+signs into, and nobody holds a second credential. A verified token says **who is asking**. Whether
+that account may deploy **this tag** is a second question: the app ID resolves to the org that owns
+it, and only that org and the orgs above it may commit for it. `/tag-access` answers it for the
+panel; both deploy routes enforce it, so no path to a commit skips it. Anything the directory cannot
+answer — an app ID no org claims, a service that will not respond — is a refusal, because a deploy
+is live minutes later with nobody in between.
 
 | | | |
 |---|---|---|
@@ -42,6 +47,7 @@ signs into. A verified token is the whole check; nobody holds a second credentia
 | `GET /api/assistant/activity?appIds=a,b` | `{ days, tags }` | what each app ID's tag recorded in the last seven days |
 | `POST /api/assistant/overrides/preview` | `{ path, exists, sha, before, after, block, changed }` | what an edit to a tag's configuration does to its app-id file; nothing is committed |
 | `POST /api/assistant/overrides/deploy` | `{ commitUrl, fileUrl, path, update }` | commit that edit — or, with no edits, take it back out — to `master` |
+| `GET /api/assistant/tag-access?appId=…` | `{ appId, allowed, reason, org }` | whether this account may deploy this tag at all |
 
 `/activity` reads internal-service's `tracker/events/activity` and `page-url-activity` endpoints —
 the ones gql-service already reads — for up to five app IDs, and answers for each one on its own:
@@ -61,7 +67,7 @@ characters) with `:id`, and adds up the rows that share a shape — so
 
 Swagger is at `/api/docs`.
 
-## The three seams
+## The four seams
 
 They exist so the move into amplication is a provider binding rather than a rewrite. Nothing above
 any of the tokens knows — or may know — which implementation is bound.
@@ -71,6 +77,7 @@ any of the tokens knows — or may know — which implementation is bound.
 | `LLM_PROVIDER` | `OpenAiProvider` | `LlmOrchestrationService` (`common/llm-orchestration`) — Claude/DeepSeek/Gemini routing |
 | `INTEGRATIONS_KNOWLEDGE` | `StaticIntegrationsKnowledge` | `knowledge-base`'s vector search, so the AI Gateway answers integration questions from the same corpus |
 | `TAG_ACTIVITY_SOURCE` | `InternalServiceActivitySource` (`fetch`) | an adapter over `MicroservicesService.internal`, the axios instance external-service already points at internal-service |
+| `TAG_ACCESS_SOURCE` | `GqlTagAccessSource` (`fetch` + `X-API-Key`) | whatever that repo asks gql-service with; the three questions are the same |
 
 ## Local development
 
@@ -88,6 +95,7 @@ bun run dev                  # :3011, which is what the extension's .env.example
 | `WIDGET_AI_MODEL` | defaults to `gpt-5.5` |
 | `WIDGET_AUTH_REPO` | defaults to `MediaJel/mediajel-frictionless-custom-tag` |
 | `INTERNAL_SERVICE_URL`, `INTERNAL_SERVICE_BEARER_TOKEN` | internal-service and its bearer token — the pair gql-service reads. Activity returns a named 503 without them |
+| `GQL_SERVICE_URL`, `GQL_SERVICE_API_KEY` | gql-service's GraphQL endpoint and the key it accepts as `X-API-Key` (its `CUSTOMER_API_TOKEN`). **Every deploy is refused without them**, because the service cannot find out whose tag it is. The key bypasses that service's user scoping, so it is read here and never sent to the browser |
 | `CLICKHOUSE_URL`, `CLICKHOUSE_USER`, `CLICKHOUSE_PASSWORD` | ClickHouse, for each tag's days — internal-service's `CLICKHOUSE_HOST` (a URL, `https://…:8443`), user and password. `daily` is null without them |
 
 Health and the guard work with only the two Cognito values set, which is enough to exercise

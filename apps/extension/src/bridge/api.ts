@@ -1,6 +1,6 @@
 import type { AuthChallenge, Identity } from "~/auth/cognito";
 import { SIGNED_OUT } from "~/auth/signed-out";
-import type { DeployOutcome, ExistingTag, OverridesPreview, TagActivityResponse } from "~/service/client";
+import type { DeployOutcome, ExistingTag, OverridesPreview, TagAccess, TagActivityResponse } from "~/service/client";
 import type { JobSummary } from "~/store/jobs";
 import type { Settings } from "~/store/settings";
 import type { TagRecord } from "@mediajel/assistant-core/tags";
@@ -48,7 +48,16 @@ export type Request =
   | { type: "service/generate"; tabId: number }
   | { type: "service/cancel-generate"; tabId: number }
   | { type: "service/existing-tag"; kind: "domain" | "app-id"; name: string }
-  | { type: "service/deploy"; tabId: number; kind: "domain" | "app-id"; name: string; expectedSha?: string }
+  | {
+      type: "service/deploy";
+      tabId: number;
+      kind: "domain" | "app-id";
+      name: string;
+      /** The tag the job is about, which decides whether this account may deploy at all. */
+      appId: string;
+      expectedSha?: string;
+    }
+  | { type: "service/tag-access"; appId: string }
   | { type: "service/tag-activity"; appIds: string[] }
   | { type: "service/overrides-preview"; appId: string; edits: Record<string, string> }
   // — the ledger —
@@ -127,6 +136,7 @@ export interface ResultOf {
   "service/deploy": DeployOutcome;
   "service/tag-activity": TagActivityResponse;
   "service/overrides-preview": OverridesPreview;
+  "service/tag-access": TagAccess;
   /** The tab's ledger, newest first — empty for a tab that has moved to another site. */
   "events/read": LedgerView;
   "events/clear": null;

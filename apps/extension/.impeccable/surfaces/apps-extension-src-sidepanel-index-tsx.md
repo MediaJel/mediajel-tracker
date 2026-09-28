@@ -22,8 +22,9 @@ being summarised away.
 
 Constraints: ~400px wide, full height, docked all day; light and dark. The recorder and Verify run
 in the client's page realm, so anything the panel shows about the page arrives over a bridge and
-may be absent (no tag, opted out, page not loaded yet). Nobody holds a credential — sign-in is the
-whole gate.
+may be absent (no tag, opted out, page not loaded yet). Nobody holds a credential. Sign-in says who is
+asking; whether that account may deploy a given tag is the service's answer, since a tag belongs to
+an org — so Tracking setup can open on a refusal, with recording and proving still offered.
 
 Direction: the carbon-copy stack (seed ea35aae4), read in views since 2026-09-19: a strip of
 index tabs under the zigzag — Overview, Analytics, Events, Tracking setup — with the chosen tab

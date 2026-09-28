@@ -14,7 +14,7 @@ import { Stack } from "~/ui/components/Panel";
 import { Fine, SectionBody } from "~/ui/components/Section";
 import Stamp from "~/ui/components/Stamp";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/ui/components/ui/collapsible";
-import { AppFlowState, AppHandlers, JOB_TITLES } from "~/ui/contract";
+import { AppFlowState, AppHandlers, JOB_TITLES, TagAccessState } from "~/ui/contract";
 import CodeSection from "~/ui/screens/CodeSection";
 import DeploySection from "~/ui/screens/DeploySection";
 import EvidenceSection from "~/ui/screens/EvidenceSection";
@@ -55,6 +55,8 @@ export interface SetupViewProps {
   flow: AppFlowState;
   /** Why Generate is unavailable ("" when it may run). */
   generateBlocked: string;
+  /** Whether this account may deploy the page's tag at all, asked before the work starts. */
+  tagAccess: TagAccessState;
   /** Which finished slips the operator has opened back up. */
   expanded: readonly string[];
   onToggleSlip(number: string): void;
@@ -261,8 +263,11 @@ const deployLabel = (flow: AppFlowState): string => {
   return updatesExisting(flow) ? "Update on master" : "Deploy to master";
 };
 
-const deployClick = ({ flow, handlers, onOpenSettings }: SetupViewProps): (() => void) | undefined => {
+const deployClick = ({ flow, handlers, onOpenSettings, tagAccess }: SetupViewProps): (() => void) | undefined => {
   if (flow.deploy.deploying) return undefined;
+  // A block Settings can fix sends the operator there. A tag that belongs to another org is not
+  // one of those: there is nothing in Settings to change, so the button stays put and says why.
+  if (tagAccess.status === "refused") return undefined;
   return flow.deploy.deployBlocked ? onOpenSettings : handlers.onDeploy;
 };
 
@@ -480,9 +485,30 @@ const Actions = (props: SetupViewProps): ReactNode => {
   );
 };
 
+/**
+ * The one thing worth knowing before the work starts: this tag is not this account's to deploy.
+ *
+ * It is said at the top of the job rather than at the deploy step, because an hour of recording is
+ * a poor moment to learn it. It also says what still works — everything except the commit — since
+ * a refusal that hides what is still possible reads as a broken panel rather than a rule.
+ *
+ * It steps aside at the Deploy step, where the pinned action states the same refusal under the
+ * button it is refusing: the same sentence twice on one screen reads as a fault in the panel.
+ */
+const AccessNote = ({ access, deploying }: { access: TagAccessState; deploying: boolean }): ReactNode =>
+  access.status === "refused" && !deploying ? (
+    <p
+      data-slot="setup-refusal"
+      className="m-0 border-b border-border bg-stock px-5 py-3 text-md leading-[1.5] text-warning-text"
+    >
+      {access.reason} You can still record and prove a tag here; only deploying it is refused.
+    </p>
+  ) : null;
+
 /** The stack and its pinned action: the only view that draws a primary action. */
 export const SetupView = (props: SetupViewProps): ReactNode => (
   <>
+    <AccessNote access={props.tagAccess} deploying={props.session.step === "deploy"} />
     <Stack list>
       <Steps {...props} />
     </Stack>

@@ -89,8 +89,26 @@ export interface AssistantReadiness {
   signedIn: boolean;
   /** The operator has seen what Generate sends out of the browser. */
   acknowledgedDataSharing: boolean;
+  /**
+   * Why the service says this account may not deploy THIS tag, in its own words; empty when it may.
+   *
+   * Signing in says who is asking, which is not the same as being allowed: a tag belongs to an org,
+   * and only that org and the orgs above it may change it. The service decides and enforces it —
+   * this is the same sentence, carried so the panel refuses before the work rather than after.
+   */
+  tagRefusal?: string;
 }
 
 export const canGenerate = (ready: AssistantReadiness): boolean => ready.signedIn && ready.acknowledgedDataSharing;
 
-export const canDeploy = (ready: AssistantReadiness): boolean => ready.signedIn;
+export const canDeploy = (ready: AssistantReadiness): boolean => ready.signedIn && !ready.tagRefusal;
+
+/**
+ * Why a deploy cannot be made, in the order the operator can act on: who they are, then whether
+ * this tag is theirs, then whether the service could do it at all. One sentence, never a stack.
+ */
+export const deployBlockedBecause = (ready: AssistantReadiness, serviceUnavailable: string): string => {
+  if (!ready.signedIn) return "Sign in with your MediaJel account";
+  if (ready.tagRefusal) return ready.tagRefusal;
+  return serviceUnavailable;
+};

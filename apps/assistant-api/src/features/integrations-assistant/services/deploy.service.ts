@@ -8,6 +8,7 @@ import { GithubService } from "./github.service";
 import type { ExistingFile } from "./github.service";
 import { carryBlocks, editsIn, planOverrides, versionOf } from "./overrides-block";
 import { parseGate } from "./rewrite-imports";
+import { TagAccessService } from "./tag-access.service";
 import { ValidateService } from "./validate.service";
 
 /**
@@ -31,7 +32,19 @@ export class DeployService {
   constructor(
     private readonly github: GithubService,
     private readonly validator: ValidateService,
+    private readonly access: TagAccessService,
   ) {}
+
+  /**
+   * The first question either deploy asks, before validation and before GitHub.
+   *
+   * Refusing here rather than in the controller means no path to a commit skips it: both deploys
+   * write to the same repo with the same credential, so both answer to the same rule.
+   */
+  private async allowed(appId: string, who: Authorized): Promise<void> {
+    const decision = await this.access.mayDeploy(appId, who);
+    if (!decision.allowed) throw new ApiError(403, "not_your_tag", decision.reason);
+  }
 
   /** The two folders, spelled in one place — the tag fetches by base64 of this exact name. */
   targetPath(kind: DeployTargetKind, name: string): string {
@@ -45,6 +58,7 @@ export class DeployService {
   }
 
   async deploy(request: DeployRequest, who: Authorized): Promise<DeployOutcome> {
+    await this.allowed(request.appId, who);
     const violations = this.validator.validate({
       code: request.code,
       goal: request.goal,
@@ -94,6 +108,7 @@ export class DeployService {
 
   /** Commits an edit to a tag's configuration: its block, below the app-id file's own code. */
   async deployOverrides(request: OverridesRequest, who: Authorized): Promise<DeployOutcome> {
+    await this.allowed(request.appId, who);
     const path = this.targetPath("app-id", request.appId);
     const existing = await this.current(path, request.expectedSha);
     const { block, after } = planOverrides(existing?.content ?? null, request.appId, request.edits);

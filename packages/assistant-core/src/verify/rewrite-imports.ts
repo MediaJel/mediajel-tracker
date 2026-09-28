@@ -28,6 +28,10 @@ export const IMPORT_ALLOWLIST: Record<string, readonly string[]> = {
   "../libs/utils/create-script-pixel": ["createScript"],
   "../libs/utils/persist-utm": ["createUTMPersistor"],
   "../libs/utils/sha256-encode": ["sha256"],
+  // Hashes a sign-up's PII and forwards it to window.trackSignUp. Three shipped tags use it, and a
+  // generated sign-up tag that hashes is the one we want, so it is on the allowlist rather than
+  // left to be reinvented inline.
+  "../libs/utils/track-signup-hashed": ["trackSignUpHashed"],
   "../libs/utils/tryParseJSONObject": ["tryParseJSONObject"],
 };
 

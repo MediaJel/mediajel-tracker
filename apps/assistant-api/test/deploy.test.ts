@@ -42,13 +42,24 @@ const github = (existing: { sha: string; content: string } | null, recorded: Rec
   return { client: () => client, repo: "MediaJel/test" } as never;
 };
 
-const service = (existing: { sha: string; content: string } | null, recorded: Recorded = {}): DeployService =>
-  new DeployService(github(existing, recorded), new ValidateService());
+/** Who owns the tag is a separate question with its own tests; here it is answered yes unless a test says otherwise. */
+const access = (decision = { allowed: true, reason: "" }) => ({ mayDeploy: async () => decision }) as never;
+
+const service = (
+  existing: { sha: string; content: string } | null,
+  recorded: Recorded = {},
+  permission = access(),
+): DeployService => new DeployService(github(existing, recorded), new ValidateService(), permission);
 
 const request = (over: Partial<Parameters<DeployService["deploy"]>[0]> = {}) =>
-  ({ goal: "transaction", kind: "domain", name: "shop.example.com", code: VALID, ...over }) as Parameters<
-    DeployService["deploy"]
-  >[0];
+  ({
+    goal: "transaction",
+    kind: "domain",
+    name: "shop.example.com",
+    appId: "5f976cbb-7d29-46ce-bf07-0f701478d800",
+    code: VALID,
+    ...over,
+  }) as Parameters<DeployService["deploy"]>[0];
 
 describe("the path a target becomes", () => {
   test("is the folder the tag fetches by name, for both kinds", () => {

@@ -61,10 +61,25 @@ export interface DeployInput {
   goal: WidgetSession["goal"];
   kind: DeployTargetKind;
   name: string;
+  /**
+   * The tag this job is about. For a domain file the name is a hostname, so the app ID is the only
+   * thing that says whose tag is being changed — and that is what the service checks the operator
+   * against before it commits.
+   */
+  appId: string;
   code: string;
   /** The sha the operator was shown, so the service refuses a file that moved under us. */
   expectedSha?: string;
   signal?: AbortSignal;
+}
+
+/** What the service answered about this account and this tag. */
+export interface TagAccess {
+  appId: string;
+  allowed: boolean;
+  /** Empty when allowed; otherwise the sentence to show the operator, as the service wrote it. */
+  reason: string;
+  org?: { id: string; name: string };
 }
 
 export interface DeployOutcome {
@@ -224,6 +239,24 @@ export const checkAccess = async (token: TokenSource): Promise<string> => {
 /** Reads the file the deploy would overwrite, so the choice shows new-vs-update honestly. */
 export const readExistingTag = async (token: TokenSource, kind: DeployTargetKind, name: string): Promise<ExistingTag> =>
   call<ExistingTag>(`/tag?kind=${encodeURIComponent(kind)}&name=${encodeURIComponent(name)}`, token);
+
+/**
+ * Whether this account may deploy this tag at all, asked when Tracking setup opens.
+ *
+ * A service older than this feature has no such route and answers 404; that is not permission, so
+ * it is reported as a refusal like any other. The deploy endpoints enforce the same rule anyway —
+ * this call exists so the answer arrives before the work, not after it.
+ */
+export const readTagAccess = async (token: TokenSource, appId: string): Promise<TagAccess> => {
+  try {
+    return await withTimeout(
+      call<TagAccess>(`/tag-access?appId=${encodeURIComponent(appId)}`, token),
+      HEALTH_TIMEOUT_MS,
+    );
+  } catch (err) {
+    throw failure(err);
+  }
+};
 
 export const deployTag = async (token: TokenSource, input: DeployInput): Promise<DeployOutcome> => {
   const { signal, ...body } = input;

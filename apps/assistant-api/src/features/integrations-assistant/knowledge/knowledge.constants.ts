@@ -91,6 +91,10 @@ import { createUTMPersistor } from "../libs/utils/persist-utm";
 //   createUTMPersistor(config?) — persists UTM parameters across the session.
 import { sha256 } from "../libs/utils/sha256-encode";
 //   sha256(value) — Promise<string>, lowercase hex. Always await it for hashedEmailAddress.
+import { trackSignUpHashed } from "../libs/utils/track-signup-hashed";
+//   trackSignUpHashed(params) — Promise<void>. Hashes every PII field of a SignupParams (trimmed
+//   and lowercased first) and calls window.trackSignUp itself, sending the email hash as both
+//   emailAddress and hashedEmailAddress. Prefer it to hashing by hand in a sign-up tag.
 import { tryParseJSONObject } from "../libs/utils/tryParseJSONObject";
 //   tryParseJSONObject(value) — parsed object or undefined; never throws.`;
 

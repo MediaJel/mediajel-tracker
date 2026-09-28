@@ -131,6 +131,14 @@ data change. Settings takes the strip and the view's place rather than covering 
 `01`–`05` beside the names was what made a work order read as a specification. The steps are named
 for what they produce — Record, The event, The tag, Proof, Deploy.
 
+**A tag that is not yours to deploy** says so at the top of the stack, before the work: one line
+on the stock in warning ink, naming the org the tag belongs to, and saying what still works —
+recording and proving are open to anyone signed in; only the commit is refused. The same sentence
+prints again in the Deploy step, above the choice, because by then the first line is minutes of
+scrolling away, and the pinned action carries it as its blocked reason. The panel never invents
+that refusal: a question the service could not answer leaves the job as it was, and the deploy
+routes refuse it there instead.
+
 **The carbon stack** is the structure. A step behaves one of three ways:
 
 - **Sealed** — tinted like a carbon copy of the sheet, its receipt on its own line in carbon

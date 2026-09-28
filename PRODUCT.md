@@ -35,7 +35,8 @@ It writes code against the *actual* page — the recorded network, dataLayer, fo
 - Runtime API the generated code targets: `window.trackTrans(TransactionEvent)`, `window.trackSignUp(SignupParams)`; conventions of the frictionless repo (allowlisted helper imports, `isTrackTransLoaded`, dedup before await, `"N/A"`/`"USD"` defaults, valid-JS syntax).
 - Technical constraints: a Chrome MV3 extension (Plasmo, React). The recorder and Verify must run in the page's own JavaScript realm — an isolated content script cannot see `window.fetch`, `dataLayer` or `trackTrans` — and must be installed at `document_start`, so the assistant is split across three realms with a message bridge between them. The always-loaded tag now gains nothing at all.
 - Privacy: the widget works when GPC/DNT has stopped the tracker and says so; PII is masked before anything reaches a model; every outbound payload is previewable first.
-- Undecided product facts: when clients get access and how deploys are gated (review/approval) — record, do not invent. Distribution is currently a CI-built zip loaded unpacked; there is no Chrome Web Store listing.
+- **Who may deploy (decided 2026-09-28):** signing in says who is asking; it does not say what they may change. A tag's app ID belongs to one org, and only that org and the orgs above it may deploy for it — resolved through MediaJel's directory (gql-service) by the assistant service, which refuses anything it cannot answer. A refusal is shown when Tracking setup opens, not at the commit, and recording and verifying stay open to anyone signed in.
+- Undecided product facts: when clients get access — record, do not invent. Distribution is currently a CI-built zip loaded unpacked; there is no Chrome Web Store listing.
 
 ## Brand Commitments
 

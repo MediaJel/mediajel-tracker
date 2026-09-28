@@ -22,6 +22,7 @@ import {
   generateTag,
   previewOverrides,
   readExistingTag,
+  readTagAccess,
   readTagActivity,
 } from "~/service/client";
 import { clearSession, currentIdToken, readSession, writeSession } from "~/store/auth";
@@ -333,6 +334,7 @@ const deployFromJob: Handler<"service/deploy"> = async (request) => {
     goal: session.goal,
     kind: request.kind,
     name: request.name,
+    appId: request.appId,
     code: session.generation.code,
     expectedSha: request.expectedSha,
   });
@@ -399,6 +401,7 @@ const REQUESTS: { [K in Request["type"]]: Handler<K> } = {
   "service/tag-activity": (request) => readTagActivity(currentIdToken, request.appIds),
   "service/overrides-preview": (request) =>
     previewOverrides(currentIdToken, { appId: request.appId, edits: request.edits }),
+  "service/tag-access": (request) => readTagAccess(currentIdToken, request.appId),
   "service/deploy": deployFromJob,
   "events/read": async (request) => viewOf(await readLedger(request.tabId, await siteOfTab(request.tabId))),
   "events/clear": async (request) => {

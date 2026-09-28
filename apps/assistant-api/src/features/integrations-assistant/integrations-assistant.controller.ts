@@ -10,6 +10,8 @@ import type { DeployOutcome, ExistingTag } from "./dto/deploy.dto";
 import { GenerateRequestSchema } from "./dto/generate.dto";
 import { OverridesRequestSchema } from "./dto/overrides.dto";
 import type { OverridesPreview } from "./dto/overrides.dto";
+import { TagAccessQuerySchema } from "./dto/tag-access.dto";
+import type { TagAccessResponse } from "./dto/tag-access.dto";
 import type { GenerateResponse } from "./dto/generate.dto";
 import { ApiError } from "./errors";
 import type { AuthorizedRequest } from "./types/assistant.types";
@@ -17,8 +19,9 @@ import { CognitoGuard } from "./guards/cognito.guard";
 import { IntegrationsAssistantService } from "./integrations-assistant.service";
 
 /**
- * The Integrations Assistant's seven endpoints. The first four are the contract the extension
- * already spoke when it moved off the Lambda; /activity and the two /overrides routes are new here.
+ * The Integrations Assistant's eight endpoints. The first four are the contract the extension
+ * already spoke when it moved off the Lambda; /activity, the two /overrides routes and /tag-access
+ * are new here.
  *
  *   GET  /health             → { ok, model, user, … }            the session is accepted; can this service deploy, read activity?
  *   POST /generate           → { output, model, … }              evidence → a validated tag
@@ -27,8 +30,11 @@ import { IntegrationsAssistantService } from "./integrations-assistant.service";
  *   GET  /activity           → { days, tags }                    what each app ID's tag recorded in the last seven days
  *   POST /overrides/preview  → { path, before, after, block, … } what an edit to a tag's configuration does to its app-id file
  *   POST /overrides/deploy   → { commitUrl, … }                  commit that edit, below the file's own code
+ *   GET  /tag-access         → { allowed, reason, org }          whether this account may deploy this tag at all
  *
- * All seven require `Authorization: Bearer <Cognito ID token>`.
+ * All eight require `Authorization: Bearer <Cognito ID token>`, which says who is asking. Whether
+ * that account may deploy a particular tag is a second question, answered by /tag-access and
+ * enforced by both deploy routes.
  */
 @ApiTags("Integrations Assistant")
 @Controller("assistant")
@@ -72,6 +78,7 @@ export class IntegrationsAssistantController {
     deployConfigured: boolean;
     activityConfigured: boolean;
     dailyConfigured: boolean;
+    accessConfigured: boolean;
   } {
     const who = this.assistant.who(request);
     return {
@@ -81,6 +88,7 @@ export class IntegrationsAssistantController {
       deployConfigured: this.assistant.deployConfigured(),
       activityConfigured: this.assistant.activityConfigured(),
       dailyConfigured: this.assistant.dailyConfigured(),
+      accessConfigured: this.assistant.accessConfigured(),
     };
   }
 
@@ -186,5 +194,25 @@ export class IntegrationsAssistantController {
     this.assistant.who(request);
     const { appIds } = this.parse(ActivityQuerySchema, query, "activity query");
     return this.assistant.readActivity(appIds);
+  }
+
+  @Get("tag-access")
+  @ApiOperation({
+    summary: "Whether this account may deploy this tag",
+    description:
+      "Resolves the app ID to the org that owns it and answers whether the signed-in account is in that org or in one above it. The panel asks when Tracking setup opens so a refusal is known before the work, not after it. A refusal here is the same one the deploy endpoints enforce.",
+  })
+  @ApiResponse({ status: 200, description: "The answer, with the reason when it is no" })
+  @ApiResponse({ status: 400, description: "appId is missing or is not an app ID" })
+  async tagAccess(@Req() request: Request & AuthorizedRequest, @Query() query: unknown): Promise<TagAccessResponse> {
+    const who = this.assistant.who(request);
+    const { appId } = this.parse(TagAccessQuerySchema, query, "tag access query");
+    const decision = await this.assistant.mayDeploy(appId, who);
+    return {
+      appId,
+      allowed: decision.allowed,
+      reason: decision.reason,
+      ...(decision.org ? { org: decision.org } : {}),
+    };
   }
 }

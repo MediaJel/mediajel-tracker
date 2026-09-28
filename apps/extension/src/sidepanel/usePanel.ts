@@ -3,12 +3,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TagRecord } from "@mediajel/assistant-core/tags";
 import { deployTargets } from "@mediajel/assistant-core/deploy/targets";
 import { TrackerStatus } from "@mediajel/assistant-core/tags";
-import { canDeploy, canGenerate } from "@mediajel/assistant-core/state/machine";
+import { canGenerate, deployBlockedBecause } from "@mediajel/assistant-core/state/machine";
 import { WidgetGoal, WidgetSession } from "@mediajel/assistant-core/types";
 import { SiteSimulation } from "@mediajel/assistant-core/simulation";
 
 import type { AuthChallenge, Identity } from "~/auth/cognito";
-import { AppFlowState, AppHandlers } from "~/ui/contract";
+import { AppFlowState, AppHandlers, TagAccessState } from "~/ui/contract";
 import { JobPatch, JobView, Push, ask, onSignedOut } from "~/bridge/api";
 import { PANEL_PORT } from "~/lib/ports";
 import { apiUrl } from "~/service/client";
@@ -85,6 +85,8 @@ export interface PanelState {
   confirmingReset: boolean;
   settingsOpen: boolean;
   access: { status: "idle" | "checking" | "ok" | "error"; message: string };
+  /** Whether this account may deploy the page's tag, and why not when it may not. */
+  tagAccess: TagAccessState;
   tagUrl: string;
   /** Which of the work order's views is showing. */
   view: View;
@@ -134,6 +136,7 @@ export const usePanel = (): PanelState => {
   const siteRef = useRef("");
   /** Why this service could not deploy even if the operator is signed in. Empty when it can. */
   const [deployUnavailable, setDeployUnavailable] = useState("");
+  const [tagAccess, setTagAccess] = useState<TagAccessState>({ appId: "", status: "idle", reason: "" });
   const [jobs, setJobs] = useState<JobSummary[]>([]);
   const [expanded, setExpanded] = useState<string[]>([]);
   const [confirmingReset, setConfirmingReset] = useState(false);
@@ -421,6 +424,7 @@ export const usePanel = (): PanelState => {
               tabId: tabId(),
               kind: current.info.kind,
               name: current.info.name,
+              appId: status.appId,
               expectedSha: current.existing && typeof current.existing === "object" ? current.existing.sha : undefined,
             });
           } catch (err) {
@@ -524,6 +528,35 @@ export const usePanel = (): PanelState => {
       .catch(() => setSimulations([]));
   }, [settingsOpen]);
 
+  /**
+   * May this account deploy this tag? Asked as soon as the page names one, so a refusal is known
+   * before the recording rather than after it.
+   *
+   * A transport failure — a background older than this panel, a service that cannot be reached —
+   * leaves the question unanswered rather than answered "no": the panel would be inventing a
+   * refusal it was never told. The deploy endpoints check again and refuse there, with the reason,
+   * so nothing is let through by this being generous.
+   */
+  useEffect(() => {
+    const appId = status.appId;
+    if (!identity || !appId) {
+      setTagAccess({ appId: "", status: "idle", reason: "" });
+      return;
+    }
+    let current = true;
+    setTagAccess({ appId, status: "checking", reason: "" });
+    ask({ type: "service/tag-access", appId })
+      .then((answer) => {
+        if (current) {
+          setTagAccess({ appId, status: answer.allowed ? "allowed" : "refused", reason: answer.reason });
+        }
+      })
+      .catch(() => current && setTagAccess({ appId, status: "idle", reason: "" }));
+    return () => {
+      current = false;
+    };
+  }, [identity, status.appId]);
+
   const flow: AppFlowState = {
     verifyRunErrors,
     deploy: {
@@ -534,9 +567,14 @@ export const usePanel = (): PanelState => {
       selected: selectedTarget,
       deploying,
       deployError,
-      deployBlocked: canDeploy({ signedIn: !!identity, acknowledgedDataSharing: settings.acknowledgedDataSharing })
-        ? deployUnavailable
-        : "Sign in with your MediaJel account",
+      deployBlocked: deployBlockedBecause(
+        {
+          signedIn: !!identity,
+          acknowledgedDataSharing: settings.acknowledgedDataSharing,
+          tagRefusal: tagAccess.status === "refused" ? tagAccess.reason : "",
+        },
+        deployUnavailable,
+      ),
       cdnState: session?.deploy?.cdnUrl ? "waiting" : "idle",
     },
   };
@@ -545,6 +583,7 @@ export const usePanel = (): PanelState => {
     screen,
     pending,
     flowError,
+    tagAccess,
     identity,
     challenge,
     authBusy,

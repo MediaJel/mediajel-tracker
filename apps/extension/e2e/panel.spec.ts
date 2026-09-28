@@ -148,6 +148,10 @@ const SCENARIOS: Scenario[] = [
   setup("job-verify-ok", "[data-verdict=ok]"),
   setup("job-verify-problems", "li[data-bad]"),
   setup("job-deploy", "[data-slot=radio-group]"),
+  // A tag another org owns: refused at the top of the job, and again where the commit is chosen.
+  // Everything else about the job is unchanged — recording and proving are still offered.
+  setup("job-home-refused", "[data-slot=setup-refusal]"),
+  setup("job-deploy-refused", "[data-slot=action-consequence][data-blocked]"),
   setup("job-done", "[data-slot=links]"),
   { name: "settings", ready: ["[aria-label='Assistant settings']"], act: click("button[aria-label=Settings]") },
   { name: "confirm-reset", ready: ["[data-slot=alert-dialog-content]"], act: click("button[aria-label='Start over']") },

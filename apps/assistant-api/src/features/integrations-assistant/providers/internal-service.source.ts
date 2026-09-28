@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
+import { unanswered } from "./service-failure";
 import type { RawActivity, RawPageUrlRow, TagActivitySource } from "./tag-activity.source";
 
 /**
@@ -13,13 +14,8 @@ import type { RawActivity, RawPageUrlRow, TagActivitySource } from "./tag-activi
 
 const TIMEOUT_MS = 20_000;
 
-/** What `fetch` throws is never internal-service's answer — only that there was none. */
-const unanswered = (err: unknown): Error => {
-  if ((err as { name?: string })?.name === "TimeoutError") {
-    return new Error(`MediaJel's tag activity service did not answer within ${TIMEOUT_MS / 1000} seconds.`);
-  }
-  return new Error(`internal-service could not be reached (${err instanceof Error ? err.message : String(err)}).`);
-};
+/** What the operator calls it, which is not what the repo calls it. */
+const ACTIVITY = "MediaJel's tag activity service";
 
 /**
  * internal-service fails a query with Nest's own body, `{ statusCode, message, error }`, where
@@ -73,7 +69,7 @@ export class InternalServiceActivitySource implements TagActivitySource {
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
     } catch (err) {
-      throw unanswered(err);
+      throw unanswered(err, ACTIVITY, TIMEOUT_MS);
     }
     if (!response.ok) throw await refusal(response);
     return (await response.json()) as T;

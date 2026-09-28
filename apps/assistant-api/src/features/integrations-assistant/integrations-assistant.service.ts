@@ -11,6 +11,8 @@ import { ActivityService } from "./services/activity.service";
 import { GithubService } from "./services/github.service";
 import { DeployService } from "./services/deploy.service";
 import { GenerateService } from "./services/generate.service";
+import { TagAccessService } from "./services/tag-access.service";
+import type { AccessDecision } from "./services/tag-access.service";
 import { LLM_PROVIDER } from "./providers/llm.provider";
 import type { LlmProvider } from "./providers/llm.provider";
 import { Inject } from "@nestjs/common";
@@ -26,6 +28,7 @@ export class IntegrationsAssistantService {
     private readonly deployer: DeployService,
     private readonly github: GithubService,
     private readonly activity: ActivityService,
+    private readonly access: TagAccessService,
     @Inject(LLM_PROVIDER) private readonly llm: LlmProvider,
   ) {}
 
@@ -57,6 +60,16 @@ export class IntegrationsAssistantService {
   /** Whether this service could read each tag's days if asked. See ActivityService.dailyConfigured. */
   dailyConfigured(): boolean {
     return this.activity.dailyConfigured;
+  }
+
+  /** Whether this service can find out who owns a tag. Without it, every deploy is refused. */
+  accessConfigured(): boolean {
+    return this.access.configured();
+  }
+
+  /** May this account deploy this tag? Asked by the panel when Tracking setup opens, and again at the deploy. */
+  mayDeploy(appId: string, who: Authorized): Promise<AccessDecision> {
+    return this.access.mayDeploy(appId, who);
   }
 
   generate(input: GenerateRequest): Promise<GenerateResponse> {

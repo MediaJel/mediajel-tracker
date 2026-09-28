@@ -23,6 +23,30 @@ export const buildShims = (interceptor: VerifyInterceptor): Shims => {
       .join("");
   };
 
+  /**
+   * The repo's own sign-up helper, mirrored: every PII field hashed, normalised the way it
+   * normalises them, and the email sent under both names. It calls `window.trackSignUp`, which
+   * Verify has intercepted, so the receipt shows the hashes that would really go out — the raw
+   * values never leave the page here either.
+   */
+  const hashPii = async (value: string | undefined): Promise<string> => {
+    const normalized = value?.trim().toLowerCase();
+    return normalized ? await sha256(normalized) : "";
+  };
+
+  const trackSignUpHashed = async (params: Record<string, string | undefined>): Promise<void> => {
+    const hashedEmailAddress = await hashPii(params.emailAddress);
+    (window as unknown as { trackSignUp(input: Record<string, unknown>): void }).trackSignUp({
+      uuid: params.uuid,
+      firstName: await hashPii(params.firstName),
+      lastName: await hashPii(params.lastName),
+      emailAddress: hashedEmailAddress,
+      hashedEmailAddress,
+      phoneNumber: await hashPii(params.phoneNumber),
+      address: await hashPii(params.address),
+    });
+  };
+
   const datalayerSource = (
     callback: (data: unknown) => void,
     layer: unknown[] = (window.dataLayer as unknown[]) || [],
@@ -173,6 +197,7 @@ export const buildShims = (interceptor: VerifyInterceptor): Shims => {
     "../libs/utils/create-script-pixel": { createScript },
     "../libs/utils/persist-utm": { createUTMPersistor },
     "../libs/utils/sha256-encode": { sha256 },
+    "../libs/utils/track-signup-hashed": { trackSignUpHashed },
     "../libs/utils/tryParseJSONObject": { tryParseJSONObject },
   };
 };

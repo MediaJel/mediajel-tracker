@@ -128,6 +128,7 @@ export const SidePanel = (): ReactNode => {
       onToggleSlip={panel.onToggleSlip}
       confirmingReset={panel.confirmingReset}
       access={panel.access}
+      tagAccess={panel.tagAccess}
       pending={panel.pending}
       flowError={panel.flowError}
       settingsOpen={panel.settingsOpen}

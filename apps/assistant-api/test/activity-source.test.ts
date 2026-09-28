@@ -119,11 +119,14 @@ describe("no answer at all", () => {
     );
   });
 
-  test("a connection that fails says internal-service could not be reached", async () => {
+  // Both failures name the service the same way, because they are one helper now
+  // (providers/service-failure.ts) shared with the directory source. A timeout and a dead socket
+  // are the same fact to the operator: this service did not answer.
+  test("a connection that fails names the service that did not answer", async () => {
     fetchThrows(new TypeError("fetch failed"));
 
     await expect(sourceWith().pageUrls("app-1", 7)).rejects.toThrow(
-      "internal-service could not be reached (fetch failed).",
+      "MediaJel's tag activity service could not be reached (fetch failed).",
     );
   });
 });

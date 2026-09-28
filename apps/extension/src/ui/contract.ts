@@ -47,6 +47,19 @@ export interface AppHandlers {
   onOpenJobs(): void;
 }
 
+/**
+ * Whether this account may deploy the page's tag, asked once the tag is known rather than at the
+ * end of a job: a refusal found after an hour of recording is a worse refusal than the same one
+ * found at the start. The reason is the service's own sentence and is shown as it arrives.
+ */
+export interface TagAccessState {
+  /** The tag the answer is about; "" before any tag is known. */
+  appId: string;
+  status: "idle" | "checking" | "allowed" | "refused";
+  /** Empty unless refused. */
+  reason: string;
+}
+
 /** Verify/deploy view state the panel owns outside the persisted session. */
 export interface AppFlowState {
   verifyRunErrors: string[];

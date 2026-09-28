@@ -864,6 +864,8 @@
     "job-verify-ok": { step: "verify" },
     "job-verify-problems": { step: "verify", session: { verify: { captured: [CAPTURE_BAD], errors: [] } } },
     "job-deploy": { step: "deploy" },
+    "job-deploy-refused": { step: "deploy", refusedBy: "Acme Cannabis" },
+    "job-home-refused": { step: "home", refusedBy: "Acme Cannabis" },
     "job-done": { step: "done" },
     settings: {
       step: "home",
@@ -1080,6 +1082,17 @@
       return null;
     },
     "service/existing-tag": (request) => existingTag(request.kind),
+    // Who owns the tag. Allowed unless the scenario names the org that refuses it, which is how
+    // the refused pictures are drawn without a directory to ask.
+    "service/tag-access": (request) =>
+      scenario.refusedBy
+        ? {
+            appId: request.appId,
+            allowed: false,
+            reason: `This tag belongs to ${scenario.refusedBy}. Your MediaJel account is not in that org, or in any org above it.`,
+            org: { id: "org-1", name: scenario.refusedBy },
+          }
+        : { appId: request.appId, allowed: true, reason: "" },
     "service/deploy": (request) => deploy(request.kind),
     "service/tag-activity": (request) => tagActivity(request.appIds),
     // The ledger is what the scenario says; the stub never pushes events, so a picture holds still.
