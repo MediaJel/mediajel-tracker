@@ -11,10 +11,13 @@ import type { OrgRef, TagAccessSource } from "./tag-access.source";
  * Three questions, three queries, each one filterable in the schema as generated
  * (`src/generated/prisma.graphql` in mediajel-gql-service):
  *
- * - **The caller's orgs.** `User.cognitoUserId` and `User.username` are both unique, and the
- *   extension's Cognito ID token carries both `sub` and `cognito:username`. Which of the two the
- *   directory was filled with differs by how the account was made, so this asks by `cognitoUserId`
- *   and falls back to `username` rather than assuming one.
+ * - **The caller's orgs.** By `username`, which is the ID token's `cognito:username` claim: that is
+ *   the lookup gql-service's own auth layer does (`middleware/rules/auth-token.rule.ts`), and the
+ *   one identifier that is filled the same way for every account. `cognitoUserId` looks like the
+ *   home of the token's `sub` and is not: a dashboard signup stores the username in it, and a
+ *   federated one stores an Identity Pool id. It is tried second, so an account that does hold a
+ *   sub there still resolves. Membership is read from `roles[].org` as well as `orgs`, because
+ *   every permission check in that service goes through roles and the plain list can be empty.
  * - **The tag's owner.** `OrgWhereInput.tagsConfig` accepts an `OrgTagsConfigWhereInput`, whose
  *   `appId` is a plain string filter. The other place an app id appears — `OrgDataConfig.appIds` —
  *   is a scalar list, and Prisma 1 generates no filter for those, so it cannot be asked about here.
@@ -45,7 +48,7 @@ interface GqlBody<T> {
 }
 
 const ORGS_OF_USER = `query AssistantUserOrgs($by: UserWhereUniqueInput!) {
-  user(where: $by) { id orgs { id name } }
+  user(where: $by) { id orgs { id name } roles { org { id name } } }
 }`;
 
 const OWNER_OF_TAG = `query AssistantTagOwner($appId: String!) {
@@ -56,9 +59,9 @@ const PARENTS_OF = `query AssistantOrgParents($ids: [ID!]) {
   orgs(where: { id_in: $ids }) { id parentOrg { id name } }
 }`;
 
-type UserOrgs = { user: { orgs: OrgRef[] } | null };
+type UserOrgs = { user: { orgs: OrgRef[] | null; roles: { org: OrgRef | null }[] | null } | null };
 type Owners = { orgs: OrgRef[] };
-type Parents = { orgs: { id: string; parentOrg: OrgRef[] | null }[] };
+type Parents = { orgs: { id: string; parentOrg: (OrgRef | null)[] | null }[] };
 
 @Injectable()
 export class GqlTagAccessSource implements TagAccessSource {
@@ -69,14 +72,16 @@ export class GqlTagAccessSource implements TagAccessSource {
   }
 
   async orgsOfUser(who: Authorized): Promise<OrgRef[]> {
-    const byId = await this.userOrgs({ cognitoUserId: who.sub });
-    return byId ?? (await this.userOrgs({ username: who.username })) ?? [];
+    const byName = await this.userOrgs({ username: who.username });
+    return byName ?? (await this.userOrgs({ cognitoUserId: who.sub })) ?? [];
   }
 
   /** The orgs of the user that unique key names, or null when the directory holds no such user. */
   private async userOrgs(by: Record<string, string>): Promise<OrgRef[] | null> {
     const found = await this.ask<UserOrgs>(ORGS_OF_USER, { by });
-    return found.user ? (found.user.orgs ?? []) : null;
+    if (!found.user) return null;
+    const throughRoles = (found.user.roles ?? []).map((role) => role.org).filter((org): org is OrgRef => !!org);
+    return [...new Map([...(found.user.orgs ?? []), ...throughRoles].map((org) => [org.id, org])).values()];
   }
 
   async ownerOfTag(appId: string): Promise<OrgRef | null> {
@@ -87,7 +92,9 @@ export class GqlTagAccessSource implements TagAccessSource {
   async parentsOf(orgIds: readonly string[]): Promise<OrgRef[]> {
     if (orgIds.length === 0) return [];
     const found = await this.ask<Parents>(PARENTS_OF, { ids: [...orgIds] });
-    const parents = (found.orgs ?? []).flatMap((org) => org.parentOrg ?? []);
+    // The schema says [Org!], but this is another service's JSON: a hole in the list would other-
+    // wise become a crash inside a permission check, which fails the deploy for the wrong reason.
+    const parents = (found.orgs ?? []).flatMap((org) => org.parentOrg ?? []).filter((org): org is OrgRef => !!org);
     return [...new Map(parents.map((org) => [org.id, org])).values()];
   }
 
