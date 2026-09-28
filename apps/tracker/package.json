@@ -13,6 +13,7 @@
     "@mediajel/tracker-environments": "../../packages/tracker-environments/src"
   },
   "//cache-dir": "Parcel derives its cache directory from its PROJECT ROOT, which it finds by walking up for a yarn/npm/pnpm lockfile or a `.git` FILE. bun.lock is unknown to it and .git here is a directory, so the root lands on the build cwd on CI but on any ancestor that happens to hold a package-lock.json otherwise — on a dev machine with one in $HOME the cache silently becomes ~/.parcel-cache, shared with unrelated projects, and `rm -rf apps/tracker/.parcel-cache` (the documented fix for a stale tag chunk) becomes a no-op. Pinning --cache-dir makes the cache location the same everywhere; CI is unaffected because its cwd is already apps/tracker.",
+  "//test": "The Cypress specs load the tag from http://localhost:3000/index.js — public/index.test.html says so — which is `server/index.ts` serving dist/. Running only the page server leaves every spec asserting against a page with no tag on it: that is why `test` builds the tag and starts BOTH servers. The build is --no-cache on purpose. A cached build re-emits index.js while leaving a lazily-imported chunk as it was, so the bundle can point at an adapters chunk built before the source changed — which reads exactly like a tag that boots and then does nothing, and cost a morning to find once.",
   "//scripts": "Parcel runs under Node via scripts/run-parcel.mjs (Parcel's plugin loader uses a Node internal Bun lacks). Bun remains the package manager/workspace tool; node_modules is hoisted (see bunfig.toml). --no-scope-hoist is REQUIRED: with scope hoisting Parcel mis-assigns the dynamically-imported tracker-core modules (v1/v2 tracker, ecommerce, impressions) and import() resolves to undefined; disabling it keeps the tag's lazy code-splitting working.",
   "scripts": {
     "dev": "concurrently -k -n tag,server,page \"node scripts/run-parcel.mjs watch src/index.ts --no-scope-hoist --cache-dir .parcel-cache --port 1235\" \"bun run server/index.ts\" \"node scripts/run-parcel.mjs public/index.test.html --no-cache --port 1234\"",
@@ -24,7 +25,7 @@
     "lint": "eslint .",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
-    "test": "start-server-and-test 'node scripts/run-parcel.mjs public/index.test.html --no-cache --cache-dir .parcel-cache --port 1234' http://localhost:1234 cy:run",
+    "test": "node scripts/run-parcel.mjs build src/index.ts --no-scope-hoist --no-cache --cache-dir .parcel-cache && start-server-and-test 'bun run server/index.ts' http://localhost:3000/index.js 'node scripts/run-parcel.mjs public/index.test.html --no-cache --cache-dir .parcel-cache --port 1234' http://localhost:1234 cy:run",
     "docs": "jsdoc -c jsdoc.json",
     "generate-environments": "bun run src/scripts/generateEnvironments.ts"
   },
