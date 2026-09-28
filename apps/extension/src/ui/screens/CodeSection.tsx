@@ -157,7 +157,10 @@ const TagEditor = ({
       </div>
       <Textarea
         id={id}
-        className="min-h-[180px] overflow-x-auto bg-stock text-xs leading-[1.5] whitespace-pre"
+        // Wrapped, not scrolled sideways. This is the artifact the product exists to make, read and
+        // edited in a 400px column before it goes to master; `whitespace-pre` cut every long line
+        // mid-token and asked the operator to scroll to find out what their tag says.
+        className="min-h-[180px] bg-stock text-xs leading-[1.5] whitespace-pre-wrap wrap-anywhere"
         rows={12}
         spellCheck={false}
         readOnly={readOnly}

@@ -191,6 +191,8 @@ interface Action {
   tone?: "primary" | "danger";
   /** Why it cannot run. Shown in place of the consequence; the button stays reachable. */
   blocked?: string;
+  /** Pressing it sends something out of the browser, so its consequence is said in privacy ink. */
+  sends?: boolean;
 }
 
 const homeAction = ({ session, handlers }: SetupViewProps): Action => ({
@@ -210,6 +212,7 @@ const reviewAction = ({ handlers, generateBlocked, onOpenSettings }: SetupViewPr
   consequence: "Sends the masked recording to MediaJel's assistant service.",
   onClick: generateBlocked ? onOpenSettings : handlers.onGenerate,
   blocked: generateBlocked,
+  sends: true,
 });
 
 const generatingAction = ({ handlers }: SetupViewProps): Action => ({
@@ -276,6 +279,7 @@ const deployAction = (props: SetupViewProps): Action => ({
   consequence: "Commits to master of the frictionless repo. Live after its CI, with no review in between.",
   onClick: deployClick(props),
   blocked: props.flow.deploy.deployBlocked,
+  sends: true,
 });
 
 const doneAction = ({ handlers }: SetupViewProps): Action => ({
@@ -483,6 +487,7 @@ const Actions = (props: SetupViewProps): ReactNode => {
       onClick={action.onClick}
       tone={action.tone}
       blocked={action.blocked}
+      sends={action.sends}
       working={working}
       error={props.flowError}
     />

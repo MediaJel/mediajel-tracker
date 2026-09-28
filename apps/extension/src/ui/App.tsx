@@ -15,6 +15,7 @@ import type { WireEventsState } from "~/sidepanel/useWireEvents";
 import { Settings } from "~/store/settings";
 import type { SimulationState } from "~/sidepanel/useSimulation";
 import type { SiteSimulation } from "@mediajel/assistant-core/simulation";
+import type { WidgetSession } from "@mediajel/assistant-core/types";
 import { Letterhead } from "~/ui/components/Letterhead";
 import { Panel, Stack } from "~/ui/components/Panel";
 import {
@@ -77,6 +78,23 @@ type HeadingProps = Pick<
   "site" | "session" | "identity" | "handlers" | "settingsOpen" | "onOpenSettings" | "onCloseSettings"
 >;
 
+/**
+ * What kind of job this is — once there is one.
+ *
+ * `goal` has a value before anybody has chosen anything, and printing it made the letterhead assert
+ * "Transaction tag" over a Record step still asking which job to do. Until the recording starts,
+ * the sheet says the site and who is signed in, and nothing it has not been told.
+ */
+const JobTitle = ({ session }: { session: WidgetSession }): ReactNode =>
+  session.step === "home" ? null : (
+    <>
+      <span>{JOB_TITLES[session.goal]}</span>
+      <span className="text-ink-faint" aria-hidden="true">
+        ·
+      </span>
+    </>
+  );
+
 /** The letterhead's two controls: start over (once there is something to throw away) and Settings. */
 const HeaderControls = ({ session, handlers, settingsOpen, onOpenSettings, onCloseSettings }: HeadingProps) => (
   <>
@@ -117,10 +135,7 @@ const Heading = (props: HeadingProps): ReactNode => (
       {props.site}
     </h1>
     <p className="mt-[7px] mb-0 flex flex-wrap items-baseline gap-1.5 text-base text-muted-foreground">
-      <span>{JOB_TITLES[props.session.goal]}</span>
-      <span className="text-ink-faint" aria-hidden="true">
-        ·
-      </span>
+      <JobTitle session={props.session} />
       <Who identity={props.identity} onOpenJobs={props.handlers.onOpenJobs} />
     </p>
   </header>
