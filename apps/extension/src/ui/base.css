@@ -1,0 +1,66 @@
+/**
+ * The base layer: the two faces, and the few rules every element starts from. It sits under the
+ * utilities in the cascade (theme, base, utilities — by appearance in globals.css), which is the
+ * point of it being a layer: a `button { font: inherit }` reset here is what lets a `text-xs` on
+ * a button win.
+ *
+ * Not Tailwind's preflight. The panel's components reset the browser's own margins where they
+ * meet them (a headline, a paragraph, a list), and nothing else in preflight is missed; loading
+ * it would restyle every element for the sake of the few that are already handled.
+ */
+
+/* The two faces the brand pins, actually delivered rather than hoped for. See fonts/README.md:
+   a stack fell through to Century Gothic or the platform sans and the product looked different
+   on every desk. Both are variable across the weight axis, hence one file each. */
+@font-face {
+  font-family: "Jost";
+  src: url("./fonts/jost-variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Mulish";
+  src: url("./fonts/mulish-variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font: 400 14px/1.55 var(--mj-body);
+  color: var(--mj-ink);
+  background: var(--mj-sheet);
+  text-align: left;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Controls take the sheet's type instead of the browser's; a component sets its own on top. */
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+  margin: 0;
+}
+
+/* The one focus ring, in the live ink, on everything that can take focus. */
+:focus-visible {
+  outline: 2px solid var(--mj-identity);
+  outline-offset: 3px;
+}

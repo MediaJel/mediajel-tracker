@@ -1,13 +1,24 @@
 import logger, { isLoggingEnabled, setLoggingEnabled } from '@mediajel/tracker-core/logger';
 
 import { QueryStringContext } from '@mediajel/tracker-core/types';
+import { announceTag } from "@mediajel/tracker-core/utils/announce";
 import { getAppIdTags } from '@mediajel/tracker-core/utils/get-appId-tags';
 import getContext from '@mediajel/tracker-core/utils/get-context';
 import { getCustomTags } from '@mediajel/tracker-core/utils/get-custom-tags';
 import isUsPrivacyOptOut from '@mediajel/tracker-core/utils/privacy-opt-out';
 import { createRetailId } from '@mediajel/tracker-core/utils/retail-id-parser';
 
+// The boot failed. The page hears it as well as the console — unless it failed reading its own URL,
+// in which case there is no tag to speak of yet.
+const reportFailure = (context: QueryStringContext | undefined, err: unknown): void => {
+  const message = err instanceof Error ? err.message : String(err);
+  if (context) announceTag(context, "failed", message);
+  console.error(`An error has occured, please contact your pixel provider: ` + message);
+};
+
 (async (): Promise<void> => {
+  // The context the tag was announced with, for a failure below to be announced against.
+  let announced: QueryStringContext | undefined;
   try {
     // Temporarily disable all logs. Set this first — before getCustomTags/getAppIdTags —
     // so their logger.info/warn calls are silenced too. Previously this ran after the
@@ -16,11 +27,18 @@ import { createRetailId } from '@mediajel/tracker-core/utils/retail-id-parser';
 
     const context: QueryStringContext = getContext();
 
+    // Say the tag is installed while the script can still read its own <script> element — that is
+    // this synchronous moment, before the first await. It is URL metadata only, no network and no
+    // storage, so it comes before the privacy gate without weakening it.
+    announceTag(context, "installed");
+    announced = context;
+
     // US privacy opt-out gate — honor GPC / DNT before any tracking or network activity.
     // (getContext() above only parses the script URL — no network/cookies — so it's safe first.)
     // Lives in the tag so every embedding site inherits it. Hard no-track: we return before
     // loading adapters, Snowplow, custom tags, or appId tags — no events, no cookies.
     if (isUsPrivacyOptOut()) {
+      announceTag(context, "opted-out");
       logger.debug("US privacy opt-out detected (GPC/DNT). Tracker will not initialize.");
       return;
     }
@@ -69,6 +87,7 @@ import { createRetailId } from '@mediajel/tracker-core/utils/retail-id-parser';
     setLoggingEnabled(modifiedContext.logs !== "false");
 
     if (modifiedContext.enable === "false") {
+      announceTag(modifiedContext, "disabled");
       logger.debug("Tag has been disabled. Reach out to your pixel provider for more information.");
       return;
     }
@@ -89,7 +108,6 @@ import { createRetailId } from '@mediajel/tracker-core/utils/retail-id-parser';
 
     await import("src/adapters").then(({ default: load }) => load(modifiedContext));
   } catch (err) {
-    const clientError = `An error has occured, please contact your pixel provider: `;
-    console.error(clientError + (err instanceof Error ? err.message : String(err)));
+    reportFailure(announced, err);
   }
 })();

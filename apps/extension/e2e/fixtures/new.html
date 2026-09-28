@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Announcing tag fixture</title>
+  </head>
+  <body>
+    <h1>A page with the tag build that announces itself</h1>
+    <p>
+      This repo's tag build, served from this machine, configured for app ID <code>e2e-new</code>. It puts itself on
+      record on <code>window.MediaJel</code> and dispatches <code>mediajel:tag</code> as it boots, before anything is
+      sent — and under GPC it announces that it is not tracking, and sends nothing.
+    </p>
+    <script src="http://127.0.0.1:3002/index.js?appId=e2e-new&environment=jane&version=2"></script>
+  </body>
+</html>
