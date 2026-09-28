@@ -89,7 +89,7 @@ any of the tokens knows — or may know — which implementation is bound.
 | `LLM_PROVIDER` | `OpenAiProvider` | `LlmOrchestrationService` (`common/llm-orchestration`) — Claude/DeepSeek/Gemini routing |
 | `INTEGRATIONS_KNOWLEDGE` | `StaticIntegrationsKnowledge` | `knowledge-base`'s vector search, so the AI Gateway answers integration questions from the same corpus |
 | `TAG_ACTIVITY_SOURCE` | `InternalServiceActivitySource` (`fetch`) | an adapter over `MicroservicesService.internal`, the axios instance external-service already points at internal-service |
-| `TAG_ACCESS_SOURCE` | `GqlTagAccessSource` (`fetch` + `X-API-Key`) | whatever that repo asks gql-service with; the three questions are the same |
+| `TAG_ACCESS_SOURCE` | `GqlTagAccessSource` (`fetch` + `X-API-Key`) | `MediajelGraphQLService`, which already holds that service's GraphQL URL and key — so `GQL_SERVICE_URL` and `GQL_SERVICE_API_KEY` stay behind with this app. The three questions are the same |
 
 ## Local development
 

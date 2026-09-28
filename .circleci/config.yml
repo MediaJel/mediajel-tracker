@@ -90,10 +90,14 @@ jobs:
             cd apps/extension
             # Two of these have a documented value and a default, so a branch build produces an
             # INSTALLABLE artifact instead of failing for want of something nobody has set yet.
-            # The assistant service has no deployed URL: until it does, a CI build points at a
-            # local one, which is where an engineer testing this zip is running it anyway. The
-            # guard below still fails hard on any OTHER unset PLASMO_PUBLIC_*, because those
-            # would leave a literal "$NAME/*" that Chrome refuses to load.
+            # The assistant service is external-service in amplication-nestjs-microservices, which
+            # serves /api/assistant under its own ingress:
+            #   staging     https://external-service.dmp.mediajel.ninja/api/assistant
+            #   production  https://external-service.dmp.cnna.io/api/assistant
+            # Set PLASMO_PUBLIC_WIDGET_API_URL in this job's context to the one this zip is for.
+            # Unset, it falls back to localhost, which is where an engineer testing the zip runs
+            # the service anyway. The guard below still fails hard on any OTHER unset
+            # PLASMO_PUBLIC_*, because those would leave a literal "$NAME/*" that Chrome refuses.
             echo "PLASMO_PUBLIC_WIDGET_API_URL=${PLASMO_PUBLIC_WIDGET_API_URL:-http://localhost:3011/api/assistant}" >> .env.production
             echo "PLASMO_PUBLIC_COGNITO_USER_POOL_ID=${PLASMO_PUBLIC_COGNITO_USER_POOL_ID}" >> .env.production
             echo "PLASMO_PUBLIC_COGNITO_CLIENT_ID=${PLASMO_PUBLIC_COGNITO_CLIENT_ID}" >> .env.production
@@ -124,8 +128,18 @@ jobs:
           name: Report the service URL this build points at
           command: |
             cd apps/extension
-            echo "This zip talks to: $(grep '^PLASMO_PUBLIC_WIDGET_API_URL=' .env.production | cut -d= -f2-)"
-            echo "A localhost URL means the STAGING context has not set one — run apps/assistant-api locally to use this build."
+            url=$(grep '^PLASMO_PUBLIC_WIDGET_API_URL=' .env.production | cut -d= -f2-)
+            echo "This zip talks to: $url"
+            case "$url" in
+              *localhost*)
+                echo "That is a local service, so this zip is only usable beside one."
+                echo "To point it at the deployed assistant, set PLASMO_PUBLIC_WIDGET_API_URL in this job's context:"
+                echo "  staging     https://external-service.dmp.mediajel.ninja/api/assistant"
+                echo "  production  https://external-service.dmp.cnna.io/api/assistant" ;;
+              *internal-service*)
+                echo "WRONG SERVICE: the assistant module lives in external-service, not internal-service."
+                exit 1 ;;
+            esac
       - store_artifacts:
           path: apps/extension/dist/chrome-mv3-prod.zip
           destination: mediajel-integrations-assistant.zip
