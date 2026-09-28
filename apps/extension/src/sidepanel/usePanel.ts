@@ -548,7 +548,12 @@ export const usePanel = (): PanelState => {
     ask({ type: "service/tag-access", appId })
       .then((answer) => {
         if (current) {
-          setTagAccess({ appId, status: answer.allowed ? "allowed" : "refused", reason: answer.reason });
+          setTagAccess({
+            appId,
+            status: answer.allowed ? "allowed" : "refused",
+            reason: answer.reason,
+            ...(answer.org ? { org: answer.org } : {}),
+          });
         }
       })
       .catch(() => current && setTagAccess({ appId, status: "idle", reason: "" }));

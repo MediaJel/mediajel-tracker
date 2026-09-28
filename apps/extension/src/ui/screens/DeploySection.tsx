@@ -27,6 +27,8 @@ type Kind = "domain" | "app-id";
 
 export interface DeploySectionProps {
   session: WidgetSession;
+  /** The org that owns this tag, when this account may not deploy it; absent when it may. */
+  refusedTo?: { name: string };
   /** Who the commit will be attributed to — the signed-in account, not a typed-in name. */
   identity: Identity | null;
   targets: { domain: TargetState; appId: TargetState | null };
@@ -237,6 +239,25 @@ const Targets = ({ session, targets, selected, onSelectTarget }: Omit<ChoiceProp
 const currentTarget = (targets: DeploySectionProps["targets"], selected: Kind): TargetState =>
   selected === "domain" ? targets.domain : (targets.appId ?? targets.domain);
 
+/**
+ * What the step shows when the tag is not this account's to deploy.
+ *
+ * It takes the place of the choice rather than sitting above it: a live pair of targets, a
+ * "suggested" badge and "It will be committed by MediaJel as your work" under a button that cannot
+ * run are a promise the panel has already been told it cannot keep. The refusal itself is under the
+ * button, where the press would be; what is left to say here is what to do about it.
+ */
+const Refused = ({ owner }: { owner: { name: string } }): ReactNode => (
+  <SectionBody>
+    <Lede>This tag is not yours to deploy.</Lede>
+    <Fine className="mt-2">
+      {owner.name
+        ? `Ask someone in ${owner.name} to deploy it, or sign in with an account in that org.`
+        : "Ask a MediaJel engineer which org owns this tag; the assistant could not find out."}
+    </Fine>
+  </SectionBody>
+);
+
 const Choice = (props: ChoiceProps): ReactNode => {
   const { identity, targets, selected, deployError } = props;
   const current = currentTarget(targets, selected);
@@ -260,11 +281,15 @@ const Choice = (props: ChoiceProps): ReactNode => {
   );
 };
 
-export const DeploySection = (props: DeploySectionProps): ReactNode =>
-  props.session.step === "done" && props.session.deploy ? (
-    <Receipt session={props.session} cdnState={props.cdnState} onExit={props.onExit} />
-  ) : (
-    <Choice {...props} />
-  );
+/** The step is a receipt once the deploy has landed; until then it is the choice, or the refusal. */
+const deployed = (session: WidgetSession): boolean => session.step === "done" && !!session.deploy;
+
+export const DeploySection = (props: DeploySectionProps): ReactNode => {
+  if (deployed(props.session)) {
+    return <Receipt session={props.session} cdnState={props.cdnState} onExit={props.onExit} />;
+  }
+  if (props.refusedTo) return <Refused owner={props.refusedTo} />;
+  return <Choice {...props} />;
+};
 
 export default DeploySection;

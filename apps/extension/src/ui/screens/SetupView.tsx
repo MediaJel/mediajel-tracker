@@ -348,17 +348,21 @@ const verifyBody = ({ session, flow, handlers }: SetupViewProps, active: boolean
   />
 );
 
-const deployBody = ({ session, identity, flow, handlers, onOpenSettings }: SetupViewProps): ReactNode => (
+const refusedTo = ({ tagAccess }: SetupViewProps): { name: string } | undefined =>
+  tagAccess.status === "refused" ? { name: tagAccess.org?.name ?? "" } : undefined;
+
+const deployBody = (props: SetupViewProps): ReactNode => (
   <DeploySection
-    session={session}
-    identity={identity}
-    targets={flow.deploy.targets}
-    selected={flow.deploy.selected}
-    deployError={flow.deploy.deployError}
-    cdnState={flow.deploy.cdnState}
-    onSelectTarget={handlers.onSelectTarget}
-    onOpenSettings={onOpenSettings}
-    onExit={handlers.onOpenJobs}
+    session={props.session}
+    identity={props.identity}
+    refusedTo={refusedTo(props)}
+    targets={props.flow.deploy.targets}
+    selected={props.flow.deploy.selected}
+    deployError={props.flow.deploy.deployError}
+    cdnState={props.flow.deploy.cdnState}
+    onSelectTarget={props.handlers.onSelectTarget}
+    onOpenSettings={props.onOpenSettings}
+    onExit={props.handlers.onOpenJobs}
   />
 );
 
@@ -499,6 +503,8 @@ const AccessNote = ({ access, deploying }: { access: TagAccessState; deploying: 
   access.status === "refused" && !deploying ? (
     <p
       data-slot="setup-refusal"
+      role="status"
+      aria-live="polite"
       className="m-0 border-b border-border bg-stock px-5 py-3 text-md leading-[1.5] text-warning-text"
     >
       {access.reason} You can still record and prove a tag here; only deploying it is refused.

@@ -58,6 +58,8 @@ export interface TagAccessState {
   status: "idle" | "checking" | "allowed" | "refused";
   /** Empty unless refused. */
   reason: string;
+  /** The org the directory named as the tag's owner, when it named one — who to ask. */
+  org?: { id: string; name: string };
 }
 
 /** Verify/deploy view state the panel owns outside the persisted session. */
