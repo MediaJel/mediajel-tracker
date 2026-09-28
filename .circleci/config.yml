@@ -124,6 +124,25 @@ jobs:
               grep '\$PLASMO_PUBLIC' dist/chrome-mv3-prod/manifest.json
               exit 1
             fi
+      # Names only, never values: an unset context variable is not a build error here (the manifest
+      # guard above catches the two that break Chrome outright), but a zip that cannot sign in or
+      # keeps a different extension id on every install is worth saying out loud rather than
+      # discovering after someone has installed it.
+      - run:
+          name: Which build configuration this context supplied
+          command: |
+            missing=""
+            for name in PLASMO_PUBLIC_COGNITO_USER_POOL_ID PLASMO_PUBLIC_COGNITO_CLIENT_ID \
+                        PLASMO_PUBLIC_COGNITO_REGION PLASMO_PUBLIC_TAG_URL \
+                        FRICTIONLESS_CUSTOMTAG_URL CRX_PUBLIC_KEY PLASMO_PUBLIC_WIDGET_API_URL; do
+              if [ -n "$(eval echo \$$name)" ]; then echo "  set      $name"; else echo "  MISSING  $name"; missing="$missing $name"; fi
+            done
+            case "$missing" in
+              *COGNITO*) echo "Without the Cognito three this zip cannot sign in, so it cannot generate, deploy or read activity." ;;
+            esac
+            case "$missing" in
+              *CRX_PUBLIC_KEY*) echo "Without CRX_PUBLIC_KEY the extension id changes on every reinstall, which orphans saved jobs." ;;
+            esac
       - run:
           name: Report the service URL this build points at
           command: |
