@@ -4,6 +4,7 @@ import { ReactNode, useId, useState } from "react";
 import { cn } from "~/lib/utils";
 import { Eyebrow, Fine, Lede, SectionBody, SectionFooter, Working } from "~/ui/components/Section";
 import { Alert } from "~/ui/components/ui/alert";
+import InfoTip from "~/ui/components/InfoTip";
 import { Button } from "~/ui/components/ui/button";
 import { Field, FieldLabel } from "~/ui/components/ui/field";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/ui/components/ui/table";
@@ -18,7 +19,6 @@ import { Textarea } from "~/ui/components/ui/textarea";
 export interface CodeSectionProps {
   session: WidgetSession;
   providerLabel: string;
-  onCancel(): void;
   onRegenerate(): void;
   onCodeEdit(code: string): void;
   /** "Not the right event" — back to Evidence to point at the moment by hand. */
@@ -174,7 +174,6 @@ const TagEditor = ({
 export const CodeSection = ({
   session,
   providerLabel,
-  onCancel,
   onRegenerate,
   onCodeEdit,
   onRechoose,
@@ -185,12 +184,8 @@ export const CodeSection = ({
   if (session.step === "generating" || !generation) {
     return (
       <SectionBody>
+        {/* No Cancel here: the pinned action is one, and it stays pressable while the work runs. */}
         <Working>{providerLabel} is writing the tag… the evidence left this browser for the first time.</Working>
-        <SectionFooter>
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-        </SectionFooter>
       </SectionBody>
     );
   }
@@ -207,9 +202,12 @@ export const CodeSection = ({
           </Button>
         )}
       </div>
-      <Fine>
-        Written by {generation.model}
+      <Fine className="flex flex-wrap items-center gap-[5px]">
+        Written by {providerLabel}
         {generation.edited ? " · edited by you" : ""}
+        <InfoTip label="Which model wrote it">
+          <span className="font-mono text-xs text-foreground">{generation.model}</span>
+        </InfoTip>
       </Fine>
 
       <Warnings generation={generation} />

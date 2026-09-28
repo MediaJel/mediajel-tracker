@@ -54,12 +54,12 @@ const directoryAnswers = (...bodies: unknown[]): Sent[] => {
 
 describe("what the directory is asked", () => {
   test("the caller's orgs are looked up by username — the claim the directory stores", async () => {
-    const sent = directoryAnswers({ data: { user: { orgs: [{ id: "o1", name: "Acme" }], roles: [] } } });
+    const sent = directoryAnswers({ data: { users: [{ orgs: [{ id: "o1", name: "Acme" }], roles: [] }] } });
 
     const orgs = await sourceWith().orgsOfUser(WHO);
 
     expect(sent).toHaveLength(1);
-    expect(sent[0].variables.by).toEqual({ username: "j.doe" });
+    expect(sent[0].variables.where).toEqual({ username: "j.doe" });
     expect(sent[0].key).toBe("test-key");
     expect(orgs).toEqual([{ id: "o1", name: "Acme" }]);
   });
@@ -67,10 +67,12 @@ describe("what the directory is asked", () => {
   test("an org held only through a role counts, and a role and a list naming it twice count once", async () => {
     directoryAnswers({
       data: {
-        user: {
-          orgs: [{ id: "o1", name: "Acme" }],
-          roles: [{ org: { id: "o1", name: "Acme" } }, { org: { id: "o2", name: "Partner" } }, { org: null }],
-        },
+        users: [
+          {
+            orgs: [{ id: "o1", name: "Acme" }],
+            roles: [{ org: { id: "o1", name: "Acme" } }, { org: { id: "o2", name: "Partner" } }, { org: null }],
+          },
+        ],
       },
     });
 
@@ -83,28 +85,66 @@ describe("what the directory is asked", () => {
   });
 
   test("a username the directory does not know is asked again by cognito id, and no user is no orgs", async () => {
-    const sent = directoryAnswers({ data: { user: null } });
+    const sent = directoryAnswers({ data: { users: [] } });
 
     const orgs = await sourceWith().orgsOfUser(WHO);
 
-    expect(sent.map((ask) => ask.variables.by)).toEqual([{ username: "j.doe" }, { cognitoUserId: "cognito-sub-1" }]);
+    expect(sent.map((ask) => ask.variables.where)).toEqual([{ username: "j.doe" }, { cognitoUserId: "cognito-sub-1" }]);
     expect(orgs).toEqual([]);
   });
 
-  test("the tag's owner is the org whose tags configuration claims the app ID", async () => {
-    const sent = directoryAnswers({ data: { orgs: [{ id: "o9", name: "Acme Cannabis" }] } });
+  // The owner cannot be asked for directly: a target's app IDs are a scalar list, and Prisma 1
+  // generates no filter for those. The source reads the targets once and keeps the index.
+  test("the tag's owner is the org of the target whose app IDs include it", async () => {
+    const sent = directoryAnswers({
+      data: {
+        eventsTargets: [
+          { eventTags: [{ appId: ["other-tag"] }], orgs: [{ id: "o1", name: "Somebody Else" }] },
+          { eventTags: [{ appId: ["app-1", "app-2"] }], orgs: [{ id: "o9", name: "Acme Cannabis" }] },
+        ],
+      },
+    });
 
     const owner = await sourceWith().ownerOfTag("app-1");
 
-    expect(sent[0].variables).toEqual({ appId: "app-1" });
-    expect(sent[0].query).toContain("tagsConfig: { appId: $appId }");
+    expect(sent[0].query).toContain("eventsTargets");
+    expect(sent[0].variables).toEqual({ first: 1000, skip: 0 });
     expect(owner).toEqual({ id: "o9", name: "Acme Cannabis" });
   });
 
-  test("an app ID no org claims is no owner, not an error", async () => {
-    directoryAnswers({ data: { orgs: [] } });
+  test("the index is read once and answers every tag after it", async () => {
+    const sent = directoryAnswers({
+      data: {
+        eventsTargets: [
+          { eventTags: [{ appId: ["app-1"] }, { appId: ["app-2"] }], orgs: [{ id: "o9", name: "Acme" }] },
+        ],
+      },
+    });
+    const source = sourceWith();
 
-    expect(await sourceWith().ownerOfTag("app-nobody-owns")).toBeNull();
+    expect(await source.ownerOfTag("app-1")).toEqual({ id: "o9", name: "Acme" });
+    expect(await source.ownerOfTag("app-2")).toEqual({ id: "o9", name: "Acme" });
+    expect(await source.ownerOfTag("app-3")).toBeNull();
+    expect(sent).toHaveLength(1);
+  });
+
+  test("a target with no org owns nothing, and a target on no record is no owner rather than an error", async () => {
+    directoryAnswers({
+      data: { eventsTargets: [{ eventTags: [{ appId: ["orphan"] }], orgs: [] }] },
+    });
+
+    expect(await sourceWith().ownerOfTag("orphan")).toBeNull();
+  });
+
+  test("a full page is followed by the next one, until a short page ends it", async () => {
+    const full = { eventTags: [{ appId: ["x"] }], orgs: [{ id: "o", name: "Org" }] };
+    const sent = directoryAnswers(
+      { data: { eventsTargets: Array.from({ length: 1000 }, () => full) } },
+      { data: { eventsTargets: [{ eventTags: [{ appId: ["app-last"] }], orgs: [{ id: "o2", name: "Last" }] }] } },
+    );
+
+    expect(await sourceWith().ownerOfTag("app-last")).toEqual({ id: "o2", name: "Last" });
+    expect(sent.map((ask) => ask.variables.skip)).toEqual([0, 1000]);
   });
 
   test("a level of parents is asked for every org at once, and duplicates collapse", async () => {

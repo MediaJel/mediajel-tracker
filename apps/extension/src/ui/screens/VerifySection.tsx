@@ -7,6 +7,7 @@ import { cn } from "~/lib/utils";
 import { Fine, Lede, Machine, SectionBody, SectionFooter, Working } from "~/ui/components/Section";
 import { Alert } from "~/ui/components/ui/alert";
 import { Badge } from "~/ui/components/ui/badge";
+import InfoTip from "~/ui/components/InfoTip";
 import { Button } from "~/ui/components/ui/button";
 
 /**
@@ -67,6 +68,7 @@ const Capture = ({
           {problem}
         </p>
       ))}
+      <RawProblems raw={verdict.raw} />
       {verdict.hints.map((hint) => (
         <p key={hint} className="mt-0 mb-0.5 text-xs text-muted-foreground">
           {hint}
@@ -76,6 +78,23 @@ const Capture = ({
     </li>
   );
 };
+
+/**
+ * The validator's own words, one disclosure away.
+ *
+ * The sentences above name the field and what an unusable value costs, which is what an operator
+ * mid-job can act on. These are what the check itself said, for whoever is debugging the check.
+ */
+const RawProblems = ({ raw }: { raw: string[] }): ReactNode =>
+  raw.length > 0 ? (
+    <span className="mb-1 block">
+      <InfoTip label="What the check said">
+        <span className="block font-mono text-xs leading-[1.5] whitespace-pre-line text-foreground">
+          {raw.join("\n")}
+        </span>
+      </InfoTip>
+    </span>
+  ) : null;
 
 /** What the run has to say before anything fired: its errors, or that it is waiting. */
 const Progress = ({ captured, errors }: { captured: number; errors: string[] }): ReactNode => {

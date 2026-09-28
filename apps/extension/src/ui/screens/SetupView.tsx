@@ -207,8 +207,10 @@ const recordingAction = ({ session, handlers }: SetupViewProps): Action => ({
   onClick: handlers.onStopRecording,
 });
 
+// Blocked by something Settings fixes, the button says so: pressing "Generate the tag" and landing
+// in Settings is the panel doing one thing and saying another.
 const reviewAction = ({ handlers, generateBlocked, onOpenSettings }: SetupViewProps): Action => ({
-  label: "Generate the tag",
+  label: generateBlocked ? "Open Settings" : "Generate the tag",
   consequence: "Sends the masked recording to MediaJel's assistant service.",
   onClick: generateBlocked ? onOpenSettings : handlers.onGenerate,
   blocked: generateBlocked,
@@ -334,7 +336,6 @@ const codeBody = ({ session, handlers }: SetupViewProps, active: boolean): React
     <CodeSection
       session={session}
       providerLabel="MediaJel's assistant"
-      onCancel={handlers.onCancelGenerate}
       onRegenerate={handlers.onRegenerate}
       onCodeEdit={handlers.onCodeEdit}
       onRechoose={handlers.onRechoose}
@@ -360,6 +361,7 @@ const deployBody = (props: SetupViewProps): ReactNode => (
     session={props.session}
     identity={props.identity}
     refusedTo={refusedTo(props)}
+    advertiser={props.tagAccess.org?.name ?? ""}
     targets={props.flow.deploy.targets}
     selected={props.flow.deploy.selected}
     deployError={props.flow.deploy.deployError}

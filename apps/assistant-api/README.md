@@ -34,9 +34,21 @@ All eight require `Authorization: Bearer <Cognito ID token>` — the same pool t
 signs into, and nobody holds a second credential. A verified token says **who is asking**. Whether
 that account may deploy **this tag** is a second question: the app ID resolves to the org that owns
 it, and only that org and the orgs above it may commit for it. `/tag-access` answers it for the
-panel; both deploy routes enforce it, so no path to a commit skips it. Anything the directory cannot
-answer — an app ID no org claims, a service that will not respond — is a refusal, because a deploy
-is live minutes later with nobody in between.
+panel; both deploy routes enforce it, so no path to a commit skips it. A directory that will not
+answer is a refusal, because a deploy is live minutes later with nobody in between.
+
+**How a tag is placed.** A tag is an `EventsTarget` in gql-service — what the dashboard's Tags page
+lists — whose `eventTags[].appId` holds its app IDs and whose `orgs` is the advertiser. That field
+is a scalar list, and Prisma 1 generates no filter for those, so nothing can ask "which target has
+this app ID": the source reads every target's app IDs and org once, keeps the index for ten minutes,
+and answers from it. Three other fields that look like the answer are not — `OrgTagsConfig.appId`,
+`OrgDataConfig.appIds` and `Campaign.appId` all hold the legacy short names ("MediaJel", "Proze"),
+never the tracker's UUIDs.
+
+**A tag the directory cannot place** — about one in ten, being older than the dashboard's tag
+records — falls back to the one thing still known: MediaJel's own staff may deploy it, nobody else
+may. That is narrower than a verified token alone, and it becomes the owner rule the moment that tag
+gets a record.
 
 | | | |
 |---|---|---|
@@ -95,7 +107,7 @@ bun run dev                  # :3011, which is what the extension's .env.example
 | `WIDGET_AI_MODEL` | defaults to `gpt-5.5` |
 | `WIDGET_AUTH_REPO` | defaults to `MediaJel/mediajel-frictionless-custom-tag` |
 | `INTERNAL_SERVICE_URL`, `INTERNAL_SERVICE_BEARER_TOKEN` | internal-service and its bearer token — the pair gql-service reads. Activity returns a named 503 without them |
-| `GQL_SERVICE_URL`, `GQL_SERVICE_API_KEY` | gql-service's GraphQL endpoint and the key it accepts as `X-API-Key` (its `CUSTOMER_API_TOKEN`). **Every deploy is refused without them**, because the service cannot find out whose tag it is. The key bypasses that service's user scoping, so it is read here and never sent to the browser |
+| `GQL_SERVICE_URL`, `GQL_SERVICE_API_KEY` | gql-service's GraphQL endpoint (`https://graphql.dmp.cnna.io` in production) and the key it accepts as `X-API-Key` (its `CUSTOMER_API_TOKEN`, held in 1Password). **Every deploy is refused without them**, because the service cannot find out whose tag it is. The key bypasses that service's user scoping, so it is read here and never sent to the browser |
 | `CLICKHOUSE_URL`, `CLICKHOUSE_USER`, `CLICKHOUSE_PASSWORD` | ClickHouse, for each tag's days — internal-service's `CLICKHOUSE_HOST` (a URL, `https://…:8443`), user and password. `daily` is null without them |
 
 Health and the guard work with only the two Cognito values set, which is enough to exercise

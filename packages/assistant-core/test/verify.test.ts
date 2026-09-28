@@ -107,6 +107,26 @@ describe("checkPayload", () => {
     expect(verdict.problems.length).toBeGreaterThan(2);
   });
 
+  test("says what is wrong in the operator's words, and keeps the validator's for the disclosure", () => {
+    const verdict = checkPayload(
+      { name: "trackTrans", at: 0, fromReplay: false, payload: { id: "", total: "84.00", items: [] } },
+      "transaction",
+      marked,
+    );
+
+    // The field, what is wrong with it, and what it costs — not "Too small: expected string to
+    // have >=1 characters", which says what a library rejected rather than what the tag got wrong.
+    expect(verdict.problems).toContain(
+      "The transaction id is empty. MediaJel counts one transaction per id, so this sale cannot be told apart from the next one.",
+    );
+    expect(verdict.problems).toContain("The order total is the wrong kind of value. Revenue is reported from it.");
+    expect(verdict.problems.join(" ")).not.toContain("expected string");
+
+    // The library's own words survive, one disclosure away.
+    expect(verdict.raw.some((line) => line.startsWith("id: "))).toBe(true);
+    expect(verdict.raw).toHaveLength(verdict.problems.length);
+  });
+
   test("sign-ups need a uuid and one of the email fields", () => {
     const bad = checkPayload({ name: "trackSignUp", at: 0, fromReplay: false, payload: { uuid: "u" } }, "signup", []);
     expect(bad.ok).toBe(false);

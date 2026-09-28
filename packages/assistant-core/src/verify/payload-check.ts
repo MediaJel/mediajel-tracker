@@ -41,12 +41,57 @@ const SignupCheck = z
 
 export interface PayloadVerdict {
   ok: boolean;
+  /** What is wrong, said to the operator: the field, what is wrong with it, and what it costs. */
   problems: string[];
+  /** The validator's own words for the same failures, for whoever wants them. */
+  raw: string[];
   hints: string[];
 }
 
+/**
+ * The checks, in the operator's language.
+ *
+ * This verdict is the gate in front of `master`: a tag that fires an empty id ships bad data for as
+ * long as it runs. It used to print zod's own sentences — "id: Too small: expected string to have
+ * >=1 characters" — which say what a library rejected, not what the tag got wrong or what it costs.
+ * The library's words are kept, one disclosure away, for whoever is debugging the check itself.
+ */
+const FIELDS: Record<string, { name: string; costs: string }> = {
+  id: {
+    name: "The transaction id",
+    costs: "MediaJel counts one transaction per id, so this sale cannot be told apart from the next one.",
+  },
+  total: { name: "The order total", costs: "Revenue is reported from it." },
+  tax: { name: "The tax", costs: "It is taken out of the revenue this sale reports." },
+  shipping: { name: "The shipping", costs: "It is taken out of the revenue this sale reports." },
+  currency: { name: "The currency", costs: "Without it the amounts are read as dollars." },
+  city: { name: "The buyer's city", costs: "Location reporting reads it." },
+  state: { name: "The buyer's state", costs: "Location reporting reads it." },
+  country: { name: "The buyer's country", costs: "Location reporting reads it." },
+  items: { name: "The basket", costs: "Per-product reporting reads it." },
+  uuid: { name: "The sign-up's id", costs: "MediaJel counts one sign-up per id." },
+};
+
+/** What the validator objected to, in words that name the value rather than the rule. */
+const CAUSES: Record<string, string> = {
+  too_small: "is empty",
+  too_big: "is longer than the tag accepts",
+  invalid_type: "is the wrong kind of value",
+  invalid_format: "is not in the shape the tag expects",
+};
+
+const causeOf = (code: string): string => CAUSES[code] ?? "is not something the tag can send";
+
+/** A field's failure as one sentence; a check that names no field keeps its own words. */
+const said = (path: string, code: string, message: string): string => {
+  const field = FIELDS[path];
+  if (!field) return path ? `${path} ${causeOf(code)}.` : `${message}.`;
+  return `${field.name} ${causeOf(code)}. ${field.costs}`;
+};
+
 export const checkPayload = (call: InterceptedCall, goal: WidgetGoal, marked: TimelineEvent[]): PayloadVerdict => {
   const problems: string[] = [];
+  const raw: string[] = [];
   const hints: string[] = [];
 
   if (goal === "transaction" && call.name !== "trackTrans") {
@@ -60,7 +105,9 @@ export const checkPayload = (call: InterceptedCall, goal: WidgetGoal, marked: Ti
   const parsed = schema.safeParse(call.payload);
   if (!parsed.success) {
     for (const issue of parsed.error.issues) {
-      problems.push(`${issue.path.join(".") || "payload"}: ${issue.message}`);
+      const path = issue.path.join(".");
+      problems.push(said(path, issue.code, issue.message));
+      raw.push(`${path || "payload"}: ${issue.message}`);
     }
   }
 
@@ -75,5 +122,5 @@ export const checkPayload = (call: InterceptedCall, goal: WidgetGoal, marked: Ti
       hints.push("fired from a dataLayer entry that predates this run (a replay, not a fresh action)");
   }
 
-  return { ok: problems.length === 0, problems, hints };
+  return { ok: problems.length === 0, problems, raw, hints };
 };

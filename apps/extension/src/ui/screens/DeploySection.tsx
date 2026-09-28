@@ -27,6 +27,8 @@ type Kind = "domain" | "app-id";
 
 export interface DeploySectionProps {
   session: WidgetSession;
+  /** The advertiser's name, as the access check resolved it from the app ID; "" when unknown. */
+  advertiser: string;
   /** The org that owns this tag, when this account may not deploy it; absent when it may. */
   refusedTo?: { name: string };
   /** Who the commit will be attributed to — the signed-in account, not a typed-in name. */
@@ -48,17 +50,16 @@ const CDN_LABEL: Record<DeploySectionProps["cdnState"], string> = {
 };
 
 /** The receipt: the file is on master, with the commit, the file and the CDN to look at. */
-const Receipt = ({
-  session,
-  cdnState,
-  onExit,
-}: Pick<DeploySectionProps, "session" | "cdnState" | "onExit">): ReactNode => {
+// One way out, not two: the pinned action starts the next job, and the letterhead's own name opens
+// the jobs list. A second outline button beside them said neither which was which.
+const Receipt = ({ session, cdnState }: Pick<DeploySectionProps, "session" | "cdnState">): ReactNode => {
   const deploy = session.deploy!;
   return (
     <SectionBody>
+      {/* No stamp here: the step's own row carries it, and a stamp never shares a line with a
+          sentence at this width. */}
       <Lede>
-        <Stamp label="Deployed" tone="platform" filled /> <strong>{deploy.path}</strong> is on master — live once the
-        repo's build finishes (usually 2–5 minutes).
+        <strong>{deploy.path}</strong> is on master — live once the repo's build finishes (usually 2–5 minutes).
       </Lede>
       <ul data-slot="links" className="m-0 mb-2.5 pl-[18px] text-sm [&_a]:text-primary">
         <li>
@@ -81,11 +82,6 @@ const Receipt = ({
           </li>
         ) : null}
       </ul>
-      <SectionFooter>
-        <Button type="button" variant="outline" onClick={onExit}>
-          Exit assistant
-        </Button>
-      </SectionFooter>
     </SectionBody>
   );
 };
@@ -104,6 +100,24 @@ const TARGETS: Record<Kind, { head: string; tipLabel: string; explain(site: stri
   },
 };
 
+/**
+ * The mark that says which answer is chosen.
+ *
+ * The card's paper used to carry that alone: the chosen card measured 1.00:1 against the sheet it
+ * sat on, and in dark it had no ground at all, so the unchosen card was the one that read as a
+ * card. A choice may not be told by colour or by paper only — a tick and the identity rule down the
+ * card's edge are the same fact printed twice, in ink that survives both themes.
+ */
+const Tick = (): ReactNode => (
+  <svg
+    viewBox="0 0 12 12"
+    aria-hidden="true"
+    className="hidden size-3 flex-none text-primary group-has-data-checked:block"
+  >
+    <path d="M1.5 6.5 4.5 9.5 10.5 2.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" />
+  </svg>
+);
+
 /** What the repo said about the file so far: nothing yet, checking, or that one is already there. */
 const RepoNote = ({ existing }: { existing: TargetState["existing"] }): ReactNode => {
   if (existing === "checking") return <small className="text-sm text-ink-faint">checking the repo…</small>;
@@ -118,30 +132,50 @@ const RepoNote = ({ existing }: { existing: TargetState["existing"] }): ReactNod
  * "which file" — the file name is the consequence of the answer, so it waits inside the
  * disclosure, which sits beside the card's text rather than inside the button that chooses it.
  */
+/**
+ * The app ID, under the name it belongs to.
+ *
+ * The card promises "everywhere this advertiser runs" and used to answer with a UUID in the body
+ * face, which is neither the advertiser nor machine text. The access check already resolves that
+ * app ID to an org, so the name goes where a name belongs and the id stays underneath, in mono,
+ * for whoever is matching it against a URL. With no name resolved, the id is still the answer and
+ * this line would only say it twice.
+ */
+const AppIdLine = ({ kind, advertiser, appId }: { kind: Kind; advertiser: string; appId: string }): ReactNode =>
+  kind === "app-id" && advertiser !== appId ? (
+    <span className="font-mono text-xs leading-[1.45] wrap-anywhere text-ink-faint">{appId}</span>
+  ) : null;
+
 const TargetChoice = ({
   state,
   kind,
   advertiser,
+  appId,
   site,
   reason,
 }: {
   state: TargetState;
   kind: Kind;
+  /** The advertiser's name when the directory gave one, else its app ID. */
   advertiser: string;
+  /** The app ID itself, printed under the name as the machine fact. */
+  appId: string;
   site: string;
   reason: string | null;
 }): ReactNode => {
   const words = TARGETS[kind];
   return (
-    <div className="group flex items-start rounded-sm bg-stock transition-colors duration-150 ease-out has-data-checked:bg-sheet has-data-checked:shadow-[var(--mj-press),0_1px_3px_rgb(26_23_19/10%)] hover:bg-carbon has-data-checked:hover:bg-sheet">
+    <div className="group flex items-start rounded-sm border-l-2 border-transparent bg-stock transition-colors duration-150 ease-out has-data-checked:border-primary has-data-checked:bg-sheet has-data-checked:shadow-[var(--mj-press),0_1px_3px_rgb(26_23_19/10%)] hover:bg-carbon has-data-checked:hover:bg-sheet">
       <RadioGroupItem value={kind} className="flex-auto px-3.5 py-[13px]">
         <span className="flex flex-wrap items-center gap-1.5 font-display text-xl font-semibold text-muted-foreground group-has-data-checked:text-foreground">
+          <Tick />
           {words.head}
           {reason ? <em className="ml-2 font-sans text-sm font-semibold text-primary not-italic">suggested</em> : null}
         </span>
         <span className="text-md leading-[1.45] text-muted-foreground wrap-anywhere">
           {kind === "domain" ? site : advertiser}
         </span>
+        <AppIdLine kind={kind} advertiser={advertiser} appId={appId} />
         <RepoNote existing={state.existing} />
       </RadioGroupItem>
       <span className="mt-2.5 mr-2">
@@ -199,7 +233,7 @@ const ExistingFile = ({ current }: { current: TargetState }): ReactNode =>
 
 type ChoiceProps = Pick<
   DeploySectionProps,
-  "session" | "identity" | "targets" | "selected" | "deployError" | "onSelectTarget"
+  "session" | "identity" | "targets" | "selected" | "deployError" | "onSelectTarget" | "advertiser"
 >;
 
 /** The assistant's reason for suggesting this target, when it suggested this one. */
@@ -209,31 +243,45 @@ const reasonFor = (session: WidgetSession, kind: Kind): string | null => {
 };
 
 /** The two cards, or one when the tag has no advertiser file to offer. */
-const Targets = ({ session, targets, selected, onSelectTarget }: Omit<ChoiceProps, "identity" | "deployError">) => (
-  <RadioGroup
-    value={selected}
-    onValueChange={(value) => onSelectTarget(value as Kind)}
-    aria-label="Deploy target"
-    className="mt-2.5 mb-3.5"
-  >
-    <TargetChoice
-      state={targets.domain}
-      kind="domain"
-      site={targets.domain.info.name}
-      advertiser={targets.appId?.info.name ?? ""}
-      reason={reasonFor(session, "domain")}
-    />
-    {targets.appId ? (
+const Targets = ({
+  session,
+  targets,
+  selected,
+  advertiser,
+  onSelectTarget,
+}: Omit<ChoiceProps, "identity" | "deployError">) => {
+  // The app ID is the machine fact; the advertiser's name is what the access check resolved it to,
+  // and the id stands in for the name until it does.
+  const appId = targets.appId?.info.name ?? "";
+  const named = advertiser || appId;
+  return (
+    <RadioGroup
+      value={selected}
+      onValueChange={(value) => onSelectTarget(value as Kind)}
+      aria-label="Deploy target"
+      className="mt-2.5 mb-3.5"
+    >
       <TargetChoice
-        state={targets.appId}
-        kind="app-id"
+        state={targets.domain}
+        kind="domain"
         site={targets.domain.info.name}
-        advertiser={targets.appId.info.name}
-        reason={reasonFor(session, "app-id")}
+        advertiser={named}
+        appId={appId}
+        reason={reasonFor(session, "domain")}
       />
-    ) : null}
-  </RadioGroup>
-);
+      {targets.appId ? (
+        <TargetChoice
+          state={targets.appId}
+          kind="app-id"
+          site={targets.domain.info.name}
+          advertiser={named}
+          appId={appId}
+          reason={reasonFor(session, "app-id")}
+        />
+      ) : null}
+    </RadioGroup>
+  );
+};
 
 /** The target the choice currently names — the domain file until an advertiser file exists to choose. */
 const currentTarget = (targets: DeploySectionProps["targets"], selected: Kind): TargetState =>
@@ -267,7 +315,13 @@ const Choice = (props: ChoiceProps): ReactNode => {
     <SectionBody>
       <Lede>Where should this tag live?</Lede>
 
-      <Targets session={props.session} targets={targets} selected={selected} onSelectTarget={props.onSelectTarget} />
+      <Targets
+        session={props.session}
+        targets={targets}
+        selected={selected}
+        advertiser={props.advertiser}
+        onSelectTarget={props.onSelectTarget}
+      />
 
       <ExistingFile current={current} />
       <CommitLine identity={identity} update={update} info={current.info} />
@@ -286,7 +340,7 @@ const deployed = (session: WidgetSession): boolean => session.step === "done" &&
 
 export const DeploySection = (props: DeploySectionProps): ReactNode => {
   if (deployed(props.session)) {
-    return <Receipt session={props.session} cdnState={props.cdnState} onExit={props.onExit} />;
+    return <Receipt session={props.session} cdnState={props.cdnState} />;
   }
   if (props.refusedTo) return <Refused owner={props.refusedTo} />;
   return <Choice {...props} />;

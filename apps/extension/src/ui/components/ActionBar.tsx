@@ -46,23 +46,35 @@ const FlowError = ({ error }: { error?: string }): ReactNode =>
     </p>
   ) : null;
 
+/**
+ * Whether work in flight holds this button.
+ *
+ * It holds every action but one. A cancel exists *for* the busy state, and locking it out with
+ * everything else left a two-minute generation with no way out of it: the button read "Writing the
+ * tag…" in destructive ink and did nothing when pressed. A danger-toned action keeps its own label
+ * and stays pressable; the section says what is happening, and the line under the button says to
+ * leave the panel open.
+ */
+const heldByWork = (tone: NonNullable<ActionBarProps["tone"]>, working?: string): boolean =>
+  Boolean(working) && tone !== "danger";
+
 const ActionButton = ({
   label,
   onClick,
   tone,
   working,
 }: Pick<ActionBarProps, "label" | "onClick" | "working"> & { tone: NonNullable<ActionBarProps["tone"]> }) => {
-  const busy = Boolean(working);
+  const held = heldByWork(tone, working);
   return (
     <Button
       variant={VARIANT[tone]}
       className="w-full"
-      aria-disabled={busy || !onClick}
-      aria-busy={busy}
-      working={busy}
-      onClick={busy ? undefined : onClick}
+      aria-disabled={held || !onClick}
+      aria-busy={Boolean(working)}
+      working={held}
+      onClick={held ? undefined : onClick}
     >
-      {working ?? label}
+      {held ? working : label}
     </Button>
   );
 };

@@ -32,6 +32,25 @@ export interface AccessDecision {
 /** How far above the owning org to look. Deep enough for any real partner tree, bounded for a cyclic one. */
 const MAX_LEVELS = 8;
 
+/**
+ * MediaJel's own orgs, told apart by the one thing that distinguishes them in the directory: their
+ * name. "MediaJel", "MediaJelAdmin", "Mediajel Direct" and "MediaJel-Operations" are staff orgs; a
+ * client org is named after the client. Advertisers sit under MediaJelAdmin as well, so ancestry
+ * cannot be the test.
+ *
+ * The word has to end where the name ends, at a space, a dash, or a capital — a plain prefix would
+ * hand "MediaJelly Co" the keys to everyone's tags.
+ */
+const isMediajel = (org: OrgRef): boolean => {
+  const name = org.name.trim();
+  if (!/^mediajel/i.test(name)) return false;
+  // Whatever follows must not be a lowercase letter: the end of the name, a space, a dash or the
+  // capital of "MediaJelAdmin" all end the word; the "l" of "MediaJelly" does not. The test cannot
+  // live in the regex above, because /i makes [a-z] match capitals too.
+  const next = name.charAt("mediajel".length);
+  return next === "" || !/[a-z]/.test(next);
+};
+
 const TTL_MS = 5 * 60_000;
 
 const allow = (org: OrgRef): AccessDecision => ({ allowed: true, reason: "", org });
@@ -81,13 +100,26 @@ export class TagAccessService {
 
   private async check(appId: string, who: Authorized): Promise<AccessDecision> {
     const owner = await this.source.ownerOfTag(appId);
-    if (!owner) {
-      return refuse(
-        `No MediaJel org has ${appId} in its tag configuration, so this service cannot tell whose tag it is.`,
-      );
-    }
     const mine = await this.source.orgsOfUser(who);
+    if (!owner) return this.unplaced(appId, mine);
     return this.verdict(owner, new Set(mine.map((org) => org.id)));
+  }
+
+  /**
+   * A tag the directory does not list.
+   *
+   * About one tag in ten is on no target record — an older one, or one made outside the dashboard —
+   * and refusing every one of them would take the assistant away from the people who maintain
+   * exactly those. So the question falls back to the one thing that is known: MediaJel's own staff
+   * may deploy a tag the directory cannot place, and nobody else may. That is narrower than
+   * yesterday, where any verified account could deploy anything, and it becomes the owner rule the
+   * moment that tag gets a record.
+   */
+  private unplaced(appId: string, mine: readonly OrgRef[]): AccessDecision {
+    if (mine.some(isMediajel)) return { allowed: true, reason: "" };
+    return refuse(
+      `No MediaJel tag record carries ${appId}, so this service cannot tell whose tag it is. Only MediaJel can deploy a tag it cannot place.`,
+    );
   }
 
   private async verdict(owner: OrgRef, mine: ReadonlySet<string>): Promise<AccessDecision> {

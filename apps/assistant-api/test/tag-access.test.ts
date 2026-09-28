@@ -126,14 +126,32 @@ describe("who may deploy a tag", () => {
 });
 
 describe("what happens when the question cannot be answered", () => {
-  test("an app ID no org claims is refused, and says so", async () => {
+  test("a tag on no record is refused for someone outside MediaJel, and says so", async () => {
     const { service } = directory({ owner: null, mine: [org("acme")] });
 
-    const decision = await service.mayDeploy("app-nobody-owns", WHO);
+    const decision = await service.mayDeploy("app-on-no-record", WHO);
 
     expect(decision.allowed).toBe(false);
-    expect(decision.reason).toContain("app-nobody-owns");
+    expect(decision.reason).toContain("app-on-no-record");
     expect(decision.reason).toContain("cannot tell whose tag it is");
+  });
+
+  // About one tag in ten is on no target record — an older one, or one made outside the dashboard.
+  // Refusing all of them would take the assistant away from the people who maintain exactly those.
+  test("a tag on no record is allowed for MediaJel's own staff, whatever the org is called", async () => {
+    for (const name of ["MediaJel", "MediaJelAdmin", "Mediajel Direct", "MediaJel-Operations"]) {
+      const { service } = directory({ owner: null, mine: [{ id: "staff", name }] });
+
+      expect((await service.mayDeploy("app-on-no-record", WHO)).allowed).toBe(true);
+    }
+  });
+
+  test("a client whose name merely begins like MediaJel's does not pass as MediaJel", async () => {
+    for (const name of ["Media Jelly Co", "MediaJelly Co", "Mediajelato"]) {
+      const { service } = directory({ owner: null, mine: [{ id: "x", name }] });
+
+      expect((await service.mayDeploy("app-on-no-record", WHO)).allowed).toBe(false);
+    }
   });
 
   test("a directory that cannot be reached refuses rather than letting the deploy through", async () => {

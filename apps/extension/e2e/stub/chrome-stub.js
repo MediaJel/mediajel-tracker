@@ -1092,7 +1092,9 @@
             reason: `This tag belongs to ${scenario.refusedBy}. Your MediaJel account is not in that org, or in any org above it.`,
             org: { id: "org-1", name: scenario.refusedBy },
           }
-        : { appId: request.appId, allowed: true, reason: "" },
+        : // Allowed answers name the org too: that is what the deploy card prints where an app id
+          // used to be, so the picture has to carry it.
+          { appId: request.appId, allowed: true, reason: "", org: { id: "org-1", name: "Terrabis" } },
     "service/deploy": (request) => deploy(request.kind),
     "service/tag-activity": (request) => tagActivity(request.appIds),
     // The ledger is what the scenario says; the stub never pushes events, so a picture holds still.
