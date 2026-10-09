@@ -55,7 +55,9 @@ const woocommerceDataSource = () => {
 
           return {
             orderId: transactionId.toString(),
-            sku: (product_id || sku).toString(),
+            // ?? not ||: line items with no product (e.g. a Shipping Protection
+            // add-on) have product_id 0 and no sku; send "0" as before, don't throw.
+            sku: (product_id ?? sku ?? "N/A").toString(),
             name: (name || "N/A").toString(),
             category: "N/A", // No Category Field for WooCommerce in transactionItems
             unitPrice: (parseFloat(total) || 0) / (parseFloat(quantity) || 1),

@@ -77,3 +77,47 @@ export const restApiTransactionItems = [
     sku: "",
   },
 ];
+
+// greatcbdshop.com/checkout/order-received/ test order 2430058 (2026-10-09):
+// WC_Order::get_data() / WC_Order_Item::get_data() shape, PII replaced. A plugin
+// adds "Shipping Protection" as a line item with no product: product_id 0 and
+// no sku key. transaction_id is the payment gateway's charge id, not the order.
+export const getDataTransactionOrder = {
+  id: 2430058,
+  number: "2430058",
+  status: "on-hold",
+  currency: "USD",
+  total: "12.54",
+  total_tax: "0",
+  shipping_total: "9.99",
+  transaction_id: "12660878870",
+  billing: {
+    city: "Austin",
+    state: "TX",
+    country: "US",
+    email: "customer@example.com",
+  },
+};
+
+export const getDataTransactionItems = [
+  {
+    id: 2020075,
+    order_id: 2430058,
+    name: "Mystery Item only $1",
+    product_id: 97865,
+    variation_id: 0,
+    quantity: 1,
+    subtotal: "1",
+    total: "1",
+  },
+  {
+    id: 2020082,
+    order_id: 2430058,
+    name: "Shipping Protection",
+    product_id: 0,
+    variation_id: 0,
+    quantity: 1,
+    subtotal: "1.55",
+    total: "1.55",
+  },
+];
