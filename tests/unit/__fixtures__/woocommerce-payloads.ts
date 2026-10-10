@@ -1,3 +1,18 @@
+/**
+ * WooCommerce thank-you page payloads for tests/unit/woocommerce-data-source.test.ts.
+ *
+ * Each pair (order + items) is what a site prints as window.transactionOrder / window.transactionItems on
+ * /checkout/order-received/. They come from real pages, so the tests exercise the shapes the data source
+ * actually receives:
+ *   - flattened*: torchdrinks.com (flattened shape, no billing object)
+ *   - restApi*:   the WooCommerce REST API v3 order shape the data source was first written against
+ *   - getData*:   greatcbdshop.com (WC_Order::get_data() shape, with a product_id 0 "Shipping Protection" item)
+ *
+ * Adding a site: capture its payload on a test order's thank-you page (in DevTools:
+ * JSON.stringify(window.transactionOrder) and JSON.stringify(window.transactionItems)), replace every name,
+ * email, phone, address and order key, and note the site and date above the export.
+ */
+
 // Verbatim payload injected on torchdrinks.com/checkout/order-received/
 // (torchdrinks.com.har, 2026-08-26) — the flattened shape, no `billing` object.
 export const flattenedTransactionOrder = {
@@ -75,5 +90,49 @@ export const restApiTransactionItems = [
     quantity: 1,
     total: "7.00",
     sku: "",
+  },
+];
+
+// greatcbdshop.com/checkout/order-received/ test order 2430058 (2026-10-09):
+// WC_Order::get_data() / WC_Order_Item::get_data() shape, PII replaced. A plugin
+// adds "Shipping Protection" as a line item with no product: product_id 0 and
+// no sku key. transaction_id is the payment gateway's charge id, not the order.
+export const getDataTransactionOrder = {
+  id: 2430058,
+  number: "2430058",
+  status: "on-hold",
+  currency: "USD",
+  total: "12.54",
+  total_tax: "0",
+  shipping_total: "9.99",
+  transaction_id: "12660878870",
+  billing: {
+    city: "Austin",
+    state: "TX",
+    country: "US",
+    email: "customer@example.com",
+  },
+};
+
+export const getDataTransactionItems = [
+  {
+    id: 2020075,
+    order_id: 2430058,
+    name: "Mystery Item only $1",
+    product_id: 97865,
+    variation_id: 0,
+    quantity: 1,
+    subtotal: "1",
+    total: "1",
+  },
+  {
+    id: 2020082,
+    order_id: 2430058,
+    name: "Shipping Protection",
+    product_id: 0,
+    variation_id: 0,
+    quantity: 1,
+    subtotal: "1.55",
+    total: "1.55",
   },
 ];
