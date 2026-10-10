@@ -83,7 +83,7 @@
 //
 // Verdict: "OK: sends order <id> with <n> item(s)" means this file would emit the order; "SKIP: ..." names
 // the check that fails. It repeats the checks in woocommerceDataSource below, so update it whenever they change.
-// (w=>{const p=v=>{try{return typeof v=="string"?JSON.parse(v):v}catch{return v}},o=p(w.transactionOrder),i=p(w.transactionItems),id=o&&(o.id??o.transaction_id??o.number);return !w.transactionOrder?"SKIP: no window.transactionOrder":!Array.isArray(i)?"SKIP: transactionItems is not an array":isNaN(parseFloat(o.total))?"SKIP: total is not a number: "+o.total:id==null?"SKIP: no id / transaction_id / number":"OK: sends order "+id+" with "+i.length+" item(s)"})(window)
+// ((w,p)=>(o=>(i=>(id=>!w.transactionOrder?"SKIP: no window.transactionOrder":!Array.isArray(i)?"SKIP: transactionItems is not an array":isNaN(parseFloat(o.total))?"SKIP: total is not a number: "+o.total:id==null?"SKIP: no id / transaction_id / number":"OK: sends order "+id+" with "+i.length+" item(s)")(o&&(o.id??o.transaction_id??o.number)))(p(w.transactionItems)))(p(w.transactionOrder)))(window,v=>{try{return typeof v=="string"?JSON.parse(v):v}catch{return v}})
 //
 // Dedup: lists the order ids this browser has already sent. A listed id is never sent again from this
 // browser, so a reload or repeat visit sends nothing for it.
