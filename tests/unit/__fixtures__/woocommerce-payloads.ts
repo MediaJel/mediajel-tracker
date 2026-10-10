@@ -1,3 +1,18 @@
+/**
+ * WooCommerce thank-you page payloads for tests/unit/woocommerce-data-source.test.ts.
+ *
+ * Each pair (order + items) is what a site prints as window.transactionOrder / window.transactionItems on
+ * /checkout/order-received/. They come from real pages, so the tests exercise the shapes the data source
+ * actually receives:
+ *   - flattened*: torchdrinks.com (flattened shape, no billing object)
+ *   - restApi*:   the WooCommerce REST API v3 order shape the data source was first written against
+ *   - getData*:   greatcbdshop.com (WC_Order::get_data() shape, with a product_id 0 "Shipping Protection" item)
+ *
+ * Adding a site: capture its payload on a test order's thank-you page (in DevTools:
+ * JSON.stringify(window.transactionOrder) and JSON.stringify(window.transactionItems)), replace every name,
+ * email, phone, address and order key, and note the site and date above the export.
+ */
+
 // Verbatim payload injected on torchdrinks.com/checkout/order-received/
 // (torchdrinks.com.har, 2026-08-26) — the flattened shape, no `billing` object.
 export const flattenedTransactionOrder = {
