@@ -5,6 +5,8 @@ import observable from "../../src/shared/utils/create-events-observable";
 import {
   flattenedTransactionItems,
   flattenedTransactionOrder,
+  getDataTransactionItems,
+  getDataTransactionOrder,
   restApiTransactionItems,
   restApiTransactionOrder,
 } from "./__fixtures__/woocommerce-payloads";
@@ -106,6 +108,71 @@ describe("woocommerceDataSource", () => {
 
     expect(notifications).toHaveLength(1);
     expect(notifications[0].transactionEvent.shipping).toBe(0);
+  });
+
+  // Regression: greatcbdshop.com order 2430058 — a "Shipping Protection" line
+  // item has product_id 0 and no sku, which threw in the item map and dropped
+  // the whole transaction. Before PR #867 it was sent with sku "0".
+  test("emits a transaction when a line item has product_id 0 and no sku", () => {
+    const notifications = runDataSource(
+      getDataTransactionOrder,
+      getDataTransactionItems
+    );
+
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0].transactionEvent.id).toBe("2430058");
+    expect(notifications[0].transactionEvent.total).toBe(12.54);
+    expect(notifications[0].transactionEvent.items).toEqual([
+      {
+        orderId: "2430058",
+        sku: "97865",
+        name: "Mystery Item only $1",
+        category: "N/A",
+        unitPrice: 1,
+        quantity: 1,
+        currency: "USD",
+      },
+      {
+        orderId: "2430058",
+        sku: "0",
+        name: "Shipping Protection",
+        category: "N/A",
+        unitPrice: 1.55,
+        quantity: 1,
+        currency: "USD",
+      },
+    ]);
+  });
+
+  // sku is product_id ?? sku ?? "N/A": product_id wins whenever it is set,
+  // including 0, so these cover each fallback in that chain.
+  test("keeps product_id 0 as the sku even when the item has a sku", () => {
+    const notifications = runDataSource(getDataTransactionOrder, [
+      { ...getDataTransactionItems[1], sku: "SP-1" },
+    ]);
+
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0].transactionEvent.items[0].sku).toBe("0");
+  });
+
+  test("falls back to the sku when product_id is missing", () => {
+    const { product_id, ...itemWithoutProductId } = getDataTransactionItems[0];
+
+    const notifications = runDataSource(getDataTransactionOrder, [
+      { ...itemWithoutProductId, sku: "MYSTERY-1" },
+    ]);
+
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0].transactionEvent.items[0].sku).toBe("MYSTERY-1");
+  });
+
+  test("sends sku N/A when an item has neither product_id nor sku", () => {
+    const { product_id, ...itemWithoutProductId } = getDataTransactionItems[0];
+
+    const notifications = runDataSource(getDataTransactionOrder, [itemWithoutProductId]);
+
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0].transactionEvent.items[0].sku).toBe("N/A");
   });
 
   test("divides unitPrice by the float quantity for fractional-quantity lines", () => {
