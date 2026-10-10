@@ -54,13 +54,7 @@
  *   - `window.transactionOrder` and `window.transactionItems` must exist, and the items must be an array.
  *   - Look for "[MJ:Deduplication] DEBUG : existingIds" in the console. It is logged only when this file
  *     emitted an event and trackTransaction was reached (unless the tag has logs=false).
- *   - Verdict: copy this one line into the console. "OK: sends order <id> with <n> item(s)" means this file
- *     would emit the order; "SKIP: ..." names the check that fails. It repeats the checks in
- *     woocommerceDataSource below, so update it whenever they change.
- *     (w=>{const p=v=>{try{return typeof v=="string"?JSON.parse(v):v}catch{return v}},o=p(w.transactionOrder),i=p(w.transactionItems),id=o&&(o.id??o.transaction_id??o.number);return !w.transactionOrder?"SKIP: no window.transactionOrder":!Array.isArray(i)?"SKIP: transactionItems is not an array":isNaN(parseFloat(o.total))?"SKIP: total is not a number: "+o.total:id==null?"SKIP: no id / transaction_id / number":"OK: sends order "+id+" with "+i.length+" item(s)"})(window)
- *   - Dedup: copy this line to list the order ids this browser has already sent. A listed id is never sent
- *     again from this browser, so a reload or repeat visit sends nothing for it.
- *     Object.keys(localStorage).filter(k=>k.endsWith("_transaction")).map(k=>k+" = "+localStorage.getItem(k))
+ *   - Verdict and dedup checks: the two console one-liners in the `//` comments right below this header.
  *
  * How to repair
  *   Symptom: transactions drop while thank-you page views don't.
@@ -82,6 +76,19 @@
  *     A line item with product_id 0 and no sku (greatcbdshop.com's "Shipping Protection") threw, which
  *     dropped about 93% of greatcbdshop's orders. Fixed by #869: product_id ?? sku ?? "N/A".
  */
+
+// Console one-liners for a live thank-you page. Copy everything after "// " on one line, paste it into the
+// DevTools console and press Enter. They are `//` comments (not inside the block above) so they stay
+// comments in any view, including GitHub diffs that start partway through the block.
+//
+// Verdict: "OK: sends order <id> with <n> item(s)" means this file would emit the order; "SKIP: ..." names
+// the check that fails. It repeats the checks in woocommerceDataSource below, so update it whenever they change.
+// (w=>{const p=v=>{try{return typeof v=="string"?JSON.parse(v):v}catch{return v}},o=p(w.transactionOrder),i=p(w.transactionItems),id=o&&(o.id??o.transaction_id??o.number);return !w.transactionOrder?"SKIP: no window.transactionOrder":!Array.isArray(i)?"SKIP: transactionItems is not an array":isNaN(parseFloat(o.total))?"SKIP: total is not a number: "+o.total:id==null?"SKIP: no id / transaction_id / number":"OK: sends order "+id+" with "+i.length+" item(s)"})(window)
+//
+// Dedup: lists the order ids this browser has already sent. A listed id is never sent again from this
+// browser, so a reload or repeat visit sends nothing for it.
+// Object.keys(localStorage).filter(k=>k.endsWith("_transaction")).map(k=>k+" = "+localStorage.getItem(k))
+
 import observable from "src/shared/utils/create-events-observable";
 
 import { TransactionCartItem } from "../types";
