@@ -67,7 +67,7 @@ export class IntegrationsAssistantService {
     return this.access.configured();
   }
 
-  /** May this account deploy this tag? Asked by the panel when Tracking setup opens, and again at the deploy. */
+  /** May this account deploy this tag? Asked by the panel when Tracking setup opens; every route that touches a tag asks again. */
   mayDeploy(appId: string, who: Authorized): Promise<AccessDecision> {
     return this.access.mayDeploy(appId, who);
   }
@@ -76,23 +76,23 @@ export class IntegrationsAssistantService {
     return this.generator.generate(input);
   }
 
-  readTag(kind: DeployTargetKind, name: string): Promise<ExistingTag> {
-    return this.deployer.readTag(kind, name);
+  readTag(kind: DeployTargetKind, name: string, who: Authorized): Promise<ExistingTag> {
+    return this.deployer.readTag(kind, name, who);
   }
 
   deploy(input: DeployRequest, who: Authorized): Promise<DeployOutcome> {
     return this.deployer.deploy(input, who);
   }
 
-  previewOverrides(input: OverridesRequest): Promise<OverridesPreview> {
-    return this.deployer.previewOverrides(input);
+  previewOverrides(input: OverridesRequest, who: Authorized): Promise<OverridesPreview> {
+    return this.deployer.previewOverrides(input, who);
   }
 
   deployOverrides(input: OverridesRequest, who: Authorized): Promise<DeployOutcome> {
     return this.deployer.deployOverrides(input, who);
   }
 
-  readActivity(appIds: string[]): Promise<TagActivityResponse> {
-    return this.activity.read(appIds);
+  readActivity(appIds: string[], who: Authorized): Promise<TagActivityResponse> {
+    return this.activity.read(appIds, who);
   }
 }

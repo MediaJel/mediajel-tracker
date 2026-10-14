@@ -33,8 +33,9 @@ import { IntegrationsAssistantService } from "./integrations-assistant.service";
  *   GET  /tag-access         → { allowed, reason, org }          whether this account may deploy this tag at all
  *
  * All eight require `Authorization: Bearer <Cognito ID token>`, which says who is asking. Whether
- * that account may deploy a particular tag is a second question, answered by /tag-access and
- * enforced by both deploy routes.
+ * that account may work on a particular tag is a second question, answered by /tag-access and
+ * enforced by every route that reads or writes one: /tag, /deploy, both /overrides routes and
+ * /activity.
  */
 @ApiTags("Integrations Assistant")
 @Controller("assistant")
@@ -126,10 +127,11 @@ export class IntegrationsAssistantController {
       "So the deploy step can show new-vs-update honestly, and carry the sha the commit will be made against.",
   })
   @ApiResponse({ status: 200, description: "The existing file, or exists: false" })
+  @ApiResponse({ status: 403, description: "This account may not work on that tag, or on domain files" })
   async tag(@Req() request: Request & AuthorizedRequest, @Query() query: unknown): Promise<ExistingTag> {
-    this.assistant.who(request);
+    const who = this.assistant.who(request);
     const { kind, name } = this.parse(TagQuerySchema, query, "tag query");
-    return this.assistant.readTag(kind, name);
+    return this.assistant.readTag(kind, name, who);
   }
 
   @Post("deploy")
@@ -140,6 +142,7 @@ export class IntegrationsAssistantController {
   })
   @ApiResponse({ status: 200, description: "Committed" })
   @ApiResponse({ status: 400, description: "The file failed validation and was not committed" })
+  @ApiResponse({ status: 403, description: "This account may not deploy that tag, or write domain files" })
   @ApiResponse({ status: 409, description: "The file changed in the repo while the operator was working" })
   async deploy(@Req() request: Request & AuthorizedRequest, @Body() body: unknown): Promise<DeployOutcome> {
     const who = this.assistant.who(request);
@@ -154,14 +157,15 @@ export class IntegrationsAssistantController {
       "Renders the block that carries the edited params as window.overrides[appId], splices it below the app-id file's own code, and returns the file before and after with the sha a deploy is checked against. Nothing is committed; the block is what the extension runs on the page when the edit is tried.",
   })
   @ApiResponse({ status: 200, description: "The file before and after, and the block" })
+  @ApiResponse({ status: 403, description: "This account may not work on that tag" })
   @ApiResponse({ status: 409, description: "The file's block for this tag was edited by hand and no longer pairs up" })
   async previewOverrides(
     @Req() request: Request & AuthorizedRequest,
     @Body() body: unknown,
   ): Promise<OverridesPreview> {
-    this.assistant.who(request);
+    const who = this.assistant.who(request);
     const input = this.parse(OverridesRequestSchema, body, "overrides request");
-    return this.assistant.previewOverrides(input);
+    return this.assistant.previewOverrides(input, who);
   }
 
   @Post("overrides/deploy")
@@ -185,15 +189,15 @@ export class IntegrationsAssistantController {
   @ApiOperation({
     summary: "Read what each app ID's tag recorded in the last seven days",
     description:
-      "Totals, the same counts per day, the most recent transaction and sign-up, and the pages that converted, from internal-service. Takes up to five comma-separated app IDs; each one answers or is unavailable on its own, in the order asked.",
+      "Totals, the same counts per day, the most recent transaction and sign-up, and the pages that converted, from internal-service. Takes up to five comma-separated app IDs; each one answers or is unavailable on its own, in the order asked — including one this account may not work on, which is unavailable with the reason.",
   })
   @ApiResponse({ status: 200, description: "One entry per app ID, each ok or unavailable" })
   @ApiResponse({ status: 400, description: "appIds is missing, lists more than five, or is not app IDs" })
   @ApiResponse({ status: 503, description: "The service has no internal-service configuration" })
   async activity(@Req() request: Request & AuthorizedRequest, @Query() query: unknown): Promise<TagActivityResponse> {
-    this.assistant.who(request);
+    const who = this.assistant.who(request);
     const { appIds } = this.parse(ActivityQuerySchema, query, "activity query");
-    return this.assistant.readActivity(appIds);
+    return this.assistant.readActivity(appIds, who);
   }
 
   @Get("tag-access")

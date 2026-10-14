@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, spyOn, test } from "bun:test";
+import { Logger } from "@nestjs/common";
 
 import { ApiError } from "~/features/integrations-assistant/errors";
 import { DeployService } from "~/features/integrations-assistant/services/deploy.service";
@@ -29,23 +30,30 @@ interface Tree {
   /** orgId → its parents. */
   parents?: Record<string, string[]>;
   owner?: OrgRef | null;
+  /** Every org claiming the app ID, when it is more than the one `owner`. */
+  owners?: OrgRef[];
   mine?: OrgRef[];
   fail?: string;
   configured?: boolean;
 }
 
+/** MediaJel's own orgs, by id, as INTEGRATIONS_ASSISTANT_STAFF_ORG_IDS names them. */
+const STAFF = "staff-1, staff-2";
+
 /** A directory of a given shape, counting what it was asked so the cache can be proven. */
-const directory = (tree: Tree) => {
-  const asked = { owner: 0, user: 0, parents: 0 };
+const directory = (tree: Tree, staff = STAFF) => {
+  const asked = { owner: 0, user: 0, parents: 0, fresh: [] as boolean[] };
   const source: TagAccessSource = {
     configured: () => tree.configured !== false,
-    async ownerOfTag() {
+    async ownersOfTag(_appId, options = {}) {
       asked.owner += 1;
+      asked.fresh.push(options.fresh ?? false);
       if (tree.fail) throw new Error(tree.fail);
-      return tree.owner ?? null;
+      return tree.owners ?? (tree.owner ? [tree.owner] : []);
     },
     async orgsOfUser() {
       asked.user += 1;
+      if (tree.fail) throw new Error(tree.fail);
       return tree.mine ?? [];
     },
     async parentsOf(ids) {
@@ -53,7 +61,8 @@ const directory = (tree: Tree) => {
       return [...ids].flatMap((id) => (tree.parents?.[id] ?? []).map(org));
     },
   };
-  return { source, asked, service: new TagAccessService(source) };
+  const config = { get: (key: string) => (key === "INTEGRATIONS_ASSISTANT_STAFF_ORG_IDS" ? staff : undefined) };
+  return { source, asked, service: new TagAccessService(source, config as never) };
 };
 
 describe("who may deploy a tag", () => {
@@ -138,20 +147,27 @@ describe("what happens when the question cannot be answered", () => {
 
   // About one tag in ten is on no target record — an older one, or one made outside the dashboard.
   // Refusing all of them would take the assistant away from the people who maintain exactly those.
-  test("a tag on no record is allowed for MediaJel's own staff, whatever the org is called", async () => {
-    for (const name of ["MediaJel", "MediaJelAdmin", "Mediajel Direct", "MediaJel-Operations"]) {
-      const { service } = directory({ owner: null, mine: [{ id: "staff", name }] });
+  test("a tag on no record is allowed for MediaJel's own staff — the orgs listed by id, whatever they are called", async () => {
+    for (const name of ["MediaJelAdmin", "Anything at all"]) {
+      const { service } = directory({ owner: null, mine: [{ id: "staff-2", name }] });
 
       expect((await service.mayDeploy("app-on-no-record", WHO)).allowed).toBe(true);
     }
   });
 
-  test("a client whose name merely begins like MediaJel's does not pass as MediaJel", async () => {
-    for (const name of ["Media Jelly Co", "MediaJelly Co", "Mediajelato"]) {
+  // A name is something an org's own admins can type, so a name can never be what makes staff.
+  test("an org is never staff by its name, not even one called MediaJel", async () => {
+    for (const name of ["MediaJel", "MediaJelAdmin", "MediaJelly Co"]) {
       const { service } = directory({ owner: null, mine: [{ id: "x", name }] });
 
       expect((await service.mayDeploy("app-on-no-record", WHO)).allowed).toBe(false);
     }
+  });
+
+  test("nobody is staff while the list is unset", async () => {
+    const { service } = directory({ owner: null, mine: [{ id: "staff-1", name: "MediaJel" }] }, "");
+
+    expect((await service.mayDeploy("app-on-no-record", WHO)).allowed).toBe(false);
   });
 
   test("a directory that cannot be reached refuses rather than letting the deploy through", async () => {
@@ -161,7 +177,7 @@ describe("what happens when the question cannot be answered", () => {
 
     expect(decision.allowed).toBe(false);
     expect(decision.reason).toContain("could not be reached");
-    expect(decision.reason).toContain("cannot be deployed from here");
+    expect(decision.reason).toContain("will not work on this tag");
   });
 
   test("a service with no directory configured refuses every tag", async () => {
@@ -193,6 +209,90 @@ describe("the answer is kept for a while", () => {
 
     expect(asked.owner).toBe(2);
   });
+
+  // An account removed from an org, or a tag moved out of one, must stop deploying at once.
+  test("a deploy asks again, and asks for the directory as it is now", async () => {
+    const { service, asked } = directory({ owner: org("acme"), mine: [org("acme")] });
+
+    await service.mayDeploy("app-1", WHO);
+    await service.mayDeploy("app-1", WHO, { fresh: true });
+
+    expect(asked.fresh).toEqual([false, true]);
+    expect(asked.user).toBe(2);
+  });
+
+  test("a refusal that was a failure to ask is not kept, so the next request asks again", async () => {
+    const tree: Tree = {
+      owner: org("acme"),
+      mine: [org("acme")],
+      fail: "MediaJel's directory could not be reached (socket hang up).",
+    };
+    const { service } = directory(tree);
+
+    expect((await service.mayDeploy("app-1", WHO)).allowed).toBe(false);
+    delete tree.fail;
+    expect((await service.mayDeploy("app-1", WHO)).allowed).toBe(true);
+  });
+});
+
+describe("an app ID more than one org claims", () => {
+  test("is refused to a caller who reaches only one of them — a record in one's own org cannot claim another's tag", async () => {
+    const { service } = directory({ owners: [org("victim"), org("mine")], mine: [org("mine")] });
+
+    const decision = await service.mayDeploy("app-1", WHO);
+
+    expect(decision.allowed).toBe(false);
+    expect(decision.reason).toContain("More than one org claims app-1 (Org victim, Org mine)");
+    expect(decision.org?.id).toBe("victim");
+  });
+
+  test("is allowed to a caller above every claimant", async () => {
+    const { service } = directory({
+      owners: [org("a"), org("b")],
+      mine: [org("partner")],
+      parents: { a: ["partner"], b: ["partner"] },
+    });
+
+    expect((await service.mayDeploy("app-1", WHO)).allowed).toBe(true);
+  });
+});
+
+describe("domain files", () => {
+  test("are staff-only, because nothing in the directory says whose site a hostname is", async () => {
+    const client = await directory({ mine: [org("acme")] }).service.mayUseDomains(WHO);
+    const staff = await directory({ mine: [org("staff-1")] }).service.mayUseDomains(WHO);
+
+    expect(client.allowed).toBe(false);
+    expect(client.reason).toContain("only MediaJel's own staff may work on one");
+    expect(staff.allowed).toBe(true);
+  });
+});
+
+describe("every decision made is on the record", () => {
+  test("one line per decision, naming the account, the app ID and the rule — and none for a kept answer", async () => {
+    const lines: string[] = [];
+    const log = spyOn(Logger.prototype, "log").mockImplementation((line: unknown) => {
+      lines.push(String(line));
+    });
+    try {
+      const { service } = directory({ owner: null, mine: [org("staff-1")] });
+      await service.mayDeploy("app-on-no-record", WHO);
+      await service.mayDeploy("app-on-no-record", WHO);
+    } finally {
+      log.mockRestore();
+    }
+
+    expect(lines.map((line) => JSON.parse(line) as unknown)).toEqual([
+      {
+        at: "tag-access",
+        user: "j.doe",
+        sub: "cognito-sub-1",
+        appId: "app-on-no-record",
+        rule: "unplaced",
+        allowed: true,
+      },
+    ]);
+  });
 });
 
 describe("a deploy asks before it commits", () => {
@@ -221,7 +321,10 @@ export const tag: CustomTag = ({ trackTrans }) => {
       repo: "MediaJel/test",
     }) as never;
 
-  const refusing = { mayDeploy: async () => ({ allowed: false, reason: "This tag belongs to Org acme." }) } as never;
+  const refusing = {
+    mayDeploy: async () => ({ allowed: false, reason: "This tag belongs to Org acme." }),
+    mayUseDomains: async () => ({ allowed: true, reason: "" }),
+  } as never;
 
   test("a refused tag is a 403 that never reaches the repo", async () => {
     const deploy = new DeployService(untouchable(), new ValidateService(), refusing);

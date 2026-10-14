@@ -32,23 +32,36 @@ pressing Generate. Instructions are not the operator's data; evidence is.
 
 All eight require `Authorization: Bearer <Cognito ID token>` — the same pool the MediaJel dashboard
 signs into, and nobody holds a second credential. A verified token says **who is asking**. Whether
-that account may deploy **this tag** is a second question: the app ID resolves to the org that owns
-it, and only that org and the orgs above it may commit for it. `/tag-access` answers it for the
-panel; both deploy routes enforce it, so no path to a commit skips it. A directory that will not
+that account may work on **this tag** is a second question: the app ID resolves to the org that owns
+it, and only that org and the orgs above it may act for it. `/tag-access` answers it for the panel,
+and every route that touches a tag enforces it — `/tag`, `/deploy`, both `/overrides` routes and
+`/activity` — so no path to the repo or to a tag's numbers skips it. A directory that will not
 answer is a refusal, because a deploy is live minutes later with nobody in between.
+
+- **An app-id file is named by the app ID the permission was checked on**: a deploy with
+  `kind: "app-id"` whose `name` is not its `appId` is a 400.
+- **A domain file is staff-only**, to read or to write. It runs on every page of its site, and
+  nothing in the directory says whose site a hostname is; a domain deploy still needs the job's
+  app ID as well.
+- **Several orgs can claim one app ID** — a target shared between orgs, or a second record. The
+  caller has to be in, or above, every one of them.
+- Answers are kept five minutes for the reads. Both deploys ask the directory fresh, so an account
+  removed from an org stops deploying at once; a failure to ask is never kept. Every decision is
+  logged as one `{"at":"tag-access",…}` line.
 
 **How a tag is placed.** A tag is an `EventsTarget` in gql-service — what the dashboard's Tags page
 lists — whose `eventTags[].appId` holds its app IDs and whose `orgs` is the advertiser. That field
 is a scalar list, and Prisma 1 generates no filter for those, so nothing can ask "which target has
-this app ID": the source reads every target's app IDs and org once, keeps the index for ten minutes,
-and answers from it. Three other fields that look like the answer are not — `OrgTagsConfig.appId`,
-`OrgDataConfig.appIds` and `Campaign.appId` all hold the legacy short names ("MediaJel", "Proze"),
-never the tracker's UUIDs.
+this app ID": the source reads every target's app IDs and orgs once, sorted by id so paging cannot
+skip one, keeps the index for ten minutes, and answers from it — and a list longer than it reads is
+an error, never a shorter list. Three other fields that look like the answer are not —
+`OrgTagsConfig.appId`, `OrgDataConfig.appIds` and `Campaign.appId` all hold the legacy short names
+("MediaJel", "Proze"), never the tracker's UUIDs.
 
 **A tag the directory cannot place** — about one in ten, being older than the dashboard's tag
-records — falls back to the one thing still known: MediaJel's own staff may deploy it, nobody else
-may. That is narrower than a verified token alone, and it becomes the owner rule the moment that tag
-gets a record.
+records — falls back to the one thing still known: MediaJel's own staff may work on it, nobody else
+may. Staff are the members of the orgs `INTEGRATIONS_ASSISTANT_STAFF_ORG_IDS` lists — by id, never
+by a name a client could type. It becomes the owner rule the moment that tag gets a record.
 
 | | | |
 |---|---|---|
@@ -64,7 +77,8 @@ gets a record.
 `/activity` reads internal-service's `tracker/events/activity` and `page-url-activity` endpoints —
 the ones gql-service already reads — for up to five app IDs, and answers for each one on its own:
 `ok`, with totals, the same counts per day (`daily`), the latest transaction and sign-up, and the 250
-pages that converted most; or `unavailable`, with internal-service's reason, and never zeros. The days
+pages that converted most; or `unavailable`, with internal-service's reason — or the access rule's,
+for an app ID this account may not work on, whose numbers are then never read — and never zeros. The days
 come from ClickHouse directly (`CLICKHOUSE_*`): internal-service has no per-day endpoint, so this
 service runs its `activity` query cut into calendar days against the same 7-day table, read-only. A
 page breakdown that fails leaves the totals standing and sets `partial`; a daily read that fails, or a
@@ -75,7 +89,8 @@ Pages are reported by shape, not by URL: internal-service lists one row per dist
 WooCommerce checkout is one row per order, carrying a key that opens that order. The service drops
 the query string and fragment, replaces identifier segments (all digits, a UUID, 16+ hex
 characters) with `:id`, and adds up the rows that share a shape — so
-`/checkout/order-received/:id` is one page, and no order key reaches the browser.
+`/checkout/order-received/:id` is one page, and no order key reaches the browser. A page URL that
+arrives as a path from the site's root is reduced the same way.
 
 Swagger is at `/api/docs`.
 
@@ -108,7 +123,8 @@ bun run dev                  # :3011, which is what the extension's .env.example
 | `WIDGET_AUTH_REPO` | defaults to `MediaJel/mediajel-frictionless-custom-tag` |
 | `INTERNAL_SERVICE_URL`, `INTERNAL_SERVICE_BEARER_TOKEN` | internal-service and its bearer token — the pair gql-service reads. Activity returns a named 503 without them |
 | `GQL_SERVICE_URL`, `GQL_SERVICE_API_KEY` | gql-service's GraphQL endpoint (`https://graphql.dmp.cnna.io` in production) and the key it accepts as `X-API-Key` (its `CUSTOMER_API_TOKEN`, held in 1Password). **Every deploy is refused without them**, because the service cannot find out whose tag it is. The key bypasses that service's user scoping, so it is read here and never sent to the browser |
-| `CLICKHOUSE_URL`, `CLICKHOUSE_USER`, `CLICKHOUSE_PASSWORD` | ClickHouse, for each tag's days — internal-service's `CLICKHOUSE_HOST` (a URL, `https://…:8443`), user and password. `daily` is null without them |
+| `INTEGRATIONS_ASSISTANT_STAFF_ORG_IDS` | MediaJel's own org ids, comma-separated. Their members may work on tags the directory cannot place, and on domain files. Unset, nobody may |
+| `CLICKHOUSE_URL`, `CLICKHOUSE_USER`, `CLICKHOUSE_PASSWORD` | ClickHouse, for each tag's days — internal-service's `CLICKHOUSE_HOST` (a URL, `https://…:8443`), user and password; `CLICKHOUSE_HOST` itself is read when `CLICKHOUSE_URL` is unset or blank. `daily` is null without them |
 
 Health and the guard work with only the two Cognito values set, which is enough to exercise
 Record → Review → Verify in the extension end to end.

@@ -13,6 +13,8 @@ import type {
   TagActivitySource,
 } from "~/features/integrations-assistant/providers/tag-activity.source";
 import { ActivityService, TAG_ACTIVITY_DAYS } from "~/features/integrations-assistant/services/activity.service";
+import type { TagAccessService } from "~/features/integrations-assistant/services/tag-access.service";
+import type { Authorized } from "~/features/integrations-assistant/types/assistant.types";
 
 /**
  * Tag activity, per app ID.
@@ -104,19 +106,25 @@ const failing =
     throw new Error(message);
   };
 
+/** The account reading. Every tag is its to see unless a test gates it; the gate has its own cases at the end. */
+const READER: Authorized = { username: "pacholo", email: "pacholo@mediajel.com", name: "Pacholo", sub: "s-1" };
+
+const ANYONE = { mayDeploy: async () => ({ allowed: true, reason: "" }) } as unknown as TagAccessService;
+
 const serviceWith = (
   source: TagActivitySource,
   clock = { now: 0 },
   days: DailyActivitySource = stubDays(),
+  access: TagAccessService = ANYONE,
 ): ActivityService => {
-  const service = new ActivityService(source, days);
+  const service = new ActivityService(source, days, access);
   service.useClock(() => clock.now);
   return service;
 };
 
 /** The one app ID's answer, narrowed to a successful read. */
 const onlyTag = async (source: TagActivitySource, days?: DailyActivitySource) => {
-  const [tag] = (await serviceWith(source, { now: 0 }, days).read(["app-1"])).tags;
+  const [tag] = (await serviceWith(source, { now: 0 }, days).read(["app-1"], READER)).tags;
   if (tag?.status !== "ok") throw new Error(`expected an answer, got ${JSON.stringify(tag)}`);
   return tag;
 };
@@ -132,7 +140,7 @@ describe("each app ID stands alone", () => {
       },
     });
 
-    const { tags } = await serviceWith(source).read(["first", "broken", "last"]);
+    const { tags } = await serviceWith(source).read(["first", "broken", "last"], READER);
 
     expect(tags.map((tag) => [tag.appId, tag.status])).toEqual([
       ["first", "ok"],
@@ -157,7 +165,7 @@ describe("each app ID stands alone", () => {
       activity: async (appId) => (appId === "odd" ? (null as unknown as RawActivity) : recorded()),
     });
 
-    const { tags } = await serviceWith(source).read(["odd", "fine"]);
+    const { tags } = await serviceWith(source).read(["odd", "fine"], READER);
 
     expect(tags.map((tag) => tag.status)).toEqual(["unavailable", "ok"]);
   });
@@ -165,7 +173,7 @@ describe("each app ID stands alone", () => {
   test("every app ID is read over the same seven days, and the answer says which", async () => {
     const source = stubSource();
     const days = stubDays();
-    const result = await serviceWith(source, { now: 0 }, days).read(["app-1"]);
+    const result = await serviceWith(source, { now: 0 }, days).read(["app-1"], READER);
 
     expect(result.days).toBe(7);
     expect(source.asked).toEqual([`activity app-1 ${TAG_ACTIVITY_DAYS}`, `pageUrls app-1 ${TAG_ACTIVITY_DAYS}`]);
@@ -351,8 +359,8 @@ describe("the days", () => {
     const days = stubDays({ configured: false });
     const service = serviceWith(source, { now: 0 }, days);
 
-    const first = await service.read(["app-1"]);
-    await service.read(["app-1"]);
+    const first = await service.read(["app-1"], READER);
+    await service.read(["app-1"], READER);
 
     expect(first.tags[0]).toMatchObject({ status: "ok", daily: null });
     expect(days.asked).toEqual([]);
@@ -366,9 +374,9 @@ describe("the five-minute cache", () => {
     const source = stubSource();
     const service = serviceWith(source, clock);
 
-    await service.read(["app-1"]);
+    await service.read(["app-1"], READER);
     clock.now += 4 * 60_000 + 59_000;
-    await service.read(["app-1", "app-2"]);
+    await service.read(["app-1", "app-2"], READER);
 
     expect(source.asked).toEqual(["activity app-1 7", "pageUrls app-1 7", "activity app-2 7", "pageUrls app-2 7"]);
   });
@@ -378,9 +386,9 @@ describe("the five-minute cache", () => {
     const source = stubSource();
     const service = serviceWith(source, clock);
 
-    await service.read(["app-1"]);
+    await service.read(["app-1"], READER);
     clock.now += 5 * 60_000;
-    await service.read(["app-1"]);
+    await service.read(["app-1"], READER);
 
     expect(source.asked).toHaveLength(4);
   });
@@ -389,8 +397,8 @@ describe("the five-minute cache", () => {
     const source = stubSource({ activity: failing("internal-service answered 400.") });
     const service = serviceWith(source);
 
-    await service.read(["app-1"]);
-    await service.read(["app-1"]);
+    await service.read(["app-1"], READER);
+    await service.read(["app-1"], READER);
 
     expect(source.asked).toHaveLength(4);
   });
@@ -405,9 +413,9 @@ describe("the five-minute cache", () => {
     });
     const service = serviceWith(source);
 
-    await service.read(["app-1"]);
+    await service.read(["app-1"], READER);
     pagesFail = false;
-    const { tags } = await service.read(["app-1"]);
+    const { tags } = await service.read(["app-1"], READER);
 
     expect(tags[0]).toMatchObject({ status: "ok", partial: false });
   });
@@ -422,9 +430,9 @@ describe("the five-minute cache", () => {
     });
     const service = serviceWith(stubSource(), { now: 0 }, days);
 
-    await service.read(["app-1"]);
+    await service.read(["app-1"], READER);
     daysFail = false;
-    const { tags } = await service.read(["app-1"]);
+    const { tags } = await service.read(["app-1"], READER);
 
     expect(tags[0]).toMatchObject({ status: "ok", daily: expect.any(Array) });
   });
@@ -435,7 +443,7 @@ describe("a service with no internal-service configuration", () => {
     const source = stubSource({ configured: false });
 
     const refused = await serviceWith(source)
-      .read(["app-1"])
+      .read(["app-1"], READER)
       .catch((err: unknown) => err);
 
     expect(refused).toBeInstanceOf(ApiError);
@@ -450,7 +458,7 @@ describe("a service with no internal-service configuration", () => {
       {} as never,
       {} as never,
       { configured: true } as never,
-      new ActivityService(stubSource({ configured: false }), stubDays()),
+      new ActivityService(stubSource({ configured: false }), stubDays(), ANYONE),
       { configured: () => true } as never,
       { modelId: () => "stub-model" } as never,
     );
@@ -518,5 +526,55 @@ describe("the appIds a request names", () => {
   test("may not climb out of internal-service's path — '..' passes the character rule", async () => {
     expect((await refusal({ appIds: ".." })).message).toContain("may not be a relative path");
     expect((await refusal({ appIds: "." })).message).toContain("may not be a relative path");
+  });
+});
+
+describe("a relative page URL", () => {
+  test("is reduced to its shape like an absolute one, so every order's confirmation page is one page", async () => {
+    const tag = await onlyTag(
+      stubSource({
+        pageUrls: async () => [
+          row("/checkout/order-received/1001?key=wc_order_aB3dE5fG7hJ9k", "1", 10),
+          row("/checkout/order-received/1002?key=wc_order_kL1mN3pQ5rS7t", "2", 5),
+        ],
+      }),
+    );
+
+    expect(tag.pages).toEqual([{ pageUrl: "/checkout/order-received/:id", conversions: 3, transactionTotal: 15 }]);
+  });
+});
+
+/**
+ * A tag's revenue and converting pages are its owner's. The first version answered any five app IDs
+ * for any signed-in account, through this service's own credentials, so nothing downstream scoped
+ * it: each app ID now answers to the deploy rule, before the cache every account shares.
+ */
+describe("a tag's numbers are its owner's", () => {
+  const OUTSIDER: Authorized = { ...READER, username: "outsider", sub: "s-2" };
+  const gate = {
+    mayDeploy: async (appId: string, who: Authorized) =>
+      who.sub === READER.sub
+        ? { allowed: true, reason: "" }
+        : { allowed: false, reason: `This tag belongs to Org acme, and ${appId} is not yours.` },
+  } as unknown as TagAccessService;
+
+  test("an app ID this account may not see is unavailable with the reason, and its numbers are never read", async () => {
+    const source = stubSource();
+
+    const { tags } = await serviceWith(source, { now: 0 }, stubDays(), gate).read(["app-1"], OUTSIDER);
+
+    expect(tags).toEqual([
+      { appId: "app-1", status: "unavailable", message: "This tag belongs to Org acme, and app-1 is not yours." },
+    ]);
+    expect(source.asked).toEqual([]);
+  });
+
+  test("the shared cache never hands one account's answer to another that may not see it", async () => {
+    const source = stubSource();
+    const service = serviceWith(source, { now: 0 }, stubDays(), gate);
+
+    expect((await service.read(["app-1"], READER)).tags[0]?.status).toBe("ok");
+    expect((await service.read(["app-1"], OUTSIDER)).tags[0]?.status).toBe("unavailable");
+    expect(source.asked).toEqual(["activity app-1 7", "pageUrls app-1 7"]);
   });
 });

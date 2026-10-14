@@ -24,13 +24,25 @@ export interface OrgRef {
   name: string;
 }
 
+/** Whether an answer may come from what the source kept, or must be read from the directory as it is now. */
+export interface Freshness {
+  /** A deploy asks fresh: a tag that changed hands a minute ago must not still deploy for its old org. */
+  fresh?: boolean;
+}
+
 export interface TagAccessSource {
   /** Whether the source can answer at all — asked by /health and before every check. */
   configured(): boolean;
   /** The orgs this MediaJel account belongs to; empty when the directory holds no such user. */
   orgsOfUser(who: Authorized): Promise<OrgRef[]>;
-  /** The org whose tags configuration claims this app id, or null when none does. */
-  ownerOfTag(appId: string): Promise<OrgRef | null>;
+  /**
+   * Every org a tag record names for this app id, deduplicated; empty when none does.
+   *
+   * All of them, not the first: a target can be shared by several orgs, and two targets can claim
+   * one app id. Which one came first is the directory's ordering, not ownership, so the policy is
+   * handed the whole list and decides on all of it.
+   */
+  ownersOfTag(appId: string, options?: Freshness): Promise<OrgRef[]>;
   /** The orgs directly above these ones, deduplicated — one level of the walk upward. */
   parentsOf(orgIds: readonly string[]): Promise<OrgRef[]>;
 }

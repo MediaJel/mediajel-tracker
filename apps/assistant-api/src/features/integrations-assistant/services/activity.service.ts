@@ -6,13 +6,16 @@ import { TAG_ACTIVITY_SOURCE } from "../providers/tag-activity.source";
 import { DAILY_ACTIVITY_SOURCE } from "../providers/daily-activity.source";
 import type { DailyActivitySource, RawDailyRow } from "../providers/daily-activity.source";
 import type { RawActivity, RawPageUrlRow, TagActivitySource } from "../providers/tag-activity.source";
+import type { Authorized } from "../types/assistant.types";
+import { TagAccessService } from "./tag-access.service";
 
 /**
  * What a site's tags have actually recorded, per app ID, over the last seven days.
  *
  * Each app ID stands alone. One the source cannot read comes back `unavailable` with the reason —
  * never as zeros — and the others answer regardless; a page breakdown that fails leaves the totals
- * standing and says it is partial.
+ * standing and says it is partial. So does one this account may not see: a tag's revenue and
+ * converting pages are its owner's, so each app ID answers to the same rule as deploying it.
  */
 
 export const TAG_ACTIVITY_DAYS = 7;
@@ -62,22 +65,35 @@ const summarize = (raw: RawActivity): Pick<TagActivityOk, "totals" | "lastTransa
 /** A path segment that names one thing rather than a kind of page: all digits, a UUID, or 16+ hex characters. */
 const IDENTIFIER = /^(?:\d+|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[0-9a-f]{16,})$/i;
 
+/** What a relative page URL is resolved against so it can be reduced like any other. It never leaves this file. */
+const RELATIVE_BASE = "https://relative.invalid";
+
+/**
+ * The URL, and whether it arrived as a path from the site's root — which decides whether an origin
+ * is part of the answer. Any other text that is not a URL is not parsed as one: "not a url" is not a
+ * path, and `//host/…` names a host.
+ */
+const parsePageUrl = (text: string): { url: URL; relative: boolean } | null => {
+  try {
+    return { url: new URL(text), relative: false };
+  } catch {
+    return /^\/(?!\/)/.test(text) ? { url: new URL(text, RELATIVE_BASE), relative: true } : null;
+  }
+};
+
 /**
  * internal-service lists one row per distinct URL, query string included, and a confirmation
  * page's URL is usually its order's: WooCommerce's `/checkout/order-received/1234?key=wc_order_…`
  * is a row per order, and that key opens the order's details. So a URL is reduced to its shape
  * before it is counted or leaves this service — no credentials, query string or fragment, and
- * identifiers as `:id`. A value that does not parse as a URL keeps its text up to the first `?`
- * or `#`.
+ * identifiers as `:id`. A path from the site's root is reduced the same way and leaves as a path; a
+ * value that is neither keeps its text up to the first `?` or `#`.
  */
 const shapeOf = (pageUrl: unknown): string => {
   const text = typeof pageUrl === "string" ? pageUrl : "";
-  let url: URL;
-  try {
-    url = new URL(text);
-  } catch {
-    return text.replace(/[?#].*$/s, "");
-  }
+  const parsed = text ? parsePageUrl(text) : null;
+  if (!parsed) return text.replace(/[?#].*$/s, "");
+  const { url, relative } = parsed;
   url.username = "";
   url.password = "";
   url.search = "";
@@ -86,7 +102,7 @@ const shapeOf = (pageUrl: unknown): string => {
     .split("/")
     .map((segment) => (IDENTIFIER.test(segment) ? ":id" : segment))
     .join("/");
-  return url.href;
+  return relative ? url.pathname : url.href;
 };
 
 /** Rows that share a shape are one page. Its total stays null only while no row has carried one. */
@@ -143,6 +159,7 @@ export class ActivityService {
   constructor(
     @Inject(TAG_ACTIVITY_SOURCE) private readonly source: TagActivitySource,
     @Inject(DAILY_ACTIVITY_SOURCE) private readonly days: DailyActivitySource,
+    private readonly access: TagAccessService,
   ) {}
 
   /**
@@ -167,7 +184,7 @@ export class ActivityService {
     return this.days.configured();
   }
 
-  async read(appIds: string[]): Promise<TagActivityResponse> {
+  async read(appIds: string[], who: Authorized): Promise<TagActivityResponse> {
     if (!this.source.configured()) {
       throw new ApiError(
         503,
@@ -177,8 +194,18 @@ export class ActivityService {
     }
 
     this.forgetExpired();
-    const tags = await Promise.all(appIds.map((appId) => this.cache.get(appId)?.tag ?? this.load(appId)));
+    const tags = await Promise.all(appIds.map((appId) => this.readOne(appId, who)));
     return { days: TAG_ACTIVITY_DAYS, tags };
+  }
+
+  /**
+   * Permission first, the cache second: the cache is shared by every account, so an answer kept for
+   * one of them is only handed to another that may see it too.
+   */
+  private async readOne(appId: string, who: Authorized): Promise<TagActivity> {
+    const decision = await this.access.mayDeploy(appId, who);
+    if (!decision.allowed) return { appId, status: "unavailable", message: decision.reason };
+    return this.cache.get(appId)?.tag ?? this.load(appId);
   }
 
   /**

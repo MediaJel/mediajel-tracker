@@ -171,3 +171,38 @@ describe("what comes back", () => {
     expect(GenerationSchema.safeParse(result.output).success).toBe(true);
   });
 });
+
+/**
+ * A generate is up to two model calls, and the extension stops waiting at two minutes, so the two
+ * share one deadline inside that rather than each getting a limit of its own.
+ */
+describe("the deadline", () => {
+  test("both rounds are handed the same one", async () => {
+    const llm = stubLlm(BAD_CODE, GOOD_CODE);
+
+    await build(llm).generate(request);
+
+    expect(llm.calls).toHaveLength(2);
+    expect(llm.calls[0]?.signal).toBeInstanceOf(AbortSignal);
+    expect(llm.calls[1]?.signal).toBe(llm.calls[0]?.signal);
+  });
+
+  test("with no time left after the first answer, the repair round is skipped and the first answer kept", async () => {
+    const caller = new AbortController();
+    let calls = 0;
+    const llm: LlmProvider = {
+      modelId: () => "stub-model",
+      generateStructured: async () => {
+        calls += 1;
+        caller.abort();
+        return { output: output(BAD_CODE) as never, model: "stub-model" };
+      },
+    };
+
+    const result = await build(llm).generate(request, caller.signal);
+
+    expect(calls).toBe(1);
+    expect(result.output.code).toBe(BAD_CODE);
+    expect(result.violations.length).toBeGreaterThan(0);
+  });
+});

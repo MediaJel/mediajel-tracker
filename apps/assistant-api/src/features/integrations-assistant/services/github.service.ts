@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
 import { ApiError } from "../errors";
+import { timedOut, unanswered } from "../providers/service-failure";
 
 /**
  * The GitHub Contents API, with MediaJel's own deploy credential.
@@ -18,6 +19,9 @@ import { ApiError } from "../errors";
  */
 
 const API = "https://api.github.com";
+
+/** One call's limit. A deploy makes two, inside the panel's wait, so a GitHub that never answers cannot hold either. */
+const TIMEOUT_MS = 20_000;
 
 export const REPO_BRANCH = "master";
 export const BOT_IDENTITY = {
@@ -90,18 +94,28 @@ export const createGitHubClient = (token: string, repoName: string, fetchImpl: F
   const repo = deployRepo(repoName);
   const encode = (path: string): string => encodeURIComponent(path).replace(/%2F/g, "/");
 
-  const call = (method: string, path: string, body?: unknown): Promise<Response> =>
-    fetchImpl(`${API}${path}`, {
-      method,
-      headers: {
-        authorization: `Bearer ${token}`,
-        accept: "application/vnd.github+json",
-        "x-github-api-version": "2022-11-28",
-        "user-agent": "mediajel-assistant-api",
-        ...(body ? { "content-type": "application/json" } : {}),
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    });
+  const call = async (method: string, path: string, body?: unknown): Promise<Response> => {
+    try {
+      return await fetchImpl(`${API}${path}`, {
+        method,
+        headers: {
+          authorization: `Bearer ${token}`,
+          accept: "application/vnd.github+json",
+          "x-github-api-version": "2022-11-28",
+          "user-agent": "mediajel-assistant-api",
+          ...(body ? { "content-type": "application/json" } : {}),
+        },
+        body: body ? JSON.stringify(body) : undefined,
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
+    } catch (err) {
+      throw new ApiError(
+        timedOut(err) ? 504 : 502,
+        "github",
+        `${unanswered(err, "GitHub", TIMEOUT_MS).message} Try again.`,
+      );
+    }
+  };
 
   return {
     getFile: async (path) => {

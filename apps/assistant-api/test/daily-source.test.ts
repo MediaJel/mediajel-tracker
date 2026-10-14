@@ -106,4 +106,12 @@ describe("whether the source is configured", () => {
   test("does not count blanks as set", () => {
     expect(sourceWith({ ...CONFIGURED, CLICKHOUSE_URL: "   " }).configured()).toBe(false);
   });
+
+  // external-service names it CLICKHOUSE_HOST; a CLICKHOUSE_URL set but blank must not hide it.
+  test("reads CLICKHOUSE_HOST when CLICKHOUSE_URL is unset or blank", () => {
+    const host = { CLICKHOUSE_HOST: "https://clickhouse.test:8443" };
+
+    expect(sourceWith({ ...CONFIGURED, ...host, CLICKHOUSE_URL: undefined }).configured()).toBe(true);
+    expect(sourceWith({ ...CONFIGURED, ...host, CLICKHOUSE_URL: "   " }).configured()).toBe(true);
+  });
 });

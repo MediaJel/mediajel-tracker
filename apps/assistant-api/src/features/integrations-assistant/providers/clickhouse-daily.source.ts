@@ -113,9 +113,11 @@ export class ClickHouseDailySource implements DailyActivitySource, OnModuleDestr
 
   private url(): string {
     // Two names for one thing: this module was written against CLICKHOUSE_URL, and the service it
-    // moves into injects CLICKHOUSE_HOST. Reading either keeps one file working in both places.
-    const url = this.config.get<string>("CLICKHOUSE_URL") ?? this.config.get<string>("CLICKHOUSE_HOST");
-    return url?.trim() ?? "";
+    // moves into injects CLICKHOUSE_HOST. Reading either keeps one file working in both places — and
+    // a CLICKHOUSE_URL that is set but blank counts as unset, so it cannot hide a usable host.
+    return (
+      this.config.get<string>("CLICKHOUSE_URL")?.trim() || this.config.get<string>("CLICKHOUSE_HOST")?.trim() || ""
+    );
   }
 
   private user(): string {

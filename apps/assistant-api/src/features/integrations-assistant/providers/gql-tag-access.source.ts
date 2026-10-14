@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 
 import type { Authorized } from "../types/assistant.types";
 import { unanswered } from "./service-failure";
-import type { OrgRef, TagAccessSource } from "./tag-access.source";
+import type { Freshness, OrgRef, TagAccessSource } from "./tag-access.source";
 
 /**
  * gql-service over `fetch`, with the machine key it accepts in place of a session.
@@ -16,13 +16,14 @@ import type { OrgRef, TagAccessSource } from "./tag-access.source";
  *   `sub` and is not (a dashboard signup stores the username there, a federated one an Identity Pool
  *   id), so it is only tried second. Membership is read from `roles[].org` **and** `orgs`, because
  *   the plain list comes back empty for real accounts that plainly have orgs.
- * - **The tag's owner.** A tag is an `EventsTarget` — what the dashboard's own Tags page lists —
+ * - **The tag's owners.** A tag is an `EventsTarget` — what the dashboard's own Tags page lists —
  *   whose `eventTags[].appId` holds its app IDs and whose `orgs` is the advertiser. That `appId` is
  *   a scalar LIST, and Prisma 1 generates no filter for those, so no query can ask "which target has
  *   this app ID". The index below is that missing query: one paged read of every target's app IDs
- *   and org, held for a few minutes and shared by every caller. `OrgTagsConfig.appId`,
- *   `OrgDataConfig.appIds` and `Campaign.appId` were each checked first and hold the legacy short
- *   names ("MediaJel", "Proze"), never the tracker's UUIDs.
+ *   and every one of its orgs, sorted so paging cannot skip a target, held for a few minutes and
+ *   shared by every caller — and refused, not cut short, when the list is longer than it reads.
+ *   `OrgTagsConfig.appId`, `OrgDataConfig.appIds` and `Campaign.appId` were each checked first and
+ *   hold the legacy short names ("MediaJel", "Proze"), never the tracker's UUIDs.
  * - **The orgs above one.** `Org.parentOrg` is a list, and the app flattens the whole chain into it
  *   when an org moves, so one hop usually answers. The walk above still climbs a level at a time,
  *   because "usually" is not "always".
@@ -49,8 +50,13 @@ const ORGS_OF_USER = `query AssistantUserOrgs($where: UserWhereInput) {
   users(where: $where, first: 1) { id orgs { id name } roles { org { id name } } }
 }`;
 
+/**
+ * `orderBy` is load-bearing: `skip` paging without a stable sort can return a target twice and miss
+ * another, and a missed target is a missed claim on its app id — the one that would have made the
+ * tag contested.
+ */
 const TAG_INDEX = `query AssistantTagIndex($first: Int, $skip: Int) {
-  eventsTargets(first: $first, skip: $skip) { eventTags { appId } orgs { id name } }
+  eventsTargets(first: $first, skip: $skip, orderBy: id_ASC) { eventTags { appId } orgs { id name } }
 }`;
 
 const PARENTS_OF = `query AssistantOrgParents($ids: [ID!]) {
@@ -75,22 +81,22 @@ const said = (errors: unknown): string => {
   return messages.join("; ");
 };
 
-/** Every app ID a page of targets claims, paired with the org that owns the target. */
-const ownersIn = (page: TagIndex): [string, OrgRef][] => {
-  const pairs: [string, OrgRef][] = [];
-  for (const target of page.eventsTargets ?? []) {
-    const org = (target.orgs ?? [])[0];
-    if (!org) continue;
-    for (const tag of target.eventTags ?? []) {
-      for (const appId of tag.appId ?? []) pairs.push([appId, org]);
-    }
-  }
-  return pairs;
-};
+/** App id → every org that claims it, by org id. */
+type Owners = Map<string, Map<string, OrgRef>>;
+
+/** Every claim a page of targets makes: each of its app ids, paired with each org the target names. */
+const claimsIn = (page: TagIndex): [string, OrgRef][] =>
+  (page.eventsTargets ?? []).flatMap((target) =>
+    (target.eventTags ?? []).flatMap((tag) =>
+      (tag.appId ?? []).flatMap((appId) => (target.orgs ?? []).map((org): [string, OrgRef] => [appId, org])),
+    ),
+  );
 
 @Injectable()
 export class GqlTagAccessSource implements TagAccessSource {
-  private index: { at: number; owners: Map<string, OrgRef> } | null = null;
+  private index: { at: number; owners: Owners } | null = null;
+  /** The read in progress, which every caller that arrives meanwhile shares instead of starting its own. */
+  private building: Promise<Owners> | null = null;
 
   constructor(private readonly config: ConfigService) {}
 
@@ -103,8 +109,8 @@ export class GqlTagAccessSource implements TagAccessSource {
     return byName ?? (await this.userOrgs({ cognitoUserId: who.sub })) ?? [];
   }
 
-  async ownerOfTag(appId: string): Promise<OrgRef | null> {
-    return (await this.owners()).get(appId) ?? null;
+  async ownersOfTag(appId: string, options: Freshness = {}): Promise<OrgRef[]> {
+    return [...((await this.owners(options.fresh ?? false)).get(appId)?.values() ?? [])];
   }
 
   async parentsOf(orgIds: readonly string[]): Promise<OrgRef[]> {
@@ -131,23 +137,48 @@ export class GqlTagAccessSource implements TagAccessSource {
     return [...new Map([...(user.orgs ?? []), ...throughRoles].map((org) => [org.id, org])).values()];
   }
 
-  /** The app-ID-to-org index, rebuilt at most every few minutes and shared by every caller. */
-  private async owners(): Promise<Map<string, OrgRef>> {
+  /**
+   * The app-ID-to-orgs index: the kept one while it is young enough, else a new read. Concurrent
+   * callers share one read, and a fresh ask that arrives while one is in flight joins it: that read
+   * started moments ago.
+   */
+  private owners(fresh: boolean): Promise<Owners> {
     const held = this.index;
-    if (held && Date.now() - held.at < INDEX_TTL_MS) return held.owners;
-    const owners = await this.build();
-    this.index = { at: Date.now(), owners };
-    return owners;
+    if (!fresh && held && Date.now() - held.at < INDEX_TTL_MS) return Promise.resolve(held.owners);
+    if (!this.building) {
+      const started = Date.now();
+      this.building = this.build()
+        .then((owners) => {
+          this.index = { at: started, owners };
+          return owners;
+        })
+        .finally(() => {
+          this.building = null;
+        });
+    }
+    return this.building;
   }
 
-  private async build(): Promise<Map<string, OrgRef>> {
-    const owners = new Map<string, OrgRef>();
+  /**
+   * The whole list or nothing. An index cut off at the page limit would answer "no record" for every
+   * tag past it, and "no record" is a decision of its own — staff-only — so a list too long to read
+   * whole is an error rather than a smaller list. (A corpus of exactly MAX_PAGES full pages is
+   * refused too; the remedy is the same.)
+   */
+  private async build(): Promise<Owners> {
+    const owners: Owners = new Map();
     for (let page = 0; page < MAX_PAGES; page++) {
       const read = await this.ask<TagIndex>(TAG_INDEX, { first: PAGE, skip: page * PAGE });
-      for (const [appId, org] of ownersIn(read)) owners.set(appId, org);
-      if ((read.eventsTargets ?? []).length < PAGE) break;
+      for (const [appId, org] of claimsIn(read)) {
+        const claimants = owners.get(appId) ?? new Map<string, OrgRef>();
+        claimants.set(org.id, org);
+        owners.set(appId, claimants);
+      }
+      if ((read.eventsTargets ?? []).length < PAGE) return owners;
     }
-    return owners;
+    throw new Error(
+      `${DIRECTORY} lists more than ${MAX_PAGES * PAGE} tag records, more than this service reads, so it will not say who owns a tag from part of the list. A MediaJel engineer needs to raise MAX_PAGES.`,
+    );
   }
 
   private endpoint(): string {

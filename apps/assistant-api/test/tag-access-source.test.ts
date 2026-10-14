@@ -95,7 +95,7 @@ describe("what the directory is asked", () => {
 
   // The owner cannot be asked for directly: a target's app IDs are a scalar list, and Prisma 1
   // generates no filter for those. The source reads the targets once and keeps the index.
-  test("the tag's owner is the org of the target whose app IDs include it", async () => {
+  test("the tag's owner is the org of the target whose app IDs include it, read in a stable order", async () => {
     const sent = directoryAnswers({
       data: {
         eventsTargets: [
@@ -105,11 +105,33 @@ describe("what the directory is asked", () => {
       },
     });
 
-    const owner = await sourceWith().ownerOfTag("app-1");
+    const owners = await sourceWith().ownersOfTag("app-1");
 
     expect(sent[0].query).toContain("eventsTargets");
+    // Without a stable sort, `skip` paging can skip a target — and with it a claim on its app id.
+    expect(sent[0].query).toContain("orderBy: id_ASC");
     expect(sent[0].variables).toEqual({ first: 1000, skip: 0 });
-    expect(owner).toEqual({ id: "o9", name: "Acme Cannabis" });
+    expect(owners).toEqual([{ id: "o9", name: "Acme Cannabis" }]);
+  });
+
+  test("every org that claims an app ID is named — across targets, and within one shared target", async () => {
+    directoryAnswers({
+      data: {
+        eventsTargets: [
+          { eventTags: [{ appId: ["shared"] }], orgs: [{ id: "a", name: "A" }] },
+          {
+            eventTags: [{ appId: ["shared"] }],
+            orgs: [
+              { id: "b", name: "B" },
+              { id: "c", name: "C" },
+            ],
+          },
+          { eventTags: [{ appId: ["shared"] }], orgs: [{ id: "a", name: "A" }] },
+        ],
+      },
+    });
+
+    expect((await sourceWith().ownersOfTag("shared")).map((org) => org.id)).toEqual(["a", "b", "c"]);
   });
 
   test("the index is read once and answers every tag after it", async () => {
@@ -122,9 +144,32 @@ describe("what the directory is asked", () => {
     });
     const source = sourceWith();
 
-    expect(await source.ownerOfTag("app-1")).toEqual({ id: "o9", name: "Acme" });
-    expect(await source.ownerOfTag("app-2")).toEqual({ id: "o9", name: "Acme" });
-    expect(await source.ownerOfTag("app-3")).toBeNull();
+    expect(await source.ownersOfTag("app-1")).toEqual([{ id: "o9", name: "Acme" }]);
+    expect(await source.ownersOfTag("app-2")).toEqual([{ id: "o9", name: "Acme" }]);
+    expect(await source.ownersOfTag("app-3")).toEqual([]);
+    expect(sent).toHaveLength(1);
+  });
+
+  test("a fresh ask reads the directory again, as a deploy does", async () => {
+    const sent = directoryAnswers({
+      data: { eventsTargets: [{ eventTags: [{ appId: ["app-1"] }], orgs: [{ id: "o9", name: "Acme" }] }] },
+    });
+    const source = sourceWith();
+
+    await source.ownersOfTag("app-1");
+    await source.ownersOfTag("app-1", { fresh: true });
+
+    expect(sent).toHaveLength(2);
+  });
+
+  test("askers who arrive together share one read", async () => {
+    const sent = directoryAnswers({
+      data: { eventsTargets: [{ eventTags: [{ appId: ["app-1"] }], orgs: [{ id: "o9", name: "Acme" }] }] },
+    });
+    const source = sourceWith();
+
+    await Promise.all(Array.from({ length: 5 }, () => source.ownersOfTag("app-1")));
+
     expect(sent).toHaveLength(1);
   });
 
@@ -133,7 +178,7 @@ describe("what the directory is asked", () => {
       data: { eventsTargets: [{ eventTags: [{ appId: ["orphan"] }], orgs: [] }] },
     });
 
-    expect(await sourceWith().ownerOfTag("orphan")).toBeNull();
+    expect(await sourceWith().ownersOfTag("orphan")).toEqual([]);
   });
 
   test("a full page is followed by the next one, until a short page ends it", async () => {
@@ -143,8 +188,17 @@ describe("what the directory is asked", () => {
       { data: { eventsTargets: [{ eventTags: [{ appId: ["app-last"] }], orgs: [{ id: "o2", name: "Last" }] }] } },
     );
 
-    expect(await sourceWith().ownerOfTag("app-last")).toEqual({ id: "o2", name: "Last" });
+    expect(await sourceWith().ownersOfTag("app-last")).toEqual([{ id: "o2", name: "Last" }]);
     expect(sent.map((ask) => ask.variables.skip)).toEqual([0, 1000]);
+  });
+
+  // "No record" is a decision of its own — staff-only — so a list cut off at the page limit would
+  // decide for every tag past it. A directory too long to read whole is an error instead.
+  test("a directory longer than the source reads is refused rather than read in part", async () => {
+    const full = { eventTags: [{ appId: ["x"] }], orgs: [{ id: "o", name: "Org" }] };
+    directoryAnswers({ data: { eventsTargets: Array.from({ length: 1000 }, () => full) } });
+
+    await expect(sourceWith().ownersOfTag("x")).rejects.toThrow("lists more than 12000 tag records");
   });
 
   test("a level of parents is asked for every org at once, and duplicates collapse", async () => {
@@ -175,9 +229,20 @@ describe("what its refusals become", () => {
   test("a GraphQL error is the directory refusing the question, in its own words", async () => {
     directoryAnswers({ errors: [{ message: "Not Authorised!" }] });
 
-    await expect(sourceWith().ownerOfTag("app-1")).rejects.toThrow(
+    await expect(sourceWith().ownersOfTag("app-1")).rejects.toThrow(
       "MediaJel's directory refused the question: Not Authorised!",
     );
+  });
+
+  test("a read that failed is not kept: the next ask reads again", async () => {
+    directoryAnswers(
+      { errors: [{ message: "Not Authorised!" }] },
+      { data: { eventsTargets: [{ eventTags: [{ appId: ["app-1"] }], orgs: [{ id: "o9", name: "Acme" }] }] } },
+    );
+    const source = sourceWith();
+
+    await expect(source.ownersOfTag("app-1")).rejects.toThrow("Not Authorised!");
+    expect(await source.ownersOfTag("app-1")).toEqual([{ id: "o9", name: "Acme" }]);
   });
 
   test("a connection that fails names the service that did not answer", async () => {
@@ -185,7 +250,7 @@ describe("what its refusals become", () => {
       throw new TypeError("fetch failed");
     }) as unknown as typeof fetch;
 
-    await expect(sourceWith().ownerOfTag("app-1")).rejects.toThrow(
+    await expect(sourceWith().ownersOfTag("app-1")).rejects.toThrow(
       "MediaJel's directory could not be reached (fetch failed).",
     );
   });

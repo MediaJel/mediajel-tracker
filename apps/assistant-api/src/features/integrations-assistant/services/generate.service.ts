@@ -16,6 +16,20 @@ export interface GenerateOutcome {
 }
 
 /**
+ * The whole generate — the first answer and the repair round together — inside the extension's two
+ * minutes, with room for the answer to travel back. The repair round gets what the first left, and
+ * when that is nothing it is skipped the way a failed repair is: the first answer, its violations
+ * named.
+ */
+const GENERATE_BUDGET_MS = 110_000;
+
+/** The caller's signal, if any, ended early by the budget. */
+const withinBudget = (signal?: AbortSignal): AbortSignal => {
+  const budget = AbortSignal.timeout(GENERATE_BUDGET_MS);
+  return signal ? AbortSignal.any([signal, budget]) : budget;
+};
+
+/**
  * One tag, generated and mechanically checked.
  *
  * The repair round used to run in the browser: the extension called /generate, validated the
@@ -37,18 +51,24 @@ export class GenerateService {
   ) {}
 
   async generate(request: GenerateRequest, signal?: AbortSignal): Promise<GenerateOutcome> {
+    const deadline = withinBudget(signal);
     const instructions = await this.instructionsFor(request.goal);
 
     const first = await this.llm.generateStructured({
       instructions,
       prompt: request.evidence,
       schema: GenerationSchema,
-      signal,
+      signal: deadline,
     });
 
     const violations = this.check(first.output, request);
     if (violations.length === 0) {
       return { output: first.output, model: first.model, violations: [] };
+    }
+
+    if (deadline.aborted) {
+      this.logger.warn(`No time left to repair the tag for ${request.hostname}; keeping the first answer.`);
+      return { output: first.output, model: first.model, violations };
     }
 
     this.logger.log(`Generated tag for ${request.hostname} failed validation; running one repair round.`);
@@ -59,7 +79,7 @@ export class GenerateService {
         instructions,
         prompt: buildRepairPrompt(request.evidence, first.output.code, violations),
         schema: GenerationSchema,
-        signal,
+        signal: deadline,
       });
     } catch (err) {
       // The repair round is best-effort. A first answer with named violations is worth more to

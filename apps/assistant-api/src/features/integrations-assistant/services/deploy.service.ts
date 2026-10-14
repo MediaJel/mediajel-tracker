@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 
 import type { DeployOutcome, DeployRequest, ExistingTag } from "../dto/deploy.dto";
 import type { OverridesPreview, OverridesRequest } from "../dto/overrides.dto";
+import type { Freshness } from "../providers/tag-access.source";
 import type { Authorized, DeployTargetKind } from "../types/assistant.types";
 import { ApiError } from "../errors";
 import { GithubService } from "./github.service";
@@ -9,7 +10,15 @@ import type { ExistingFile } from "./github.service";
 import { carryBlocks, editsIn, planOverrides, versionOf } from "./overrides-block";
 import { parseGate } from "./rewrite-imports";
 import { TagAccessService } from "./tag-access.service";
+import type { AccessDecision } from "./tag-access.service";
 import { ValidateService } from "./validate.service";
+
+/** What a deploy asks: the directory as it is now, not an answer kept from when the panel opened. */
+const FRESH: Freshness = { fresh: true };
+
+const enforce = (decision: AccessDecision): void => {
+  if (!decision.allowed) throw new ApiError(403, "not_your_tag", decision.reason);
+};
 
 /**
  * Shipping a tag, and shipping an edit to a tag's configuration.
@@ -36,14 +45,21 @@ export class DeployService {
   ) {}
 
   /**
-   * The first question either deploy asks, before validation and before GitHub.
+   * The first question every route that touches the repo asks, before validation and before GitHub.
    *
-   * Refusing here rather than in the controller means no path to a commit skips it: both deploys
-   * write to the same repo with the same credential, so both answer to the same rule.
+   * Refusing here rather than in the controller means no path to the repo skips it. Reading a file
+   * and writing one use the same credential, which can read every client's tag, so both answer to
+   * the same rule: an app-id file to its tag's owner rule, a domain file to MediaJel's own staff
+   * (see TagAccessService.mayUseDomains). A read may take a kept answer; the deploys ask `FRESH`.
    */
-  private async allowed(appId: string, who: Authorized): Promise<void> {
-    const decision = await this.access.mayDeploy(appId, who);
-    if (!decision.allowed) throw new ApiError(403, "not_your_tag", decision.reason);
+  private async mayTouch(
+    kind: DeployTargetKind,
+    appId: string,
+    who: Authorized,
+    options: Freshness = {},
+  ): Promise<void> {
+    if (kind === "domain") enforce(await this.access.mayUseDomains(who, options));
+    enforce(await this.access.mayDeploy(appId, who, options));
   }
 
   /** The two folders, spelled in one place — the tag fetches by base64 of this exact name. */
@@ -51,14 +67,29 @@ export class DeployService {
     return kind === "domain" ? `src/domains/${name}.ts` : `src/app-ids/${name}.ts`;
   }
 
-  /** What the deploy step shows before it commits: the file it is about to replace, or nothing. */
-  async readTag(kind: DeployTargetKind, name: string): Promise<ExistingTag> {
+  /**
+   * What the deploy step shows before it commits: the file it is about to replace, or nothing. An
+   * app-id file is named by its app id, so that is the tag whose permission reading it needs; a
+   * domain file carries none, so reading one is staff-only.
+   */
+  async readTag(kind: DeployTargetKind, name: string, who: Authorized): Promise<ExistingTag> {
+    if (kind === "domain") enforce(await this.access.mayUseDomains(who));
+    else enforce(await this.access.mayDeploy(name, who));
     const file = await this.github.client().getFile(this.targetPath(kind, name));
     return file ? { exists: true, sha: file.sha, content: file.content } : { exists: false };
   }
 
   async deploy(request: DeployRequest, who: Authorized): Promise<DeployOutcome> {
-    await this.allowed(request.appId, who);
+    // The schema refuses this too; refusing it here as well keeps the check beside the write it
+    // protects, for any caller that reaches the service without passing the schema.
+    if (request.kind === "app-id" && request.name !== request.appId) {
+      throw new ApiError(
+        400,
+        "bad_request",
+        `An app-id tag is written to the file named after its own app ID, so name (${request.name}) must be ${request.appId}.`,
+      );
+    }
+    await this.mayTouch(request.kind, request.appId, who, FRESH);
     const violations = this.validator.validate({
       code: request.code,
       goal: request.goal,
@@ -87,8 +118,9 @@ export class DeployService {
     });
   }
 
-  /** What an edit to a tag's configuration would do to its app-id file — nothing is committed. */
-  async previewOverrides(request: OverridesRequest): Promise<OverridesPreview> {
+  /** What an edit to a tag's configuration would do to its app-id file — nothing is committed, but the file is read. */
+  async previewOverrides(request: OverridesRequest, who: Authorized): Promise<OverridesPreview> {
+    await this.mayTouch("app-id", request.appId, who);
     const path = this.targetPath("app-id", request.appId);
     const file = await this.github.client().getFile(path);
     const before = file?.content ?? "";
@@ -108,7 +140,7 @@ export class DeployService {
 
   /** Commits an edit to a tag's configuration: its block, below the app-id file's own code. */
   async deployOverrides(request: OverridesRequest, who: Authorized): Promise<DeployOutcome> {
-    await this.allowed(request.appId, who);
+    await this.mayTouch("app-id", request.appId, who, FRESH);
     const path = this.targetPath("app-id", request.appId);
     const existing = await this.current(path, request.expectedSha);
     const { block, after } = planOverrides(existing?.content ?? null, request.appId, request.edits);

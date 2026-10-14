@@ -42,8 +42,12 @@ const loadSdk = (): Promise<AiSdk> =>
   })));
 
 const DEFAULT_MODEL = "gpt-5.5";
-/** The extension gives up at two minutes; stay well inside that. */
-const GENERATION_TIMEOUT_MS = 240_000;
+/**
+ * The extension gives up at two minutes, so no call may outlast that — a model still writing for a
+ * panel that stopped waiting is spend with nobody to read it. A generate shares one deadline across
+ * its rounds as well (see GenerateService); this is the ceiling for any one call.
+ */
+const GENERATION_TIMEOUT_MS = 110_000;
 
 @Injectable()
 export class OpenAiProvider implements LlmProvider {
@@ -71,6 +75,8 @@ export class OpenAiProvider implements LlmProvider {
     const openai = create({ apiKey });
     const controller = new AbortController();
     const abort = (): void => controller.abort();
+    // A signal that is already aborted never fires "abort" again, so it is honoured here or not at all.
+    if (signal?.aborted) abort();
     signal?.addEventListener("abort", abort);
     const timer = setTimeout(abort, GENERATION_TIMEOUT_MS);
 
@@ -108,7 +114,11 @@ export class OpenAiProvider implements LlmProvider {
     const status = (err as { statusCode?: number })?.statusCode;
 
     if ((err as { name?: string })?.name === "AbortError" || /abort|timed out/i.test(message)) {
-      return new ApiError(504, "timeout", "The model did not answer within four minutes. Try again.");
+      return new ApiError(
+        504,
+        "timeout",
+        `The model did not answer within ${GENERATION_TIMEOUT_MS / 1000} seconds. Try again.`,
+      );
     }
     if (status === 429 || /\b429\b|rate.?limit/i.test(message)) {
       return new ApiError(
@@ -131,7 +141,13 @@ export class OpenAiProvider implements LlmProvider {
         `OpenAI does not know the model "${model}". A MediaJel engineer needs to check WIDGET_AI_MODEL.`,
       );
     }
+    // The provider's own text stays here: it can name request ids, account details or the prompt
+    // back, and the browser has no use for any of them.
     this.logger.error(`Model call failed: ${message}`);
-    return new ApiError(502, "provider", `The model call failed: ${message}`);
+    return new ApiError(
+      502,
+      "provider",
+      "The model call failed. Try again; if it keeps failing, a MediaJel engineer can find the reason in this service's logs.",
+    );
   }
 }
