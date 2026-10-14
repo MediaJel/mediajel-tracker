@@ -8,6 +8,7 @@ import {
 import withEnsureBasketItemsOrderId from "@mediajel/tracker-core/snowplow/extensions/ensure-basket-items-order-id";
 import withRegisterThirdPartyTagsExtension from "@mediajel/tracker-core/snowplow/extensions/register-third-party-tags";
 import { QueryStringContext } from "@mediajel/tracker-core/types";
+import { announceTag } from "@mediajel/tracker-core/utils/announce";
 
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   const plugins = context?.plugin?.split(",") || [];
@@ -33,6 +34,7 @@ const loadAdapters = async (context: QueryStringContext): Promise<void> => {
   window.trackSignUp = tracker.trackSignup;
   window.addToCart = tracker.ecommerce?.trackAddToCart ?? (() => {});
   window.removeFromCart = tracker.ecommerce?.trackRemoveFromCart ?? (() => {});
+  announceTag(context, "running");
 
   switch (context.event) {
     case "transaction":

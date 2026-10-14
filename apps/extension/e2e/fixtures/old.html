@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Old tag fixture</title>
+  </head>
+  <body>
+    <h1>A page with the MediaJel tag installed the usual way</h1>
+    <p>
+      The production tag build, served from this machine, configured for app ID <code>e2e-old</code> with a segment for
+      every partner — LiquidM (<code>s1</code>), Nexxen (<code>s2.pv</code>, <code>s2.tr</code>) and Dstillery
+      (<code>s3.pv</code>, <code>s3.tr</code>). It loads as the page loads, sends its page view straight away, and
+      fires the partners' page-view pixels; the harness resolves every partner host to this machine.
+    </p>
+    <script src="http://127.0.0.1:3001/index.js?appId=e2e-old&environment=jane&version=2&s1=e2e-liquidm&s2.pv=e2e-nexxen-pv&s2.tr=e2e-nexxen-tr&s3.pv=e2e-dstillery-pv&s3.tr=e2e-dstillery-tr"></script>
+  </body>
+</html>

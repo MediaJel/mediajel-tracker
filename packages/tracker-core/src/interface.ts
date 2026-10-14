@@ -1,5 +1,6 @@
 import { TransactionEvent, CartEvent, SignupParams } from "./snowplow/types";
 import { QueryStringContext, RegisterThirdPartyTagsInput, retailIdentifier } from "./types";
+import type { MediaJelRegistry } from "./utils/announce";
 
 export {};
 
@@ -35,6 +36,8 @@ declare global {
     parseRetailId: (retail: retailIdentifier) => void;
     overrides: QueryStringContext;
     cnnaSegments?: unknown; // we only assign this (segments extension); never read it back
+    // The tags on the page, by their own announcement: the first tag to boot sets it up (utils/announce.ts).
+    MediaJel?: MediaJelRegistry;
 
     // --- External / client / third-party globals: optional, so every access must be guarded ---
     Shopify?: { checkout?: any };

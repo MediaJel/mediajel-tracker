@@ -1,0 +1,14 @@
+{
+  "extends": "@mediajel/tsconfig/base.json",
+  "//types": "`bun-types` types the `bun:test` imports in test/**. It is depended on DIRECTLY rather than through `@types/bun`, which installs to node_modules/@types and is therefore auto-included by every package in the monorepo that does not pin `types`. Naming it here also keeps @types/node's globals from shadowing the DOM lib this package actually runs against.",
+  "compilerOptions": {
+    "types": ["bun-types"],
+    "paths": {
+      "@mediajel/tracker-core/*": ["../tracker-core/src/*"],
+      "@mediajel/assistant-core/*": ["./src/*"]
+    }
+  },
+  "//include": "interface.ts carries tracker-core's shared `declare global { Window }` augmentation; ambient globals only apply to compilations that include the file, so each consumer pulls it in.",
+  "include": ["src/**/*", "test/**/*", "../tracker-core/src/interface.ts"],
+  "exclude": ["node_modules", "dist"]
+}

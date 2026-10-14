@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Edited tag fixture</title>
+    <script>
+      // The page's own overrides, the way many frictionless files set them: one flat object for every tag.
+      window.overrides = { "s3.pv": "page-flat-pv", "s3.tr": "page-flat-tr" };
+    </script>
+  </head>
+  <body>
+    <h1>A page whose tag an engineer is editing</h1>
+    <p>
+      The production tag build for app ID <code>e2e-edit</code>, with a Nexxen segment on its URL and the Dstillery
+      segments set by the page's own flat <code>window.overrides</code>. An edit tried from the assistant changes the
+      Nexxen segment through the tag's app-id file; the page's overrides must still apply.
+    </p>
+    <script src="http://127.0.0.1:3001/index.js?appId=e2e-edit&environment=jane&version=2&s2.pv=e2e-url-nexxen"></script>
+  </body>
+</html>
