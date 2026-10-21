@@ -40,6 +40,75 @@ commands:
           command: bun x turbo run build --filter=mediajel-tracker
 
 jobs:
+  # The only job that proves the tag WORKS rather than that it compiles. A machine executor because
+  # it needs Docker on localhost: Micro is configured by two mounted files (the /analytics/track
+  # path mapping and the MediaJel Iglu registry), and a secondary container cannot mount volumes.
+  # Running the repo's own docker-compose.yml means CI runs exactly what `bun run micro:up` runs.
+  e2e-signals:
+    machine:
+      image: ubuntu-2404:current
+    working_directory: ~/mediajel-tracker
+    environment:
+      # The rig serves the tag, the fixture pages and Micro's API on this one origin, and the tag is
+      # built against it so the suite reads what the BUILD baked in. See apps/e2e/README.md.
+      COLLECTOR_URL: http://localhost:4330
+    steps:
+      - checkout
+      # CircleCI 2.1 cannot filter on a pull request's TARGET branch, so this is the honest
+      # approximation: run whenever a PR exists, and run on staging/main pushes as the deploy gate
+      # (where CIRCLE_PULL_REQUEST is empty but the branch filter below has already selected them).
+      - run:
+          name: Skip unless this is a pull request or a deploy branch
+          command: |
+            if [ -z "$CIRCLE_PULL_REQUEST" ] && [ "$CIRCLE_BRANCH" != "staging" ] && [ "$CIRCLE_BRANCH" != "main" ]; then
+              echo "No pull request for $CIRCLE_BRANCH; nothing to gate."
+              circleci-agent step halt
+            fi
+      - install-bun
+      - run:
+          name: Start Snowplow Micro
+          command: docker compose up -d snowplow-micro
+      - run:
+          name: Install project dependencies
+          command: bun install --frozen-lockfile
+      - run:
+          name: Install the browser the suite drives
+          command: ./node_modules/.bin/playwright install --with-deps chromium
+      - run:
+          name: Wait for Snowplow Micro
+          command: |
+            for i in $(seq 1 60); do
+              curl -sf http://localhost:9090/micro/all >/dev/null && echo "micro is up" && exit 0
+              sleep 2
+            done
+            echo "Snowplow Micro never answered on :9090"
+            docker compose logs snowplow-micro
+            exit 1
+      - run:
+          name: Build the tag against the test collector
+          command: bun x turbo run build --filter=mediajel-tracker
+      - run:
+          name: End-to-end signal verification
+          command: bun x turbo run e2e --filter=@mediajel/e2e
+      # A quarantined event carries its own validation error, which is almost always the whole
+      # answer. Keep it, and Micro's log, for the failures nobody can reproduce locally.
+      - run:
+          name: What Snowplow Micro quarantined
+          when: on_fail
+          command: |
+            mkdir -p /tmp/micro
+            curl -s http://localhost:9090/micro/all  > /tmp/micro/counts.json || true
+            curl -s http://localhost:9090/micro/bad  > /tmp/micro/bad.json || true
+            docker compose logs snowplow-micro > /tmp/micro/micro.log 2>&1 || true
+      - store_artifacts:
+          path: /tmp/micro
+          destination: snowplow-micro
+      - store_artifacts:
+          path: apps/e2e/out
+          destination: e2e
+      - store_test_results:
+          path: apps/e2e/out/results
+
   build-staging:
     executor: the-executor
     steps:
@@ -118,13 +187,21 @@ workflows:
   version: 2
   build:
     jobs:
+      - e2e-signals:
+          filters:
+            branches:
+              ignore: []
       - build-staging:
           context: STAGING
+          requires:
+            - e2e-signals
           filters:
             branches:
               only: staging
       - build-main:
           context: PRODUCTION
+          requires:
+            - e2e-signals
           filters:
             branches:
               only: main

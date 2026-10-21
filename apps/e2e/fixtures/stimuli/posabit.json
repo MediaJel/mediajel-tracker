@@ -1,0 +1,16 @@
+{
+  "//": "Posabit menus push GA4 gtag args-style events onto the dataLayer: ['event', 'purchase', payload]. The dataLayer source replays what is already there, so this can be in place before the tag loads.",
+  "environment": "posabit",
+  "dataLayer": [
+    ["event", "purchase", {
+      "transaction_id": "POS-9001",
+      "value": 75.25,
+      "tax": 6.25,
+      "shipping": 0,
+      "items": [
+        { "item_id": "POS-SKU-1", "item_name": "Indica Cart", "price": 35.0, "quantity": 1 },
+        { "item_id": "POS-SKU-2", "item_name": "Sativa Cart", "price": 40.25, "quantity": 1 }
+      ]
+    }]
+  ]
+}

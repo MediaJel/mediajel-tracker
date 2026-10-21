@@ -39,6 +39,39 @@ export class Micro {
     return json<Counts>(`${this.base}/micro/all`);
   }
 
+  /**
+   * The filtered form of /micro/good, which Micro supports as a POST body: `schema` (implies a
+   * self-describing event), `contexts` (every named entity must be attached), `event_type` and
+   * `limit`. Filtering in Micro rather than in the test keeps a failure message about the events
+   * that matter instead of everything the page happened to send.
+   */
+  matching(filters: {
+    schema?: string;
+    contexts?: string[];
+    event_type?: string;
+    limit?: number;
+  }): Promise<GoodEvent[]> {
+    return json<GoodEvent[]>(`${this.base}/micro/good`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(filters),
+    });
+  }
+
+  /**
+   * Whether Micro's Iglu resolver can find a schema — /micro/iglu/{vendor}/{name}/jsonschema/{ver}.
+   * A resolved schema answers with itself; an unresolved one answers with the repositories it tried
+   * and why each failed. Worth asking BEFORE sending anything: a schema the tracker names but the
+   * registry does not have quarantines every event that carries it, and the only clue in the bad
+   * event is a resolution error several layers down.
+   */
+  async resolves(iglu: string): Promise<{ ok: boolean; detail: unknown }> {
+    const path = iglu.replace(/^iglu:/, "");
+    const response = await fetch(`${this.base}/micro/iglu/${path}`);
+    const body = await response.json();
+    return { ok: response.ok && typeof body === "object" && body !== null && "$schema" in body, detail: body };
+  }
+
   good(): Promise<GoodEvent[]> {
     return json<GoodEvent[]>(`${this.base}/micro/good`, {
       method: "POST",
@@ -75,6 +108,16 @@ export class Micro {
         `good (${seen.length}): ${JSON.stringify(seen.map(summarise), null, 2)}\n` +
         `bad (${quarantined.length}): ${JSON.stringify(quarantined, null, 2)}`,
     );
+  }
+
+  /**
+   * total === good + bad. Snowplow's own test helpers assert this, and it is worth asserting: a
+   * mismatch means Micro counted a payload it could neither validate nor quarantine, which is a
+   * pipeline problem rather than a tracking one and should not read as a failed tag.
+   */
+  async consistent(): Promise<boolean> {
+    const { total, good, bad } = await this.counts();
+    return total === good + bad;
   }
 
   /** Waits out `ms` and answers what arrived — for the assertions whose expected answer is nothing. */

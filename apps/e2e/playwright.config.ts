@@ -21,7 +21,15 @@ export default defineConfig({
   workers: 1,
   fullyParallel: false,
   retries: 0,
-  reporter: process.env.CI ? [["list"], ["html", { outputFolder: "out/report", open: "never" }]] : "list",
+  reporter: process.env.CI
+    ? [
+        ["list"],
+        ["html", { outputFolder: "out/report", open: "never" }],
+        // CircleCI reads JUnit XML to show which test failed on the job page, rather than making
+        // someone open the artifacts to find out.
+        ["junit", { outputFile: "out/results/junit.xml" }],
+      ]
+    : "list",
   timeout: 90_000,
   expect: { timeout: 20_000 },
   use: {
