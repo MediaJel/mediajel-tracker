@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>tag fixture</title>
+  </head>
+  <body>
+    <h1>tag fixture</h1>
+    <a href="https://example.com/" id="outbound">an outbound link</a>
+
+    <script>
+      /**
+       * Stands in for a client's page. Everything a real storefront would have already printed into
+       * the document goes on BEFORE the tag script is added, because the ecommerce adapter reads the
+       * page's globals once, right after the tracker initialises, and never polls. A fixture that
+       * set them afterwards would test nothing and still go green on the page view.
+       *
+       * ?stimulus=<name>  fixtures/stimuli/<name>.json — what this page pretends to be
+       * every other query parameter is passed through to the tag's own script URL.
+       */
+      (async () => {
+        const params = new URLSearchParams(location.search);
+        const stimulusName = params.get("stimulus");
+        params.delete("stimulus");
+
+        if (stimulusName) {
+          const stimulus = await fetch(`/stimuli/${stimulusName}.json`).then((r) => r.json());
+
+          for (const [name, value] of Object.entries(stimulus.globals ?? {})) {
+            window[name] = value;
+          }
+          if (stimulus.dataLayer) {
+            window.dataLayer = window.dataLayer || [];
+            for (const entry of stimulus.dataLayer) window.dataLayer.push(entry);
+          }
+          if (stimulus.environment && !params.has("environment")) {
+            params.set("environment", stimulus.environment);
+          }
+        }
+
+        // The tag resolves its own configuration from this script element's query string
+        // (document.currentScript in get-context.ts), so it has to carry the parameters.
+        const tag = document.createElement("script");
+        tag.src = `/tag/index.js?${params.toString()}`;
+        tag.async = false;
+        document.head.appendChild(tag);
+
+        // The specs wait on this rather than on a timer: it means the element is in the document,
+        // not that the tag has finished — that is what the Micro assertions are for.
+        tag.addEventListener("load", () => document.body.setAttribute("data-tag", "loaded"));
+        tag.addEventListener("error", () => document.body.setAttribute("data-tag", "failed"));
+      })();
+    </script>
+  </body>
+</html>

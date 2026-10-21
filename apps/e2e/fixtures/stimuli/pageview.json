@@ -1,0 +1,4 @@
+{
+  "//": "A plain page with nothing on it. The tag should still send a page view.",
+  "globals": {}
+}
