@@ -1,0 +1,16 @@
+{
+  "//": "Shopify checkout completion: the order on window.transactionOrder in Shopify's nested shape, variants on transactionItems.",
+  "environment": "shopify",
+  "globals": {
+    "transactionOrder": {
+      "order": { "id": "SHOP-5512" },
+      "totalPrice": { "amount": "64.00" },
+      "totalTax": { "amount": "4.80" },
+      "shippingLine": { "price": { "amount": "5.00" } },
+      "currencyCode": "USD"
+    },
+    "transactionItems": [
+      { "id": "line-1", "quantity": 2, "variant": { "sku": "SHOP-SKU-1", "price": { "amount": "32.00" }, "product": { "title": "Hemp Balm" } } }
+    ]
+  }
+}

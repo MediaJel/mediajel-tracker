@@ -1,0 +1,8 @@
+{
+  "//": "WooCommerce thank-you page, flattened shape with no billing object (torchdrinks.com). The #867 regression: billing.email threw and the order was dropped.",
+  "environment": "woocommerce",
+  "globals": {
+    "transactionOrder": { "id": 185250, "number": "185250", "total": "48.00", "tax": "3.50", "shipping": "0", "currency": "USD" },
+    "transactionItems": [{ "product_id": 551, "name": "Torch Drink", "quantity": 2, "total": "48.00" }]
+  }
+}

@@ -8,6 +8,24 @@
     <h1>tag fixture</h1>
     <a href="https://example.com/" id="outbound">an outbound link</a>
 
+    <!--
+      A sign-up form, present on every fixture page and inert unless a spec types into it. Snowplow's
+      form tracking binds to the forms in the document when enableFormTracking runs, so it has to be
+      here before the tag loads rather than added by the spec.
+
+      Half these fields are ones isNonSensitiveFormField excludes. That is the point: the denylist
+      spec types into all of them and proves only the harmless ones were ever sent.
+    -->
+    <form id="signup">
+      <input name="full_name" id="full_name" type="text" />
+      <input name="favourite_strain" id="favourite_strain" type="text" />
+      <input name="email" id="email" type="email" />
+      <input name="password" id="password" type="password" />
+      <input name="phone" id="phone" type="tel" />
+      <input name="cc-number" id="cc-number" type="text" />
+      <button type="submit">join</button>
+    </form>
+
     <script>
       /**
        * Stands in for a client's page. Everything a real storefront would have already printed into
@@ -25,6 +43,7 @@
 
         if (stimulusName) {
           const stimulus = await fetch(`/stimuli/${stimulusName}.json`).then((r) => r.json());
+          window.__stimulus = stimulus;
 
           for (const [name, value] of Object.entries(stimulus.globals ?? {})) {
             window[name] = value;
@@ -37,6 +56,56 @@
             params.set("environment", stimulus.environment);
           }
         }
+
+        // Some data sources capture by patching XMLHttpRequest.prototype.open or window.fetch, and
+        // they only do it once the environment module has lazy-loaded — well after the tag's own
+        // load event. Hold the pristine references now so a spec can wait for the exact moment the
+        // patch lands, instead of sleeping and hoping.
+        const pristine = { open: XMLHttpRequest.prototype.open, fetch: window.fetch };
+        window.__patched = {
+          xhr: () => XMLHttpRequest.prototype.open !== pristine.open,
+          fetch: () => window.fetch !== pristine.fetch,
+        };
+
+        /**
+         * Performs the stimulus's `after` block: what the site does once the page is live, as
+         * opposed to what it printed into the document. Waits for the capture it needs to be in
+         * place first, so the request cannot be made before anything is listening for it.
+         */
+        window.__fire = async () => {
+          const after = (window.__stimulus || {}).after;
+          if (!after) return "nothing to fire";
+
+          if (after.needs) {
+            const deadline = Date.now() + 15000;
+            while (!window.__patched[after.needs]() && Date.now() < deadline) {
+              await new Promise((r) => setTimeout(r, 50));
+            }
+            if (!window.__patched[after.needs]()) return `timed out waiting for the ${after.needs} capture`;
+          }
+
+          if (after.xhr) {
+            await new Promise((resolve) => {
+              const request = new XMLHttpRequest();
+              request.addEventListener("loadend", resolve);
+              request.open("POST", after.xhr.url);
+              request.setRequestHeader("content-type", "application/json");
+              request.send(JSON.stringify(after.xhr.body));
+            });
+          }
+          if (after.fetch) {
+            await fetch(after.fetch.url, {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify(after.fetch.body),
+            }).then((r) => r.json());
+          }
+          if (after.dataLayer) {
+            window.dataLayer = window.dataLayer || [];
+            for (const entry of after.dataLayer) window.dataLayer.push(entry);
+          }
+          return "fired";
+        };
 
         // The tag resolves its own configuration from this script element's query string
         // (document.currentScript in get-context.ts), so it has to carry the parameters.

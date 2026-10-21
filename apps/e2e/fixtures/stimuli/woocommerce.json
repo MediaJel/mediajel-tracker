@@ -1,0 +1,19 @@
+{
+  "//": "WooCommerce thank-you page, WC_Order::get_data() / REST shape (greatcbdshop.com). The second item is the #869 regression: product_id 0 with no sku, which threw under (product_id || sku).",
+  "environment": "woocommerce",
+  "globals": {
+    "transactionOrder": {
+      "id": 2430058,
+      "number": "2430058",
+      "total": "12.54",
+      "total_tax": "0.00",
+      "shipping_total": "9.99",
+      "currency": "USD",
+      "billing": { "city": "Denver", "state": "CO", "country": "US", "email": "jordan@example.com" }
+    },
+    "transactionItems": [
+      { "product_id": 97865, "name": "Mystery Item only $1", "quantity": 1, "total": "1" },
+      { "product_id": 0, "name": "Shipping Protection", "quantity": 1, "total": "1.55" }
+    ]
+  }
+}

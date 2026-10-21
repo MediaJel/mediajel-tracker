@@ -1,0 +1,19 @@
+{
+  "//": "Treez returns the order from an XHR the storefront makes after the page is live. The source patches XMLHttpRequest.prototype.open when it loads, so the request waits for that patch and the rig echoes the body back as the response.",
+  "environment": "treez",
+  "after": {
+    "needs": "xhr",
+    "xhr": {
+      "url": "/api/checkout",
+      "body": {
+        "orderNumber": "TRZ-4417",
+        "total": "120.00",
+        "tax": "9.60",
+        "deliveryCost": "5.00",
+        "items": [
+          { "productId": "TRZ-SKU-1", "name": "Live Rosin", "category": "concentrate", "originalPrice": "60.00", "quantity": "2" }
+        ]
+      }
+    }
+  }
+}
