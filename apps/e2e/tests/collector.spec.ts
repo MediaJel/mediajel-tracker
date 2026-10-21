@@ -18,6 +18,12 @@ import { RIG_URL } from "../playwright.config";
  * (events arrive). The first localises the bug to turbo/Parcel; the second catches anything that
  * mangles the URL between the bundle and the wire.
  *
+ * The rig serves the page and the collector on ONE origin, and that does NOT make this vacuous — a
+ * reasonable worry, since an empty endpoint could in principle resolve relative to the page and land
+ * right back on the rig. Measured: Snowplow treats the empty string as the HOST, builds
+ * `http://analytics/track`, and the request dies with ERR_NAME_NOT_RESOLVED. Nothing reaches Micro.
+ * If a future SDK changes that, the static assertion below still fails, which is why there are two.
+ *
  * These run with NO window.overrides. Every other spec may point the collector wherever it likes;
  * this one must read what the build baked in, or it is not testing the bug.
  */

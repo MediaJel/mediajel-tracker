@@ -7,7 +7,8 @@ import { named } from "../rig/micro";
  * XHR the storefront makes once the page is live.
  *
  * Each case is a stimulus file plus a row here. Adding a platform is those two things, which is the
- * point — there are ~38 data sources in packages/tracker-environments and they are all one `switch`
+ * point — packages/tracker-environments holds 42 data sources (40 platforms plus `training` and
+ * `exercise`), matching the 42 `case` labels, and they are all one `switch`
  * away from each other in apps/tracker/src/adapters/ecommerce.ts.
  *
  * These assert the TRANSACTION, not just that something arrived: an adapter that reads the wrong
