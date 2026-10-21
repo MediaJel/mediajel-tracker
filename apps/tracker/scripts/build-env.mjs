@@ -15,8 +15,12 @@
  * Kept separate from run-parcel.mjs so it can be tested without spawning Parcel.
  */
 
-/** Looks like somewhere events can be POSTed: `//host`, `http://host` or `https://host`. */
-const looksLikeAnEndpoint = (value) => /^(https?:)?\/\/[^/\s]+/.test(value);
+/**
+ * Looks like somewhere events can be POSTed. A bare host counts: get-context.ts normalises it to
+ * protocol-relative, because the stored values have been written both ways.
+ */
+const BARE_HOST = /^(localhost|(\d{1,3}\.){3}\d{1,3}|[a-z0-9-]+(\.[a-z0-9-]+)+)(:\d+)?$/i;
+const looksLikeAnEndpoint = (value) => /^(https?:)?\/\/[^/\s]+/.test(value) || BARE_HOST.test(value);
 
 /** The shapes a templating or CI accident leaves behind, which are not "unset" but are not a URL. */
 const NOT_A_VALUE = new Set(["undefined", "null", "false", "0", '""', "''"]);
@@ -29,25 +33,31 @@ export const checkBuildEnv = (env) => {
   const errors = [];
   const warnings = [];
 
+  // Three names, because the monorepo introduced COLLECTOR_URL while the CircleCI contexts still
+  // hold the two the pre-monorepo tag used. A build needs a PRODUCTION-side value: with no `test`
+  // parameter the tag reads MJ_PRODUCTION_COLLECTOR_URL, so MJ_STAGING_COLLECTOR_URL alone still
+  // leaves ordinary page views with nowhere to go.
   const collector = (env.COLLECTOR_URL ?? "").trim();
-  if (!collector) {
+  const production = (env.MJ_PRODUCTION_COLLECTOR_URL ?? "").trim();
+  const chosen = collector || production;
+
+  if (!chosen) {
     errors.push(
-      "COLLECTOR_URL is not set.\n" +
-        "  It is the only thing that tells the built tag where to send events, and an unset one\n" +
-        "  does not fail — it ships a tag that posts to http://analytics/track and is never heard\n" +
-        "  from again. Refusing to build rather than hand you that.\n" +
-        "    production  COLLECTOR_URL=//collector-azsx401.dmp.cnna.io\n" +
-        "    staging     COLLECTOR_URL=//collector.dmp.mediajel.ninja\n" +
-        "  In CircleCI it belongs in the context the job uses (PRODUCTION or STAGING). Note that\n" +
-        "  MJ_PRODUCTION_COLLECTOR_URL and MJ_STAGING_COLLECTOR_URL are the names the pre-monorepo\n" +
-        "  tag used; this one reads neither.",
+      "No collector is configured.\n" +
+        "  The tag reads COLLECTOR_URL, or failing that MJ_PRODUCTION_COLLECTOR_URL (and\n" +
+        "  MJ_STAGING_COLLECTOR_URL when the tag carries ?test=). None of them is set, and an unset\n" +
+        "  collector does not fail — it ships a tag that posts to http://analytics/track and is\n" +
+        "  never heard from again. Refusing to build rather than hand you that.\n" +
+        "    production  MJ_PRODUCTION_COLLECTOR_URL=//collector-azsx401.dmp.cnna.io\n" +
+        "    staging     MJ_STAGING_COLLECTOR_URL=//collector.dmp.mediajel.ninja\n" +
+        "  In CircleCI these live in the context the job uses (PRODUCTION or STAGING).",
     );
-  } else if (NOT_A_VALUE.has(collector)) {
-    errors.push(`COLLECTOR_URL is the literal string "${collector}", which is a templating accident, not a collector.`);
-  } else if (!looksLikeAnEndpoint(collector)) {
+  } else if (NOT_A_VALUE.has(chosen)) {
+    errors.push(`The collector is the literal string "${chosen}", which is a templating accident, not a collector.`);
+  } else if (!looksLikeAnEndpoint(chosen)) {
     errors.push(
-      `COLLECTOR_URL is "${collector}", which is not an endpoint the tag can post to.\n` +
-        "  Expected //host, http://host or https://host.",
+      `The collector is "${chosen}", which is not somewhere events can be posted.\n` +
+        "  Expected a host, //host, http://host or https://host.",
     );
   }
 
