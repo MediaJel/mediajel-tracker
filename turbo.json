@@ -22,6 +22,9 @@
       "dependsOn": ["build"],
       "cache": false
     },
+    // Pure unit tests: no browser, no build, no pipeline. Separate from `test` (which is
+    // apps/tracker's Cypress suite and needs servers) so CI can run these on their own.
+    "test:unit": {},
     // The browser suite needs the tag actually built, and built against the collector the rig
     // serves — which is why COLLECTOR_URL is in globalEnv above. Never cached: it asserts against a
     // live Snowplow Micro, so a cache hit would report yesterday's pipeline.

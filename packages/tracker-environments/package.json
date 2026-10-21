@@ -14,7 +14,7 @@
   "scripts": {
     "check": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "bun test test/"
+    "test:unit": "bun test test/"
   },
   "dependencies": {
     "@mediajel/tracker-core": "*"
