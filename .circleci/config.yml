@@ -194,10 +194,9 @@ workflows:
   version: 2
   build:
     jobs:
+      # No branch filter: this is the gate, so it runs wherever CircleCI starts a pipeline, and the
+      # job's own first step halts it when there is nothing to gate.
       - e2e-signals:
-          filters:
-            branches:
-              ignore: []
       - build-staging:
           context: STAGING
           requires:
