@@ -1,0 +1,9 @@
+{
+  "extends": "@mediajel/tsconfig/base.json",
+  "compilerOptions": {
+    "types": ["bun-types", "node"],
+    "noEmit": true
+  },
+  "include": ["rig/**/*", "tests/**/*", "playwright.config.ts"],
+  "exclude": ["node_modules", "out"]
+}
