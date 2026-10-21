@@ -1,12 +1,12 @@
 {
   "name": "mediajel-tracker",
   "version": "1.0.0",
-  "description": "MediaJel universal tracking tag — the deployable script served at tags.cnna.io.",
+  "description": "MediaJel universal tracking tag \u2014 the deployable script served at tags.cnna.io.",
   "private": true,
   "browserslist": [
     "since 2017-06"
   ],
-  "//alias": "Canonicalize @mediajel/* to the real package src (not the node_modules symlink) so a dynamically-imported module and its dynamic import() resolve to the SAME Parcel module id — otherwise intra-package dynamic imports resolve to undefined.",
+  "//alias": "Canonicalize @mediajel/* to the real package src (not the node_modules symlink) so a dynamically-imported module and its dynamic import() resolve to the SAME Parcel module id \u2014 otherwise intra-package dynamic imports resolve to undefined.",
   "alias": {
     "src": "./src",
     "@mediajel/tracker-core": "../../packages/tracker-core/src",
@@ -25,7 +25,8 @@
     "cy:run": "cypress run",
     "test": "start-server-and-test 'node scripts/run-parcel.mjs public/index.test.html --no-cache --port 1234' http://localhost:1234 cy:run",
     "docs": "jsdoc -c jsdoc.json",
-    "generate-environments": "bun run src/scripts/generateEnvironments.ts"
+    "generate-environments": "bun run src/scripts/generateEnvironments.ts",
+    "test:unit": "bun test test/"
   },
   "dependencies": {
     "@mediajel/tracker-core": "*",

@@ -89,8 +89,8 @@ jobs:
       # this job (its script never starts the tag server on :3000, and two specs visit external
       # hosts that no longer resolve), and that is not this gate's business.
       - run:
-          name: Data source unit tests
-          command: bun x turbo run test --filter=@mediajel/tracker-environments
+          name: Unit tests
+          command: bun x turbo run test:unit
       - run:
           name: Build the tag against the test collector
           command: bun x turbo run build --filter=mediajel-tracker
