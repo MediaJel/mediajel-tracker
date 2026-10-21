@@ -1,0 +1,138 @@
+/**
+ * WooCommerce thank-you page payloads for tests/unit/woocommerce-data-source.test.ts.
+ *
+ * Each pair (order + items) is what a site prints as window.transactionOrder / window.transactionItems on
+ * /checkout/order-received/. They come from real pages, so the tests exercise the shapes the data source
+ * actually receives:
+ *   - flattened*: torchdrinks.com (flattened shape, no billing object)
+ *   - restApi*:   the WooCommerce REST API v3 order shape the data source was first written against
+ *   - getData*:   greatcbdshop.com (WC_Order::get_data() shape, with a product_id 0 "Shipping Protection" item)
+ *
+ * Adding a site: capture its payload on a test order's thank-you page (in DevTools:
+ * JSON.stringify(window.transactionOrder) and JSON.stringify(window.transactionItems)), replace every name,
+ * email, phone, address and order key, and note the site and date above the export.
+ */
+
+// Verbatim payload injected on torchdrinks.com/checkout/order-received/
+// (torchdrinks.com.har, 2026-08-26) — the flattened shape, no `billing` object.
+export const flattenedTransactionOrder = {
+  id: 185250,
+  number: "185250",
+  currency: "USD",
+  total: "13.98",
+  subtotal: "3.99",
+  tax: "0.00",
+  shipping: "9.99",
+  discount: "0.00",
+  coupons: [],
+};
+
+export const flattenedTransactionItems = [
+  {
+    sku: "td-black-cherry-lite-5mg-single",
+    product_id: 128903,
+    variant_id: 0,
+    name: "Black Cherry Lite 5mg THC Seltzer (12oz)",
+    quantity: 1,
+    price: "3.99",
+    total: "3.99",
+  },
+];
+
+// WooCommerce REST API v3 order shape — what the data source was originally
+// written against. `shipping` here is an address OBJECT, not an amount.
+export const restApiTransactionOrder = {
+  id: 727,
+  status: "processing",
+  currency: "USD",
+  total: "29.35",
+  total_tax: "1.35",
+  shipping_total: "5.00",
+  discount_total: "0.00",
+  billing: {
+    first_name: "John",
+    last_name: "Doe",
+    address_1: "969 Market",
+    city: "San Francisco",
+    state: "CA",
+    postcode: "94103",
+    country: "US",
+    email: "john.doe@example.com",
+    phone: "(555) 555-5555",
+  },
+  shipping: {
+    first_name: "John",
+    last_name: "Doe",
+    address_1: "969 Market",
+    city: "San Francisco",
+    state: "CA",
+    postcode: "94103",
+    country: "US",
+  },
+};
+
+// REST API line items: `sku` can be an empty string when unset in WooCommerce.
+export const restApiTransactionItems = [
+  {
+    id: 315,
+    order_id: 727,
+    name: "Woo Single #1",
+    product_id: 93,
+    quantity: 2,
+    total: "21.99",
+    sku: "SKU-93",
+  },
+  {
+    id: 316,
+    order_id: 727,
+    name: "Handmade Mug",
+    product_id: 22,
+    quantity: 1,
+    total: "7.00",
+    sku: "",
+  },
+];
+
+// greatcbdshop.com/checkout/order-received/ test order 2430058 (2026-10-09):
+// WC_Order::get_data() / WC_Order_Item::get_data() shape, PII replaced. A plugin
+// adds "Shipping Protection" as a line item with no product: product_id 0 and
+// no sku key. transaction_id is the payment gateway's charge id, not the order.
+export const getDataTransactionOrder = {
+  id: 2430058,
+  number: "2430058",
+  status: "on-hold",
+  currency: "USD",
+  total: "12.54",
+  total_tax: "0",
+  shipping_total: "9.99",
+  transaction_id: "12660878870",
+  billing: {
+    city: "Austin",
+    state: "TX",
+    country: "US",
+    email: "customer@example.com",
+  },
+};
+
+export const getDataTransactionItems = [
+  {
+    id: 2020075,
+    order_id: 2430058,
+    name: "Mystery Item only $1",
+    product_id: 97865,
+    variation_id: 0,
+    quantity: 1,
+    subtotal: "1",
+    total: "1",
+  },
+  {
+    id: 2020082,
+    order_id: 2430058,
+    name: "Shipping Protection",
+    product_id: 0,
+    variation_id: 0,
+    quantity: 1,
+    subtotal: "1.55",
+    total: "1.55",
+  },
+];
