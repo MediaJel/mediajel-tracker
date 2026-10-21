@@ -84,6 +84,13 @@ jobs:
             echo "Snowplow Micro never answered on :9090"
             docker compose logs snowplow-micro
             exit 1
+      # The data sources' own unit tests, which nothing else in CI runs. Filtered rather than a bare
+      # `turbo run test`: mediajel-tracker's Cypress suite is broken on this branch independently of
+      # this job (its script never starts the tag server on :3000, and two specs visit external
+      # hosts that no longer resolve), and that is not this gate's business.
+      - run:
+          name: Data source unit tests
+          command: bun x turbo run test --filter=@mediajel/tracker-environments
       - run:
           name: Build the tag against the test collector
           command: bun x turbo run build --filter=mediajel-tracker
