@@ -195,8 +195,10 @@ workflows:
   build:
     jobs:
       # No branch filter: this is the gate, so it runs wherever CircleCI starts a pipeline, and the
-      # job's own first step halts it when there is nothing to gate.
-      - e2e-signals:
+      # job's own first step halts it when there is nothing to gate. A bare string, NOT
+      # `- e2e-signals:` — the trailing colon makes it a mapping with a null value, which
+      # CircleCI's schema rejects, and a rejected config means NO job in the workflow runs.
+      - e2e-signals
       - build-staging:
           context: STAGING
           requires:
