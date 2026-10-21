@@ -17,6 +17,28 @@ const indexPath = path.join(__dirname, "../adapters/ecommerce.ts");
 const environmentPath = path.join(__dirname, "environment.js");
 
 const bucketName = process.env.BUCKET_GENERATE_ENVIRONMENTS_PROD;
+
+// Everything below reports failure with console.error and no exit code, so a missing credential
+// produces a green deploy step that uploaded nothing. Check up front and fail loudly instead —
+// the same reason apps/tracker/scripts/build-env.mjs refuses to build without a collector.
+const required = {
+  AWS_REGION_PROD: process.env.AWS_REGION_PROD,
+  AWS_ACCESS_KEY_ID_PROD: process.env.AWS_ACCESS_KEY_ID_PROD,
+  AWS_SECRET_ACCESS_KEY_PROD: process.env.AWS_SECRET_ACCESS_KEY_PROD,
+  BUCKET_GENERATE_ENVIRONMENTS_PROD: bucketName,
+};
+const absent = Object.entries(required)
+  .filter(([, value]) => !value)
+  .map(([name]) => name);
+if (absent.length > 0) {
+  console.error(
+    `Cannot upload the environments file: ${absent.join(", ")} ${absent.length === 1 ? "is" : "are"} not set.\n` +
+      "  They come from the PRODUCTION CircleCI context, and turbo only passes a task the variables\n" +
+      "  declared in its `env` (turbo.json). Without them this script uploads nothing and says so\n" +
+      "  only here.",
+  );
+  process.exit(1);
+}
 const s3Key = "environments.js";
 
 // Function to upload file to S3
@@ -53,7 +75,8 @@ fs.readFile(indexPath, "utf8", (err, data) => {
   }
 
   // Regular expression to match case values, descriptions, and events-tracked
-  const caseRegex = /case\s+"(.*?)":\s+import\(".*?"\)\.then\([\s\S]*?\);\s*\/\/\s*description:\s*"(.*?)"\s*\/\/\s*events-tracked:\s*(\[.*?\])/g;
+  const caseRegex =
+    /case\s+"(.*?)":\s+import\(".*?"\)\.then\([\s\S]*?\);\s*\/\/\s*description:\s*"(.*?)"\s*\/\/\s*events-tracked:\s*(\[.*?\])/g;
   let match;
   const environments = [];
 
@@ -78,19 +101,19 @@ fs.readFile(indexPath, "utf8", (err, data) => {
       (env) =>
         `  {\n    "label": "${env.label}",\n    "value": "${env.value}",\n    "description": "${
           env.description
-        }",\n    "eventsTracked": ${JSON.stringify(env.eventsTracked, null, 4)}\n  }`
+        }",\n    "eventsTracked": ${JSON.stringify(env.eventsTracked, null, 4)}\n  }`,
     )
     .join(",\n")}\n]`;
 
-// Write the formatted data to environment.js
-fs.writeFile(environmentPath, output, "utf8", (writeErr) => {
-  if (writeErr) {
-    console.error("Error writing environment.js file:", writeErr);
-    return;
-  }
-  console.info("environment.js file created successfully!");
+  // Write the formatted data to environment.js
+  fs.writeFile(environmentPath, output, "utf8", (writeErr) => {
+    if (writeErr) {
+      console.error("Error writing environment.js file:", writeErr);
+      return;
+    }
+    console.info("environment.js file created successfully!");
 
-  // Upload the file to S3
-  uploadToS3(environmentPath, bucketName, s3Key);
-});
+    // Upload the file to S3
+    uploadToS3(environmentPath, bucketName, s3Key);
+  });
 });
