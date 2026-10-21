@@ -32,8 +32,19 @@
       "dependsOn": ["mediajel-tracker#build"],
       "cache": false
     },
+    // Runs only in build-main, and uploads the generated environments file to S3. Strict mode
+    // (the default) passes a task nothing it has not declared, so without this the four AWS
+    // credentials arrive undefined — and the script reports every failure with console.error and
+    // no exit code, so the deploy step stays green while uploading nothing. On main this runs
+    // outside turbo with the full environment, so the monorepo is what introduces the hazard.
     "generate-environments": {
-      "cache": false
+      "cache": false,
+      "env": [
+        "AWS_REGION_PROD",
+        "AWS_ACCESS_KEY_ID_PROD",
+        "AWS_SECRET_ACCESS_KEY_PROD",
+        "BUCKET_GENERATE_ENVIRONMENTS_PROD"
+      ]
     }
   }
 }
