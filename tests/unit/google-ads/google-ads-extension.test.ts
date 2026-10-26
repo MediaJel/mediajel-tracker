@@ -97,6 +97,24 @@ describe("withSnowplowGoogleAdsExtension", () => {
     expect((globalThis as any).window.dataLayer).toEqual([]);
   });
 
+  test("a loader that throws (script injection blocked) keeps purchase tracking and the site's own gtag working", () => {
+    fakePage();
+    (globalThis as any).document.createElement = () => {
+      throw new Error("blocked by the page");
+    };
+    const sent: any[] = [];
+    (globalThis as any).window.gtag = (...args: any[]) => sent.push(args);
+    const { tracker, calls } = fakeTracker({ conversionId: "AW-123456", conversionLabel: "abc" });
+
+    expect(() => withSnowplowGoogleAdsExtension(tracker)).not.toThrow();
+    tracker.ecommerce.trackTransaction(purchase);
+
+    expect(calls).toEqual(["snowplow order-1"]);
+    expect(sent.filter((args) => args[0] === "event")).toEqual([
+      ["event", "conversion", { send_to: "AW-123456/abc", value: 42.5, currency: "USD", transaction_id: "order-1" }],
+    ]);
+  });
+
   test("an unusable dataLayer turns conversions off without breaking purchase tracking", () => {
     fakePage({ notAnArray: true });
     const { tracker, calls } = fakeTracker({ conversionId: "AW-123456", conversionLabel: "abc" });

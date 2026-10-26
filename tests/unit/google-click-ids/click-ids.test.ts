@@ -77,6 +77,18 @@ describe("pickLatest", () => {
     expect(pickLatest([reread, stored], NOW)).toEqual(stored);
   });
 
+  test("a click past the window stays expired even when another source re-dated it (gtag refreshing _gcl_aw)", () => {
+    const original = { ids: { gclid: GCLID }, ts: NOW - 91 * DAY };
+    const refreshedByGtag = { ids: { gclid: GCLID }, ts: NOW - DAY };
+    expect(pickLatest([refreshedByGtag, original], NOW)).toBeNull();
+  });
+
+  test("an expired click does not block a newer, different click", () => {
+    const expired = { ids: { gclid: GCLID }, ts: NOW - 91 * DAY };
+    const fresh = { ids: { gclid: "EAIaIQobChMInewerClick_99" }, ts: NOW - DAY };
+    expect(pickLatest([expired, fresh], NOW)).toEqual(fresh);
+  });
+
   test("clicks older than 90 days, from the future, or missing are ignored", () => {
     const expired = { ids: { gclid: GCLID }, ts: NOW - 91 * DAY };
     const future = { ids: { gclid: GCLID }, ts: NOW + DAY };

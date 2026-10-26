@@ -66,24 +66,24 @@ export const clickIdsFromUrl = (url: string, nowSec: number): ClickIdSet | null 
   return Object.keys(ids).length > 0 ? { ids, ts: nowSec } : null;
 };
 
-const isUsable = (set: ClickIdSet | null, nowSec: number): set is ClickIdSet =>
-  !!set &&
-  typeof set.ts === "number" &&
-  set.ts >= nowSec - CLICK_WINDOW_SECONDS &&
-  set.ts <= nowSec + CLOCK_SKEW_SECONDS &&
-  hasValidIds(set.ids);
+const isWellFormed = (set: ClickIdSet | null): set is ClickIdSet =>
+  !!set && typeof set.ts === "number" && hasValidIds(set.ids);
+
+const inWindow = (ts: number, nowSec: number): boolean =>
+  ts >= nowSec - CLICK_WINDOW_SECONDS && ts <= nowSec + CLOCK_SKEW_SECONDS;
 
 const sameIds = (a: ClickIds, b: ClickIds): boolean => CLICK_ID_NAMES.every((name) => a[name] === b[name]);
 
 /**
- * The click to keep among several sources: the newest usable one. When two sources hold the same IDs the earliest
- * time wins, so re-reading a click (reload, back button, a cookie Google rewrote) never extends its 90-day window.
+ * The click to keep among several sources: the newest one still inside the 90-day window. A click seen in several
+ * places keeps the earliest time any of them recorded, even when that time is already past the window, so re-reading
+ * it (a reload, the back button, gtag rewriting _gcl_aw after seeing the carried URL) never extends or revives it.
  */
 export const pickLatest = (sets: (ClickIdSet | null)[], nowSec: number): ClickIdSet | null => {
-  const usable = sets.filter((set): set is ClickIdSet => isUsable(set, nowSec));
+  const known = sets.filter(isWellFormed);
+  const firstSeen = (set: ClickIdSet): number =>
+    known.filter((other) => sameIds(other.ids, set.ids)).reduce((ts, other) => Math.min(ts, other.ts), set.ts);
+  const usable = known.map((set) => ({ ids: set.ids, ts: firstSeen(set) })).filter((set) => inWindow(set.ts, nowSec));
   if (usable.length === 0) return null;
-  const newest = usable.reduce((best, set) => (set.ts > best.ts ? set : best));
-  return usable
-    .filter((set) => sameIds(set.ids, newest.ids))
-    .reduce((earliest, set) => (set.ts < earliest.ts ? set : earliest));
+  return usable.reduce((best, set) => (set.ts > best.ts ? set : best));
 };
