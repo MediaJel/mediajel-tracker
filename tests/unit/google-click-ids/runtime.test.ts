@@ -50,6 +50,7 @@ const fakeWindow = ({ url = "https://shop.example.com/", navigationUrl, gpc = fa
   };
   const document: any = {
     location,
+    readyState: "complete",
     get cookie() {
       return cookies.cookie;
     },

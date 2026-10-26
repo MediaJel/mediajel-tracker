@@ -25,7 +25,7 @@ describe("urlWithClickIds", () => {
   });
 });
 
-const fakeWindow = (href: string) => {
+const fakeWindow = (href: string, readyState = "complete") => {
   const calls: { method: string; state: unknown; url?: string }[] = [];
   const listeners: Record<string, () => void> = {};
   const location = { href };
@@ -42,7 +42,12 @@ const fakeWindow = (href: string) => {
   history.replaceState = function (state: unknown, title: string, url?: string) {
     return navigate("replaceState")(this, state, title, url);
   };
-  const win: any = { location, history, addEventListener: (type: string, fn: () => void) => (listeners[type] = fn) };
+  const win: any = {
+    location,
+    history,
+    document: { readyState },
+    addEventListener: (type: string, fn: () => void) => (listeners[type] = fn),
+  };
   return { win, calls, listeners, location, history };
 };
 
@@ -50,6 +55,18 @@ describe("keepClickIdsInUrl", () => {
   test("on load, adds the click to the address bar and keeps the router's history.state", () => {
     const page = fakeWindow("https://shop.example.com/menu");
     keepClickIdsInUrl(page.win, () => ({ gclid: G }));
+    expect(page.calls).toEqual([
+      { method: "replaceState", state: { router: "next", key: "k1" }, url: `https://shop.example.com/menu?gclid=${G}` },
+    ]);
+  });
+
+  test("while the page is still loading, the first update waits for the load event so it can't race hydration", () => {
+    const page = fakeWindow("https://shop.example.com/menu", "interactive");
+    keepClickIdsInUrl(page.win, () => ({ gclid: G }));
+    expect(page.calls).toEqual([]);
+
+    page.win.document.readyState = "complete";
+    page.listeners.load();
     expect(page.calls).toEqual([
       { method: "replaceState", state: { router: "next", key: "k1" }, url: `https://shop.example.com/menu?gclid=${G}` },
     ]);

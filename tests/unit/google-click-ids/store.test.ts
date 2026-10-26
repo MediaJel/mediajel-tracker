@@ -80,6 +80,11 @@ describe("load", () => {
     expect(createClickIdStore(pilot.env).load()).toEqual({ ids: { gclid: G }, ts: NOW - DAY });
   });
 
+  test("our expired record keeps a gtag-refreshed _gcl_aw of the same click from reviving it", () => {
+    const { env } = fakeEnv({ _gcl_aw: `GCL.${NOW - DAY}.${G}` }, { _mj_gcl: `1.${NOW - 91 * DAY}.${G}..` });
+    expect(createClickIdStore(env).load()).toBeNull();
+  });
+
   test("an expired click is not returned", () => {
     const { env } = fakeEnv({ _mj_gcl: `1.${NOW - 91 * DAY}.${G}..` });
     expect(createClickIdStore(env).load()).toBeNull();

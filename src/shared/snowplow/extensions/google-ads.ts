@@ -7,6 +7,18 @@ import { gpcEnabled } from "src/shared/utils/privacy-signals";
 const withAwPrefix = (conversionId: string): string =>
   conversionId.indexOf("AW-") === 0 ? conversionId : `AW-${conversionId}`;
 
+// A page that blocks script injection must not stop purchase tracking; a gtag the site loads still gets conversions.
+const loadGoogleTag = (conversionId: string, crossDomainSites?: string): void => {
+  try {
+    const linkerDomains = crossDomainSites ? crossDomainSites.split(",").map((site) => site.trim()) : [];
+    if (!ensureGtag(window, document, conversionId, linkerDomains)) {
+      logger.warn("window.dataLayer is not an array; Google Ads conversions are off on this page");
+    }
+  } catch (error) {
+    logger.warn("Google's tag could not be loaded; conversions go only to a gtag the site loads itself", error);
+  }
+};
+
 /**
  * This extension will send Google ads conversion events when a transaction is tracked
  */
@@ -25,10 +37,7 @@ const withSnowplowGoogleAdsExtension = (snowplow: SnowplowTracker) => {
   }
 
   const conversionId = withAwPrefix(String(rawConversionId));
-  const linkerDomains = crossDomainSites ? crossDomainSites.split(",").map((site) => site.trim()) : [];
-  if (!ensureGtag(window, document, conversionId, linkerDomains)) {
-    logger.warn("window.dataLayer is not an array; Google Ads conversions are off on this page");
-  }
+  loadGoogleTag(conversionId, crossDomainSites);
   logger.info(`🚀🚀🚀 Google Ads Plugin loaded for ${environment}`);
 
   // Original trackTransaction method

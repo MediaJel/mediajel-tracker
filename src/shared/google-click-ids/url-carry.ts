@@ -44,5 +44,8 @@ export const keepClickIdsInUrl = (win: Window, getIds: () => ClickIds | null): v
   });
   win.addEventListener("popstate", sync);
   win.addEventListener("hashchange", sync);
-  sync();
+  // A framework hydrating the page sets its router up from the URL it was served; the first update waits for the
+  // page to finish loading so it never lands in the middle of that. Route changes above carry the click right away.
+  if (win.document.readyState === "complete") sync();
+  else win.addEventListener("load", sync);
 };
