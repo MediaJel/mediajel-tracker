@@ -1,3 +1,4 @@
+import { prepareGoogleConversion } from "src/shared/google-click-ids";
 import logger from "src/shared/logger";
 import { ensureGtag } from "src/shared/snowplow/extensions/gtag-loader";
 import { SnowplowTracker } from "src/shared/snowplow/types";
@@ -46,6 +47,8 @@ const withSnowplowGoogleAdsExtension = (snowplow: SnowplowTracker) => {
     logger.info(`🚀🚀🚀 Google Ads Extension Transaction Event`, conversion);
     if (typeof window.gtag !== "function") return;
 
+    // Restore Google's click cookie from the persisted ad click when this page has neither (see google-click-ids)
+    prepareGoogleConversion();
     window.gtag("event", "conversion", conversion);
   };
   return snowplow;
