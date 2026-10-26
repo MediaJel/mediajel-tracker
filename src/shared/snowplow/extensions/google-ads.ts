@@ -1,55 +1,34 @@
 import logger from "src/shared/logger";
-import { createSegments, DstillerySegmentBuilderInput, NexxenSegmentBuilderInput } from "src/shared/segment-builder";
+import { ensureGtag } from "src/shared/snowplow/extensions/gtag-loader";
 import { SnowplowTracker } from "src/shared/snowplow/types";
-import { QueryStringContext } from "src/shared/types";
+import { gpcEnabled } from "src/shared/utils/privacy-signals";
 
-const setupExtension = (context: QueryStringContext): void => {
-  // Fail fast if the required params are not present
-  if (!context.conversionId || !context.conversionLabel) {
-    logger.warn("Conversion ID and Conversion Label are required for Google Ads");
-  }
-
-  if (!context.conversionId.includes("AW-")) {
-    context.conversionId = `AW-${context.conversionId}`;
-  }
-
-  logger.info(`🚀🚀🚀 Google Ads Plugin loaded for ${context.environment}`);
-
-  document.createElement("script").src = `https://www.googletagmanager.com/gtag/js?id=${context.conversionId}`;
-
-  window.dataLayer = window.dataLayer || [];
-
-  function gtag() {
-    window.dataLayer.push(arguments);
-  }
-
-  window.gtag = gtag;
-  /**Note: the @ts-ignore lines below are necessary to supress typescript warnings for the arguments object above */
-  // @ts-ignore
-  gtag("js", new Date());
-  // @ts-ignore
-  gtag("config", context.conversionId);
-
-  // Cross domain tracking
-  if (context.crossDomainSites) {
-    const crossDomainSites = context.crossDomainSites.split(",");
-    const sites = crossDomainSites.map((site) => site.trim());
-    // @ts-ignore
-    gtag("set", "linker", { domains: sites });
-  }
-};
+const withAwPrefix = (conversionId: string): string =>
+  conversionId.indexOf("AW-") === 0 ? conversionId : `AW-${conversionId}`;
 
 /**
  * This extension will send Google ads conversion events when a transaction is tracked
  */
 const withSnowplowGoogleAdsExtension = (snowplow: SnowplowTracker) => {
-  let { conversionId, conversionLabel } = snowplow.context;
+  const { conversionId: rawConversionId, conversionLabel, crossDomainSites, environment } = snowplow.context;
 
-  if (!conversionId.includes("AW-")) {
-    conversionId = `AW-${conversionId}`;
+  // Without both, every conversion would be rejected by Google; leave the tracker as it is rather than throw.
+  if (!rawConversionId || !conversionLabel) {
+    logger.warn("Conversion ID and Conversion Label are required for Google Ads");
+    return snowplow;
+  }
+  // A visitor's Global Privacy Control opt-out: no Google tag and no Google Ads conversion from us.
+  if (gpcEnabled(window.navigator)) {
+    logger.debug("Global Privacy Control is on; the Google Ads plugin stays off on this page");
+    return snowplow;
   }
 
-  setupExtension(snowplow.context);
+  const conversionId = withAwPrefix(String(rawConversionId));
+  const linkerDomains = crossDomainSites ? crossDomainSites.split(",").map((site) => site.trim()) : [];
+  if (!ensureGtag(window, document, conversionId, linkerDomains)) {
+    logger.warn("window.dataLayer is not an array; Google Ads conversions are off on this page");
+  }
+  logger.info(`🚀🚀🚀 Google Ads Plugin loaded for ${environment}`);
 
   // Original trackTransaction method
   const trackTransaction = snowplow.ecommerce.trackTransaction;
@@ -58,19 +37,16 @@ const withSnowplowGoogleAdsExtension = (snowplow: SnowplowTracker) => {
   snowplow.ecommerce.trackTransaction = (input) => {
     trackTransaction(input);
 
-    logger.info(`🚀🚀🚀 Google Ads Extension Transaction Event`, {
+    const conversion = {
       send_to: `${conversionId}/${conversionLabel}`,
       value: input.total,
       currency: input.currency,
       transaction_id: input.id,
-    });
+    };
+    logger.info(`🚀🚀🚀 Google Ads Extension Transaction Event`, conversion);
+    if (typeof window.gtag !== "function") return;
 
-    window.gtag("event", "conversion", {
-      send_to: `${conversionId}/${conversionLabel}`,
-      value: input.total,
-      currency: input.currency,
-      transaction_id: input.id,
-    });
+    window.gtag("event", "conversion", conversion);
   };
   return snowplow;
 };

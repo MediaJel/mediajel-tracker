@@ -105,7 +105,10 @@ export type SnowplowPluginParams = {
 
 export type PluginParams = {
   plugin?: "googleAds" | "bingAds";
+  // Accepted as an alias of `plugin` (help-center docs and some override files used this spelling).
+  plugins?: string;
 };
+
 
 export type GoogleAdsPluginParams = {
   conversionId: string;
