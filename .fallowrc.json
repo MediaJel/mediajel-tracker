@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  // Unit tests run with `bun test tests` (package.json "test:unit"). fallow ships no bun-test plugin, so this inline
+  // plugin declares those files as test entry points: they count toward test reachability, not runtime code.
+  "framework": [
+    {
+      "name": "bun-test",
+      "detection": { "type": "fileExists", "pattern": "tests/**/*.test.ts" },
+      "entryPoints": ["tests/**/*.test.ts"],
+      "entryPointRole": "test"
+    }
+  ]
+}

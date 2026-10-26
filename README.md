@@ -65,6 +65,10 @@ This will also track transactions and send it to our snowplow collectors and goo
 &crossDomainSites=google.com,example.com"></script>
 ```
 
+The plugin loads Google's tag (gtag.js) itself when the site doesn't already have one, and keeps a `gtag` function the
+site already defined. It loads no gtag.js while Google consent mode denies `ad_storage`, and stays off entirely (no
+Google tag, no conversion) for visitors with Global Privacy Control on. `plugins=` is accepted as an alias of `plugin=`.
+
 ### Bing Ads (Plugin)
 
 This will also track transactions and send it to our snowplow collectors and bing ads all in one tag.

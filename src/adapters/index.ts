@@ -8,9 +8,10 @@ import {
 import withEnsureBasketItemsOrderId from "src/shared/snowplow/extensions/ensure-basket-items-order-id";
 import withRegisterThirdPartyTagsExtension from "src/shared/snowplow/extensions/register-third-party-tags";
 import { QueryStringContext } from "src/shared/types";
+import { parsePlugins } from "src/shared/utils/parse-plugins";
 
 const loadAdapters = async (context: QueryStringContext): Promise<void> => {
-  const plugins = context?.plugin?.split(",") || [];
+  const plugins = parsePlugins(context);
   const data = "default"; // Test CI, remove this later
   logger.debug("Adapter Context", context);
   const snowplow = await createSnowplowTracker(context);
