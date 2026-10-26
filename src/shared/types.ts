@@ -109,6 +109,15 @@ export type PluginParams = {
   plugins?: string;
 };
 
+// Google Ads click-ID persistence switches (see src/shared/google-click-ids). Opt-out: on unless set to "false".
+export type ClickIdParams = {
+  clickIds: "true" | "false";
+  // "false" keeps the click ID out of URLs on this site (address bar and same-site links).
+  carryInUrl: "true" | "false";
+  // "linker" limits link decoration to the crossDomainSites hosts.
+  decorateLinks: "true" | "false" | "linker";
+  seedGoogleCookie: "true" | "false";
+};
 
 export type GoogleAdsPluginParams = {
   conversionId: string;
@@ -197,6 +206,7 @@ export type QueryStringParams = Partial<TransactionParams> &
   SegmentParams &
   enableTagParam &
   Partial<LoggingParam> &
+  Partial<ClickIdParams> &
   DatasourceTrackerParam & { sdkUrl: string };
 
 // Params available to the tag's query string
