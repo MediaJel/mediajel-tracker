@@ -115,6 +115,39 @@ describe("withSnowplowGoogleAdsExtension", () => {
     ]);
   });
 
+  test("on a page running the click-ID runtime, Google's click cookie is prepared right before the conversion fires", () => {
+    fakePage();
+    const order: string[] = [];
+    (globalThis as any).window.mjPrepareGoogleConversion = () => {
+      order.push("prepare");
+      return ["_gcl_aw"];
+    };
+    const { tracker } = fakeTracker({ conversionId: "AW-123456", conversionLabel: "abc" });
+    withSnowplowGoogleAdsExtension(tracker);
+    const gtag = (globalThis as any).window.gtag;
+    (globalThis as any).window.gtag = (...args: any[]) => {
+      if (args[0] === "event") order.push("conversion");
+      return gtag(...args);
+    };
+
+    tracker.ecommerce.trackTransaction(purchase);
+
+    expect(order).toEqual(["prepare", "conversion"]);
+  });
+
+  test("a click-ID runtime that fails while preparing never stops the conversion", () => {
+    fakePage();
+    (globalThis as any).window.mjPrepareGoogleConversion = () => {
+      throw new Error("storage blocked");
+    };
+    const { tracker, calls } = fakeTracker({ conversionId: "AW-123456", conversionLabel: "abc" });
+    withSnowplowGoogleAdsExtension(tracker);
+
+    expect(() => tracker.ecommerce.trackTransaction(purchase)).not.toThrow();
+    expect(calls).toEqual(["snowplow order-1"]);
+    expect(commands().filter((c: any[]) => c[0] === "event")).toHaveLength(1);
+  });
+
   test("an unusable dataLayer turns conversions off without breaking purchase tracking", () => {
     fakePage({ notAnArray: true });
     const { tracker, calls } = fakeTracker({ conversionId: "AW-123456", conversionLabel: "abc" });

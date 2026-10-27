@@ -2,6 +2,8 @@
  * Where a persisted click lives. Reads every place a click ID can already be on this site (our cookie and
  * localStorage, Google's click cookies and _gcl_ls record, the frictionless pilot's key) and keeps the newest valid
  * one. Writes only our own cookie/localStorage, plus Google's _gcl_aw/_gcl_gb when they are missing (seedGoogle).
+ * Our cookie is rewritten on every save, even unchanged: Safari caps cookies set by scripts at 7 days (24 hours on a
+ * page reached from an ad click), and each write starts that cap again while the visitor keeps browsing.
  * Every storage access is guarded: blocked cookies or storage read as empty and never throw.
  */
 import { CLICK_WINDOW_SECONDS, ClickIdName, ClickIds, ClickIdSet, pickLatest } from "./click-ids";
@@ -98,7 +100,7 @@ export const createClickIdStore = (env: StoreEnv): ClickIdStore => {
 
   const save = (set: ClickIdSet): void => {
     const value = encodeOwnValue(set);
-    if (readCookie(cookieText(), OWN_KEY) !== value) guard(() => env.setCookie(buildCookie(OWN_KEY, value, options(set))));
+    guard(() => env.setCookie(buildCookie(OWN_KEY, value, options(set))));
     guard(() => env.storage && env.storage.setItem(OWN_KEY, value));
   };
 

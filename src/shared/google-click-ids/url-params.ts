@@ -11,8 +11,6 @@ export const clickIdQuery = (ids: ClickIds | null): string =>
         .join("&")
     : "";
 
-/** `host` is `domain` or one of its subdomains. */
-export const withinDomain = (host: string, domain: string): boolean => host === domain || host.endsWith(`.${domain}`);
 
 export const lowerCaseKeys = (url: URL): string[] => {
   const keys: string[] = [];

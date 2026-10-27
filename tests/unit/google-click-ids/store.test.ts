@@ -110,10 +110,10 @@ describe("save and clear", () => {
     expect(local._mj_gcl).toBe(`1.${NOW - DAY}.${G}..`);
   });
 
-  test("save skips the cookie write when the same value is already stored", () => {
+  test("save rewrites our cookie even when it already holds the click, restarting Safari's cap on script-set cookies", () => {
     const { env, written } = fakeEnv({ _mj_gcl: `1.${NOW - DAY}.${G}..` });
     createClickIdStore(env).save({ ids: { gclid: G }, ts: NOW - DAY });
-    expect(written).toEqual([]);
+    expect(written).toEqual([`_mj_gcl=1.${NOW - DAY}.${G}..; Max-Age=${89 * DAY}; Path=/; Domain=example.com; SameSite=Lax; Secure`]);
   });
 
   test("clear expires our cookie and removes our storage key", () => {

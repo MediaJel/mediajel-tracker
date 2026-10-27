@@ -29,5 +29,7 @@ declare global {
     overrides: QueryStringContext;
     parseRetailId: (retail: retailIdentifier) => void;
     navigation: any;
+    // Set by the Google click-ID runtime chunk; called by the Google Ads plugin before a conversion.
+    mjPrepareGoogleConversion?: () => string[];
   }
 }

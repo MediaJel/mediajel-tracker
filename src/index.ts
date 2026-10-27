@@ -1,6 +1,6 @@
 import logger, { isLoggingEnabled, setLoggingEnabled } from "src/shared/logger";
 
-import { startClickIds } from "./shared/google-click-ids";
+import { loadClickIds } from "./shared/google-click-ids/load";
 import { QueryStringContext } from "./shared/types";
 import getContext from "./shared/utils/get-context";
 import { getCustomTags } from "./shared/utils/get-custom-tags";
@@ -73,8 +73,8 @@ import { createRetailId } from "./shared/utils/retail-id-parser";
 
     window.parseRetailId = createRetailId;
 
-    // Keep any Google Ads click ID this page carries, before an adapter can fire a conversion (see google-click-ids).
-    startClickIds(modifiedContext);
+    // Keep any Google Ads click ID this page carries (see google-click-ids); its code is a chunk loaded only where it runs.
+    loadClickIds(modifiedContext);
 
     await import("src/adapters").then(({ default: load }) => load(modifiedContext));
   } catch (err) {

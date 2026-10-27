@@ -109,8 +109,9 @@ export type PluginParams = {
   plugins?: string;
 };
 
-// Google Ads click-ID persistence switches (see src/shared/google-click-ids). Opt-out: on unless set to "false".
+// Google Ads click-ID persistence switches (see src/shared/google-click-ids). The rest are on unless set to "false".
 export type ClickIdParams = {
+  // Runs on the rollout list's sites (allowed-sites.ts): "true" turns it on anywhere else, "false" turns it off.
   clickIds: "true" | "false";
   // "false" keeps the click ID out of URLs on this site (address bar and same-site links).
   carryInUrl: "true" | "false";

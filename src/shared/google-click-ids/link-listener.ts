@@ -6,8 +6,8 @@
 import { ClickIds } from "./click-ids";
 import { decorateHref, PageScope } from "./decorate";
 
-// No contextmenu: a right-click is how visitors copy a link, and a copied link must not carry the click ID.
-const ACTIVATION_EVENTS = ["mousedown", "touchstart", "auxclick", "click"];
+// contextmenu included: "Open link in new tab" from the context menu should carry the click too.
+const ACTIVATION_EVENTS = ["mousedown", "touchstart", "auxclick", "click", "contextmenu"];
 
 type Link = HTMLAnchorElement | HTMLAreaElement;
 
@@ -31,9 +31,8 @@ const findLink = (event: Event): Link | null => {
   return null;
 };
 
-// The link this activation follows, unless it is a right-click, a download, or inside an opted-out element.
+// The link this activation follows, unless it is a download or inside an opted-out element.
 const linkToDecorate = (event: Event): Link | null => {
-  if (event.type === "mousedown" && (event as MouseEvent).button > 1) return null;
   const link = findLink(event);
   if (!link || link.hasAttribute("download") || link.closest("[data-mj-no-decorate]")) return null;
   return link;

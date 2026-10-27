@@ -1,18 +1,23 @@
 /**
  * Google Ads click-ID persistence.
  *
- * When any MediaJel tag sees a Google Ads click ID (gclid / gbraid / wbraid) it keeps it, first-party, for Google's
+ * When a MediaJel tag sees a Google Ads click ID (gclid / gbraid / wbraid) it keeps it, first-party, for Google's
  * 90-day click window, and carries it to every next route through to checkout:
  *   - in the URL: kept in the address bar after every route change, and added to same-site links when followed;
  *   - across pages and subdomains: a cookie on the site's root domain (+ localStorage);
- *   - across domains: added to outbound links at the moment a visitor follows them;
+ *   - across domains: added to outbound links at the moment a visitor follows (or right-clicks) them, and to
+ *     navigations the page starts from script (window.open, location.href = … where the Navigation API exists);
  *   - into embedded menus/checkouts running our tag in an iframe: handed over by postMessage;
- *   - to Google: before our Google Ads conversion fires, Google's own click cookie is restored if it is missing.
+ *   - to Google: Google's own click cookie is restored whenever it is missing, on every page and again right before
+ *     our Google Ads conversion fires, so every Google tag on the site sees the click;
+ *   - kept alive: our cookie is rewritten on every page, on returning to the tab and on back-forward cache restores.
  *
- * On by default for every website tag. Tag params: clickIds=false (off), carryInUrl=false (keep it out of URLs on
- * this site), decorateLinks=false|linker (no link decoration, or outbound only to the crossDomainSites hosts),
- * seedGoogleCookie=false (never write Google's cookies). Global Privacy Control turns it off and clears what we
- * stored; consent mode denying ad_storage stops all reads, writes and sharing.
+ * Runs on the sites in the temporary rollout list (allowed-sites.ts, checked by gate.ts from the entry script, which
+ * downloads this module as its own chunk only where it runs). Tag params: clickIds=true (on for a site not in the
+ * list), clickIds=false (off), carryInUrl=false (keep it out of URLs on this site), decorateLinks=false|linker (no
+ * link or script-navigation decoration, or outbound only to the crossDomainSites hosts), seedGoogleCookie=false (never
+ * write Google's cookies). Global Privacy Control turns it off and clears what we stored; consent mode denying
+ * ad_storage stops all reads, writes and sharing.
  */
 import logger from "src/shared/logger";
 import { QueryStringContext } from "src/shared/types";
@@ -20,13 +25,16 @@ import { adStorageDenied, gpcEnabled } from "src/shared/utils/privacy-signals";
 
 import { ClickIdSet, clickIdsFromUrl, pickLatest } from "./click-ids";
 import { buildCookie, readCookie } from "./cookies";
+import { registerConversionHook } from "./conversion-hook";
 import { PageScope } from "./decorate";
+import { frameOriginAllowed } from "./frame-origins";
 import { startFrameBridge } from "./frame-bridge";
+import { clickIdsEnabled, isFramed } from "./gate";
 import { installLinkDecoration } from "./link-listener";
 import { discoverCookieDomain } from "./root-domain";
 import { createClickIdStore } from "./store";
+import { decorateScriptNavigations } from "./script-navigation";
 import { keepClickIdsInUrl } from "./url-carry";
-import { withinDomain } from "./url-params";
 
 export interface ClickIdRuntime {
   /** The click to use right now, or null when there is none or privacy blocks it. */
@@ -36,14 +44,6 @@ export interface ClickIdRuntime {
 }
 
 const PROBE_COOKIE = "_mj_gcl_probe";
-
-const isFramed = (win: Window): boolean => {
-  try {
-    return win.self !== win.top;
-  } catch {
-    return true;
-  }
-};
 
 const storageOf = (win: Window): Storage | null => {
   try {
@@ -77,6 +77,24 @@ const listedHosts = (context: QueryStringContext): string[] =>
     .map((host) => host.trim().toLowerCase())
     .filter(Boolean);
 
+// Rewrites both cookies when the visitor comes back to the tab or the page returns from the back-forward cache, so a
+// long visit never outlives Safari's cap on script-set cookies.
+const keepAlive = (win: Window, refresh: () => void): void => {
+  const safely = () => {
+    try {
+      refresh();
+    } catch {
+      // never let this interfere with the page
+    }
+  };
+  win.addEventListener("visibilitychange", () => {
+    if (win.document.visibilityState === "visible") safely();
+  });
+  win.addEventListener("pageshow", (event) => {
+    if ((event as PageTransitionEvent).persisted) safely();
+  });
+};
+
 const scopeFor = (context: QueryStringContext, win: Window, cookieDomain: string | null): PageScope => ({
   hostname: win.location.hostname,
   cookieDomain,
@@ -84,24 +102,13 @@ const scopeFor = (context: QueryStringContext, win: Window, cookieDomain: string
   onlyHosts: context.decorateLinks === "linker" ? listedHosts(context) : undefined,
 });
 
-// Frames on this site, or on a host the tag lists in crossDomainSites, may receive the click IDs; an ad or widget
-// frame elsewhere on the page that merely asks does not.
-const frameOriginAllowed = (origin: string, site: string, listed: string[]): boolean => {
-  let host: string;
-  try {
-    host = new URL(origin).hostname.toLowerCase();
-  } catch {
-    return false;
-  }
-  return withinDomain(host, site) || listed.some((listedHost) => withinDomain(host, listedHost));
-};
-
 export const createClickIdRuntime = (
   context: QueryStringContext,
   win: Window,
   nowSec: () => number = () => Math.floor(Date.now() / 1000),
+  sites?: string[],
 ): ClickIdRuntime | null => {
-  if (context.event === "impression" || context.clickIds === "false") return null;
+  if (!clickIdsEnabled(context, win, sites)) return null;
 
   const doc = win.document;
   const secure = win.location.protocol === "https:";
@@ -139,12 +146,22 @@ export const createClickIdRuntime = (
     return set;
   };
 
-  capture();
+  // Google's own click cookie is restored whenever it is missing: a click in the URL doesn't mean gtag processed it.
+  const feedGoogle = (set: ClickIdSet | null): string[] =>
+    set && context.seedGoogleCookie !== "false" && !blocked() ? store.seedGoogle(set) : [];
+  const refresh = (): string[] => feedGoogle(capture());
+
+  refresh();
+  keepAlive(win, refresh);
   const currentIds = () => {
     const set = current();
     return set ? set.ids : null;
   };
-  if (context.decorateLinks !== "false") installLinkDecoration(doc, currentIds, scopeFor(context, win, cookieDomain));
+  if (context.decorateLinks !== "false") {
+    const scope = scopeFor(context, win, cookieDomain);
+    installLinkDecoration(doc, currentIds, scope);
+    decorateScriptNavigations(win, currentIds, scope);
+  }
   if (context.carryInUrl !== "false") keepClickIdsInUrl(win, currentIds);
   startFrameBridge({
     win,
@@ -159,15 +176,7 @@ export const createClickIdRuntime = (
     allowedOrigin: (origin) => frameOriginAllowed(origin, cookieDomain || win.location.hostname, listedHosts(context)),
   });
 
-  return {
-    current,
-    prepareConversion: () => {
-      if (context.seedGoogleCookie === "false") return [];
-      // Restored whenever Google's own cookie is missing: a click carried in the URL doesn't mean gtag processed it.
-      const set = capture();
-      return set ? store.seedGoogle(set) : [];
-    },
-  };
+  return { current, prepareConversion: refresh };
 };
 
 let active: ClickIdRuntime | null = null;
@@ -182,14 +191,12 @@ export const startClickIds = (context: QueryStringContext): void => {
   } catch (error) {
     logger.warn("Google click ID persistence could not start", error);
   }
-};
-
-/** Called by the Google Ads extension right before it fires a conversion. */
-export const prepareGoogleConversion = (): string[] => {
-  try {
-    return active ? active.prepareConversion() : [];
-  } catch (error) {
-    logger.warn("Google click ID could not be prepared for the conversion", error);
-    return [];
-  }
+  registerConversionHook(() => {
+    try {
+      return active ? active.prepareConversion() : [];
+    } catch (error) {
+      logger.warn("Google click ID could not be prepared for the conversion", error);
+      return [];
+    }
+  });
 };
