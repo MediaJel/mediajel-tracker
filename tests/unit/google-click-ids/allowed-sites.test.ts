@@ -11,11 +11,14 @@ const SHARED_PLATFORMS = [
   "kinsta.cloud", "vercel.app", "netlify.app", "appspot.com", "squarespace.com", "wixsite.com", "pressdns.com",
 ];
 
+// Sites taken off the rollout; rebuilding the list from the Google Ads accounts must not bring them back.
+const TAKEN_OFF = ["visitcatalyst.com", "catalystretails.com", "catalyst-cannabis.com"]; // Catalyst, 2026-10-28
+
 describe("onAllowedSite", () => {
   test("a listed site and every subdomain of it", () => {
     expect(onAllowedSite("thelandingdispensaries.com")).toBe(true);
     expect(onAllowedSite("berea-menu.thelandingdispensaries.com")).toBe(true);
-    expect(onAllowedSite("WWW.VisitCatalyst.com.")).toBe(true);
+    expect(onAllowedSite("WWW.TheLandingInOhio.com.")).toBe(true);
   });
 
   test("not a lookalike, a listed name under another domain, a shared platform, or nothing", () => {
@@ -42,5 +45,9 @@ describe("ALLOWED_SITES", () => {
       SHARED_PLATFORMS.some((platform) => site === platform || site.endsWith(`.${platform}`)),
     );
     expect(shared).toEqual([]);
+  });
+
+  test("leaves out the sites taken off the rollout, and their subdomains", () => {
+    expect(TAKEN_OFF.filter((site) => onAllowedSite(site) || onAllowedSite(`www.${site}`))).toEqual([]);
   });
 });

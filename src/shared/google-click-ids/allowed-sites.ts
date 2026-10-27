@@ -6,15 +6,13 @@
  * companies share (dutchie.com, dispenseapp.com, …) are never listed; a menu one of them embeds in a listed page runs it
  * anyway (see gate.ts). A tag on any other site opts in with clickIds=true.
  *
+ * Catalyst's sites were taken off the list on 2026-10-28; the allowed-sites test keeps them off.
+ *
  * To turn it on for every site, delete this list and its check in gate.ts.
  */
 import { withinDomain } from "./domain";
 
 export const ALLOWED_SITES: string[] = [
-  // Catalyst
-  "visitcatalyst.com",
-  "catalystretails.com",
-  "catalyst-cannabis.com",
   // Curio Wellness
   "shopfardotter.com",
   "shopfardottermd.com",
