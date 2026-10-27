@@ -4,8 +4,9 @@
  *
  * Messages are JSON strings with a fixed `{"mjcid":1,` prefix, never objects, so the site's other `message`
  * listeners (several read `event.data` without checks) see an ordinary string. The page answers only its own
- * descendant frames, only from allowed origins (this site, or a host the tag lists in crossDomainSites — never an
- * ad or widget frame that merely asks), only for the same tag (appId), only to the requesting origin, and only with
+ * descendant frames, only from allowed origins (see frame-origins.ts: this site, a crossDomainSites host or an
+ * embedded-menu platform — never an ad or widget frame that merely asks), only for the same tag (appId), only to the
+ * requesting origin, and only with
  * the click IDs. The frame accepts answers only from its parent or top window.
  */
 import { CLICK_ID_NAMES, ClickIdSet, toClickIdSet } from "./click-ids";
