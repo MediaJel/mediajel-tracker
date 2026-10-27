@@ -62,6 +62,8 @@ export const ALLOWED_SITES: string[] = [
   // Sweetspot
   "findsweetspotfarms.com",
   "sweetspotfarms.com",
+  // CMed
+  "medicalcards.net",
 ];
 
 /** True for a listed site or any subdomain of one; `sites` replaces the built-in list (tests). */
