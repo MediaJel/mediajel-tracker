@@ -44,6 +44,8 @@ const fakeWindow = ({ url = "https://shop.example.com/", navigationUrl, gpc = fa
   const parsed = new URL(url);
   const location = { href: url, hostname: parsed.hostname, protocol: parsed.protocol };
   const historyCalls: string[] = [];
+  const timers = new Map<number, () => void>();
+  let lastTimer = 0;
   const record = (state: unknown, _title: string, next?: string) => {
     if (next) location.href = new URL(next, location.href).href;
     historyCalls.push(location.href);
@@ -73,12 +75,22 @@ const fakeWindow = ({ url = "https://shop.example.com/", navigationUrl, gpc = fa
     dataLayer,
     frames: { length: 0 },
     addEventListener: () => undefined,
-    setTimeout: () => 0,
+    setTimeout: (fn: () => void) => {
+      timers.set(++lastTimer, fn);
+      return lastTimer;
+    },
+    clearTimeout: (id: number) => timers.delete(id),
   };
   win.self = win;
   win.top = win;
   win.parent = win;
-  return { win, cookies, listeners, local, historyCalls };
+  // Runs the pending timers, as the browser does once the page's navigation has settled.
+  const settle = () => {
+    const due = [...timers.values()];
+    timers.clear();
+    due.forEach((fn) => fn());
+  };
+  return { win, cookies, listeners, local, historyCalls, settle };
 };
 
 const context = (extra: Record<string, string> = {}) => ({ appId: "app-1", event: "transaction", ...extra }) as any;
@@ -112,6 +124,7 @@ describe("carry-over to the next route", () => {
     jar.cookie = `_mj_gcl=1.${NOW - DAY}.${G}..; Max-Age=100; Path=/`;
     const page = fakeWindow({ url: "https://shop.example.com/checkout?step=1#pay", jar });
     start(page.win, extra);
+    page.settle();
     return page;
   };
 
