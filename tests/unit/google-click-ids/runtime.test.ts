@@ -35,14 +35,18 @@ interface PageOptions {
   gpc?: boolean;
   dataLayer?: unknown[];
   jar?: ReturnType<typeof cookieJar>;
+  // Set for a page running inside an iframe: the origins of the pages embedding it, and its referrer.
+  framed?: { ancestorOrigins?: string[]; referrer?: string };
 }
 
-const fakeWindow = ({ url = "https://shop.example.com/", navigationUrl, gpc = false, dataLayer = [], jar }: PageOptions) => {
+const fakeWindow = ({ url = "https://shop.example.com/", navigationUrl, gpc = false, dataLayer = [], jar, framed }: PageOptions) => {
   const cookies = jar || cookieJar((domain) => domain === "example.com" || domain === "shop.example.com");
   const listeners: Record<string, (event: any) => void> = {};
+  const winListeners: Record<string, (event: any) => void> = {};
   const local: Record<string, string> = {};
   const parsed = new URL(url);
-  const location = { href: url, hostname: parsed.hostname, protocol: parsed.protocol };
+  const location: any = { href: url, hostname: parsed.hostname, protocol: parsed.protocol };
+  if (framed && framed.ancestorOrigins) location.ancestorOrigins = framed.ancestorOrigins;
   const historyCalls: string[] = [];
   const timers = new Map<number, () => void>();
   let lastTimer = 0;
@@ -52,7 +56,9 @@ const fakeWindow = ({ url = "https://shop.example.com/", navigationUrl, gpc = fa
   };
   const document: any = {
     location,
+    referrer: (framed && framed.referrer) || "",
     readyState: "complete",
+    visibilityState: "visible",
     get cookie() {
       return cookies.cookie;
     },
@@ -74,7 +80,7 @@ const fakeWindow = ({ url = "https://shop.example.com/", navigationUrl, gpc = fa
     },
     dataLayer,
     frames: { length: 0 },
-    addEventListener: () => undefined,
+    addEventListener: (type: string, fn: any) => (winListeners[type] = fn),
     setTimeout: (fn: () => void) => {
       timers.set(++lastTimer, fn);
       return lastTimer;
@@ -82,20 +88,22 @@ const fakeWindow = ({ url = "https://shop.example.com/", navigationUrl, gpc = fa
     clearTimeout: (id: number) => timers.delete(id),
   };
   win.self = win;
-  win.top = win;
-  win.parent = win;
+  win.top = framed ? { postMessage: () => undefined } : win;
+  win.parent = win.top;
   // Runs the pending timers, as the browser does once the page's navigation has settled.
   const settle = () => {
     const due = [...timers.values()];
     timers.clear();
     due.forEach((fn) => fn());
   };
-  return { win, cookies, listeners, local, historyCalls, settle };
+  return { win, cookies, listeners, winListeners, local, historyCalls, settle };
 };
 
 const context = (extra: Record<string, string> = {}) => ({ appId: "app-1", event: "transaction", ...extra }) as any;
+// The rollout list these tests run under (the real one lists client sites).
+const TEST_SITES = ["example.com"];
 const start = (win: any, extra: Record<string, string> = {}, now = NOW) =>
-  createClickIdRuntime(context(extra), win, () => now);
+  createClickIdRuntime(context(extra), win, () => now, TEST_SITES);
 
 describe("capture and read-back", () => {
   test("persists a gclid from the landing URL in a root-domain cookie", () => {
@@ -168,6 +176,7 @@ describe("privacy gates", () => {
     const page = fakeWindow({ url: `https://shop.example.com/?gclid=${G}`, dataLayer: denied });
     const runtime = start(page.win)!;
     expect(page.cookies.jar._mj_gcl).toBeUndefined();
+    expect(page.cookies.jar._gcl_aw).toBeUndefined();
     expect(runtime.current()).toBeNull();
     expect(runtime.prepareConversion()).toEqual([]);
   });
@@ -208,26 +217,101 @@ describe("switches", () => {
   });
 });
 
-describe("prepareConversion (Google feed)", () => {
-  test("seeds _gcl_aw on a checkout page whose URL has no click", () => {
+describe("keeping the click alive (Google feed and refreshes)", () => {
+  const storedClick = () => {
     const jar = cookieJar((domain) => domain === "example.com");
     jar.cookie = `_mj_gcl=1.${NOW - DAY}.${G}..; Max-Age=100; Path=/`;
-    const page = fakeWindow({ url: "https://shop.example.com/thank-you", jar });
-    expect(start(page.win)!.prepareConversion()).toEqual(["_gcl_aw"]);
+    return jar;
+  };
+
+  test("Google's click cookie is restored on every page as soon as the tag runs, so every Google tag there sees the click", () => {
+    const jar = storedClick();
+    start(fakeWindow({ url: "https://shop.example.com/menu", jar }).win);
     expect(jar.jar._gcl_aw).toBe(`GCL.${NOW - DAY}.${G}`);
   });
 
-  test("restores Google's cookie even when the URL carries the click (a carried URL doesn't mean gtag saw it)", () => {
-    const page = fakeWindow({ url: `https://shop.example.com/thank-you?gclid=${G}` });
-    expect(start(page.win)!.prepareConversion()).toEqual(["_gcl_aw"]);
+  test("on a landing URL carrying the click, Google's cookie is written before gtag has even processed the URL", () => {
+    const page = fakeWindow({ url: `https://shop.example.com/?gclid=${G}` });
+    start(page.win);
     expect(page.cookies.jar._gcl_aw).toBe(`GCL.${NOW}.${G}`);
   });
 
-  test("seedGoogleCookie=false never writes Google's cookies", () => {
-    const jar = cookieJar((domain) => domain === "example.com");
-    jar.cookie = `_mj_gcl=1.${NOW - DAY}.${G}..; Max-Age=100; Path=/`;
-    const page = fakeWindow({ url: "https://shop.example.com/thank-you", jar });
-    expect(start(page.win, { seedGoogleCookie: "false" })!.prepareConversion()).toEqual([]);
+  test("right before a conversion, Google's cookie is restored again if something removed it since the page loaded", () => {
+    const jar = storedClick();
+    const runtime = start(fakeWindow({ url: "https://shop.example.com/thank-you", jar }).win)!;
+    delete jar.jar._gcl_aw;
+    expect(runtime.prepareConversion()).toEqual(["_gcl_aw"]);
+    expect(jar.jar._gcl_aw).toBe(`GCL.${NOW - DAY}.${G}`);
+  });
+
+  test("seedGoogleCookie=false never writes Google's cookies, on page load or before a conversion", () => {
+    const jar = storedClick();
+    const runtime = start(fakeWindow({ url: "https://shop.example.com/thank-you", jar }).win, { seedGoogleCookie: "false" })!;
+    expect(runtime.prepareConversion()).toEqual([]);
     expect(jar.jar._gcl_aw).toBeUndefined();
+  });
+
+  test("coming back to the tab rewrites both cookies from localStorage, so Safari's cookie cap restarts while the visitor browses", () => {
+    const jar = storedClick();
+    const page = fakeWindow({ url: "https://shop.example.com/menu", jar });
+    start(page.win);
+    delete jar.jar._mj_gcl;
+    delete jar.jar._gcl_aw;
+    page.win.document.visibilityState = "hidden";
+    page.winListeners.visibilitychange({});
+    expect(jar.jar._mj_gcl).toBeUndefined();
+
+    page.win.document.visibilityState = "visible";
+    page.winListeners.visibilitychange({});
+    expect(jar.jar._mj_gcl).toBe(`1.${NOW - DAY}.${G}..`);
+    expect(jar.jar._gcl_aw).toBe(`GCL.${NOW - DAY}.${G}`);
+  });
+
+  test("a page restored from the back-forward cache does the same", () => {
+    const jar = storedClick();
+    const page = fakeWindow({ url: "https://shop.example.com/menu", jar });
+    start(page.win);
+    delete jar.jar._mj_gcl;
+    page.winListeners.pageshow({ persisted: false });
+    expect(jar.jar._mj_gcl).toBeUndefined();
+    page.winListeners.pageshow({ persisted: true });
+    expect(jar.jar._mj_gcl).toBe(`1.${NOW - DAY}.${G}..`);
+  });
+});
+
+describe("where it runs (temporary rollout list)", () => {
+  const anyDomain = () => cookieJar(() => true);
+
+  test("on a site that isn't on the list it does nothing: no cookie, no storage, no history hooks", () => {
+    const page = fakeWindow({ url: `https://www.unlisted.test/?gclid=${G}`, jar: anyDomain() });
+    const pushState = page.win.history.pushState;
+    expect(start(page.win)).toBeNull();
+    page.settle();
+    expect(page.cookies.jar).toEqual({});
+    expect(page.local).toEqual({});
+    expect(page.win.history.pushState).toBe(pushState);
+    expect(page.historyCalls).toEqual([]);
+  });
+
+  test("clickIds=true turns it on for a site that isn't on the list", () => {
+    const page = fakeWindow({ url: `https://www.unlisted.test/?gclid=${G}`, jar: anyDomain() });
+    expect(start(page.win, { clickIds: "true" })!.current()).toEqual({ ids: { gclid: G }, ts: NOW });
+  });
+
+  test("an embedded menu on another host runs it when the page embedding it is on the list", () => {
+    const page = fakeWindow({ url: "https://menus.platform.test/embed", jar: anyDomain(), framed: { ancestorOrigins: ["https://shop.example.com"] } });
+    expect(start(page.win)).not.toBeNull();
+  });
+
+  test("an embedded menu on a page that isn't on the list doesn't", () => {
+    const page = fakeWindow({ url: "https://menus.platform.test/embed", jar: anyDomain(), framed: { ancestorOrigins: ["https://www.unlisted.test"] } });
+    expect(start(page.win)).toBeNull();
+  });
+
+  test("without location.ancestorOrigins (Firefox), the embedding page is the frame's referrer", () => {
+    const listed = fakeWindow({ url: "https://menus.platform.test/embed", jar: anyDomain(), framed: { referrer: "https://shop.example.com/menu" } });
+    expect(start(listed.win)).not.toBeNull();
+    const unlisted = fakeWindow({ url: "https://menus.platform.test/embed", jar: anyDomain(), framed: { referrer: "https://www.unlisted.test/" } });
+    expect(start(unlisted.win)).toBeNull();
   });
 });

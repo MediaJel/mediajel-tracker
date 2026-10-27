@@ -69,31 +69,42 @@ The plugin loads Google's tag (gtag.js) itself when the site doesn't already hav
 site already defined. It loads no gtag.js while Google consent mode denies `ad_storage`, and stays off entirely (no
 Google tag, no conversion) for visitors with Global Privacy Control on. `plugins=` is accepted as an alias of `plugin=`.
 
-### Google Ads click IDs (every tag)
+### Google Ads click IDs (rollout list)
 
-When any of our tags sees a Google Ads click ID in the page URL (`gclid`, `gbraid`, `wbraid`), it keeps it first-party
+When one of our tags sees a Google Ads click ID in the page URL (`gclid`, `gbraid`, `wbraid`), it keeps it first-party
 for Google's 90-day click window and carries it to every next route through to checkout, so the Google Ads conversion
-fired at checkout is attributed to the ad click:
+fired at checkout is attributed to the ad click.
 
-- in the URL: kept in the address bar after every route change (SPA navigations and back/forward included, with the
-  router's `history.state` left untouched), and added to same-site links when a visitor follows them (in-page `#anchor`
-  links are never changed);
-- across pages and subdomains: a `_mj_gcl` cookie on the site's root domain (plus localStorage);
-- across domains: added to an outbound link at the moment a visitor follows it (`download` links, signed URLs and
-  anything inside `[data-mj-no-decorate]` are left alone);
-- into embedded menus/checkouts that run our tag in an iframe on this site or on a `crossDomainSites` host: handed
-  over by `postMessage` (frames on other origins, such as ads or widgets, get nothing);
-- to Google: right before the Google Ads plugin fires a conversion, Google's own click cookie (`_gcl_aw` for gclid,
-  `_gcl_gb` for wbraid) is restored when it is missing.
+For now it runs only on the sites of our Google Ads clients, listed in `src/shared/google-click-ids/allowed-sites.ts`
+(each site and its subdomains, and menus embedded in them); any other tag opts in with `clickIds=true`. The entry
+script carries only that check: the rest is its own chunk, downloaded only where it runs.
 
-It is on by default and needs no per-site setup. Global Privacy Control turns it off (and clears `_mj_gcl`); Google
-consent mode denying `ad_storage` stops it from reading, writing or sharing anything. Switches:
+- in the URL: kept in the address bar as a search parameter (`?gclid=…`) once the page has loaded and after every
+  route change (SPA navigations and back/forward included, with the router's `history.state` left untouched), and
+  added to same-site links when a visitor follows them (in-page `#anchor` links are never changed);
+- across pages and subdomains: a `_mj_gcl` cookie on the site's root domain (plus localStorage), rewritten on every
+  page, when the visitor returns to the tab and when a page comes back from the back-forward cache, so Safari's cap on
+  cookies set by scripts keeps restarting while they browse;
+- across domains: added to an outbound link at the moment a visitor follows or right-clicks it (`download` links,
+  signed URLs and anything inside `[data-mj-no-decorate]` are left alone), and to navigations the page starts from
+  script: `window.open(…)` everywhere, and `location.href = …` / `location.assign()` / `location.replace()` where the
+  browser has the Navigation API;
+- into embedded menus/checkouts that run our tag in an iframe on this site, on a `crossDomainSites` host, or on
+  Dutchie, Dispense or Sweed: handed over by `postMessage` (frames on other origins, such as ads or widgets, get
+  nothing);
+- to Google: Google's own click cookie (`_gcl_aw` for gclid, `_gcl_gb` for wbraid) is restored whenever it is missing,
+  on every page and again right before the Google Ads plugin fires a conversion, so every Google tag on the site sees
+  the click.
+
+Global Privacy Control turns it off (and clears `_mj_gcl`); Google consent mode denying `ad_storage` stops it from
+reading, writing or sharing anything. Switches:
 
 | Param | Effect |
 | --- | --- |
+| `clickIds=true` | Turn click-ID persistence on for a site that isn't in the rollout list |
 | `clickIds=false` | Turn click-ID persistence off for this tag |
 | `carryInUrl=false` | Keep the click ID out of URLs on this site (address bar and same-site links) |
-| `decorateLinks=false` | Never add click IDs to links |
+| `decorateLinks=false` | Never add click IDs to links or to navigations the page starts from script |
 | `decorateLinks=linker` | Add click IDs to outbound links only for the `crossDomainSites` hosts |
 | `seedGoogleCookie=false` | Never write Google's `_gcl_*` cookies |
 

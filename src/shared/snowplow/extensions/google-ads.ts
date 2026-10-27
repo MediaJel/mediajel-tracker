@@ -1,4 +1,4 @@
-import { prepareGoogleConversion } from "src/shared/google-click-ids";
+import { prepareGoogleConversion } from "src/shared/google-click-ids/conversion-hook";
 import logger from "src/shared/logger";
 import { ensureGtag } from "src/shared/snowplow/extensions/gtag-loader";
 import { SnowplowTracker } from "src/shared/snowplow/types";

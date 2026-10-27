@@ -34,18 +34,18 @@ const install = (getIds: () => any = () => ({ gclid: G })) => {
 };
 
 describe("installLinkDecoration", () => {
-  test.each(["mousedown", "touchstart", "auxclick", "click"])("%s on an outbound link adds the click ID", (type) => {
+  test.each(["mousedown", "touchstart", "auxclick", "click", "contextmenu"])("%s on an outbound link adds the click ID", (type) => {
     const fire = install();
     const link = fakeLink("https://dutchie.com/stores/x");
     fire(type, link);
     expect(link.getAttribute("href")).toBe(`https://dutchie.com/stores/x?gclid=${G}`);
   });
 
-  test("a right-button mousedown (context menu, copy link) leaves the link alone", () => {
+  test("a right-click decorates too, so opening the link in a new tab from the context menu carries the click", () => {
     const fire = install();
     const link = fakeLink("https://dutchie.com/x");
     fire("mousedown", link, { button: 2 });
-    expect(link.getAttribute("href")).toBe("https://dutchie.com/x");
+    expect(link.getAttribute("href")).toBe(`https://dutchie.com/x?gclid=${G}`);
   });
 
   test("download links and links inside [data-mj-no-decorate] are skipped", () => {

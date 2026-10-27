@@ -4,7 +4,8 @@
  * checkout) are always eligible; links within this site are when carryInUrl is on.
  */
 import { ClickIds } from "./click-ids";
-import { appendParams, clickIdQuery, hasClickIdParam, lowerCaseKeys, withinDomain } from "./url-params";
+import { withinDomain } from "./domain";
+import { appendParams, clickIdQuery, hasClickIdParam, lowerCaseKeys } from "./url-params";
 
 export interface PageScope {
   hostname: string;
