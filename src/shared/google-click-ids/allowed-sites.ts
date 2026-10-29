@@ -11,10 +11,6 @@
 import { withinDomain } from "./domain";
 
 export const ALLOWED_SITES: string[] = [
-  // Catalyst
-  "visitcatalyst.com",
-  "catalystretails.com",
-  "catalyst-cannabis.com",
   // Curio Wellness
   "shopfardotter.com",
   "shopfardottermd.com",
