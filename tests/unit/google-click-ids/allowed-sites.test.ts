@@ -15,7 +15,7 @@ describe("onAllowedSite", () => {
   test("a listed site and every subdomain of it", () => {
     expect(onAllowedSite("thelandingdispensaries.com")).toBe(true);
     expect(onAllowedSite("berea-menu.thelandingdispensaries.com")).toBe(true);
-    expect(onAllowedSite("WWW.VisitCatalyst.com.")).toBe(true);
+    expect(onAllowedSite("WWW.TheLandingInOhio.com.")).toBe(true);
   });
 
   test("not a lookalike, a listed name under another domain, a shared platform, or nothing", () => {
