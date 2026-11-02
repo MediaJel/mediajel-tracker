@@ -8,7 +8,7 @@ import { CreateSnowplowTrackerInput, SnowplowTracker } from '@mediajel/tracker-c
 // module id and looks it up under another → the import resolves to `undefined`. The package
 // specifier matches the static imports elsewhere, so resolution stays consistent and it code-splits.
 const createSnowplowTracker = async (input: CreateSnowplowTrackerInput): Promise<SnowplowTracker> => {
-  const { appId, collector, event } = input;
+  const { appId, collector, event, pageUrl, referrer } = input;
   logger.info(`Creating Snowplow tracker for version ${input.version}`);
   const isLegacyTracker = input.version === "1";
 
@@ -17,7 +17,7 @@ const createSnowplowTracker = async (input: CreateSnowplowTrackerInput): Promise
     : await import("@mediajel/tracker-core/snowplow/v2/tracker");
 
   const tracker = await createTracker(input);
-  tracker.initialize({ appId, collector, event });
+  tracker.initialize({ appId, collector, event, pageUrl, referrer });
   tracker.record(input);
 
   return tracker;

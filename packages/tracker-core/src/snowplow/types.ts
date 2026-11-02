@@ -7,6 +7,9 @@ export interface SnowplowTrackerInitializeInput {
   collector: string;
   event: string;
   sdkUrl?: string;
+  /** Real page URL / referrer when the tag can't read them (e.g. Shopify custom-pixel sandbox). */
+  pageUrl?: string;
+  referrer?: string;
 }
 export interface SnowplowTracker {
   initialize: (input: SnowplowTrackerInitializeInput) => void;
