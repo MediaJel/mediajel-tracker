@@ -1,8 +1,9 @@
 import { isNonSensitiveFormField } from "@mediajel/tracker-core/snowplow/form-pii-filter";
 import logger from "@mediajel/tracker-core/logger";
+import { applyPageContext } from "@mediajel/tracker-core/snowplow/page-context";
 import { SnowplowTrackerInitializeInput } from "@mediajel/tracker-core/snowplow/types";
 
-export const initialize = ({ appId, collector, event, sdkUrl }: SnowplowTrackerInitializeInput) => {
+export const initialize = ({ appId, collector, event, sdkUrl, pageUrl, referrer }: SnowplowTrackerInitializeInput) => {
   logger.debug(`SDK URL: ${sdkUrl}`);
   // Loading tracker with the snowplow tag by fetching our sp.js file
   // Creates a global function called "tracker" which we use to access the Snowplow Tracker
@@ -51,6 +52,9 @@ export const initialize = ({ appId, collector, event, sdkUrl }: SnowplowTrackerI
   //   respectDoNotTrack: true,
   //   eventMethod: "post",
   // });
+
+  // Before activity tracking and the first page view so every event carries the real page URL.
+  applyPageContext({ pageUrl, referrer });
 
   window.tracker("enableActivityTracking", 30, 10);
   window.tracker("trackPageView");

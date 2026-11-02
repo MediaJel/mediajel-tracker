@@ -185,6 +185,13 @@ export type DatasourceTrackerParam = {
   debug: string;
 };
 
+// Page URL / referrer supplied by the host when the tag runs somewhere window.location is not the
+// visitor's page — a Shopify custom pixel's sandboxed iframe. See snowplow/page-context.ts.
+export type PageContextParams = {
+  pageUrl: string;
+  referrer: string;
+};
+
 export type QueryStringParams = Partial<TransactionParams> &
   Partial<SignupParams> &
   Partial<SnowplowPluginParams> &
@@ -196,7 +203,8 @@ export type QueryStringParams = Partial<TransactionParams> &
   SegmentParams &
   enableTagParam &
   Partial<LoggingParam> &
-  DatasourceTrackerParam & { sdkUrl: string };
+  DatasourceTrackerParam &
+  Partial<PageContextParams> & { sdkUrl: string };
 
 // Params available to the tag's query string
 export type QueryStringContext = QueryStringParams & { collector: string };
