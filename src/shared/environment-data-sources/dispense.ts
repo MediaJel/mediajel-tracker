@@ -34,7 +34,7 @@ const dispenseDataSource = (snowplow: SnowplowTracker) => {
               state: "N/A",
               country: "USA",
               currency: "USD",
-              items: items.map((item) => {
+              items: items.map((item: any) => {
                 const { item_name, item_category, price, quantity } = item;
 
                 return {
@@ -63,6 +63,17 @@ const dispenseDataSource = (snowplow: SnowplowTracker) => {
         window.addEventListener("beforeunload", () => {
           sessionStorage.removeItem("key");
         });
+        if (responseBody.event == "AddedItem") {
+          const product = responseBody.properties;
+          window.addToCart({
+            sku: product.cartId.toString(),
+            name: product.productName.toString() || "N/A",
+            category: product.productCategoryName.toString() || "N/A",
+            unitPrice: parseFloat(product.productPrice) || 0,
+            quantity: parseInt(product.quantity) || 1,
+            currency: "USD",
+          });
+        }
 
         if (window.location.href.includes("/checkout-complete")) {
           try {
